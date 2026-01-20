@@ -18,6 +18,7 @@ import MemberProfile from './pages/dashboard/MemberProfile';
 import AdminGroupsManager from "./pages/admin-website/AdminGroupsManager.jsx";
 import AdminMembersManager from "./pages/admin-website/AdminMembersManager.jsx";
 import MainFeedManager from "./pages/admin-website/MainFeedManager.jsx";
+import AdminReportsManager from "./pages/admin-website/AdminReportsManager.jsx";
 
 function App() {
   return (
@@ -41,6 +42,7 @@ function App() {
         <Route path="/admin-website/groups" element={<AdminGroupsManager />} />
         <Route path="/admin-website/members" element={<AdminMembersManager />} />
         <Route path="/admin-website/contents" element={<MainFeedManager />} />
+        <Route path="/admin-website/reports" element={<AdminReportsManager />} />
       </Routes>
     </>
   );
