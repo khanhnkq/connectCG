@@ -1,0 +1,90 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+
+const Sidebar = ({ brandName = "Social Admin", activeTab = "Groups" }) => {
+  const navItems = [
+    // { name: "Dashboard", icon: "dashboard", path: "/admin-website" },
+    { name: "Groups", icon: "group", path: "/admin-website/groups" },
+    { name: "Users", icon: "person", path: "/admin-website/members" },
+    { name: "Content", icon: "article", path: "/admin-website/contents" },
+    { name: "Reports", icon: "analytics", path: "#" },
+  ];
+
+  const systemItems = [
+    { name: "Settings", icon: "settings", path: "#" },
+  ];
+
+  return (
+    <aside className="w-72 flex flex-col border-r border-border-dark bg-background-dark">
+      <div className="p-8 flex items-center gap-4">
+        <div className="bg-primary rounded-xl size-10 flex items-center justify-center text-white shadow-lg shadow-primary/20">
+          <span className="material-symbols-outlined font-bold">hub</span>
+        </div>
+        <div className="flex flex-col">
+          <h1 className="text-lg font-bold leading-none tracking-tight">{brandName}</h1>
+          <p className="text-text-muted text-[10px] uppercase tracking-widest mt-1 font-semibold">Management Portal</p>
+        </div>
+      </div>
+
+      <nav className="flex-1 px-4 space-y-1.5 mt-2">
+        {navItems.map((item) => (
+          <Link
+            key={item.name}
+            to={item.path}
+            className={`flex items-center gap-3 px-5 py-3.5 rounded-xl transition-all group ${activeTab === item.name
+              ? "bg-primary text-white shadow-lg shadow-primary/20"
+              : "text-text-muted hover:bg-surface-dark hover:text-white"
+              }`}
+          >
+            <span
+              className={`material-symbols-outlined text-[22px] transition-transform ${activeTab !== item.name ? "group-hover:scale-110" : ""
+                }`}
+              style={activeTab === item.name ? { fontVariationSettings: "'FILL' 1" } : {}}
+            >
+              {item.icon}
+            </span>
+            <span className="text-sm font-semibold">{item.name}</span>
+          </Link>
+        ))}
+
+        <div className="pt-8 px-5 pb-2">
+          <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">System</p>
+        </div>
+
+        {systemItems.map((item) => (
+          <Link
+            key={item.name}
+            to={item.path}
+            className={`flex items-center gap-3 px-5 py-3.5 rounded-xl transition-all group ${activeTab === item.name
+              ? "bg-primary text-white shadow-lg shadow-primary/20"
+              : "text-text-muted hover:bg-surface-dark hover:text-white"
+              }`}
+          >
+            <span
+              className={`material-symbols-outlined text-[22px] transition-transform ${activeTab !== item.name ? "group-hover:scale-110" : ""
+                }`}
+            >
+              {item.icon}
+            </span>
+            <span className="text-sm font-semibold">{item.name}</span>
+          </Link>
+        ))}
+      </nav>
+
+      <div className="p-6 border-t border-border-dark">
+        <div className="flex items-center gap-4 px-2 py-2 bg-surface-dark/50 rounded-2xl border border-border-dark">
+          <div
+            className="bg-center bg-no-repeat aspect-square bg-cover rounded-xl size-10 border-2 border-primary/20"
+            style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAkk7o-V6MRkzcD_ohHAHXUpIzMzDnRKH10CGPitsuwRBpt70Riyy7LYdUw8BLx_hX4lOXOZtFeghgV_ezLof0gRFhhJU9uk0sLh4YrGxII1Vu3qDKhA-HpFZP2AicxO7HWGWsQFxBzFrBNvOBtAdQcUXUHLOleW6GZnmXWQoKp5WKDmRgqHCZVnUN5_8UlrMBbNwIUDL3apjXyC_b4MjW6OY58803uBwVD8sc_tIrkTm8EMfuPoObCHSnTTG7_eHvEB_wAl6SGwWg")' }}
+          ></div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold truncate">Alex Rivera</p>
+            <p className="text-text-muted text-[10px] uppercase font-bold tracking-wider">Super Admin</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+  );
+};
+
+export default Sidebar;
