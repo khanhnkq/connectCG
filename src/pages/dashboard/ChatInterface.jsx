@@ -1,4 +1,6 @@
 import Sidebar from '../../components/layout/Sidebar';
+import ReportUserModal from "../../components/report/ReportUserModal";
+import { useState } from "react";
 
 export default function ChatInterface() {
     const conversations = [
@@ -15,6 +17,8 @@ export default function ChatInterface() {
         { type: 'received', text: "That sounds amazing! I'm actually free this Friday evening if you want to grab a coffee? 👀", time: '10:48 AM', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDIX1wAYBAaj5E3ZSRIlI5IPaunhWNdzmIwF7-7p1gL_GDonD1nu-64KLjLpSPdZTVgljRLZnXwvmCxExZiHo0M0herxixGJXSTWUUAwUfcER7CvEaSojHMw584hz6DQinjDLJ3ybtst0uHqmfgErVEQADCAch_-XcX66M40huD5lbsnGQgpcJJL27uK7XbMfy9toGEIHhCHmzH89TomH2nGCh8_diALS3wNYS029XSURlHuNngihv2mo_HfP7QfP_804f4760TbQE' },
         { type: 'sent', text: "That sounds amazing! Let's go! Friday works for me.", time: 'Just now', read: false }
     ];
+    const [showReport, setShowReport] = useState(false);
+
 
     return (
         <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden h-screen flex w-full">
@@ -197,17 +201,41 @@ export default function ChatInterface() {
                                 </div>
                                 <span className="material-symbols-outlined text-text-secondary text-[16px]">chevron_right</span>
                             </button>
-                            <button className="w-full flex items-center justify-between p-3 rounded-xl bg-[#2A1D15] hover:bg-[#3A2A20] border border-[#3A2A20] group transition-colors text-left">
+                            {/* <button className="w-full flex items-center justify-between p-3 rounded-xl bg-[#2A1D15] hover:bg-[#3A2A20] border border-[#3A2A20] group transition-colors text-left">
                                 <div className="flex items-center gap-3 text-text-secondary group-hover:text-white">
                                     <span className="material-symbols-outlined">report</span>
                                     <span className="text-sm font-medium">Report</span>
                                 </div>
                                 <span className="material-symbols-outlined text-text-secondary text-[16px]">chevron_right</span>
+                            </button> */}<button
+                                onClick={() => setShowReport(true)}
+                                className="w-full flex items-center justify-between p-3 rounded-xl bg-[#2A1D15] hover:bg-[#3A2A20] border border-[#3A2A20] group transition-colors text-left"
+                            >
+                                <div className="flex items-center gap-3 text-text-secondary group-hover:text-white">
+                                    <span className="material-symbols-outlined">report</span>
+                                    <span className="text-sm font-medium">Report</span>
+                                </div>
+                                <span className="material-symbols-outlined text-text-secondary text-[16px]">
+                                    chevron_right
+                                </span>
                             </button>
+
                         </div>
                     </div>
                 </aside>
             </main>
+            <ReportUserModal
+                isOpen={showReport}
+                onClose={() => setShowReport(false)}
+                user={{
+                    name: "Sarah Jenkins",
+                    avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuAFnbIOg359_IruqeJZR2XF_Z9o0ttAo63JvDFovmYNSKdvPDsjabpqB7jFC2UUE6tzEncOSivvm1W5vNt9KxVCVPm7pn8OrwN7RLmHA4OMIo36hL-88I-wXa9YN61Vi-X20nAg7gI-1QfF28jrI8oV5TGX_X32VjN7POtm_CtBB9DkdWcNvsqgkBEwNZFhOLngZBuNQA5Z5pU-fGIhAf3z355mdR5RIij1VsmKLkaqcqcd87735upuE6OE5UqM8bI3FCXkrTk4agw",
+                }}
+                onSubmit={(data) => {
+                    console.log(data);
+                    setShowReport(false);
+                }}
+            />
         </div>
     );
 }
