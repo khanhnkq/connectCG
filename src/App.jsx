@@ -12,6 +12,7 @@ import UserProfile from './pages/dashboard/UserProfile';
 import Newsfeed from './pages/dashboard/Newsfeed';
 import FriendRequests from './pages/dashboard/FriendRequests';
 import MemberProfile from './pages/dashboard/MemberProfile';
+import FriendList from './pages/dashboard/FriendList';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
       <Route path="/dashboard/profile/public" element={<UserProfile />} />
       <Route path="/dashboard/feed" element={<Newsfeed />} />
       <Route path="/dashboard/requests" element={<FriendRequests />} />
+      <Route path="/dashboard/profile/friends" element={<FriendList />} />
       <Route path="/dashboard/profile/view" element={<MemberProfile />} />
       <Route path="/search/members" element={<AdvancedMemberSearch />} />
     </Routes>

@@ -1,4 +1,6 @@
 import { useState } from 'react';
+// Sidebar import removed as we are using a custom local sidebar
+import { Link } from 'react-router-dom';
 
 export default function AdvancedMemberSearch() {
     const [onlineOnly, setOnlineOnly] = useState(true);
@@ -23,7 +25,11 @@ export default function AdvancedMemberSearch() {
             age: 24,
             location: 'Brooklyn, NY',
             image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBtzj33ot6VHzYPrEZRs8cpa1g_r4fQJavkqxNjq0EJWXWXUQjJMlqnaalvjE9rDGu7s-4N_I1I3eewvwLthcUyNjFp3IVZELsi4gYSlI7lW_Tsv4AZy3_r2ChuvRlcerEebNvx18lMIzNin0BpxepStd03-HmsyNay81AAaCMrsCk4wgoh8PXLpyiXqCfpWwAZCplF2qLe6PDAUHU2UefOlWMTkJMFOFWp5yucZ5qU_aNbg2RyWshb8pQnKLpSYVJC-Ls9BfNdq0k',
-            tags: ['Photography', 'Coffee'],
+            mutualFriends: 12,
+            mutualAvatars: [
+                'https://lh3.googleusercontent.com/aida-public/AB6AXuBU_o9Xo2P_yZzTqP4j_2jx_0gV5kLX5yM8nO9pE3rF_1sT_4uV_6wX7z_8yA9bC0dE_fG_H1iJ_kL_3mN_oP_5qR_6sT7uV8w',
+                'https://lh3.googleusercontent.com/aida-public/AB6AXuC_1lM2nO3p_4kR_5sU_6tV_7wX8yZ9aB0c_eD_F1gH_2iK_3lM_4nO_5pQ_6rS_7tU_8vW'
+            ],
             online: true,
             liked: true
         },
@@ -33,7 +39,11 @@ export default function AdvancedMemberSearch() {
             age: 29,
             location: 'Manhattan, NY',
             image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAFFOuYSb8rrkTBRcwwKlN6-MaZ_rOVsEeQYa2Cf0j5qsh4ejcX2MsTBLVmLzZ8ki_cvVN06OlWcisbOKzMnOPAeSfr3Ova1uEE1sZZKxUnnONhxzxmabSIMzZT-s8X896jy-nLyQ67OgNM2jsl7d1ge7lq9bpFQvjyTSOYWOkKVgu3dJtrm7xJV6_cDzOyMj42lXAwe9oF0lgdrp779XNtHDszgm2TbWboiv6uwZVocO7IcPEXaMfkwFwU5yJXFUbDWzE3Sv1gfCE',
-            tags: ['Travel', 'Music'],
+            mutualFriends: 8,
+            mutualAvatars: [
+                'https://lh3.googleusercontent.com/aida-public/AB6AXuD_2mN3oP4q_5lS_6tU_7vW_8xY9aB0c_eE_F1gH_2jK_3lM_4nO_5pQ_6rS_7tU_8vX',
+                'https://lh3.googleusercontent.com/aida-public/AB6AXuE_3nO4pQ5r_6mT_7uV_8wX_9yZ0bC1d_fF_G2hI_3kL_4mN_5oP_6qR_7sT_8uV_9wW'
+            ],
             online: false,
             liked: false
         },
@@ -43,74 +53,162 @@ export default function AdvancedMemberSearch() {
             age: 26,
             location: 'Jersey City, NJ',
             image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDwo1VHAkMAwMxb5zxfQQn7iSSm6EcfQoSYw57oB-RFAtO8xMBXEOSUzrfccz77fElzMRNrQ3tJgAiuNuvyozQJ0n5-cY4Fh9Kl2fEnDQFFJrHhj5JLNRkM_0yaFtsd8RYu-zMxHBnONKyOGDT2m_JDP5DwoIqzZVP9Dm0rzQksNm--Hht71w509BbCB7RAaHher_soh5492hauOYivRTBkrl0hdFe9z9-Tc0r02H64o9P_aZeF4VlIXsQQL1JBvMng5kj1ywSZIok',
-            tags: ['Art', 'Reading'],
+            mutualFriends: 5,
+            mutualAvatars: [],
+            online: true,
+            liked: false
+        },
+        {
+            id: 4,
+            name: 'Lucas',
+            age: 28,
+            location: 'Queens, NY',
+            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDJPlnDjBjXuixfttGBOr0_Jx2ZLTctMTrGw14hx9On0XfJumO9xm9cOekOU2h2N4DYnbdA2kJqNkj1La7ogr0YwtHbWZbBTN2f4jz2tMaZ4MysYtOwrJh9nwBn3ooj5LQfIAwf-a0pq9vR24ScthQGYkC_nY1vIxbb6OW1ySd-C8q1C-EFoeCLGB47y8OGHnKoiwdLpB3Jgft_uYAPe6-xAq52AMh9kmGduf6uAp8MOpDKV3ZUqpAElRvG46XdK09BKNQRomKVHFo',
+            mutualFriends: 18,
+            mutualAvatars: [
+                'https://lh3.googleusercontent.com/aida-public/AB6AXuF_4oP5qR6s_7nU_8vW_9xY_0zB2eD_fG_H3iJ_4kL_5mN_6oP_7qR_8sT_9uV_0wX',
+            ],
             online: true,
             liked: false
         }
     ];
 
+    const sidebarItems = [
+        { icon: 'group', label: 'Trang chủ', active: true },
+        { icon: 'person_add', label: 'Lời mời kết bạn', hasArrow: true },
+        { icon: 'person_add_alt', label: 'Gợi ý', hasArrow: true },
+        { icon: 'contacts', label: 'Tất cả bạn bè', hasArrow: true },
+        { icon: 'cake', label: 'Sinh nhật', hasArrow: false },
+        { icon: 'checklist', label: 'Danh sách tùy chỉnh', hasArrow: true },
+    ];
+
     return (
-        <div className="bg-background-light dark:bg-background-dark font-display antialiased min-h-screen flex flex-col overflow-hidden">
-            {/* Top Navigation */}
-            <header className="flex-none flex items-center justify-between whitespace-nowrap border-b border-solid border-gray-200 dark:border-border-dark bg-white dark:bg-background-dark px-6 lg:px-10 py-3 z-20">
-                <div className="flex items-center gap-4 text-gray-900 dark:text-white">
-                    <div className="size-8 text-primary">
-                        <svg fill="currentColor" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M36.7273 44C33.9891 44 31.6043 39.8386 30.3636 33.69C29.123 39.8386 26.7382 44 24 44C21.2618 44 18.877 39.8386 17.6364 33.69C16.3957 39.8386 14.0109 44 11.2727 44C7.25611 44 4 35.0457 4 24C4 12.9543 7.25611 4 11.2727 4C14.0109 4 16.3957 8.16144 17.6364 14.31C18.877 8.16144 21.2618 4 24 4C26.7382 4 29.123 8.16144 30.3636 14.31C31.6043 8.16144 33.9891 4 36.7273 4C40.7439 4 44 12.9543 44 24C44 35.0457 40.7439 44 36.7273 44Z" />
-                        </svg>
+        <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden h-screen flex w-full">
+            {/* Custom Friends Sidebar (Left) */}
+            <aside className="w-[360px] bg-[#221710] border-r border-[#342418] flex flex-col h-full flex-none z-20">
+                <div className="p-6 pb-2">
+                    <div className="flex gap-4 items-center mb-4">
+                        <div className="bg-center bg-no-repeat bg-cover rounded-full size-12 shadow-lg ring-2 ring-[#342418]" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAUO2YNLAxc1Nl_nCWaGx0Dwt8BIkrV0WsFtsI9ePfpuH2QDYaR2IL1U-BCix40iXmHOlV6rzlHb2YzzlKUEpD183YkjDBCAQtHPFoSaXz638Vjta7H-NlTtKESwQOh_CcHQs-rhd6cbbiyxlQVatQS90HHg710X2WFSTAS7LkytHfywWdbhdy-IVBZk0wtKYnjblM6Vy6IA3R_7kOjPY04ZFIVnhosSED60xtTRmy2ylVAGG80CffMYIEPaZ6iQHq6uonwSSfKBJw")' }}></div>
+                        <div className="flex flex-col">
+                            <h1 className="text-white text-lg font-bold leading-tight">Alex Doe</h1>
+                            <Link to="/dashboard/profile" className="text-text-secondary text-sm font-medium cursor-pointer hover:text-primary transition-colors flex items-center gap-1">
+                                Edit Profile <span className="material-symbols-outlined text-[14px]">edit</span>
+                            </Link>
+                        </div>
                     </div>
-                    <h2 className="text-lg font-bold leading-tight tracking-[-0.015em]">Connect</h2>
                 </div>
-                <div className="flex flex-1 justify-end gap-6 items-center">
-                    <nav className="hidden md:flex gap-6 text-sm font-medium text-gray-500 dark:text-text-secondary">
-                        <a className="text-gray-900 dark:text-white font-bold" href="#">Discover</a>
-                        <a className="hover:text-primary transition-colors" href="#">Matches</a>
-                        <a className="hover:text-primary transition-colors" href="#">Events</a>
-                    </nav>
-                    <div className="flex gap-2">
-                        <button className="flex items-center justify-center rounded-full size-10 bg-gray-100 dark:bg-border-dark text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-primary transition-colors">
-                            <span className="material-symbols-outlined text-[20px]">notifications</span>
-                        </button>
-                        <button className="flex items-center justify-center rounded-full size-10 bg-gray-100 dark:bg-border-dark text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-primary transition-colors">
-                            <span className="material-symbols-outlined text-[20px]">chat_bubble</span>
-                        </button>
-                    </div>
-                    <div
-                        className="bg-center bg-no-repeat bg-cover rounded-full size-10 border-2 border-primary cursor-pointer"
-                        style={{
-                            backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBNcxTvHj0jOMuv5iaJwqbnE4hkEhmNP9a4w07IThay3nDWktADaGCwp9yDzGwXVKEe-aV4W2guasuLeaseeutj8L7Nn8Sef8c-gkncu34aFOFwb2odowQbL6-mWAUgGPQ37tokgyAXfVKkTPSNKZq6jx7lSj5hfZaXgpihrGBOVEqvEDTmQhRkGevhEelwlFWWkCfOmdSyyKP9dIxXU5qnGiNz-RepW40s7qXgHYd8Ps3_jYTWC2o4AqUdXTwnM7WK7xML-1F8YyM")'
-                        }}
-                    />
-                </div>
-            </header>
+                <nav className="flex-1 overflow-y-auto custom-scrollbar px-4 space-y-2">
+                    {sidebarItems.map((item, index) => (
+                        <div
+                            key={index}
+                            className={`flex items-center justify-between px-4 py-3.5 rounded-full cursor-pointer transition-colors group ${item.active
+                                ? 'bg-primary/20 text-primary'
+                                : 'text-text-secondary hover:bg-[#342418] hover:text-white'
+                                }`}
+                        >
+                            <div className="flex items-center gap-4">
+                                <span className={`material-symbols-outlined transition-transform ${!item.active && 'group-hover:scale-110'}`}>
+                                    {item.icon}
+                                </span>
+                                <span className="font-bold text-sm tracking-wide">
+                                    {item.label}
+                                </span>
+                            </div>
+                            {item.hasArrow && (
+                                <span className="material-symbols-outlined text-[20px]">chevron_right</span>
+                            )}
+                        </div>
+                    ))}
+                </nav>
+            </aside>
 
             <div className="flex flex-1 overflow-hidden relative">
-                {/* Left Sidebar: Filters */}
-                <aside className="w-full md:w-[320px] lg:w-[360px] flex flex-col border-r border-gray-200 dark:border-border-dark bg-white dark:bg-background-dark z-10 overflow-y-auto custom-scrollbar flex-none hidden md:flex">
+
+                {/* Main Content: Search Results */}
+                <main className="flex-1 overflow-y-auto bg-background-dark p-4 md:p-8 custom-scrollbar">
+                    <div className="max-w-[1600px] mx-auto">
+                        {/* Results Header */}
+                        <div className="mb-6">
+                            <h1 className="text-2xl font-bold text-white">Danh sách lời mời kết bạn</h1>
+                        </div>
+
+                        {/* Grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+                            {members.map((member) => (
+                                <article
+                                    key={member.id}
+                                    className="flex flex-col bg-[#2a1d15] rounded-xl overflow-hidden border border-[#3e2b1d] hover:border-primary/50 transition-colors shadow-lg"
+                                >
+                                    {/* Image Section - Top Half */}
+                                    <div className="h-64 sm:h-[16rem] w-full overflow-hidden relative">
+                                        <img
+                                            src={member.image}
+                                            alt={member.name}
+                                            className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                                        />
+                                        {member.online && (
+                                            <div className="absolute top-3 right-3 size-4 bg-green-500 border-2 border-[#2a1d15] rounded-full"></div>
+                                        )}
+                                    </div>
+
+                                    {/* Content Section - Bottom Half */}
+                                    <div className="p-4 flex flex-col flex-1">
+                                        <h3 className="text-white font-bold text-lg leading-tight mb-1">
+                                            {member.name}
+                                        </h3>
+                                        <div className="flex items-center gap-2 mb-4">
+                                            <span className="text-text-secondary text-sm font-medium">{member.mutualFriends} bạn chung</span>
+                                        </div>
+
+                                        {/* Buttons */}
+                                        <div className="mt-auto flex flex-col gap-2">
+                                            <button className="w-full py-2 rounded-lg bg-primary hover:bg-orange-600 text-[#231810] font-bold text-sm transition-colors">
+                                                Add Friend
+                                            </button>
+                                            <button className="w-full py-2 rounded-lg bg-[#3a2b22] hover:bg-[#493222] text-white font-bold text-sm transition-colors">
+                                                Remove
+                                            </button>
+                                        </div>
+                                    </div>
+                                </article>
+                            ))}
+                        </div>
+
+                        {/* Load More */}
+                        <div className="mt-12 flex justify-center pb-8">
+                            <button className="px-8 py-3 rounded-full bg-[#342418] hover:bg-[#493222] text-white font-bold border border-[#493222] transition-all shadow-lg hover:-translate-y-0.5">
+                                Load More Matches
+                            </button>
+                        </div>
+                    </div>
+                </main>
+
+                {/* Search Filters Sidebar - Moved to Right */}
+                <aside className="w-full md:w-[320px] lg:w-[340px] flex flex-col border-l border-[#342418] bg-[#221710] z-10 overflow-y-auto custom-scrollbar flex-none hidden md:flex">
                     <div className="p-5 pb-0">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-gray-900 dark:text-white text-xl font-bold leading-tight">Filter Matches</h2>
-                            <button className="text-sm font-medium text-primary hover:text-orange-400">Reset</button>
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-white text-xl font-bold leading-tight">Filter Matches</h2>
+                            <button className="text-sm font-bold text-primary hover:text-orange-400">Reset</button>
                         </div>
 
                         {/* Search Bar */}
                         <div className="mb-6">
-                            <label className="flex w-full items-center rounded-xl bg-gray-100 dark:bg-surface-dark h-12 px-4 focus-within:ring-2 ring-primary/50 transition-all">
-                                <span className="material-symbols-outlined text-gray-400 dark:text-text-secondary">search</span>
+                            <label className="flex w-full items-center rounded-xl bg-[#342418] border border-[#493222] h-12 px-4 focus-within:ring-1 ring-primary/50 transition-all">
+                                <span className="material-symbols-outlined text-text-secondary">search</span>
                                 <input
-                                    className="w-full bg-transparent border-none text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-text-secondary focus:ring-0 text-sm ml-2"
+                                    className="w-full bg-transparent border-none text-white placeholder-text-secondary/60 focus:ring-0 text-sm ml-2 focus:outline-none"
                                     placeholder="City, interest, or keyword"
                                 />
                             </label>
                         </div>
 
                         {/* Online Only Toggle */}
-                        <div className="mb-6 rounded-xl border border-gray-200 dark:border-border-dark bg-gray-50 dark:bg-surface-dark p-4 flex items-center justify-between">
+                        <div className="mb-6 rounded-xl border border-[#342418] bg-[#2a1d15] p-4 flex items-center justify-between">
                             <div className="flex flex-col gap-0.5">
-                                <p className="text-gray-900 dark:text-white text-sm font-bold">Online Only</p>
-                                <p className="text-gray-500 dark:text-text-secondary text-xs">Members online now</p>
+                                <p className="text-white text-sm font-bold">Online Only</p>
+                                <p className="text-text-secondary text-xs">Members online now</p>
                             </div>
-                            <label className="relative flex h-[24px] w-[44px] cursor-pointer items-center rounded-full bg-gray-300 dark:bg-border-dark p-1 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all duration-300">
+                            <label className="relative flex h-[24px] w-[44px] cursor-pointer items-center rounded-full bg-[#342418] p-1 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all duration-300">
                                 <div className="h-[18px] w-[18px] rounded-full bg-white shadow-sm" />
                                 <input
                                     type="checkbox"
@@ -125,29 +223,29 @@ export default function AdvancedMemberSearch() {
                     {/* Accordions Container */}
                     <div className="flex flex-col px-5 pb-10 gap-4">
                         {/* Age Range Accordion */}
-                        <details className="group flex flex-col rounded-xl border border-gray-200 dark:border-border-dark bg-gray-50 dark:bg-surface-dark overflow-hidden" open>
-                            <summary className="flex cursor-pointer items-center justify-between gap-6 p-4 bg-transparent hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                                <p className="text-gray-900 dark:text-white text-sm font-bold">Age Range</p>
-                                <span className="material-symbols-outlined text-gray-500 dark:text-white text-[20px] transition-transform group-open:rotate-180">
+                        <details className="group flex flex-col rounded-xl border border-[#342418] bg-[#2a1d15] overflow-hidden" open>
+                            <summary className="flex cursor-pointer items-center justify-between gap-6 p-4 bg-transparent hover:bg-white/5 transition-colors list-none">
+                                <p className="text-white text-sm font-bold">Age Range</p>
+                                <span className="material-symbols-outlined text-text-secondary text-[20px] transition-transform group-open:rotate-180">
                                     expand_more
                                 </span>
                             </summary>
                             <div className="px-4 pb-5 pt-1">
-                                <div className="flex justify-between text-sm text-gray-500 dark:text-text-secondary mb-3 font-medium">
+                                <div className="flex justify-between text-sm text-text-secondary mb-3 font-medium">
                                     <span>{ageRange.min}</span>
                                     <span>{ageRange.max}</span>
                                 </div>
-                                <div className="relative h-1.5 w-full rounded-full bg-gray-300 dark:bg-border-dark">
-                                    <div className="absolute h-full w-[40%]left-[20%] rounded-full bg-primary" />
+                                <div className="relative h-1.5 w-full rounded-full bg-[#342418]">
+                                    <div className="absolute h-full w-[40%] left-[20%] rounded-full bg-primary" />
                                 </div>
                             </div>
                         </details>
 
                         {/* Location Accordion */}
-                        <details className="group flex flex-col rounded-xl border border-gray-200 dark:border-border-dark bg-gray-50 dark:bg-surface-dark overflow-hidden" open>
-                            <summary className="flex cursor-pointer items-center justify-between gap-6 p-4 bg-transparent hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                                <p className="text-gray-900 dark:text-white text-sm font-bold">Location</p>
-                                <span className="material-symbols-outlined text-gray-500 dark:text-white text-[20px] transition-transform group-open:rotate-180">
+                        <details className="group flex flex-col rounded-xl border border-[#342418] bg-[#2a1d15] overflow-hidden" open>
+                            <summary className="flex cursor-pointer items-center justify-between gap-6 p-4 bg-transparent hover:bg-white/5 transition-colors list-none">
+                                <p className="text-white text-sm font-bold">Location</p>
+                                <span className="material-symbols-outlined text-text-secondary text-[20px] transition-transform group-open:rotate-180">
                                     expand_more
                                 </span>
                             </summary>
@@ -157,45 +255,32 @@ export default function AdvancedMemberSearch() {
                                     <span>Use my current location</span>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="flex items-center gap-3 cursor-pointer">
-                                        <input
-                                            type="radio"
-                                            name="distance"
-                                            checked={distance === '10km'}
-                                            onChange={() => setDistance('10km')}
-                                            className="text-primary focus:ring-primary bg-transparent border-gray-400 dark:border-gray-600"
-                                        />
-                                        <span className="text-gray-700 dark:text-gray-300 text-sm">Within 10 km</span>
-                                    </label>
-                                    <label className="flex items-center gap-3 cursor-pointer">
-                                        <input
-                                            type="radio"
-                                            name="distance"
-                                            checked={distance === '50km'}
-                                            onChange={() => setDistance('50km')}
-                                            className="text-primary focus:ring-primary bg-transparent border-gray-400 dark:border-gray-600"
-                                        />
-                                        <span className="text-gray-700 dark:text-gray-300 text-sm">Within 50 km</span>
-                                    </label>
-                                    <label className="flex items-center gap-3 cursor-pointer">
-                                        <input
-                                            type="radio"
-                                            name="distance"
-                                            checked={distance === 'anywhere'}
-                                            onChange={() => setDistance('anywhere')}
-                                            className="text-primary focus:ring-primary bg-transparent border-gray-400 dark:border-gray-600"
-                                        />
-                                        <span className="text-gray-700 dark:text-gray-300 text-sm">Anywhere</span>
-                                    </label>
+                                    {['10km', '50km', 'anywhere'].map((val) => (
+                                        <label key={val} className="flex items-center gap-3 cursor-pointer group/label">
+                                            <div className={`size-4 rounded-full border flex items-center justify-center ${distance === val ? 'border-primary' : 'border-[#493222]'}`}>
+                                                {distance === val && <div className="size-2 rounded-full bg-primary" />}
+                                            </div>
+                                            <input
+                                                type="radio"
+                                                name="distance"
+                                                checked={distance === val}
+                                                onChange={() => setDistance(val)}
+                                                className="hidden"
+                                            />
+                                            <span className={`text-sm group-hover/label:text-white transition-colors ${distance === val ? 'text-white' : 'text-text-secondary'}`}>
+                                                {val === 'anywhere' ? 'Anywhere' : `Within ${val}`}
+                                            </span>
+                                        </label>
+                                    ))}
                                 </div>
                             </div>
                         </details>
 
                         {/* Interests Accordion */}
-                        <details className="group flex flex-col rounded-xl border border-gray-200 dark:border-border-dark bg-gray-50 dark:bg-surface-dark overflow-hidden">
-                            <summary className="flex cursor-pointer items-center justify-between gap-6 p-4 bg-transparent hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                                <p className="text-gray-900 dark:text-white text-sm font-bold">Interests</p>
-                                <span className="material-symbols-outlined text-gray-500 dark:text-white text-[20px] transition-transform group-open:rotate-180">
+                        <details className="group flex flex-col rounded-xl border border-[#342418] bg-[#2a1d15] overflow-hidden">
+                            <summary className="flex cursor-pointer items-center justify-between gap-6 p-4 bg-transparent hover:bg-white/5 transition-colors list-none">
+                                <p className="text-white text-sm font-bold">Interests</p>
+                                <span className="material-symbols-outlined text-text-secondary text-[20px] transition-transform group-open:rotate-180">
                                     expand_more
                                 </span>
                             </summary>
@@ -205,9 +290,9 @@ export default function AdvancedMemberSearch() {
                                         <button
                                             key={interest}
                                             onClick={() => toggleInterest(interest)}
-                                            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${selectedInterests.includes(interest)
-                                                    ? 'bg-primary text-white border-primary'
-                                                    : 'bg-white dark:bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-primary hover:text-primary'
+                                            className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${selectedInterests.includes(interest)
+                                                ? 'bg-primary text-[#231810] border-primary'
+                                                : 'bg-transparent text-text-secondary border-[#493222] hover:border-primary hover:text-primary'
                                                 }`}
                                         >
                                             {interest}
@@ -218,98 +303,6 @@ export default function AdvancedMemberSearch() {
                         </details>
                     </div>
                 </aside>
-
-                {/* Main Content: Search Results */}
-                <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-background-dark p-4 md:p-8 custom-scrollbar">
-                    <div className="max-w-[1600px] mx-auto">
-                        {/* Results Header */}
-                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-                            <div>
-                                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Newest Members</h1>
-                                <p className="text-gray-500 dark:text-text-secondary mt-1">
-                                    Showing 124 matches near <span className="text-gray-900 dark:text-white font-semibold">New York, NY</span>
-                                </p>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <span className="text-sm font-medium text-gray-500 dark:text-text-secondary">Sort by:</span>
-                                <div className="relative group">
-                                    <button className="flex items-center gap-2 bg-white dark:bg-surface-dark border border-gray-200 dark:border-border-dark rounded-full px-4 py-2 text-sm font-medium text-gray-900 dark:text-white hover:border-primary transition-colors">
-                                        Recommended
-                                        <span className="material-symbols-outlined text-[18px]">expand_more</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
-                            {members.map((member) => (
-                                <article
-                                    key={member.id}
-                                    className="group relative aspect-[4/5] overflow-hidden rounded-3xl bg-gray-200 dark:bg-surface-dark shadow-lg dark:shadow-none hover:-translate-y-1 transition-all duration-300"
-                                >
-                                    <img
-                                        alt={`Portrait of ${member.name}`}
-                                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                        src={member.image}
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-
-                                    {/* Online Status */}
-                                    {member.online && (
-                                        <div className="absolute top-4 right-4 flex items-center gap-1.5 rounded-full bg-black/40 backdrop-blur-md px-2 py-1 border border-white/10">
-                                            <div className="size-2 rounded-full bg-green-500 animate-pulse" />
-                                            <span className="text-[10px] font-bold text-white uppercase tracking-wide">Online</span>
-                                        </div>
-                                    )}
-
-                                    {/* Content */}
-                                    <div className="absolute bottom-0 left-0 w-full p-5 flex flex-col items-start text-white">
-                                        <div className="flex flex-col gap-1 w-full mb-3">
-                                            <h3 className="text-2xl font-bold leading-none">
-                                                {member.name}, {member.age}
-                                            </h3>
-                                            <div className="flex items-center gap-1 text-gray-300 text-sm">
-                                                <span className="material-symbols-outlined text-[16px]">location_on</span>
-                                                <span>{member.location}</span>
-                                            </div>
-                                            <div className="flex gap-2 mt-2 flex-wrap">
-                                                {member.tags.map((tag) => (
-                                                    <span key={tag} className="text-[10px] font-medium bg-white/20 backdrop-blur-sm px-2 py-0.5 rounded-full">
-                                                        {tag}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        </div>
-
-                                        {/* Actions */}
-                                        <div className="flex items-center gap-3 w-full pt-2 border-t border-white/10">
-                                            <button className="flex-1 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-medium text-sm flex items-center justify-center gap-2 transition-colors">
-                                                <span className="material-symbols-outlined text-[18px]">chat_bubble</span>
-                                                Message
-                                            </button>
-                                            <button
-                                                className={`size-10 rounded-full ${member.liked
-                                                        ? 'bg-primary hover:bg-orange-600 text-white shadow-lg shadow-primary/30'
-                                                        : 'bg-white text-gray-900 hover:bg-gray-100 shadow-lg'
-                                                    } flex items-center justify-center transition-colors`}
-                                            >
-                                                <span className="material-symbols-outlined text-[20px]">favorite</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </article>
-                            ))}
-                        </div>
-
-                        {/* Load More */}
-                        <div className="mt-12 flex justify-center pb-8">
-                            <button className="px-8 py-3 rounded-full bg-white dark:bg-surface-dark text-gray-900 dark:text-white font-bold border border-gray-200 dark:border-border-dark hover:border-primary hover:text-primary transition-all shadow-md">
-                                Load More Matches
-                            </button>
-                        </div>
-                    </div>
-                </main>
             </div>
         </div>
     );

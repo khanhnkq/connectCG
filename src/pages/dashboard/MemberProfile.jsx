@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import Sidebar from '../../components/layout/Sidebar';
 import PostComposer from '../../components/feed/PostComposer';
 import PostCard from '../../components/feed/PostCard';
@@ -78,7 +79,7 @@ export default function MemberProfile() {
                                 <div className="flex gap-1 overflow-x-auto pb-1 border-t border-[#493222] pt-2 scrollbar-hide">
                                     <a href="#" className="px-6 py-3 text-primary font-bold border-b-2 border-primary transition-colors whitespace-nowrap">Timeline</a>
                                     <a href="#" className="px-6 py-3 text-text-secondary hover:text-white font-semibold hover:bg-[#493222]/50 rounded-t-lg transition-colors whitespace-nowrap">About</a>
-                                    <a href="#" className="px-6 py-3 text-text-secondary hover:text-white font-semibold hover:bg-[#493222]/50 rounded-t-lg transition-colors whitespace-nowrap">Friends</a>
+                                    <Link to="/dashboard/profile/friends" className="px-6 py-3 text-text-secondary hover:text-white font-semibold hover:bg-[#493222]/50 rounded-t-lg transition-colors whitespace-nowrap">Friends</Link>
                                     <a href="#" className="px-6 py-3 text-text-secondary hover:text-white font-semibold hover:bg-[#493222]/50 rounded-t-lg transition-colors whitespace-nowrap">Photos</a>
                                     <a href="#" className="px-6 py-3 text-text-secondary hover:text-white font-semibold hover:bg-[#493222]/50 rounded-t-lg transition-colors whitespace-nowrap">Videos</a>
                                 </div>
@@ -134,7 +135,7 @@ export default function MemberProfile() {
                                             <h3 className="text-white font-bold text-lg">Friends</h3>
                                             <p className="text-text-secondary text-xs">1,204 friends</p>
                                         </div>
-                                        <a href="#" className="text-primary text-sm font-bold hover:underline">See all</a>
+                                        <Link to="/dashboard/profile/friends" className="text-primary text-sm font-bold hover:underline">See all</Link>
                                     </div>
                                     <div className="grid grid-cols-3 gap-x-2 gap-y-4">
                                         {friends.map((friend, index) => (
