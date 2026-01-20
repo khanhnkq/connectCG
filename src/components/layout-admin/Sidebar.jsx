@@ -7,7 +7,7 @@ const Sidebar = ({ brandName = "Social Admin", activeTab = "Groups" }) => {
     { name: "Groups", icon: "group", path: "/admin-website/groups" },
     { name: "Users", icon: "person", path: "/admin-website/members" },
     { name: "Content", icon: "article", path: "/admin-website/contents" },
-    { name: "Reports", icon: "analytics", path: "#" },
+    { name: "Reports", icon: "analytics", path: "/admin-website/reports" },
   ];
 
   const systemItems = [
