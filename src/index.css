@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+/* Custom scrollbar for webkit */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #231810;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #493222;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #684831;
+}
+
+/* Date picker icon color adjustment for dark mode */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.8) sepia(0.2) saturate(0.5) hue-rotate(350deg);
+  cursor: pointer;
+}
+
+/* Material Icons configuration */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.icon-outline {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Hide scrollbar utility */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Custom scrollbar for specific elements */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #2c2018;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #493222;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #684831;
+}
+
+/* Base styles */
+body {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Custom colors for Tailwind v4 */
+@theme {
+  --color-primary: #f47b25;
+  --color-background-light: #f8f7f5;
+  --color-background-dark: #221710;
+  --color-surface-dark: #342418;
+  --color-card-dark: #342418;
+  --color-border-dark: #684831;
+  --color-text-secondary: #cba990;
+
+  --font-display: "Plus Jakarta Sans", sans-serif;
+
+  --radius: 1rem;
+  --radius-lg: 2rem;
+  --radius-xl: 3rem;
+  --radius-full: 9999px;
+}
