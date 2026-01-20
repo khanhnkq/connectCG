@@ -7,9 +7,28 @@ export default function PostCard({ author, time, content, image, stats = { likes
                 <div className="flex gap-3">
                     <div className="bg-center bg-no-repeat bg-cover rounded-full size-11 cursor-pointer ring-2 ring-transparent hover:ring-primary transition-all" style={{ backgroundImage: `url("${author.avatar}")` }}></div>
                     <div className="flex flex-col justify-center">
-                        <h3 className="text-white font-bold text-base hover:text-primary cursor-pointer transition-colors">{author.name}</h3>
-                        <p className="text-text-secondary text-xs mt-0.5 flex items-center gap-1 font-medium">
-                            {time} • <span className="material-symbols-outlined text-[14px] text-text-secondary">public</span>
+                        <div className="flex items-center gap-2">
+                            <h3 className="text-white font-bold text-base hover:text-primary cursor-pointer transition-colors">{author.name}</h3>
+                            {author.isSystem && (
+                                <span className="bg-primary/20 text-primary text-[9px] font-black px-1.5 py-0.5 rounded border border-primary/30 tracking-tighter uppercase flex items-center gap-0.5">
+                                    <span className="material-symbols-outlined text-[10px]">verified</span>
+                                    Official
+                                </span>
+                            )}
+                        </div>
+                        <p className="text-text-secondary text-[11px] mt-0.5 flex items-center gap-1 font-medium italic">
+                            {time} •
+                            {author.originGroup ? (
+                                <span className="flex items-center gap-1 hover:text-white cursor-pointer transition-all">
+                                    <span className="material-symbols-outlined text-[14px]">groups</span>
+                                    in {author.originGroup}
+                                </span>
+                            ) : (
+                                <span className="flex items-center gap-1 text-orange-400">
+                                    <span className="material-symbols-outlined text-[14px]">public</span>
+                                    Global Broadcast
+                                </span>
+                            )}
                         </p>
                     </div>
                 </div>
