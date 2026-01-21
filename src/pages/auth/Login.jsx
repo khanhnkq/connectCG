@@ -36,7 +36,7 @@ export default function Login() {
         setSubmitting(false);
 
         // Tạm thời chuyển đến dashboard
-        navigate('/dashboard/newsfeed-1');
+        navigate('/dashboard/feed');
     };
 
     return (

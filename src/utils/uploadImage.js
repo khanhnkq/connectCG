@@ -68,3 +68,11 @@ export const uploadCover = async (file) => {
 export const uploadPostImage = async (file) => {
     return uploadImage(file, 'posts');
 };
+/**
+ * Upload ảnh bìa nhóm
+ * @param {File} file - File ảnh bìa nhóm
+ * @returns {Promise<string>} - URL của ảnh bìa nhóm
+ */
+export const uploadGroupCover = async (file) => {
+    return uploadImage(file, 'group/img');
+};

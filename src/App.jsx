@@ -1,6 +1,5 @@
 import { Routes, Route } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { Toaster } from 'react-hot-toast';
 
 import LandingPage from './pages/LandingPage';
 import Login from './pages/auth/Login';
@@ -12,6 +11,7 @@ import GroupsManagement from './pages/dashboard/GroupsManagement';
 import AdvancedMemberSearch from './pages/search/AdvancedMemberSearch';
 import ChatInterface from './pages/dashboard/ChatInterface';
 import UserProfile from './pages/dashboard/UserProfile';
+import CreateGroupPage from './pages/dashboard/CreateGroupPage';
 import Newsfeed from './pages/dashboard/Newsfeed';
 import FriendRequests from './pages/dashboard/FriendRequests';
 import MemberProfile from './pages/dashboard/MemberProfile';
@@ -23,7 +23,31 @@ import AdminReportsManager from "./pages/admin-website/AdminReportsManager.jsx";
 function App() {
   return (
     <>
-      <ToastContainer position="top-right" autoClose={3000} theme="dark" />
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#1a1a2e',
+            color: '#fff',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: '12px',
+            padding: '12px 16px',
+          },
+          success: {
+            iconTheme: {
+              primary: '#10b981',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
       <Routes>
 
         <Route path="/" element={<LandingPage />} />
@@ -33,6 +57,7 @@ function App() {
         <Route path="/registration/step-2" element={<Step2 />} />
         <Route path="/dashboard/newsfeed-1" element={<NewsfeedDashboard1 />} />
         <Route path="/dashboard/groups" element={<GroupsManagement />} />
+        <Route path="/dashboard/groups/create" element={<CreateGroupPage />} />
         <Route path="/dashboard/chat" element={<ChatInterface />} />
         <Route path="/dashboard/profile/public" element={<UserProfile />} />
         <Route path="/dashboard/feed" element={<Newsfeed />} />

@@ -1,5 +1,5 @@
 export default function PostCard({ author, time, content, image, stats = { likes: 0, comments: 0, shares: 0 }, type = 'feed', children }) {
-    // type: 'feed' (Newsfeed/Timeline) or 'dashboard' (NewsfeedDashboard1 - taller image/different style)
+    // type: 'feed' (Newsfeed/Timeline), 'dashboard' (NewsfeedDashboard1), or 'admin' (Admin moderation view)
 
     return (
         <article className={`bg-card-dark rounded-2xl border border-[#3e2b1d] overflow-hidden ${type === 'dashboard' ? 'shadow-lg' : 'shadow-sm'}`}>
@@ -54,26 +54,45 @@ export default function PostCard({ author, time, content, image, stats = { likes
                     {stats.shares > 0 && <span className="hover:text-white cursor-pointer transition-colors font-medium">{stats.shares} shares</span>}
                 </div>
             </div>
-            <div className="p-2 px-3 flex items-center justify-between">
-                <div className="flex gap-1 flex-1">
-                    <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-full hover:bg-[#493222] text-text-secondary hover:text-red-500 transition-colors group">
-                        <span className="material-symbols-outlined icon-outline group-hover:text-red-500 group-active:scale-90 transition-all">favorite</span>
-                        <span className="text-sm font-bold">Like</span>
-                    </button>
-                    <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-full hover:bg-[#493222] text-text-secondary hover:text-blue-400 transition-colors group">
-                        <span className="material-symbols-outlined icon-outline group-active:scale-90 transition-all">chat_bubble</span>
-                        <span className="text-sm font-bold">Comment</span>
-                    </button>
-                    <button className="hidden sm:flex items-center justify-center gap-2 px-4 py-2.5 rounded-full hover:bg-[#493222] text-text-secondary hover:text-green-400 transition-colors group">
-                        <span className="material-symbols-outlined icon-outline group-active:scale-90 transition-all">share</span>
-                        <span className="text-sm font-bold">Share</span>
+            {type !== 'admin' ? (
+                <div className="p-2 px-3 flex items-center justify-between">
+                    <div className="flex gap-1 flex-1">
+                        <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-full hover:bg-[#493222] text-text-secondary hover:text-red-500 transition-colors group">
+                            <span className="material-symbols-outlined icon-outline group-hover:text-red-500 group-active:scale-90 transition-all">favorite</span>
+                            <span className="text-sm font-bold">Like</span>
+                        </button>
+                        <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-full hover:bg-[#493222] text-text-secondary hover:text-blue-400 transition-colors group">
+                            <span className="material-symbols-outlined icon-outline group-active:scale-90 transition-all">chat_bubble</span>
+                            <span className="text-sm font-bold">Comment</span>
+                        </button>
+                        <button className="hidden sm:flex items-center justify-center gap-2 px-4 py-2.5 rounded-full hover:bg-[#493222] text-text-secondary hover:text-green-400 transition-colors group">
+                            <span className="material-symbols-outlined icon-outline group-active:scale-90 transition-all">share</span>
+                            <span className="text-sm font-bold">Share</span>
+                        </button>
+                    </div>
+                    <button className="flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-primary/10 to-primary/5 hover:from-primary hover:to-orange-500 text-primary hover:text-[#231810] transition-all border border-primary/30 hover:border-transparent group shadow-sm shadow-orange-900/20">
+                        <span className="material-symbols-outlined text-[20px]">redeem</span>
+                        <span className="text-sm font-bold">Gift</span>
                     </button>
                 </div>
-                <button className="flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-primary/10 to-primary/5 hover:from-primary hover:to-orange-500 text-primary hover:text-[#231810] transition-all border border-primary/30 hover:border-transparent group shadow-sm shadow-orange-900/20">
-                    <span className="material-symbols-outlined text-[20px]">redeem</span>
-                    <span className="text-sm font-bold">Gift</span>
-                </button>
-            </div>
+            ) : (
+                <div className="p-3 px-5 flex items-center justify-between bg-black/20">
+                    <div className="flex gap-3">
+                        <button className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white transition-all font-black text-xs uppercase tracking-widest border border-green-500/20">
+                            <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                            Approve
+                        </button>
+                        <button className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all font-black text-xs uppercase tracking-widest border border-red-500/20">
+                            <span className="material-symbols-outlined text-[18px]">cancel</span>
+                            Reject
+                        </button>
+                    </div>
+                    <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-text-muted hover:text-orange-400 transition-all font-bold text-xs">
+                        <span className="material-symbols-outlined text-[18px]">report</span>
+                        View Report
+                    </button>
+                </div>
+            )}
         </article>
     );
 }

@@ -43,12 +43,12 @@ const ConfirmModal = ({
                     </div>
                     <div className="space-y-2">
                         <h4 className="text-xl font-black text-white">{title}</h4>
-                        <p className="text-sm text-text-muted leading-relaxed">{message}</p>
+                        <p className="text-sm text-white/80 leading-relaxed">{message}</p>
                     </div>
                     <div className="grid grid-cols-2 gap-4 pt-2">
                         <button
                             onClick={onClose}
-                            className="py-3.5 rounded-xl border border-border-dark/50 text-text-muted font-bold hover:bg-background-dark hover:text-white transition-all"
+                            className="py-3.5 rounded-xl border border-border-dark/50 text-white/70 font-bold hover:bg-background-dark hover:text-white transition-all"
                         >
                             {cancelText}
                         </button>
