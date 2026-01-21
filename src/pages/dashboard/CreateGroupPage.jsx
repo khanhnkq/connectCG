@@ -51,7 +51,7 @@ export default function CreateGroupPage() {
     };
 
     const handleSubmit = async (values, { setSubmitting }) => {
-        const loadingToast = toast.loading("Đang khởi tạo nhóm...", { theme: "dark" });
+        // const loadingToast = toast.loading("Đang khởi tạo nhóm...", { theme: "dark" });
 
         try {
             let imageUrl = null;
@@ -68,7 +68,7 @@ export default function CreateGroupPage() {
 
             console.log("Saving to DB:", finalGroupData);
 
-            toast.update(loadingToast, {
+            toast.update( {
                 render: `Nhóm "${values.group_name}" đã sẵn sàng!`,
                 type: "success",
                 isLoading: false,

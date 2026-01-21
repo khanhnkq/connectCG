@@ -6,13 +6,20 @@ import { toast } from 'react-toastify';
 import ConfirmModal from '../../components/admin/ConfirmModal';
 
 export default function NewsfeedDashboard1() {
-    const [isAdmin, setIsAdmin] = useState(true); // Mocking admin status for demonstration
+    const [isAdmin] = useState(true); // Mocking admin status for demonstration
     const [activeTab, setActiveTab] = useState('Feed');
 
     const [pendingPosts, setPendingPosts] = useState([
         { id: 1, author: "John Doe", content: "Is the Nikon Z9 worth it for wildlife?", time: "2h ago", image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=80" },
         { id: 2, author: "Alice Smith", content: "Check out my latest macro shots!", time: "5h ago", image: "https://images.unsplash.com/photo-1452570053594-1b985d6ea82e?auto=format&fit=crop&w=800&q=80" }
     ]);
+
+    const [memberRequests, setMemberRequests] = useState([
+        { id: 101, name: "Lucas Vance", bio: "Landscape enthusiast from Seattle", avatar: "https://i.pravatar.cc/150?u=lucas", time: "1h ago" },
+        { id: 102, name: "Elena Rossi", bio: "Film photography is my passion", avatar: "https://i.pravatar.cc/150?u=elena", time: "3h ago" }
+    ]);
+
+    const [modTab, setModTab] = useState('Posts'); // 'Posts' or 'Members'
 
     const [members, setMembers] = useState([
         { id: 1, name: "Sarah Jenkins", role: "Moderator", joined: "2 months ago", avatar: "https://i.pravatar.cc/150?u=sarah" },
@@ -23,11 +30,12 @@ export default function NewsfeedDashboard1() {
 
     const [confirmConfig, setConfirmConfig] = useState({ isOpen: false, title: '', message: '', onConfirm: null });
 
-    const handleAction = (action, target) => {
+    const handleAction = (action, target, type = 'danger') => {
         setConfirmConfig({
             isOpen: true,
             title: `${action} Request`,
-            message: `Are you sure you want to ${action.toLowerCase()} this post?`,
+            message: `Are you sure you want to ${action.toLowerCase()} this?`,
+            type: type,
             onConfirm: () => {
                 toast.success(`Action: ${action} applied`, { theme: "dark" });
                 setConfirmConfig({ ...confirmConfig, isOpen: false });
@@ -86,9 +94,17 @@ export default function NewsfeedDashboard1() {
                                     <span className="material-symbols-outlined !text-[20px]">person_add</span>
                                     Invite
                                 </button>
+                                <button
+                                    onClick={() => handleAction('Report', 'this group', 'warning')}
+                                    className="size-10 flex items-center justify-center rounded-full bg-yellow-500/10 hover:bg-yellow-500 text-yellow-500 hover:text-white border border-yellow-500/20 backdrop-blur-md transition-all"
+                                    title="Report Group"
+                                >
+                                    <span className="material-symbols-outlined !text-[20px]">report</span>
+                                </button>
                                 <button className="size-10 flex items-center justify-center rounded-full bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/20 backdrop-blur-md transition-all group">
                                     <span className="material-symbols-outlined !text-[20px]">logout</span>
                                 </button>
+
                             </div>
                         </div>
                     </div>
@@ -119,9 +135,9 @@ export default function NewsfeedDashboard1() {
                                     >
                                         <span className="material-symbols-outlined text-lg">gavel</span>
                                         MODERATION
-                                        {pendingPosts.length > 0 && (
+                                        {(pendingPosts.length > 0 || memberRequests.length > 0) && (
                                             <span className="size-5 bg-orange-500 text-[#231810] text-[10px] rounded-full flex items-center justify-center">
-                                                {pendingPosts.length}
+                                                {pendingPosts.length + memberRequests.length}
                                             </span>
                                         )}
                                     </button>
@@ -207,33 +223,97 @@ export default function NewsfeedDashboard1() {
 
                         {activeTab === 'Moderation' && isAdmin && (
                             <div className="max-w-3xl mx-auto space-y-8">
-                                <div className="flex justify-between items-center bg-orange-500/10 border border-orange-500/20 p-6 rounded-3xl">
-                                    <div>
-                                        <h3 className="text-xl font-black text-orange-400">Moderation Desk</h3>
-                                        <p className="text-text-secondary text-sm font-medium">Reviewing {pendingPosts.length} pending submissions</p>
-                                    </div>
-                                    <div className="size-12 rounded-2xl bg-orange-500 text-[#231810] flex items-center justify-center">
-                                        <span className="material-symbols-outlined text-3xl">gavel</span>
-                                    </div>
-                                </div>
-                                <div className="flex flex-col gap-8">
-                                    {pendingPosts.map(post => (
-                                        <PostCard
-                                            key={post.id}
-                                            author={{ name: post.author, avatar: `https://i.pravatar.cc/150?u=${post.author}` }}
-                                            time={post.time}
-                                            content={post.content}
-                                            image={post.image}
-                                            type="admin"
-                                        />
-                                    ))}
-                                    {pendingPosts.length === 0 && (
-                                        <div className="py-24 text-center space-y-4 bg-card-dark rounded-[3rem] border-2 border-dashed border-[#342418]">
-                                            <span className="material-symbols-outlined text-6xl text-text-muted/20">task_alt</span>
-                                            <p className="text-text-secondary font-bold uppercase tracking-widest">Everything Approved!</p>
+                                {/* Header & Toggles */}
+                                <div className="bg-[#1a120b] border border-[#3e2b1d] p-8 rounded-[2.5rem] shadow-2xl">
+                                    <div className="flex justify-between items-center mb-8">
+                                        <div>
+                                            <h3 className="text-2xl font-black text-orange-400 tracking-tight">Moderation Desk</h3>
+                                            <p className="text-text-secondary text-sm font-medium mt-1">Review pending content and members</p>
                                         </div>
-                                    )}
+                                        <div className="size-14 rounded-2xl bg-orange-500/10 text-orange-400 flex items-center justify-center border border-orange-500/20">
+                                            <span className="material-symbols-outlined text-3xl">gavel</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex p-1.5 bg-[#120a05] rounded-2xl border border-[#2d1f14]">
+                                        <button
+                                            onClick={() => setModTab('Posts')}
+                                            className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${modTab === 'Posts' ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'text-white/50 hover:text-white'}`}
+                                        >
+                                            <span className="material-symbols-outlined text-lg">article</span>
+                                            Pending Posts ({pendingPosts.length})
+                                        </button>
+                                        <button
+                                            onClick={() => setModTab('Members')}
+                                            className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${modTab === 'Members' ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'text-white/50 hover:text-white'}`}
+                                        >
+                                            <span className="material-symbols-outlined text-lg">person_add</span>
+                                            Join Requests ({memberRequests.length})
+                                        </button>
+                                    </div>
                                 </div>
+
+                                {/* Content based on sub-tab */}
+                                {modTab === 'Posts' ? (
+                                    <div className="flex flex-col gap-8">
+                                        {pendingPosts.map(post => (
+                                            <PostCard
+                                                key={post.id}
+                                                author={{ name: post.author, avatar: `https://i.pravatar.cc/150?u=${post.author}` }}
+                                                time={post.time}
+                                                content={post.content}
+                                                image={post.image}
+                                                type="admin"
+                                            />
+                                        ))}
+                                        {pendingPosts.length === 0 && (
+                                            <div className="py-24 text-center space-y-4 bg-card-dark rounded-[3rem] border-2 border-dashed border-[#342418]">
+                                                <span className="material-symbols-outlined text-6xl text-text-muted/20">task_alt</span>
+                                                <p className="text-text-secondary font-bold uppercase tracking-widest">No pending posts</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col gap-4">
+                                        {memberRequests.map(request => (
+                                            <div key={request.id} className="bg-card-dark border border-[#3e2b1d] p-6 rounded-3xl flex items-center justify-between hover:border-orange-500/30 transition-all group shadow-xl">
+                                                <div className="flex items-center gap-5">
+                                                    <div className="relative">
+                                                        <img src={request.avatar} className="size-16 rounded-2xl border-2 border-[#3e2b1d] object-cover" alt="" />
+                                                        <div className="absolute -bottom-2 -right-2 size-6 rounded-lg bg-primary flex items-center justify-center text-[#231810] shadow-lg">
+                                                            <span className="material-symbols-outlined text-[14px] font-black">person</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <h4 className="text-white font-black text-lg group-hover:text-primary transition-colors">{request.name}</h4>
+                                                        <p className="text-text-secondary text-sm line-clamp-1">{request.bio}</p>
+                                                        <p className="text-[10px] text-text-muted font-black uppercase tracking-tighter">Requested {request.time}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-3">
+                                                    <button
+                                                        onClick={() => handleAction('Approve', request.name)}
+                                                        className="px-6 py-3 rounded-xl bg-orange-500/10 text-orange-400 hover:bg-orange-500 hover:text-[#231810] transition-all font-black text-[10px] uppercase tracking-widest border border-orange-500/20"
+                                                    >
+                                                        Accept
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleAction('Reject', request.name)}
+                                                        className="px-6 py-3 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all font-black text-[10px] uppercase tracking-widest border border-red-500/20"
+                                                    >
+                                                        Ignore
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {memberRequests.length === 0 && (
+                                            <div className="py-24 text-center space-y-4 bg-card-dark rounded-[3rem] border-2 border-dashed border-[#342418]">
+                                                <span className="material-symbols-outlined text-6xl text-text-muted/20">how_to_reg</span>
+                                                <p className="text-text-secondary font-bold uppercase tracking-widest">No pending member requests</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
@@ -244,6 +324,7 @@ export default function NewsfeedDashboard1() {
                 isOpen={confirmConfig.isOpen}
                 title={confirmConfig.title}
                 message={confirmConfig.message}
+                type={confirmConfig.type}
                 onConfirm={confirmConfig.onConfirm}
                 onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
                 confirmText="Confirm"

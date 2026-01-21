@@ -6,9 +6,9 @@ export default function GroupsManagement() {
     const navigate = useNavigate();
 
     const yourGroups = [
-        { id: 1, name: 'Tokyo Travelers', newPosts: 15, members: 128, isAdmin: true, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCsQ9A8n-xledNJ474f_Uhr7BscPR1rdWpPA3nmUJNmpVX91H1g0qzMfr9cBVIkAenCL-nwTE3eotkyfDk29zimFvN8-jZdH8iZX_YRdmarPfVxzJHgiu1ByzFcVxZgVSRg7T53DVEFW8xt5qrbXibpwvQ3F4V3ihwBBXzyqv1ev1YEqcfkx6qOp-1indkKl5YuDjQFL0NRPqq7VW_dBlXrrZONIiwbkNX-tnHGk4jNiXLsc5kJ9cNeUOM226fUgjqHbFWB_pkARIM' },
-        { id: 2, name: 'Coffee & Code', newPosts: 3, members: 42, isAdmin: false, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDIX1wAYBAaj5E3ZSRIlI5IPaunhWNdzmIwF7-7p1gL_GDonD1nu-64KLjLpSPdZTVgljRLZnXwvmCxExZiHo0M0herxixGJXSTWUUAwUfcER7CvEaSojHMw584hz6DQinjDLJ3ybtst0uHqmfgErVEQADCAch_-XcX66M40huD5lbsnGQgpcJJL27uK7XbMfy9toGEIHhCHmzH89TomH2nGCh8_diALS3wNYS029XSURlHuNngihv2mo_HfP7QfP_804f4760TbQE' },
-        { id: 3, name: 'Indie Music Fans', newPosts: 89, members: 850, isAdmin: false, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAFnbIOg359_IruqeJZR2XF_Z9o0ttAo63JvDFovmYNSKdvPDsjabpqB7jFC2UUE6tzEncOSivvm1W5vNt9KxVCVPm7pn8OrwN7RLmHA4OMIo36hL-88I-wXa9YN61Vi-X20nAg7gI-1QfF28jrI8oV5TGX_X32VjN7POtm_CtBB9DkdWcNvsqgkBEwNZFhOLngZBuNQA5Z5pU-fGIhAf3z355mdR5RIij1VsmKLkaqcqcd87735upuE6OE5UqM8bI3FCXkrTk4agw' }
+        { id: 1, name: 'Tokyo Travelers', newPosts: 15, members: 128, isAdmin: true, pendingRequests: 3, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCsQ9A8n-xledNJ474f_Uhr7BscPR1rdWpPA3nmUJNmpVX91H1g0qzMfr9cBVIkAenCL-nwTE3eotkyfDk29zimFvN8-jZdH8iZX_YRdmarPfVxzJHgiu1ByzFcVxZgVSRg7T53DVEFW8xt5qrbXibpwvQ3F4V3ihwBBXzyqv1ev1YEqcfkx6qOp-1indkKl5YuDjQFL0NRPqq7VW_dBlXrrZONIiwbkNX-tnHGk4jNiXLsc5kJ9cNeUOM226fUgjqHbFWB_pkARIM' },
+        { id: 2, name: 'Coffee & Code', newPosts: 3, members: 42, isAdmin: false, pendingRequests: 0, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDIX1wAYBAaj5E3ZSRIlI5IPaunhWNdzmIwF7-7p1gL_GDonD1nu-64KLjLpSPdZTVgljRLZnXwvmCxExZiHo0M0herxixGJXSTWUUAwUfcER7CvEaSojHMw584hz6DQinjDLJ3ybtst0uHqmfgErVEQADCAch_-XcX66M40huD5lbsnGQgpcJJL27uK7XbMfy9toGEIHhCHmzH89TomH2nGCh8_diALS3wNYS029XSURlHuNngihv2mo_HfP7QfP_804f4760TbQE' },
+        { id: 3, name: 'Indie Music Fans', newPosts: 89, members: 850, isAdmin: false, pendingRequests: 0, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAFnbIOg359_IruqeJZR2XF_Z9o0ttAo63JvDFovmYNSKdvPDsjabpqB7jFC2UUE6tzEncOSivvm1W5vNt9KxVCVPm7pn8OrwN7RLmHA4OMIo36hL-88I-wXa9YN61Vi-X20nAg7gI-1QfF28jrI8oV5TGX_X32VjN7POtm_CtBB9DkdWcNvsqgkBEwNZFhOLngZBuNQA5Z5pU-fGIhAf3z355mdR5RIij1VsmKLkaqcqcd87735upuE6OE5UqM8bI3FCXkrTk4agw' }
     ];
 
     const discoverGroups = [
@@ -59,8 +59,16 @@ export default function GroupsManagement() {
                                         <div className="h-32 bg-cover bg-center relative" style={{ backgroundImage: `url("${group.image}")` }}>
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                                             {group.isAdmin && (
-                                                <div className="absolute top-3 right-3 bg-orange-500/90 backdrop-blur-md text-[#231810] text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg border border-white/20">
-                                                    ADMIN
+                                                <div className="absolute top-3 right-3 flex gap-2">
+                                                    {group.pendingRequests > 0 && (
+                                                        <div className="bg-red-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-lg border border-white/20 flex items-center gap-1 animate-pulse">
+                                                            <span className="material-symbols-outlined text-[10px]">person_add</span>
+                                                            {group.pendingRequests}
+                                                        </div>
+                                                    )}
+                                                    <div className="bg-orange-500/90 backdrop-blur-md text-[#231810] text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg border border-white/20">
+                                                        ADMIN
+                                                    </div>
                                                 </div>
                                             )}
                                         </div>

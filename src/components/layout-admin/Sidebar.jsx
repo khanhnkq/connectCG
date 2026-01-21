@@ -71,7 +71,14 @@ const Sidebar = ({ brandName = "Social Admin", activeTab = "Groups" }) => {
         ))}
       </nav>
 
-      <div className="p-6 border-t border-border-dark">
+      <div className="p-6 border-t border-border-dark space-y-4">
+        <Link
+          to="/dashboard/feed"
+          className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-orange-500/10 text-orange-400 hover:bg-orange-500 hover:text-white transition-all font-black text-xs uppercase tracking-widest border border-orange-500/20"
+        >
+          <span className="material-symbols-outlined text-[18px]">visibility</span>
+          View User Feed
+        </Link>
         <div className="flex items-center gap-4 px-2 py-2 bg-surface-dark/50 rounded-2xl border border-border-dark">
           <div
             className="bg-center bg-no-repeat aspect-square bg-cover rounded-xl size-10 border-2 border-primary/20"
