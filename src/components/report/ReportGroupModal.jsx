@@ -17,42 +17,51 @@ export default function ReportGroupModal({ isOpen, onClose, onSubmit, group }) {
 
   return (
     <>
-      <div className="report-overlay">
-        <div className="report-modal">
+      <div className="fixed inset-0 bg-black/75 flex justify-center items-center z-[999]">
+        <div className="w-[360px] bg-gradient-to-b from-[#3a2718] to-[#1e140d] rounded-[18px] p-[22px] text-white relative shadow-[0_25px_60px_rgba(0,0,0,0.8)] font-sans">
           {/* CLOSE */}
-          <button className="report-close" onClick={onClose}>
+          <button 
+            className="absolute top-3.5 right-3.5 bg-transparent border-none text-[#bbb] text-lg cursor-pointer hover:text-white" 
+            onClick={onClose}
+          >
             ✕
           </button>
 
           {/* HEADER */}
-          <div className="report-header">
+          <div className="mb-4">
             <div>
-              <h3>Report Group</h3>
-              <p>Tell us why this group should be reviewed.</p>
+              <h3 className="text-[15px] font-semibold">Report Group</h3>
+              <p className="text-xs text-[#c7b9ae] mt-1">Tell us why this group should be reviewed.</p>
             </div>
           </div>
 
           {/* OPTIONS */}
-          <div className="report-options">
+          <div className="flex flex-col gap-2.5 mt-4">
             {reasons.map((r) => (
               <label
                 key={r}
-                className={`report-option ${reason === r ? "active" : ""}`}
+                className={`flex items-center gap-2.5 p-3 rounded-xl cursor-pointer transition-colors ${
+                  reason === r 
+                    ? "bg-[#ff7a1a]/15" 
+                    : "bg-white/5 hover:bg-white/10"
+                }`}
               >
                 <input
                   type="radio"
+                  className="accent-[#ff7a1a]"
                   checked={reason === r}
                   onChange={() => setReason(r)}
                 />
-                <span>{r}</span>
+                <span className="text-[13px]">{r}</span>
               </label>
             ))}
           </div>
 
           {/* DETAILS */}
-          <div className="report-details">
-            <p>Additional Details</p>
+          <div className="mt-4">
+            <p className="text-xs text-[#c7b9ae] mb-1.5">Additional Details</p>
             <textarea
+              className="w-full h-[70px] resize-none rounded-xl p-2.5 bg-white/5 border-none text-white text-xs outline-none placeholder-[#b8a99c]"
               placeholder="Please provide more context about your report..."
               value={detail}
               onChange={(e) => setDetail(e.target.value)}
@@ -60,12 +69,15 @@ export default function ReportGroupModal({ isOpen, onClose, onSubmit, group }) {
           </div>
 
           {/* ACTIONS */}
-          <div className="report-actions">
-            <button className="btn-cancel" onClick={onClose}>
+          <div className="flex gap-2.5 mt-[18px]">
+            <button 
+              className="flex-1 bg-transparent border-none text-[#d0c4ba] p-2.5 rounded-[20px] cursor-pointer text-[13px] hover:bg-white/5 transition-colors" 
+              onClick={onClose}
+            >
               Cancel
             </button>
             <button
-              className="btn-submit"
+              className="flex-1 bg-gradient-to-br from-[#ff8a2a] to-[#ff6a00] border-none text-[#231810] font-semibold p-2.5 rounded-[20px] cursor-pointer text-[13px] hover:opacity-90"
               onClick={() =>
                 onSubmit({
                   targetType: "GROUP",
@@ -80,146 +92,6 @@ export default function ReportGroupModal({ isOpen, onClose, onSubmit, group }) {
           </div>
         </div>
       </div>
-
-      {/* ===== CSS INLINE (DÙNG CHUNG STYLE) ===== */}
-      <style>{`
-        .report-overlay {
-          position: fixed;
-          inset: 0;
-          background: rgba(0,0,0,0.75);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          z-index: 999;
-        }
-
-        .report-modal {
-          width: 360px;
-          background: linear-gradient(180deg, #3a2718, #1e140d);
-          border-radius: 18px;
-          padding: 22px;
-          color: #fff;
-          position: relative;
-          box-shadow: 0 25px 60px rgba(0,0,0,0.8);
-          font-family: "Segoe UI", sans-serif;
-        }
-
-        .report-close {
-          position: absolute;
-          top: 14px;
-          right: 14px;
-          background: none;
-          border: none;
-          color: #bbb;
-          font-size: 18px;
-          cursor: pointer;
-        }
-
-        .report-header h3 {
-          font-size: 15px;
-          font-weight: 600;
-        }
-
-        .report-header p {
-          font-size: 12px;
-          color: #c7b9ae;
-          margin-top: 4px;
-        }
-
-        .report-options {
-          margin-top: 16px;
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-        }
-
-        .report-option {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          padding: 12px;
-          border-radius: 12px;
-          background: rgba(255,255,255,0.05);
-          cursor: pointer;
-          transition: background 0.2s;
-        }
-
-        .report-option:hover {
-          background: rgba(255,255,255,0.08);
-        }
-
-        .report-option input {
-          accent-color: #ff7a1a;
-        }
-
-        .report-option span {
-          font-size: 13px;
-        }
-
-        .report-option.active {
-          background: rgba(255,122,26,0.15);
-        }
-
-        .report-details {
-          margin-top: 16px;
-        }
-
-        .report-details p {
-          font-size: 12px;
-          color: #c7b9ae;
-          margin-bottom: 6px;
-        }
-
-        .report-details textarea {
-          width: 100%;
-          height: 70px;
-          resize: none;
-          border-radius: 12px;
-          padding: 10px;
-          background: rgba(255,255,255,0.06);
-          border: none;
-          color: #fff;
-          font-size: 12px;
-          outline: none;
-        }
-
-        .report-details textarea::placeholder {
-          color: #b8a99c;
-        }
-
-        .report-actions {
-          display: flex;
-          gap: 10px;
-          margin-top: 18px;
-        }
-
-        .btn-cancel {
-          flex: 1;
-          background: transparent;
-          border: none;
-          color: #d0c4ba;
-          padding: 10px;
-          border-radius: 20px;
-          cursor: pointer;
-          font-size: 13px;
-        }
-
-        .btn-submit {
-          flex: 1;
-          background: linear-gradient(135deg, #ff8a2a, #ff6a00);
-          border: none;
-          color: #231810;
-          font-weight: 600;
-          padding: 10px;
-          border-radius: 20px;
-          cursor: pointer;
-          font-size: 13px;
-        }
-
-        .btn-submit:hover {
-          opacity: 0.9;
-        }
-      `}</style>
     </>
   );
 }
