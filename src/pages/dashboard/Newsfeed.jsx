@@ -11,20 +11,20 @@ export default function Newsfeed() {
   const [notifications, setNotifications] = useState([
     {
       id: 1,
-      content: "Sarah Jenkins liked your post",
-      time: "2m ago",
+      content: "Sarah Jenkins đã thích bài viết của bạn",
+      time: "2 phút trước",
       read: false,
     },
     {
       id: 2,
-      content: "David Kim commented on your post",
-      time: "1h ago",
+      content: "David Kim đã bình luận về bài viết của bạn",
+      time: "1 giờ trước",
       read: false,
     },
     {
       id: 3,
-      content: "You have a new friend request",
-      time: "Yesterday",
+      content: "Bạn có một lời mời kết bạn mới",
+      time: "Hôm qua",
       read: true,
     },
   ]);
@@ -48,8 +48,8 @@ export default function Newsfeed() {
         <div className="max-w-3xl mx-auto w-full px-6 py-8 pb-20">
           <header className="flex justify-between items-center mb-8 sticky top-0 bg-background-dark/95 backdrop-blur-sm z-30 py-4 -mt-4 border-b border-[#342418]">
             <div>
-              <h1 className="text-3xl font-extrabold text-white tracking-tight">Newsfeed</h1>
-              <p className="text-text-secondary text-sm font-medium">See what's happening around you</p>
+              <h1 className="text-3xl font-extrabold text-white tracking-tight">Bảng tin</h1>
+              <p className="text-text-secondary text-sm font-medium">Xem những gì đang diễn ra xung quanh bạn</p>
             </div>
             <div className="flex gap-3">
               <div className="relative" ref={dropdownRef}>
@@ -68,13 +68,13 @@ export default function Newsfeed() {
                 {showNotifications && (
                   <div className="absolute right-0 mt-3 w-80 bg-[#1E140D] border border-[#342418] rounded-2xl shadow-2xl z-50 overflow-hidden">
                     <div className="px-4 py-3 border-b border-[#342418]">
-                      <h4 className="text-white font-bold text-sm">Notifications</h4>
+                      <h4 className="text-white font-bold text-sm">Thông báo</h4>
                     </div>
 
                     <div className="max-h-80 overflow-y-auto">
                       {notifications.length === 0 && (
                         <p className="text-text-secondary text-sm p-4 text-center">
-                          No notifications
+                          Không có thông báo nào
                         </p>
                       )}
 
@@ -110,7 +110,7 @@ export default function Newsfeed() {
                                 }
                                 className="text-primary text-[11px] hover:underline"
                               >
-                                Mark read
+                                Đã xem
                               </button>
                             )}
                             <button
@@ -121,7 +121,7 @@ export default function Newsfeed() {
                               }
                               className="text-red-400 text-[11px] hover:underline"
                             >
-                              Delete
+                              Xóa
                             </button>
                           </div>
                         </div>
@@ -142,8 +142,8 @@ export default function Newsfeed() {
 
             <PostCard
               author={{ name: 'Sarah Jenkins', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBuHYpNqBoJZ6H3wxyG6OtCnMMVU4FTUngw6LYZy4SgjA0mY2sYsDcePdMS10ev3_M8tw950TFDzIey60zy_0YaYchnCYNkI1EFXtTTC7THk5zGBor8yBtMr-aAf8sbShLZVQv8CQzSm5kNH7EvWmKXyi1RIv1DxZa3HFHT34tseJeUcKe6h6lFC6Ar26xYdz8DghOGsPL3pKr3Sb5Jj3_uULvl0M_QzCz6myNZnocquEnyZkGrndeht0XMB4Yrsu9Is2B6nJ3Mi9M' }}
-              time="2 hours ago"
-              content="Loving the vibes at this new cafe! ☕️ The coffee is amazing and the atmosphere is just perfect for getting some work done. Highly recommend checking it out if you're in the area!"
+              time="2 giờ trước"
+              content="Thực sự thích không khí tại quán cà phê mới này! ☕️ Cà phê tuyệt vời và không gian thật hoàn hảo để làm việc. Rất khuyến khích các bạn ghé thử nếu có dịp ở gần đây!"
               image="https://lh3.googleusercontent.com/aida-public/AB6AXuB5H7LQP89_ZyvOx7F5cl1FYMVnX-MFWL-CyfK4ZXJL_PYJnCoIl8ZQfS6hcPUIg20U2Y9NtA0u6tEvMAtdbXX7OuYPnlq15Bo-FQ6Swbqb-iVM7pLDFoVMpMpC9jeXWPszg-3mORsIVFncUTgYkKHk_zDbiqZFQ9R_O4k5tzf_rbG6LXkhpDkHpj_eZ83CRu03Xlyf_iE1svoJcndPrSOAOuGERcRUJQoJiNv5XFwlwZ8uSty1MtJOsSHs3Y2RbmyrHtxPayn-WcA"
               stats={{ likes: 24, comments: 4, shares: 1 }}
               type="feed"
@@ -151,8 +151,8 @@ export default function Newsfeed() {
 
             <PostCard
               author={{ name: 'David Kim', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCfCl1X2bsOD2anKofpFDzckD9z_a3CDOQqg1A1-nnzE0ALZhx8h2sNsn_PdV7-P6oEpg0XRttDsHUQJwA2Aa3MdUW6FIzwdzYDOxxjZFF7_x9QBl_cJ0NvpSwm_LFGlB5Yi4n9ksqFEjuIaIuQTyLOghyL8b2P7JdZiE9YN9aMocc7VfC_uvu-UaLuLtbGD9_5Kropk3H3Na2Of1n_kfzDW9PvINieVznAqTbyDeohff0qGU0J5IQTasq56bubbiAsxjbHlaBRaZ4' }}
-              time="5 hours ago"
-              content="Just finished a 10k run! 🏃‍♂️ Feeling accomplished and exhausted at the same time. Training for the marathon is tough but worth it."
+              time="5 giờ trước"
+              content="Vừa hoàn thành đường chạy 10k! 🏃‍♂️ Cảm thấy vừa thành tựu vừa kiệt sức. Tập luyện cho marathon thật gian nan nhưng rất đáng giá."
               stats={{ likes: 156, comments: 23, shares: 0 }}
               type="feed"
             />

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Sidebar from '../../components/layout/Sidebar';
 import PostComposer from '../../components/feed/PostComposer';
 import PostCard from '../../components/feed/PostCard';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import ConfirmModal from '../../components/admin/ConfirmModal';
 
 export default function NewsfeedDashboard1() {

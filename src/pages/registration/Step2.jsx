@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { uploadAvatar } from '../../utils/uploadImage';
+import toast from 'react-hot-toast';
 
 // Validation schema
 const Step2Schema = Yup.object().shape({
@@ -73,8 +74,8 @@ export default function Step2() {
             gender: values.gender,
             maritalStatus: values.maritalStatus,
             purpose: values.purpose,
-            hobbies: values.hobbies, // Array
-            city: values.city,
+            hobbyIds: values.hobbies, // Array IDs
+            cityId: values.city, // ID
             avatarUrl: avatarUrl, // URL từ Cloudinary
         };
 
@@ -85,7 +86,7 @@ export default function Step2() {
 
         // Xóa dữ liệu tạm
         localStorage.removeItem('registrationStep1');
-
+        toast.success('Đăng ký thành công');
         // Chuyển đến trang đăng nhập hoặc dashboard
         navigate('/login');
     };
@@ -120,41 +121,42 @@ export default function Step2() {
         { value: 'networking', icon: 'work', label: 'Kết nối' }
     ];
 
+    // MOCK DATA: Giả lập dữ liệu từ Backend (có ID)
     const hobbiesOptions = [
-        { value: 'music', icon: 'music_note', label: 'Âm nhạc' },
-        { value: 'sports', icon: 'sports_soccer', label: 'Thể thao' },
-        { value: 'reading', icon: 'menu_book', label: 'Đọc sách' },
-        { value: 'travel', icon: 'flight', label: 'Du lịch' },
-        { value: 'cooking', icon: 'restaurant', label: 'Nấu ăn' },
-        { value: 'gaming', icon: 'sports_esports', label: 'Chơi game' },
-        { value: 'movies', icon: 'movie', label: 'Phim ảnh' },
-        { value: 'photography', icon: 'photo_camera', label: 'Nhiếp ảnh' },
-        { value: 'art', icon: 'palette', label: 'Nghệ thuật' },
-        { value: 'fitness', icon: 'fitness_center', label: 'Gym' },
-        { value: 'pets', icon: 'pets', label: 'Thú cưng' },
-        { value: 'technology', icon: 'computer', label: 'Công nghệ' },
+        { id: 1, value: 'music', icon: 'music_note', label: 'Âm nhạc' },
+        { id: 2, value: 'sports', icon: 'sports_soccer', label: 'Thể thao' },
+        { id: 3, value: 'reading', icon: 'menu_book', label: 'Đọc sách' },
+        { id: 4, value: 'travel', icon: 'flight', label: 'Du lịch' },
+        { id: 5, value: 'cooking', icon: 'restaurant', label: 'Nấu ăn' },
+        { id: 6, value: 'gaming', icon: 'sports_esports', label: 'Chơi game' },
+        { id: 7, value: 'movies', icon: 'movie', label: 'Phim ảnh' },
+        { id: 8, value: 'photography', icon: 'photo_camera', label: 'Nhiếp ảnh' },
+        { id: 9, value: 'art', icon: 'palette', label: 'Nghệ thuật' },
+        { id: 10, value: 'fitness', icon: 'fitness_center', label: 'Gym' },
+        { id: 11, value: 'pets', icon: 'pets', label: 'Thú cưng' },
+        { id: 12, value: 'technology', icon: 'computer', label: 'Công nghệ' },
     ];
 
     const cityOptions = [
-        { value: 'hanoi', label: 'Hà Nội' },
-        { value: 'hochiminh', label: 'TP. Hồ Chí Minh' },
-        { value: 'danang', label: 'Đà Nẵng' },
-        { value: 'haiphong', label: 'Hải Phòng' },
-        { value: 'cantho', label: 'Cần Thơ' },
-        { value: 'bienhoa', label: 'Biên Hòa' },
-        { value: 'nhatrang', label: 'Nha Trang' },
-        { value: 'hue', label: 'Huế' },
-        { value: 'vungtau', label: 'Vũng Tàu' },
-        { value: 'dalat', label: 'Đà Lạt' },
-        { value: 'quynhon', label: 'Quy Nhơn' },
-        { value: 'buonmethuot', label: 'Buôn Ma Thuột' },
-        { value: 'thanhhoa', label: 'Thanh Hóa' },
-        { value: 'ninhbinh', label: 'Ninh Bình' },
-        { value: 'halong', label: 'Hạ Long' },
-        { value: 'vinh', label: 'Vinh' },
-        { value: 'rachgia', label: 'Rạch Giá' },
-        { value: 'longan', label: 'Long An' },
-        { value: 'other', label: 'Khác' },
+        { id: 1, value: 'hanoi', label: 'Hà Nội' },
+        { id: 2, value: 'hochiminh', label: 'TP. Hồ Chí Minh' },
+        { id: 3, value: 'danang', label: 'Đà Nẵng' },
+        { id: 4, value: 'haiphong', label: 'Hải Phòng' },
+        { id: 5, value: 'cantho', label: 'Cần Thơ' },
+        { id: 6, value: 'bienhoa', label: 'Biên Hòa' },
+        { id: 7, value: 'nhatrang', label: 'Nha Trang' },
+        { id: 8, value: 'hue', label: 'Huế' },
+        { id: 9, value: 'vungtau', label: 'Vũng Tàu' },
+        { id: 10, value: 'dalat', label: 'Đà Lạt' },
+        { id: 11, value: 'quynhon', label: 'Quy Nhơn' },
+        { id: 12, value: 'buonmethuot', label: 'Buôn Ma Thuột' },
+        { id: 13, value: 'thanhhoa', label: 'Thanh Hóa' },
+        { id: 14, value: 'ninhbinh', label: 'Ninh Bình' },
+        { id: 15, value: 'halong', label: 'Hạ Long' },
+        { id: 16, value: 'vinh', label: 'Vinh' },
+        { id: 17, value: 'rachgia', label: 'Rạch Giá' },
+        { id: 18, value: 'longan', label: 'Long An' },
+        { id: 99, value: 'other', label: 'Khác' },
     ];
 
     return (
@@ -363,18 +365,18 @@ export default function Step2() {
                                         <p className="text-text-secondary text-sm -mt-1">Chọn ít nhất 1 sở thích</p>
                                         <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                                             {hobbiesOptions.map((hobby) => {
-                                                const isSelected = values.hobbies.includes(hobby.value);
+                                                const isSelected = values.hobbies.includes(hobby.id);
                                                 return (
-                                                    <label key={hobby.value} className="cursor-pointer relative">
+                                                    <label key={hobby.id} className="cursor-pointer relative">
                                                         <input
                                                             type="checkbox"
-                                                            value={hobby.value}
+                                                            value={hobby.id}
                                                             checked={isSelected}
                                                             onChange={() => {
                                                                 if (isSelected) {
-                                                                    setFieldValue('hobbies', values.hobbies.filter(h => h !== hobby.value));
+                                                                    setFieldValue('hobbies', values.hobbies.filter(h => h !== hobby.id));
                                                                 } else {
-                                                                    setFieldValue('hobbies', [...values.hobbies, hobby.value]);
+                                                                    setFieldValue('hobbies', [...values.hobbies, hobby.id]);
                                                                 }
                                                             }}
                                                             className="peer sr-only"
@@ -407,7 +409,7 @@ export default function Step2() {
                                             >
                                                 <option value="" className="bg-surface-dark text-text-secondary">Chọn thành phố...</option>
                                                 {cityOptions.map((city) => (
-                                                    <option key={city.value} value={city.value} className="bg-surface-dark text-white">
+                                                    <option key={city.id} value={city.id} className="bg-surface-dark text-white">
                                                         {city.label}
                                                     </option>
                                                 ))}

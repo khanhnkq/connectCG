@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import AdminLayout from '../../components/layout-admin/AdminLayout';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import ConfirmModal from '../../components/admin/ConfirmModal';
 
 const AdminMembersManager = () => {
@@ -68,7 +68,7 @@ const AdminMembersManager = () => {
             joinedDate: new Date().toLocaleDateString()
         };
         setMembers([newMember, ...members]);
-        toast.success(`User registered as ${values.role}!`, { theme: "dark" });
+        toast.success(`User registered as ${values.role}!`);
         setIsShowingForm(false);
         resetForm();
     };
@@ -82,7 +82,7 @@ const AdminMembersManager = () => {
             type: action === "Ban" ? "danger" : "info",
             onConfirm: () => {
                 setMembers(members.map(m => m.id === id ? { ...m, status: m.status === "Active" ? "Banned" : "Active" } : m));
-                toast.info(`User successfully ${action.toLowerCase()}ned`, { theme: "dark" });
+                toast(`User successfully ${action.toLowerCase()}ned`, { icon: 'ℹ️' });
                 setConfirmConfig({ ...confirmConfig, isOpen: false });
             }
         });
@@ -96,7 +96,7 @@ const AdminMembersManager = () => {
             type: "danger",
             onConfirm: () => {
                 setMembers(members.filter(m => m.id !== id));
-                toast.error("User identity purged from system", { theme: "dark" });
+                toast.error("User identity purged from system");
                 setConfirmConfig({ ...confirmConfig, isOpen: false });
             }
         });
