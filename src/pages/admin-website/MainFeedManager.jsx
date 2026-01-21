@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import AdminLayout from '../../components/layout-admin/AdminLayout';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import ConfirmModal from '../../components/admin/ConfirmModal';
 
 const MainFeedManager = () => {
@@ -51,10 +51,7 @@ const MainFeedManager = () => {
             date: "Just now"
         };
         setPosts([newPost, ...posts]);
-        toast.success(`⚡ Instant Broadcast Live: ${values.type}`, {
-            theme: "dark",
-            icon: "🚀"
-        });
+        toast.success(`⚡ Instant Broadcast Live: ${values.type}`, { icon: '🚀' });
         setIsShowingForm(false);
         resetForm();
     };
@@ -66,7 +63,7 @@ const MainFeedManager = () => {
             message: "This will permanently remove this broadcast from the website. Global users will no longer be able to see it.",
             onConfirm: () => {
                 setPosts(posts.filter(p => p.id !== id));
-                toast.error("Content removed from global feed", { theme: "dark" });
+                toast.error("Content removed from global feed");
                 setConfirmConfig({ ...confirmConfig, isOpen: false });
             }
         });
@@ -205,7 +202,7 @@ const MainFeedManager = () => {
                                     <button onClick={() => {
                                         setPosts(posts.map(p => p.id === selectedPost.id ? { ...p, status: 'Published' } : p));
                                         setSelectedPost(null);
-                                        toast.success("Post promoted to global spotlight!", { theme: 'dark' });
+                                        toast.success("Post promoted to global spotlight!");
                                     }} className="py-3.5 rounded-xl bg-primary text-white font-black shadow-lg shadow-primary/20 hover:brightness-110 transition-all">Approve Global</button>
                                 </div>
                             </div>

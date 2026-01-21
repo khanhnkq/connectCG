@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { uploadAvatar } from '../../utils/uploadImage';
+import toast from 'react-hot-toast';
 
 // Validation schema
 const Step2Schema = Yup.object().shape({
@@ -85,7 +86,7 @@ export default function Step2() {
 
         // Xóa dữ liệu tạm
         localStorage.removeItem('registrationStep1');
-
+        toast.success('Đăng ký thành công');
         // Chuyển đến trang đăng nhập hoặc dashboard
         navigate('/login');
     };

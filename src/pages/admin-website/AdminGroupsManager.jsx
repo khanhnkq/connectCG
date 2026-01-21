@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import AdminLayout from '../../components/layout-admin/AdminLayout';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import ConfirmModal from '../../components/admin/ConfirmModal';
 
 const AdminGroupsManager = () => {
@@ -72,7 +72,7 @@ const AdminGroupsManager = () => {
             description: values.description
         };
         setGroups([newGroup, ...groups]);
-        toast.success(`New group created and assigned to ${values.owner}`, { theme: "dark" });
+        toast.success(`New group created and assigned to ${values.owner}`);
         setIsShowingForm(false);
         resetForm();
     };
@@ -84,7 +84,7 @@ const AdminGroupsManager = () => {
             message: `You are about to deactivate "${name}". This will hide the group from the public newsfeed and restrict new memberships.`,
             onConfirm: () => {
                 setGroups(groups.filter(g => g.id !== id));
-                toast.error("Community group has been de-indexed", { theme: "dark" });
+                toast.error("Community group has been de-indexed");
                 setConfirmConfig({ ...confirmConfig, isOpen: false });
             }
         });
