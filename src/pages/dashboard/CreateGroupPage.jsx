@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import Sidebar from '../../components/layout/Sidebar';
 import { uploadGroupCover } from '../../utils/uploadImage';
 
