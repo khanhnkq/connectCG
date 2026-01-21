@@ -83,6 +83,11 @@ body {
   --color-border-dark: #684831;
   --color-text-secondary: #cba990;
 
+  /* Chat colors */
+  --color-bubble-sent: #f47b25;
+  --color-bubble-received: #3A2A20;
+  --color-chat-bg: #1A120B;
+
   --font-display: "Plus Jakarta Sans", sans-serif;
 
   --radius: 1rem;

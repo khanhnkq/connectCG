@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
+import { uploadAvatar } from '../../utils/uploadImage';
 
 // Validation schema
 const Step2Schema = Yup.object().shape({
@@ -9,6 +10,9 @@ const Step2Schema = Yup.object().shape({
         .min(2, 'Nghề nghiệp phải có ít nhất 2 ký tự')
         .max(50, 'Nghề nghiệp không được quá 50 ký tự')
         .required('Vui lòng nhập nghề nghiệp'),
+    gender: Yup.string()
+        .oneOf(['male', 'female', 'other'], 'Vui lòng chọn giới tính')
+        .required('Vui lòng chọn giới tính'),
     maritalStatus: Yup.string()
         .oneOf(['single', 'divorced', 'widowed'], 'Vui lòng chọn tình trạng hôn nhân')
         .required('Vui lòng chọn tình trạng hôn nhân'),
@@ -29,6 +33,7 @@ export default function Step2() {
 
     const initialValues = {
         occupation: '',
+        gender: '',
         maritalStatus: '',
         purpose: '',
         hobbies: [],
@@ -40,69 +45,41 @@ export default function Step2() {
         // Lấy dữ liệu từ Step 1
         const step1Data = JSON.parse(localStorage.getItem('registrationStep1') || '{}');
 
-        // Validate avatar nếu có
+        let avatarUrl = null;
+
+        // Upload avatar lên Cloudinary nếu có
         if (values.avatar) {
-            const file = values.avatar;
-            const maxSize = 5 * 1024 * 1024; // 5MB
-            const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-
-            if (file.size > maxSize) {
-                setErrors({ avatar: 'Kích thước ảnh không được vượt quá 5MB' });
-                setSubmitting(false);
-                return;
-            }
-
-            if (!allowedTypes.includes(file.type)) {
-                setErrors({ avatar: 'Chỉ hỗ trợ định dạng JPG, PNG, WebP, GIF' });
+            try {
+                console.log('Đang upload avatar lên Cloudinary...');
+                avatarUrl = await uploadAvatar(values.avatar);
+                console.log('Upload thành công:', avatarUrl);
+            } catch (error) {
+                setErrors({ avatar: error.message });
                 setSubmitting(false);
                 return;
             }
         }
 
-        // Tạo FormData để gửi lên server (bao gồm file)
-        const formData = new FormData();
-        formData.append('fullName', step1Data.fullName || '');
-        formData.append('email', step1Data.email || '');
-        formData.append('password', step1Data.password || '');
-        formData.append('dateOfBirth', step1Data.dateOfBirth || '');
-        formData.append('occupation', values.occupation);
-        formData.append('maritalStatus', values.maritalStatus);
-        formData.append('purpose', values.purpose);
-        formData.append('hobbies', JSON.stringify(values.hobbies));
-        formData.append('city', values.city);
-
-        // Thêm avatar nếu có
-        if (values.avatar) {
-            formData.append('avatar', values.avatar);
-        }
+        // Chuẩn bị dữ liệu để gửi lên backend
+        const registrationData = {
+            // Từ Step 1
+            fullName: step1Data.fullName || '',
+            username: step1Data.username || '',
+            email: step1Data.email || '',
+            password: step1Data.password || '',
+            dateOfBirth: step1Data.dateOfBirth || '',
+            // Từ Step 2
+            occupation: values.occupation,
+            gender: values.gender,
+            maritalStatus: values.maritalStatus,
+            purpose: values.purpose,
+            hobbies: values.hobbies, // Array
+            city: values.city,
+            avatarUrl: avatarUrl, // URL từ Cloudinary
+        };
 
         // Log dữ liệu để kiểm tra
-        console.log('Registration FormData:');
-        for (let [key, value] of formData.entries()) {
-            console.log(`  ${key}:`, value);
-        }
-
-        // TODO: Gọi API đăng ký ở đây
-        // try {
-        //     const response = await fetch('/api/auth/register', {
-        //         method: 'POST',
-        //         body: formData,
-        //         // Không set Content-Type, browser tự động set multipart/form-data
-        //     });
-        //     
-        //     if (!response.ok) {
-        //         const error = await response.json();
-        //         throw new Error(error.message);
-        //     }
-        //     
-        //     const data = await response.json();
-        //     console.log('Registration success:', data);
-        // } catch (error) {
-        //     console.error('Registration failed:', error);
-        //     setErrors({ submit: error.message });
-        //     setSubmitting(false);
-        //     return;
-        // }
+        console.log('Registration Data:', registrationData);
 
         setSubmitting(false);
 
@@ -129,6 +106,12 @@ export default function Step2() {
         { value: 'single', label: 'Độc thân' },
         { value: 'divorced', label: 'Ly hôn' },
         { value: 'widowed', label: 'Góa bụa' }
+    ];
+
+    const genderOptions = [
+        { value: 'male', icon: 'male', label: 'Nam' },
+        { value: 'female', icon: 'female', label: 'Nữ' },
+        { value: 'other', icon: 'transgender', label: 'Khác' }
     ];
 
     const purposeOptions = [
@@ -286,6 +269,36 @@ export default function Step2() {
                                         />
                                         {errors.occupation && touched.occupation && (
                                             <span className="text-red-500 text-sm">{errors.occupation}</span>
+                                        )}
+                                    </div>
+
+                                    {/* Gender */}
+                                    <div className="flex flex-col gap-3">
+                                        <span className="text-white text-base font-medium">Giới tính</span>
+                                        <div className="grid grid-cols-3 gap-3">
+                                            {genderOptions.map((option) => (
+                                                <label key={option.value} className="cursor-pointer relative">
+                                                    <input
+                                                        type="radio"
+                                                        name="gender"
+                                                        value={option.value}
+                                                        checked={values.gender === option.value}
+                                                        onChange={() => setFieldValue('gender', option.value)}
+                                                        className="peer sr-only"
+                                                    />
+                                                    <div className={`rounded-xl border ${errors.gender && touched.gender ? 'border-red-500' : 'border-border-dark'} bg-surface-dark p-3 flex flex-col items-center justify-center gap-2 h-20 transition-all duration-200 hover:bg-border-dark peer-checked:border-primary peer-checked:ring-1 peer-checked:ring-primary peer-checked:bg-primary/10`}>
+                                                        <span className="material-symbols-outlined text-xl text-text-secondary peer-checked:text-primary transition-colors">
+                                                            {option.icon}
+                                                        </span>
+                                                        <span className="text-sm font-medium text-text-secondary peer-checked:text-white transition-colors">
+                                                            {option.label}
+                                                        </span>
+                                                    </div>
+                                                </label>
+                                            ))}
+                                        </div>
+                                        {errors.gender && touched.gender && (
+                                            <span className="text-red-500 text-sm">{errors.gender}</span>
                                         )}
                                     </div>
 
