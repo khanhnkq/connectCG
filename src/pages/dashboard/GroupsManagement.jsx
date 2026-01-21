@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import Sidebar from '../../components/layout/Sidebar';
 
 export default function GroupsManagement() {
@@ -31,9 +32,6 @@ export default function GroupsManagement() {
                             <span className="material-symbols-outlined text-xl group-hover:rotate-90 transition-transform">add</span>
                             Create New Group
                         </button>
-                        <button className="sm:hidden size-10 flex items-center justify-center rounded-full border border-primary text-primary hover:bg-primary hover:text-[#231810] transition-all">
-                            <span className="material-symbols-outlined">add</span>
-                        </button>
                     </div>
 
                     <div className="px-6 py-8">
@@ -52,32 +50,37 @@ export default function GroupsManagement() {
                             </div>
                             <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
                                 {yourGroups.map((group) => (
-                                    <div key={group.id} className="min-w-[240px] w-[240px] bg-card-dark rounded-2xl border border-[#3e2b1d] overflow-hidden group cursor-pointer hover:border-primary/50 transition-all shadow-md">
+                                    <Link
+                                        key={group.id}
+                                        to="/dashboard/newsfeed-1"
+                                        className="min-w-[240px] w-[240px] bg-card-dark rounded-2xl border border-[#3e2b1d] overflow-hidden group hover:border-primary/50 transition-all shadow-md block"
+                                    >
                                         <div className="h-28 bg-cover bg-center relative" style={{ backgroundImage: `url("${group.image}")` }}>
                                             <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-all" />
                                             {group.isAdmin && (
-                                                <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-full border border-white/10">
+                                                <div className="absolute top-2 right-2 bg-orange-500 text-[#231810] text-[9px] font-black px-2 py-0.5 rounded-full border border-white/10 shadow-lg">
                                                     ADMIN
                                                 </div>
                                             )}
                                         </div>
                                         <div className="p-4">
-                                            <h4 className="text-white font-bold text-lg leading-tight mb-1 truncate">{group.name}</h4>
+                                            <h4 className="text-white font-bold text-lg leading-tight mb-1 truncate group-hover:text-primary transition-colors">{group.name}</h4>
                                             <p className="text-text-secondary text-xs mb-3">{group.newPosts} new posts this week</p>
-                                            <div className="flex items-center -space-x-2">
-                                                <div className="size-7 rounded-full ring-2 ring-card-dark bg-[#493222] text-text-secondary text-[10px] font-bold flex items-center justify-center">
-                                                    +{group.members}
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center -space-x-2">
+                                                    <div className="size-7 rounded-full ring-2 ring-card-dark bg-[#493222] text-text-secondary text-[10px] font-bold flex items-center justify-center">
+                                                        +{group.members}
+                                                    </div>
                                                 </div>
+                                                {group.isAdmin && (
+                                                    <span className="text-[10px] font-black text-primary border border-primary/20 bg-primary/5 px-2 py-1 rounded-lg">
+                                                        Manage
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
-                                    </div>
+                                    </Link>
                                 ))}
-                                <div className="min-w-[240px] w-[240px] bg-[#2a1d15] rounded-2xl border-2 border-dashed border-[#493222] flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-[#342418] transition-all group">
-                                    <div className="size-12 rounded-full bg-[#342418] group-hover:bg-primary group-hover:text-[#231810] text-primary flex items-center justify-center mb-3 transition-colors">
-                                        <span className="material-symbols-outlined text-2xl">add</span>
-                                    </div>
-                                    <span className="text-text-secondary group-hover:text-white font-bold text-sm">Join New Group</span>
-                                </div>
                             </div>
                         </div>
 
