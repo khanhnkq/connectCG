@@ -2,15 +2,28 @@ import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
+import { uploadAvatar } from '../../utils/uploadImage';
 
 // Validation schema
 const Step2Schema = Yup.object().shape({
+    occupation: Yup.string()
+        .min(2, 'Nghề nghiệp phải có ít nhất 2 ký tự')
+        .max(50, 'Nghề nghiệp không được quá 50 ký tự')
+        .required('Vui lòng nhập nghề nghiệp'),
+    gender: Yup.string()
+        .oneOf(['male', 'female', 'other'], 'Vui lòng chọn giới tính')
+        .required('Vui lòng chọn giới tính'),
     maritalStatus: Yup.string()
         .oneOf(['single', 'divorced', 'widowed'], 'Vui lòng chọn tình trạng hôn nhân')
         .required('Vui lòng chọn tình trạng hôn nhân'),
     purpose: Yup.string()
         .oneOf(['love', 'friends', 'networking'], 'Vui lòng chọn mục đích tham gia')
         .required('Vui lòng chọn mục đích tham gia'),
+    hobbies: Yup.array()
+        .min(1, 'Vui lòng chọn ít nhất 1 sở thích')
+        .required('Vui lòng chọn sở thích'),
+    city: Yup.string()
+        .required('Vui lòng chọn thành phố'),
 });
 
 export default function Step2() {
@@ -19,8 +32,12 @@ export default function Step2() {
     const fileInputRef = useRef(null);
 
     const initialValues = {
+        occupation: '',
+        gender: '',
         maritalStatus: '',
         purpose: '',
+        hobbies: [],
+        city: '',
         avatar: null
     };
 
@@ -28,67 +45,41 @@ export default function Step2() {
         // Lấy dữ liệu từ Step 1
         const step1Data = JSON.parse(localStorage.getItem('registrationStep1') || '{}');
 
-        // Validate avatar nếu có
+        let avatarUrl = null;
+
+        // Upload avatar lên Cloudinary nếu có
         if (values.avatar) {
-            const file = values.avatar;
-            const maxSize = 5 * 1024 * 1024; // 5MB
-            const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-
-            if (file.size > maxSize) {
-                setErrors({ avatar: 'Kích thước ảnh không được vượt quá 5MB' });
-                setSubmitting(false);
-                return;
-            }
-
-            if (!allowedTypes.includes(file.type)) {
-                setErrors({ avatar: 'Chỉ hỗ trợ định dạng JPG, PNG, WebP, GIF' });
+            try {
+                console.log('Đang upload avatar lên Cloudinary...');
+                avatarUrl = await uploadAvatar(values.avatar);
+                console.log('Upload thành công:', avatarUrl);
+            } catch (error) {
+                setErrors({ avatar: error.message });
                 setSubmitting(false);
                 return;
             }
         }
 
-        // Tạo FormData để gửi lên server (bao gồm file)
-        const formData = new FormData();
-        formData.append('fullName', step1Data.fullName || '');
-        formData.append('email', step1Data.email || '');
-        formData.append('password', step1Data.password || '');
-        formData.append('dateOfBirth', step1Data.dateOfBirth || '');
-        formData.append('occupation', step1Data.occupation || '');
-        formData.append('maritalStatus', values.maritalStatus);
-        formData.append('purpose', values.purpose);
-
-        // Thêm avatar nếu có
-        if (values.avatar) {
-            formData.append('avatar', values.avatar);
-        }
+        // Chuẩn bị dữ liệu để gửi lên backend
+        const registrationData = {
+            // Từ Step 1
+            fullName: step1Data.fullName || '',
+            username: step1Data.username || '',
+            email: step1Data.email || '',
+            password: step1Data.password || '',
+            dateOfBirth: step1Data.dateOfBirth || '',
+            // Từ Step 2
+            occupation: values.occupation,
+            gender: values.gender,
+            maritalStatus: values.maritalStatus,
+            purpose: values.purpose,
+            hobbies: values.hobbies, // Array
+            city: values.city,
+            avatarUrl: avatarUrl, // URL từ Cloudinary
+        };
 
         // Log dữ liệu để kiểm tra
-        console.log('Registration FormData:');
-        for (let [key, value] of formData.entries()) {
-            console.log(`  ${key}:`, value);
-        }
-
-        // TODO: Gọi API đăng ký ở đây
-        // try {
-        //     const response = await fetch('/api/auth/register', {
-        //         method: 'POST',
-        //         body: formData,
-        //         // Không set Content-Type, browser tự động set multipart/form-data
-        //     });
-        //     
-        //     if (!response.ok) {
-        //         const error = await response.json();
-        //         throw new Error(error.message);
-        //     }
-        //     
-        //     const data = await response.json();
-        //     console.log('Registration success:', data);
-        // } catch (error) {
-        //     console.error('Registration failed:', error);
-        //     setErrors({ submit: error.message });
-        //     setSubmitting(false);
-        //     return;
-        // }
+        console.log('Registration Data:', registrationData);
 
         setSubmitting(false);
 
@@ -117,10 +108,53 @@ export default function Step2() {
         { value: 'widowed', label: 'Góa bụa' }
     ];
 
+    const genderOptions = [
+        { value: 'male', icon: 'male', label: 'Nam' },
+        { value: 'female', icon: 'female', label: 'Nữ' },
+        { value: 'other', icon: 'transgender', label: 'Khác' }
+    ];
+
     const purposeOptions = [
         { value: 'love', icon: 'favorite', label: 'Tìm tình yêu' },
         { value: 'friends', icon: 'diversity_3', label: 'Kết bạn' },
         { value: 'networking', icon: 'work', label: 'Kết nối' }
+    ];
+
+    const hobbiesOptions = [
+        { value: 'music', icon: 'music_note', label: 'Âm nhạc' },
+        { value: 'sports', icon: 'sports_soccer', label: 'Thể thao' },
+        { value: 'reading', icon: 'menu_book', label: 'Đọc sách' },
+        { value: 'travel', icon: 'flight', label: 'Du lịch' },
+        { value: 'cooking', icon: 'restaurant', label: 'Nấu ăn' },
+        { value: 'gaming', icon: 'sports_esports', label: 'Chơi game' },
+        { value: 'movies', icon: 'movie', label: 'Phim ảnh' },
+        { value: 'photography', icon: 'photo_camera', label: 'Nhiếp ảnh' },
+        { value: 'art', icon: 'palette', label: 'Nghệ thuật' },
+        { value: 'fitness', icon: 'fitness_center', label: 'Gym' },
+        { value: 'pets', icon: 'pets', label: 'Thú cưng' },
+        { value: 'technology', icon: 'computer', label: 'Công nghệ' },
+    ];
+
+    const cityOptions = [
+        { value: 'hanoi', label: 'Hà Nội' },
+        { value: 'hochiminh', label: 'TP. Hồ Chí Minh' },
+        { value: 'danang', label: 'Đà Nẵng' },
+        { value: 'haiphong', label: 'Hải Phòng' },
+        { value: 'cantho', label: 'Cần Thơ' },
+        { value: 'bienhoa', label: 'Biên Hòa' },
+        { value: 'nhatrang', label: 'Nha Trang' },
+        { value: 'hue', label: 'Huế' },
+        { value: 'vungtau', label: 'Vũng Tàu' },
+        { value: 'dalat', label: 'Đà Lạt' },
+        { value: 'quynhon', label: 'Quy Nhơn' },
+        { value: 'buonmethuot', label: 'Buôn Ma Thuột' },
+        { value: 'thanhhoa', label: 'Thanh Hóa' },
+        { value: 'ninhbinh', label: 'Ninh Bình' },
+        { value: 'halong', label: 'Hạ Long' },
+        { value: 'vinh', label: 'Vinh' },
+        { value: 'rachgia', label: 'Rạch Giá' },
+        { value: 'longan', label: 'Long An' },
+        { value: 'other', label: 'Khác' },
     ];
 
     return (
@@ -221,6 +255,53 @@ export default function Step2() {
                                         </button>
                                     </div>
 
+                                    {/* Occupation */}
+                                    <div className="flex flex-col gap-2">
+                                        <label htmlFor="occupation" className="text-white text-base font-medium">Nghề nghiệp</label>
+                                        <input
+                                            type="text"
+                                            id="occupation"
+                                            name="occupation"
+                                            value={values.occupation}
+                                            onChange={(e) => setFieldValue('occupation', e.target.value)}
+                                            className={`form-input w-full rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${errors.occupation && touched.occupation ? 'border-red-500' : 'border-border-dark'} bg-surface-dark h-14 px-4 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
+                                            placeholder="VD: Nhà thiết kế, Giáo viên, Lập trình viên"
+                                        />
+                                        {errors.occupation && touched.occupation && (
+                                            <span className="text-red-500 text-sm">{errors.occupation}</span>
+                                        )}
+                                    </div>
+
+                                    {/* Gender */}
+                                    <div className="flex flex-col gap-3">
+                                        <span className="text-white text-base font-medium">Giới tính</span>
+                                        <div className="grid grid-cols-3 gap-3">
+                                            {genderOptions.map((option) => (
+                                                <label key={option.value} className="cursor-pointer relative">
+                                                    <input
+                                                        type="radio"
+                                                        name="gender"
+                                                        value={option.value}
+                                                        checked={values.gender === option.value}
+                                                        onChange={() => setFieldValue('gender', option.value)}
+                                                        className="peer sr-only"
+                                                    />
+                                                    <div className={`rounded-xl border ${errors.gender && touched.gender ? 'border-red-500' : 'border-border-dark'} bg-surface-dark p-3 flex flex-col items-center justify-center gap-2 h-20 transition-all duration-200 hover:bg-border-dark peer-checked:border-primary peer-checked:ring-1 peer-checked:ring-primary peer-checked:bg-primary/10`}>
+                                                        <span className="material-symbols-outlined text-xl text-text-secondary peer-checked:text-primary transition-colors">
+                                                            {option.icon}
+                                                        </span>
+                                                        <span className="text-sm font-medium text-text-secondary peer-checked:text-white transition-colors">
+                                                            {option.label}
+                                                        </span>
+                                                    </div>
+                                                </label>
+                                            ))}
+                                        </div>
+                                        {errors.gender && touched.gender && (
+                                            <span className="text-red-500 text-sm">{errors.gender}</span>
+                                        )}
+                                    </div>
+
                                     {/* Marital Status */}
                                     <div className="flex flex-col gap-3">
                                         <span className="text-white text-base font-medium">Tình trạng hôn nhân</span>
@@ -273,6 +354,70 @@ export default function Step2() {
                                         </div>
                                         {errors.purpose && touched.purpose && (
                                             <span className="text-red-500 text-sm">{errors.purpose}</span>
+                                        )}
+                                    </div>
+
+                                    {/* Hobbies */}
+                                    <div className="flex flex-col gap-3">
+                                        <span className="text-white text-base font-medium">Sở thích của bạn</span>
+                                        <p className="text-text-secondary text-sm -mt-1">Chọn ít nhất 1 sở thích</p>
+                                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                                            {hobbiesOptions.map((hobby) => {
+                                                const isSelected = values.hobbies.includes(hobby.value);
+                                                return (
+                                                    <label key={hobby.value} className="cursor-pointer relative">
+                                                        <input
+                                                            type="checkbox"
+                                                            value={hobby.value}
+                                                            checked={isSelected}
+                                                            onChange={() => {
+                                                                if (isSelected) {
+                                                                    setFieldValue('hobbies', values.hobbies.filter(h => h !== hobby.value));
+                                                                } else {
+                                                                    setFieldValue('hobbies', [...values.hobbies, hobby.value]);
+                                                                }
+                                                            }}
+                                                            className="peer sr-only"
+                                                        />
+                                                        <div className={`rounded-xl border ${errors.hobbies && touched.hobbies ? 'border-red-500' : 'border-border-dark'} bg-surface-dark p-3 flex flex-col items-center justify-center gap-2 text-center h-20 transition-all duration-200 hover:bg-border-dark ${isSelected ? 'border-primary ring-1 ring-primary bg-primary/10' : ''}`}>
+                                                            <span className={`material-symbols-outlined text-xl ${isSelected ? 'text-primary' : 'text-text-secondary'} transition-colors`}>
+                                                                {hobby.icon}
+                                                            </span>
+                                                            <span className={`text-xs font-medium ${isSelected ? 'text-white' : 'text-text-secondary'}`}>{hobby.label}</span>
+                                                        </div>
+                                                    </label>
+                                                );
+                                            })}
+                                        </div>
+                                        {errors.hobbies && touched.hobbies && (
+                                            <span className="text-red-500 text-sm">{errors.hobbies}</span>
+                                        )}
+                                    </div>
+
+                                    {/* City */}
+                                    <div className="flex flex-col gap-2">
+                                        <label htmlFor="city" className="text-white text-base font-medium">Thành phố</label>
+                                        <div className="relative">
+                                            <select
+                                                id="city"
+                                                name="city"
+                                                value={values.city}
+                                                onChange={(e) => setFieldValue('city', e.target.value)}
+                                                className={`form-select w-full rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${errors.city && touched.city ? 'border-red-500' : 'border-border-dark'} bg-surface-dark h-14 px-4 text-base transition-all duration-200 appearance-none cursor-pointer`}
+                                            >
+                                                <option value="" className="bg-surface-dark text-text-secondary">Chọn thành phố...</option>
+                                                {cityOptions.map((city) => (
+                                                    <option key={city.value} value={city.value} className="bg-surface-dark text-white">
+                                                        {city.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none">
+                                                expand_more
+                                            </span>
+                                        </div>
+                                        {errors.city && touched.city && (
+                                            <span className="text-red-500 text-sm">{errors.city}</span>
                                         )}
                                     </div>
 

@@ -9,13 +9,14 @@ const Step1Schema = Yup.object().shape({
         .min(2, 'Họ tên phải có ít nhất 2 ký tự')
         .max(50, 'Họ tên không được quá 50 ký tự')
         .required('Vui lòng nhập họ và tên'),
+    username: Yup.string()
+        .min(3, 'Tên đăng nhập phải có ít nhất 3 ký tự')
+        .max(20, 'Tên đăng nhập không được quá 20 ký tự')
+        .matches(/^[a-zA-Z0-9_]+$/, 'Chỉ cho phép chữ cái, số và dấu gạch dưới')
+        .required('Vui lòng nhập tên đăng nhập'),
     dateOfBirth: Yup.date()
         .max(new Date(), 'Ngày sinh không hợp lệ')
         .required('Vui lòng chọn ngày sinh'),
-    occupation: Yup.string()
-        .min(2, 'Nghề nghiệp phải có ít nhất 2 ký tự')
-        .max(50, 'Nghề nghiệp không được quá 50 ký tự')
-        .required('Vui lòng nhập nghề nghiệp'),
     email: Yup.string()
         .email('Email không hợp lệ')
         .required('Vui lòng nhập email'),
@@ -33,8 +34,8 @@ export default function Step1() {
 
     const initialValues = {
         fullName: '',
+        username: '',
         dateOfBirth: '',
-        occupation: '',
         email: '',
         password: ''
     };
@@ -130,6 +131,24 @@ export default function Step1() {
                                         )}
                                     </div>
 
+                                    {/* Username */}
+                                    <div className="flex flex-col gap-2">
+                                        <label htmlFor="username" className="text-white text-base font-medium">Tên đăng nhập</label>
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary">@</span>
+                                            <Field
+                                                type="text"
+                                                name="username"
+                                                id="username"
+                                                className={`form-input w-full rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${errors.username && touched.username ? 'border-red-500' : 'border-border-dark'} bg-surface-dark h-14 pl-10 pr-4 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
+                                                placeholder="nguyen_van_a"
+                                            />
+                                        </div>
+                                        {errors.username && touched.username && (
+                                            <span className="text-red-500 text-sm">{errors.username}</span>
+                                        )}
+                                    </div>
+
                                     {/* Date of Birth */}
                                     <div className="flex flex-col gap-2">
                                         <label htmlFor="dateOfBirth" className="text-white text-base font-medium">Ngày sinh</label>
@@ -143,21 +162,6 @@ export default function Step1() {
                                         </div>
                                         {errors.dateOfBirth && touched.dateOfBirth && (
                                             <span className="text-red-500 text-sm">{errors.dateOfBirth}</span>
-                                        )}
-                                    </div>
-
-                                    {/* Occupation */}
-                                    <div className="flex flex-col gap-2">
-                                        <label htmlFor="occupation" className="text-white text-base font-medium">Nghề nghiệp</label>
-                                        <Field
-                                            type="text"
-                                            name="occupation"
-                                            id="occupation"
-                                            className={`form-input w-full rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${errors.occupation && touched.occupation ? 'border-red-500' : 'border-border-dark'} bg-surface-dark h-14 px-4 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
-                                            placeholder="VD: Nhà thiết kế, Giáo viên"
-                                        />
-                                        {errors.occupation && touched.occupation && (
-                                            <span className="text-red-500 text-sm">{errors.occupation}</span>
                                         )}
                                     </div>
 
