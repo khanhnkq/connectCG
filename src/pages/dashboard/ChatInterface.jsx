@@ -1,6 +1,8 @@
 import Sidebar from '../../components/layout/Sidebar';
 import ReportModal from "../../components/report/ReportModal";
 import { useState } from "react";
+import toast from 'react-hot-toast';
+
 
 export default function ChatInterface() {
     const conversations = [
@@ -18,7 +20,7 @@ export default function ChatInterface() {
         { type: 'sent', text: "That sounds amazing! Let's go! Friday works for me.", time: 'Just now', read: false }
     ];
 
-    {/* Report */}
+    {/* Report */ }
     const [showReportUser, setShowReportUser] = useState(false);
     const user = {
         id: 1,
@@ -210,7 +212,7 @@ export default function ChatInterface() {
                                 <span className="material-symbols-outlined text-text-secondary text-[16px]">chevron_right</span>
                             </button>
 
-                            
+
                             <button
                                 onClick={() => setShowReportUser(true)}
                                 className="w-full flex items-center justify-between p-3 rounded-xl bg-[#2A1D15] hover:bg-[#3A2A20] border border-[#3A2A20] group transition-colors text-left"
@@ -245,6 +247,19 @@ export default function ChatInterface() {
                 targetPayload={{ targetType: "USER", userId: user.id }}
                 onSubmit={(data) => {
                     console.log("REPORT USER:", data);
+                    toast.success("Báo cáo thành công! Cảm ơn bạn đã phản hồi.", {
+                        style: {
+                            background: "#1A120B",      // đen nâu
+                            color: "#FF8A2A",           // cam
+                            border: "1px solid #FF8A2A",
+                            fontWeight: "600",
+                        },
+                        iconTheme: {
+                            primary: "#FF8A2A",
+                            secondary: "#1A120B",
+                        },
+                    });
+
                     setShowReportUser(false);
                 }}
             />

@@ -3,11 +3,13 @@ import Sidebar from '../../components/layout/Sidebar';
 import PostComposer from '../../components/feed/PostComposer';
 import PostCard from '../../components/feed/PostCard';
 import toast from 'react-hot-toast';
-import ConfirmModal from '../../components/admin/ConfirmModal';
+import ReportModal from "../../components/report/ReportModal";
 
 export default function NewsfeedDashboard1() {
     const [isAdmin] = useState(true); // Mocking admin status for demonstration
     const [activeTab, setActiveTab] = useState('Feed');
+    const [showReportGroup, setShowReportGroup] = useState(false);
+
 
     const [pendingPosts, setPendingPosts] = useState([
         { id: 1, author: "John Doe", content: "Is the Nikon Z9 worth it for wildlife?", time: "2h ago", image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=80" },
@@ -18,6 +20,11 @@ export default function NewsfeedDashboard1() {
         { id: 101, name: "Lucas Vance", bio: "Landscape enthusiast from Seattle", avatar: "https://i.pravatar.cc/150?u=lucas", time: "1h ago" },
         { id: 102, name: "Elena Rossi", bio: "Film photography is my passion", avatar: "https://i.pravatar.cc/150?u=elena", time: "3h ago" }
     ]);
+    const group = {
+        id: 1,
+        name: "Photography Lovers",
+        type: "PUBLIC",
+    };
 
     const [modTab, setModTab] = useState('Posts'); // 'Posts' or 'Members'
 
@@ -95,12 +102,13 @@ export default function NewsfeedDashboard1() {
                                     Invite
                                 </button>
                                 <button
-                                    onClick={() => handleAction('Report', 'this group', 'warning')}
+                                    onClick={() => setShowReportGroup(true)}
                                     className="size-10 flex items-center justify-center rounded-full bg-yellow-500/10 hover:bg-yellow-500 text-yellow-500 hover:text-white border border-yellow-500/20 backdrop-blur-md transition-all"
-                                    title="Report Group"
+                                    title="Báo cáo nhóm"
                                 >
                                     <span className="material-symbols-outlined !text-[20px]">report</span>
                                 </button>
+
                                 <button className="size-10 flex items-center justify-center rounded-full bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/20 backdrop-blur-md transition-all group">
                                     <span className="material-symbols-outlined !text-[20px]">logout</span>
                                 </button>
@@ -320,15 +328,40 @@ export default function NewsfeedDashboard1() {
                 </div>
             </main>
 
-            <ConfirmModal
-                isOpen={confirmConfig.isOpen}
-                title={confirmConfig.title}
-                message={confirmConfig.message}
-                type={confirmConfig.type}
-                onConfirm={confirmConfig.onConfirm}
-                onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
-                confirmText="Confirm"
+            <ReportModal
+                isOpen={showReportGroup}
+                onClose={() => setShowReportGroup(false)}
+                title={`Báo cáo nhóm ${group.name}`}
+                subtitle="Hãy cho chúng tôi biết lý do bạn muốn báo cáo nhóm này"
+                reasons={[
+                    "Nội dung không phù hợp",
+                    "Spam hoặc lừa đảo",
+                    "Quấy rối hoặc bắt nạt",
+                    "Ngôn từ thù ghét",
+                    "Nhóm giả mạo",
+                    "Khác",
+                ]}
+                targetPayload={{ targetType: "GROUP", groupId: group.id }}
+                onSubmit={(data) => {
+                    console.log("REPORT GROUP:", data);
+
+                    toast.success("Báo cáo thành công! Cảm ơn bạn đã phản hồi.", {
+                        style: {
+                            background: "#1A120B",      // đen nâu
+                            color: "#FF8A2A",           // cam
+                            border: "1px solid #FF8A2A",
+                            fontWeight: "600",
+                        },
+                        iconTheme: {
+                            primary: "#FF8A2A",
+                            secondary: "#1A120B",
+                        },
+                    });
+
+                    setShowReportGroup(false);
+                }}
             />
+
         </div>
     );
 }
