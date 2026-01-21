@@ -12,10 +12,6 @@ const Step1Schema = Yup.object().shape({
     dateOfBirth: Yup.date()
         .max(new Date(), 'Ngày sinh không hợp lệ')
         .required('Vui lòng chọn ngày sinh'),
-    occupation: Yup.string()
-        .min(2, 'Nghề nghiệp phải có ít nhất 2 ký tự')
-        .max(50, 'Nghề nghiệp không được quá 50 ký tự')
-        .required('Vui lòng nhập nghề nghiệp'),
     email: Yup.string()
         .email('Email không hợp lệ')
         .required('Vui lòng nhập email'),
@@ -34,7 +30,6 @@ export default function Step1() {
     const initialValues = {
         fullName: '',
         dateOfBirth: '',
-        occupation: '',
         email: '',
         password: ''
     };
@@ -143,21 +138,6 @@ export default function Step1() {
                                         </div>
                                         {errors.dateOfBirth && touched.dateOfBirth && (
                                             <span className="text-red-500 text-sm">{errors.dateOfBirth}</span>
-                                        )}
-                                    </div>
-
-                                    {/* Occupation */}
-                                    <div className="flex flex-col gap-2">
-                                        <label htmlFor="occupation" className="text-white text-base font-medium">Nghề nghiệp</label>
-                                        <Field
-                                            type="text"
-                                            name="occupation"
-                                            id="occupation"
-                                            className={`form-input w-full rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${errors.occupation && touched.occupation ? 'border-red-500' : 'border-border-dark'} bg-surface-dark h-14 px-4 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
-                                            placeholder="VD: Nhà thiết kế, Giáo viên"
-                                        />
-                                        {errors.occupation && touched.occupation && (
-                                            <span className="text-red-500 text-sm">{errors.occupation}</span>
                                         )}
                                     </div>
 
