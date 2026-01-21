@@ -85,9 +85,15 @@ export default function GroupsManagement() {
                                                     </div>
                                                 </div>
                                                 {group.isAdmin && (
-                                                    <span className="text-[9px] font-black text-primary border border-primary/30 bg-primary/10 px-2 py-1 rounded-lg uppercase">
-                                                        Control
-                                                    </span>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            navigate(`/dashboard/groups/edit/${group.id}`);
+                                                        }}
+                                                        className="size-8 flex items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20 hover:bg-primary hover:text-white transition-all shadow-lg"
+                                                    >
+                                                        <span className="material-symbols-outlined text-lg">settings</span>
+                                                    </button>
                                                 )}
                                             </div>
                                         </div>
