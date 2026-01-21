@@ -1,12 +1,35 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Formik, Form, Field } from 'formik';
+import * as Yup from 'yup';
+
+// Validation schema
+const ForgotPasswordSchema = Yup.object().shape({
+    email: Yup.string()
+        .email('Email không hợp lệ')
+        .required('Vui lòng nhập địa chỉ email'),
+});
 
 export default function ForgotPassword() {
-    const [email, setEmail] = useState('');
+    const [isEmailSent, setIsEmailSent] = useState(false);
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log('Reset link sent to:', email);
+    const initialValues = {
+        email: ''
+    };
+
+    const handleSubmit = (values, { setSubmitting }) => {
+        console.log('Reset link sent to:', values.email);
+
+        // TODO: Gọi API gửi email reset password ở đây
+        // try {
+        //     await sendResetEmail(values.email);
+        //     setIsEmailSent(true);
+        // } catch (error) {
+        //     setErrors({ email: 'Không thể gửi email. Vui lòng thử lại.' });
+        // }
+
+        setSubmitting(false);
+        setIsEmailSent(true);
     };
 
     return (
@@ -26,10 +49,10 @@ export default function ForgotPassword() {
                         <span className="text-2xl font-bold tracking-tight text-white">Connect</span>
                     </div>
                     <h2 className="text-4xl md:text-5xl font-extrabold leading-tight mb-4 tracking-tight text-white">
-                        Find meaningful connections tailored to you.
+                        Tìm kiếm những kết nối ý nghĩa dành riêng cho bạn.
                     </h2>
                     <p className="text-text-secondary text-lg leading-relaxed max-w-md">
-                        Join a community of millions of people who have found their perfect match. Start your journey today.
+                        Tham gia cộng đồng hàng triệu người đã tìm thấy một nửa hoàn hảo của mình. Bắt đầu hành trình của bạn ngay hôm nay.
                     </p>
                 </div>
             </div>
@@ -45,32 +68,69 @@ export default function ForgotPassword() {
 
                 <div className="flex-1 flex flex-col justify-center py-10 px-6 sm:px-12 md:px-20 lg:px-24">
                     <div className="max-w-[480px] w-full mx-auto">
-                        <h1 className="text-3xl font-bold leading-tight tracking-tight mb-2 text-white">
-                            Forgot Password?
-                        </h1>
-                        <p className="text-text-secondary text-base mb-8">
-                            Enter your email address and we will send you instructions to reset your password.
-                        </p>
+                        {isEmailSent ? (
+                            // Success message
+                            <div className="text-center">
+                                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-primary/20 flex items-center justify-center">
+                                    <span className="material-symbols-outlined text-4xl text-primary">mark_email_read</span>
+                                </div>
+                                <h1 className="text-3xl font-bold leading-tight tracking-tight mb-2 text-white">
+                                    Kiểm tra email của bạn
+                                </h1>
+                                <p className="text-text-secondary text-base mb-8">
+                                    Chúng tôi đã gửi hướng dẫn đặt lại mật khẩu đến email của bạn. Vui lòng kiểm tra hộp thư (bao gồm cả thư rác).
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsEmailSent(false)}
+                                    className="text-primary hover:text-white font-medium transition-colors"
+                                >
+                                    Gửi lại email
+                                </button>
+                            </div>
+                        ) : (
+                            // Form
+                            <>
+                                <h1 className="text-3xl font-bold leading-tight tracking-tight mb-2 text-white">
+                                    Quên mật khẩu?
+                                </h1>
+                                <p className="text-text-secondary text-base mb-8">
+                                    Nhập địa chỉ email của bạn và chúng tôi sẽ gửi hướng dẫn để đặt lại mật khẩu.
+                                </p>
 
-                        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-                            <label className="flex flex-col gap-2">
-                                <span className="text-white text-base font-medium">Email Address</span>
-                                <input
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="form-input w-full rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border border-border-dark bg-surface-dark h-14 px-4 placeholder:text-text-secondary/60 text-base transition-all duration-200"
-                                    placeholder="e.g. alex@example.com"
-                                />
-                            </label>
+                                <Formik
+                                    initialValues={initialValues}
+                                    validationSchema={ForgotPasswordSchema}
+                                    onSubmit={handleSubmit}
+                                >
+                                    {({ errors, touched, isSubmitting }) => (
+                                        <Form className="flex flex-col gap-5">
+                                            <div className="flex flex-col gap-2">
+                                                <label htmlFor="email" className="text-white text-base font-medium">Địa chỉ Email</label>
+                                                <Field
+                                                    type="email"
+                                                    name="email"
+                                                    id="email"
+                                                    className={`form-input w-full rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${errors.email && touched.email ? 'border-red-500' : 'border-border-dark'} bg-surface-dark h-14 px-4 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
+                                                    placeholder="VD: alex@example.com"
+                                                />
+                                                {errors.email && touched.email && (
+                                                    <span className="text-red-500 text-sm">{errors.email}</span>
+                                                )}
+                                            </div>
 
-                            <button
-                                type="submit"
-                                className="mt-4 flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-full h-14 bg-primary hover:bg-orange-600 text-white text-lg font-bold leading-normal tracking-wide transition-colors shadow-lg shadow-orange-900/20"
-                            >
-                                Send Reset Link
-                            </button>
-                        </form>
+                                            <button
+                                                type="submit"
+                                                disabled={isSubmitting}
+                                                className="mt-4 flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-full h-14 bg-primary hover:bg-orange-600 text-white text-lg font-bold leading-normal tracking-wide transition-colors shadow-lg shadow-orange-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                {isSubmitting ? 'Đang gửi...' : 'Gửi liên kết đặt lại'}
+                                            </button>
+                                        </Form>
+                                    )}
+                                </Formik>
+                            </>
+                        )}
 
                         <div className="mt-8 text-center">
                             <Link
@@ -78,7 +138,7 @@ export default function ForgotPassword() {
                                 className="inline-flex items-center gap-2 text-text-secondary hover:text-white transition-colors text-sm font-medium"
                             >
                                 <span className="material-symbols-outlined text-[20px]">arrow_back</span>
-                                Back to Login
+                                Quay lại Đăng nhập
                             </Link>
                         </div>
                     </div>

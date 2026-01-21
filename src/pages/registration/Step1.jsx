@@ -1,27 +1,51 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { Formik, Form, Field } from 'formik';
+import * as Yup from 'yup';
+
+// Validation schema
+const Step1Schema = Yup.object().shape({
+    fullName: Yup.string()
+        .min(2, 'Họ tên phải có ít nhất 2 ký tự')
+        .max(50, 'Họ tên không được quá 50 ký tự')
+        .required('Vui lòng nhập họ và tên'),
+    dateOfBirth: Yup.date()
+        .max(new Date(), 'Ngày sinh không hợp lệ')
+        .required('Vui lòng chọn ngày sinh'),
+    occupation: Yup.string()
+        .min(2, 'Nghề nghiệp phải có ít nhất 2 ký tự')
+        .max(50, 'Nghề nghiệp không được quá 50 ký tự')
+        .required('Vui lòng nhập nghề nghiệp'),
+    email: Yup.string()
+        .email('Email không hợp lệ')
+        .required('Vui lòng nhập email'),
+    password: Yup.string()
+        .min(8, 'Mật khẩu phải có ít nhất 8 ký tự')
+        .matches(/[a-z]/, 'Mật khẩu phải chứa ít nhất 1 chữ thường')
+        .matches(/[A-Z]/, 'Mật khẩu phải chứa ít nhất 1 chữ hoa')
+        .matches(/[0-9]/, 'Mật khẩu phải chứa ít nhất 1 số')
+        .required('Vui lòng nhập mật khẩu'),
+});
 
 export default function Step1() {
     const [showPassword, setShowPassword] = useState(false);
-    const [formData, setFormData] = useState({
+    const navigate = useNavigate();
+
+    const initialValues = {
         fullName: '',
         dateOfBirth: '',
         occupation: '',
         email: '',
         password: ''
-    });
-
-    const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        // Handle form submission
-        console.log('Form submitted:', formData);
+    const handleSubmit = (values, { setSubmitting }) => {
+        // Lưu dữ liệu vào localStorage để sử dụng ở Step 2
+        localStorage.setItem('registrationStep1', JSON.stringify(values));
+        console.log('Step 1 submitted:', values);
+        setSubmitting(false);
+        // Chuyển đến Step 2
+        navigate('/registration/step-2');
     };
 
     return (
@@ -44,10 +68,10 @@ export default function Step1() {
                         <span className="text-2xl font-bold tracking-tight text-white">Connect</span>
                     </div>
                     <h2 className="text-4xl md:text-5xl font-extrabold leading-tight mb-4 tracking-tight text-white">
-                        Find meaningful connections tailored to you.
+                        Tìm kiếm những kết nối ý nghĩa dành riêng cho bạn.
                     </h2>
                     <p className="text-text-secondary text-lg leading-relaxed max-w-md">
-                        Join a community of millions of people who have found their perfect match. Start your journey today.
+                        Tham gia cộng đồng hàng triệu người đã tìm thấy một nửa hoàn hảo của mình. Bắt đầu hành trình của bạn ngay hôm nay.
                     </p>
                 </div>
             </div>
@@ -67,8 +91,8 @@ export default function Step1() {
                         {/* Progress Bar */}
                         <div className="flex flex-col gap-3 mb-8">
                             <div className="flex gap-6 justify-between items-end">
-                                <p className="text-white text-base font-medium leading-normal">Step 1 of 2</p>
-                                <span className="text-text-secondary text-sm font-medium">Personal Details</span>
+                                <p className="text-white text-base font-medium leading-normal">Bước 1 / 2</p>
+                                <span className="text-text-secondary text-sm font-medium">Thông tin cá nhân</span>
                             </div>
                             <div className="rounded-full bg-border-dark h-2 overflow-hidden">
                                 <div className="h-full rounded-full bg-primary w-1/2" />
@@ -77,100 +101,118 @@ export default function Step1() {
 
                         {/* Title */}
                         <h1 className="text-3xl font-bold leading-tight tracking-tight mb-2 text-white">
-                            Create your profile
+                            Tạo hồ sơ của bạn
                         </h1>
                         <p className="text-text-secondary text-base mb-8">
-                            Enter your details to get started.
+                            Nhập thông tin cá nhân của bạn để bắt đầu.
                         </p>
 
                         {/* Form */}
-                        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-                            {/* Full Name */}
-                            <label className="flex flex-col gap-2">
-                                <span className="text-white text-base font-medium">Full Name</span>
-                                <input
-                                    type="text"
-                                    name="fullName"
-                                    value={formData.fullName}
-                                    onChange={handleChange}
-                                    className="form-input w-full rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border border-border-dark bg-surface-dark h-14 px-4 placeholder:text-text-secondary/60 text-base transition-all duration-200"
-                                    placeholder="e.g. Alex Smith"
-                                />
-                            </label>
+                        <Formik
+                            initialValues={initialValues}
+                            validationSchema={Step1Schema}
+                            onSubmit={handleSubmit}
+                        >
+                            {({ errors, touched, isSubmitting }) => (
+                                <Form className="flex flex-col gap-5">
+                                    {/* Full Name */}
+                                    <div className="flex flex-col gap-2">
+                                        <label htmlFor="fullName" className="text-white text-base font-medium">Họ và tên</label>
+                                        <Field
+                                            type="text"
+                                            name="fullName"
+                                            id="fullName"
+                                            className={`form-input w-full rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${errors.fullName && touched.fullName ? 'border-red-500' : 'border-border-dark'} bg-surface-dark h-14 px-4 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
+                                            placeholder="VD: Nguyễn Văn A"
+                                        />
+                                        {errors.fullName && touched.fullName && (
+                                            <span className="text-red-500 text-sm">{errors.fullName}</span>
+                                        )}
+                                    </div>
 
-                            {/* Date of Birth */}
-                            <label className="flex flex-col gap-2">
-                                <span className="text-white text-base font-medium">Date of Birth</span>
-                                <div className="relative">
-                                    <input
-                                        type="date"
-                                        name="dateOfBirth"
-                                        value={formData.dateOfBirth}
-                                        onChange={handleChange}
-                                        className="form-input w-full rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border border-border-dark bg-surface-dark h-14 px-4 text-base transition-all duration-200 appearance-none"
-                                        placeholder="DD/MM/YYYY"
-                                    />
-                                </div>
-                            </label>
+                                    {/* Date of Birth */}
+                                    <div className="flex flex-col gap-2">
+                                        <label htmlFor="dateOfBirth" className="text-white text-base font-medium">Ngày sinh</label>
+                                        <div className="relative">
+                                            <Field
+                                                type="date"
+                                                name="dateOfBirth"
+                                                id="dateOfBirth"
+                                                className={`form-input w-full rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${errors.dateOfBirth && touched.dateOfBirth ? 'border-red-500' : 'border-border-dark'} bg-surface-dark h-14 px-4 text-base transition-all duration-200 appearance-none`}
+                                            />
+                                        </div>
+                                        {errors.dateOfBirth && touched.dateOfBirth && (
+                                            <span className="text-red-500 text-sm">{errors.dateOfBirth}</span>
+                                        )}
+                                    </div>
 
-                            {/* Occupation */}
-                            <label className="flex flex-col gap-2">
-                                <span className="text-white text-base font-medium">Occupation</span>
-                                <input
-                                    type="text"
-                                    name="occupation"
-                                    value={formData.occupation}
-                                    onChange={handleChange}
-                                    className="form-input w-full rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border border-border-dark bg-surface-dark h-14 px-4 placeholder:text-text-secondary/60 text-base transition-all duration-200"
-                                    placeholder="e.g. Designer, Teacher"
-                                />
-                            </label>
+                                    {/* Occupation */}
+                                    <div className="flex flex-col gap-2">
+                                        <label htmlFor="occupation" className="text-white text-base font-medium">Nghề nghiệp</label>
+                                        <Field
+                                            type="text"
+                                            name="occupation"
+                                            id="occupation"
+                                            className={`form-input w-full rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${errors.occupation && touched.occupation ? 'border-red-500' : 'border-border-dark'} bg-surface-dark h-14 px-4 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
+                                            placeholder="VD: Nhà thiết kế, Giáo viên"
+                                        />
+                                        {errors.occupation && touched.occupation && (
+                                            <span className="text-red-500 text-sm">{errors.occupation}</span>
+                                        )}
+                                    </div>
 
-                            {/* Email */}
-                            <label className="flex flex-col gap-2">
-                                <span className="text-white text-base font-medium">Email Address</span>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    className="form-input w-full rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border border-border-dark bg-surface-dark h-14 px-4 placeholder:text-text-secondary/60 text-base transition-all duration-200"
-                                    placeholder="name@example.com"
-                                />
-                            </label>
+                                    {/* Email */}
+                                    <div className="flex flex-col gap-2">
+                                        <label htmlFor="email" className="text-white text-base font-medium">Địa chỉ Email</label>
+                                        <Field
+                                            type="email"
+                                            name="email"
+                                            id="email"
+                                            className={`form-input w-full rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${errors.email && touched.email ? 'border-red-500' : 'border-border-dark'} bg-surface-dark h-14 px-4 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
+                                            placeholder="email@example.com"
+                                        />
+                                        {errors.email && touched.email && (
+                                            <span className="text-red-500 text-sm">{errors.email}</span>
+                                        )}
+                                    </div>
 
-                            {/* Password */}
-                            <label className="flex flex-col gap-2">
-                                <span className="text-white text-base font-medium">Password</span>
-                                <div className="relative flex items-center">
-                                    <input
-                                        type={showPassword ? "text" : "password"}
-                                        name="password"
-                                        value={formData.password}
-                                        onChange={handleChange}
-                                        className="form-input w-full rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border border-border-dark bg-surface-dark h-14 pl-4 pr-12 placeholder:text-text-secondary/60 text-base transition-all duration-200"
-                                        placeholder="Min. 8 characters"
-                                    />
+                                    {/* Password */}
+                                    <div className="flex flex-col gap-2">
+                                        <label htmlFor="password" className="text-white text-base font-medium">Mật khẩu</label>
+                                        <div className="relative flex items-center">
+                                            <Field
+                                                type={showPassword ? "text" : "password"}
+                                                name="password"
+                                                id="password"
+                                                className={`form-input w-full rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${errors.password && touched.password ? 'border-red-500' : 'border-border-dark'} bg-surface-dark h-14 pl-4 pr-12 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
+                                                placeholder="Tối thiểu 8 ký tự"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute right-4 cursor-pointer text-text-secondary hover:text-primary transition-colors"
+                                            >
+                                                <span className="material-symbols-outlined text-[20px] leading-none">
+                                                    {showPassword ? 'visibility_off' : 'visibility'}
+                                                </span>
+                                            </button>
+                                        </div>
+                                        {errors.password && touched.password && (
+                                            <span className="text-red-500 text-sm">{errors.password}</span>
+                                        )}
+                                    </div>
+
+                                    {/* Submit Button */}
                                     <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-4 text-text-secondary hover:text-primary transition-colors"
+                                        type="submit"
+                                        disabled={isSubmitting}
+                                        className="mt-4 flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-full h-14 bg-primary hover:bg-orange-600 text-white text-lg font-bold leading-normal tracking-wide transition-colors shadow-lg shadow-orange-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        <span className="material-symbols-outlined text-[20px] leading-none">
-                                            {showPassword ? 'visibility_off' : 'visibility'}
-                                        </span>
+                                        {isSubmitting ? 'Đang xử lý...' : 'Tiếp tục'}
                                     </button>
-                                </div>
-                            </label>
-
-                            {/* Submit Button */}
-                            <button
-                                type="submit"
-                                className="mt-4 flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-full h-14 bg-primary hover:bg-orange-600 text-white text-lg font-bold leading-normal tracking-wide transition-colors shadow-lg shadow-orange-900/20"
-                            >
-                                Continue
-                            </button>
-                        </form>
+                                </Form>
+                            )}
+                        </Formik>
 
                         {/* Divider */}
                         <div className="relative my-8">
@@ -179,7 +221,7 @@ export default function Step1() {
                             </div>
                             <div className="relative flex justify-center">
                                 <span className="bg-background-dark px-4 text-sm text-text-secondary">
-                                    Or continue with
+                                    Hoặc tiếp tục với
                                 </span>
                             </div>
                         </div>
@@ -200,17 +242,17 @@ export default function Step1() {
                                 className="flex items-center justify-center gap-3 rounded-xl border border-border-dark bg-surface-dark hover:bg-border-dark h-14 px-4 transition-colors"
                             >
                                 <svg aria-hidden="true" className="h-5 w-5 fill-white" viewBox="0 0 24 24">
-                                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09zM12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23zM5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84zM12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                                 </svg>
-                                <span className="text-white font-medium">Twitter</span>
+                                <span className="text-white font-medium">Google</span>
                             </button>
                         </div>
 
                         {/* Login Link */}
                         <p className="text-center text-text-secondary text-sm">
-                            Already have an account?{' '}
+                            Đã có tài khoản?{' '}
                             <Link to="/login" className="text-primary hover:text-white font-bold transition-colors">
-                                Log In
+                                Đăng nhập
                             </Link>
                         </p>
                     </div>
