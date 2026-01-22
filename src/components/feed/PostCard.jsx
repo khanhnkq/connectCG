@@ -1,5 +1,24 @@
+import { useState, useRef, useEffect } from "react";
+import ReportModal from "../../components/report/ReportModal";
+import toast from 'react-hot-toast';
+
+
 export default function PostCard({ author, time, content, image, stats = { likes: 0, comments: 0, shares: 0 }, type = 'feed', children }) {
     // type: 'feed' (Newsfeed/Timeline), 'dashboard' (NewsfeedDashboard1), or 'admin' (Admin moderation view)
+    const [showMenu, setShowMenu] = useState(false);
+    const menuRef = useRef(null);
+    const [showReportModal, setShowReportModal] = useState(false);
+
+
+    useEffect(() => {
+        function handleClickOutside(e) {
+            if (menuRef.current && !menuRef.current.contains(e.target)) {
+                setShowMenu(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     return (
         <article className={`bg-card-dark rounded-2xl border border-[#3e2b1d] overflow-hidden ${type === 'dashboard' ? 'shadow-lg' : 'shadow-sm'}`}>
@@ -32,9 +51,80 @@ export default function PostCard({ author, time, content, image, stats = { likes
                         </p>
                     </div>
                 </div>
-                <button className="text-text-secondary hover:text-white p-2 rounded-full hover:bg-[#493222] transition-colors">
-                    <span className="material-symbols-outlined">more_horiz</span>
-                </button>
+                {/* MENU 3 CHẤM */}
+                <div className="relative" ref={menuRef}>
+                    <button
+                        onClick={() => setShowMenu((prev) => !prev)}
+                        className="
+      size-9
+      flex items-center justify-center
+      rounded-full
+      text-text-secondary
+      hover:text-white
+      hover:bg-[#493222]
+      transition-all
+      active:scale-95
+    "
+                    >
+                        <span className="material-symbols-outlined text-[20px]">
+                            more_horiz
+                        </span>
+                    </button>
+
+                    {showMenu && (
+                        <div
+                            className="
+        absolute right-0 mt-2 w-52
+        bg-[#1E140D]
+        border border-[#342418]
+        rounded-2xl
+        shadow-[0_10px_40px_rgba(0,0,0,0.6)]
+        z-50
+        overflow-hidden
+      "
+                        >
+                            {/* EDIT */}
+                            <button
+                                onClick={() => setShowMenu(false)}
+                                className="
+          w-full px-4 py-3
+          flex items-center gap-2
+          text-sm font-medium
+          text-white
+          hover:bg-[#2A1D15]
+          transition-colors
+        "
+                            >
+                                <span className="material-symbols-outlined text-[18px] text-text-secondary">
+                                    edit
+                                </span>
+                                Chỉnh sửa bài viết
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    setShowMenu(false);
+                                    setShowReportModal(true);
+                                }}
+                                className="
+    w-full px-4 py-3
+    flex items-center gap-2
+    text-sm font-medium
+    text-red-400
+    hover:bg-[#2A1D15]
+    transition-colors
+  "
+                            >
+                                <span className="material-symbols-outlined text-[18px]">
+                                    report
+                                </span>
+                                Báo cáo bài viết
+                            </button>
+
+                        </div>
+                    )}
+                </div>
+
             </div>
             <div className="px-5 pb-4">
                 {children ? children : <div className="text-gray-200 text-base font-normal leading-relaxed mb-4" dangerouslySetInnerHTML={{ __html: content }}></div>}
@@ -91,8 +181,51 @@ export default function PostCard({ author, time, content, image, stats = { likes
                         <span className="material-symbols-outlined text-[18px]">report</span>
                         View Report
                     </button>
+             
                 </div>
             )}
+                   <ReportModal
+                        isOpen={showReportModal}
+                        onClose={() => setShowReportModal(false)}
+                        onSubmit={(payload) => {
+                            console.log("REPORT POST:", payload);
+                              const toastId = toast.loading("Đang gửi báo cáo...", {
+                        style: {
+                            background: "#1A120B",
+                            color: "#FFD8B0",
+                        },
+                    });
+
+                    setTimeout(() => {
+                        toast.success("Báo cáo thành công!", {
+                            id: toastId,
+                            style: {
+                                background: "#1A120B",
+                                color: "#FF8A2A",
+                                border: "1px solid #FF8A2A",
+                                fontWeight: "700",
+                            },
+                        });
+                    }, 1200);
+                            setShowReportModal(false);
+                        }}
+                        title="Báo cáo bài viết"
+                        subtitle={`Bài viết của ${author.name}`}
+                        question="Vì sao bạn muốn báo cáo bài viết này?"
+                        reasons={[
+                            "Nội dung không phù hợp",
+                            "Spam hoặc lừa đảo",
+                            "Ngôn từ thù ghét",
+                            "Thông tin sai sự thật",
+                            "Khác",
+                        ]}
+                        targetPayload={{
+                            type: "post",
+                            postAuthor: author.name,
+                            postContent: content,
+                        }}
+                    />
         </article>
+        
     );
 }
