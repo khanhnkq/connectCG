@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import "./style/report-modal.css";
 
 export default function ReportModal({
   isOpen,
@@ -10,7 +9,7 @@ export default function ReportModal({
   question,
   reasons,
   targetPayload,
-  user, // optional (dùng cho report user)
+  user,
 }) {
   const [reason, setReason] = useState(reasons?.[0] || "");
   const [detail, setDetail] = useState("");
@@ -25,59 +24,85 @@ export default function ReportModal({
   if (!isOpen) return null;
 
   return (
-    <div className="report-overlay">
-      <div className="report-modal">
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/75">
+      <div className="relative w-[360px] rounded-[18px] bg-gradient-to-b from-[#3a2718] to-[#1e140d] p-[22px] text-white shadow-[0_25px_60px_rgba(0,0,0,0.8)] font-sans">
+
         {/* CLOSE */}
-        <button className="report-close" onClick={onClose}>
+        <button
+          onClick={onClose}
+          className="absolute right-3 top-3 text-lg text-neutral-400 hover:text-white"
+        >
           ✕
         </button>
 
         {/* HEADER */}
-        <div className="report-header">
-          {user?.avatar && <img src={user.avatar} alt="" />}
+        <div className="mb-4 flex gap-3">
+          {user?.avatar && (
+            <img
+              src={user.avatar}
+              alt=""
+              className="h-[42px] w-[42px] rounded-full object-cover"
+            />
+          )}
           <div>
-            <h3>{title}</h3>
-            {subtitle && <p>{subtitle}</p>}
+            <h3 className="text-[15px] font-semibold">{title}</h3>
+            {subtitle && (
+              <p className="mt-1 text-[12px] text-[#c7b9ae]">{subtitle}</p>
+            )}
           </div>
         </div>
 
         {/* QUESTION */}
-        {question && <p className="report-question">{question}</p>}
+        {question && (
+          <p className="mb-2 text-[13px]">{question}</p>
+        )}
 
         {/* OPTIONS */}
-        <div className="report-options">
+        <div className="mt-4 flex flex-col gap-2.5">
           {reasons.map((r) => (
             <label
               key={r}
-              className={`report-option ${reason === r ? "active" : ""}`}
+              className={`flex cursor-pointer items-center gap-2.5 rounded-xl p-3 transition
+                ${
+                  reason === r
+                    ? "bg-orange-500/20"
+                    : "bg-white/5 hover:bg-white/10"
+                }`}
             >
               <input
                 type="radio"
                 checked={reason === r}
                 onChange={() => setReason(r)}
+                className="accent-orange-500"
               />
-              <span>{r}</span>
+              <span className="text-[13px]">{r}</span>
             </label>
           ))}
         </div>
 
         {/* DETAILS */}
-        <div className="report-details">
-          <p>Thông tin bổ sung</p>
+        <div className="mt-4">
+          <p className="mb-1.5 text-[12px] text-[#c7b9ae]">
+            Thông tin bổ sung
+          </p>
           <textarea
-            placeholder="Vui lòng cung cấp thêm thông tin..."
             value={detail}
             onChange={(e) => setDetail(e.target.value)}
+            placeholder="Vui lòng cung cấp thêm thông tin..."
+            className="h-[70px] w-full resize-none rounded-xl bg-white/5 p-2.5 text-[12px] text-white outline-none placeholder:text-[#b8a99c]"
           />
         </div>
 
         {/* ACTIONS */}
-        <div className="report-actions">
-          <button className="btn-cancel" onClick={onClose}>
+        <div className="mt-[18px] flex gap-2.5">
+          <button
+            onClick={onClose}
+            className="flex-1 rounded-full px-3 py-2.5 text-[13px] text-[#d0c4ba] hover:bg-white/5"
+          >
             Hủy
           </button>
+
           <button
-            className="btn-submit"
             onClick={() =>
               onSubmit({
                 ...targetPayload,
@@ -85,6 +110,7 @@ export default function ReportModal({
                 detail,
               })
             }
+            className="flex-1 rounded-full bg-gradient-to-br from-[#ff8a2a] to-[#ff6a00] px-3 py-2.5 text-[13px] font-semibold text-[#231810] hover:opacity-90"
           >
             Gửi báo cáo
           </button>

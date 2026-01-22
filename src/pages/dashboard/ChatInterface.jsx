@@ -247,19 +247,24 @@ export default function ChatInterface() {
                 targetPayload={{ targetType: "USER", userId: user.id }}
                 onSubmit={(data) => {
                     console.log("REPORT USER:", data);
-                    toast.success("Báo cáo thành công! Cảm ơn bạn đã phản hồi.", {
+                  const toastId = toast.loading("Đang gửi báo cáo...", {
                         style: {
-                            background: "#1A120B",      // đen nâu
-                            color: "#FF8A2A",           // cam
-                            border: "1px solid #FF8A2A",
-                            fontWeight: "600",
-                        },
-                        iconTheme: {
-                            primary: "#FF8A2A",
-                            secondary: "#1A120B",
+                            background: "#1A120B",
+                            color: "#FFD8B0",
                         },
                     });
 
+                    setTimeout(() => {
+                        toast.success("Báo cáo thành công!", {
+                            id: toastId,
+                            style: {
+                                background: "#1A120B",
+                                color: "#FF8A2A",
+                                border: "1px solid #FF8A2A",
+                                fontWeight: "700",
+                            },
+                        });
+                    }, 1200);
                     setShowReportUser(false);
                 }}
             />
