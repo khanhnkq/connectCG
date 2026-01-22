@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/layout/Sidebar';
 import PostComposer from '../../components/feed/PostComposer';
 import PostCard from '../../components/feed/PostCard';
@@ -6,6 +7,7 @@ import toast from 'react-hot-toast';
 import ReportModal from "../../components/report/ReportModal";
 
 export default function NewsfeedDashboard1() {
+    const navigate = useNavigate();
     const [isAdmin] = useState(true); // Mocking admin status for demonstration
     const [activeTab, setActiveTab] = useState('Feed');
     const [showReportGroup, setShowReportGroup] = useState(false);
@@ -93,10 +95,15 @@ export default function NewsfeedDashboard1() {
                                 </p>
                             </div>
                             <div className="flex flex-wrap items-center gap-3">
-                                <button className="flex-1 sm:flex-none px-6 py-2.5 rounded-full bg-primary hover:bg-orange-600 text-[#231810] font-bold text-sm transition-all shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2">
-                                    <span className="material-symbols-outlined !text-[20px]">edit_square</span>
-                                    Post
-                                </button>
+                                {isAdmin && (
+                                    <button
+                                        onClick={() => navigate(`/dashboard/groups/edit/摄影爱好-101`)}
+                                        className="flex-1 sm:flex-none px-6 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md font-bold text-sm transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <span className="material-symbols-outlined !text-[20px]">settings_suggest</span>
+                                        Edit
+                                    </button>
+                                )}
                                 <button className="flex-1 sm:flex-none px-6 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md font-bold text-sm transition-all flex items-center justify-center gap-2">
                                     <span className="material-symbols-outlined !text-[20px]">person_add</span>
                                     Invite
