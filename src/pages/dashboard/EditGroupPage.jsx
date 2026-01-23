@@ -2,24 +2,20 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import Sidebar from '../../components/layout/Sidebar';
 import { uploadGroupCover } from '../../utils/uploadImage';
+import { findById, updateGroup } from '../../services/groups/GroupService';
 
 const editGroupSchema = Yup.object().shape({
     group_name: Yup.string()
         .required('Tên nhóm không được để trống')
         .min(3, 'Tên nhóm phải có ít nhất 3 ký tự')
         .max(50, 'Tên nhóm quá dài'),
-    privacy: Yup.string().oneOf(['public', 'private']).required('Vui lòng chọn quyền riêng tư'),
+    privacy: Yup.string().oneOf(['PUBLIC', 'PRIVATE']).required('Vui lòng chọn quyền riêng tư'),
     description: Yup.string()
         .max(500, 'Mô tả quá dài'),
     cover_image: Yup.mixed()
-        .test('fileType', 'Chỉ nhận định dạng jpg/png', (value) => {
-            if (!value) return true;
-            if (typeof value === 'string') return true;
-            return ['image/jpeg', 'image/png', 'image/jpg'].includes(value.type);
-        })
 });
 
 export default function EditGroupPage() {
@@ -29,33 +25,39 @@ export default function EditGroupPage() {
     const fileInputRef = useRef(null);
     const [initialValues, setInitialValues] = useState({
         group_name: '',
-        privacy: 'public',
+        privacy: 'PUBLIC',
         description: '',
         cover_image: null
     });
     const [isLoading, setIsLoading] = useState(true);
 
-    // Mock fetching data
     useEffect(() => {
-        // In a real app, you would fetch group data by ID here
-        setTimeout(() => {
-            const mockData = {
-                group_name: 'Tokyo Travelers',
-                privacy: 'public',
-                description: 'A community for those who love exploring Tokyo and Japanese culture.',
-                cover_image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCsQ9A8n-xledNJ474f_Uhr7BscPR1rdWpPA3nmUJNmpVX91H1g0qzMfr9cBVIkAenCL-nwTE3eotkyfDk29zimFvN8-jZdH8iZX_YRdmarPfVxzJHgiu1ByzFcVxZgVSRg7T53DVEFW8xt5qrbXibpwvQ3F4V3ihwBBXzyqv1ev1YEqcfkx6qOp-1indkKl5YuDjQFL0NRPqq7VW_dBlXrrZONIiwbkNX-tnHGk4jNiXLsc5kJ9cNeUOM226fUgjqHbFWB_pkARIM'
-            };
-            setInitialValues(mockData);
-            setPreviewUrl(mockData.cover_image);
-            setIsLoading(false);
-        }, 800);
-    }, [id]);
+        const fetchGroup = async () => {
+            try {
+                const data = await findById(id);
+                setInitialValues({
+                    group_name: data.name,
+                    privacy: data.privacy.toUpperCase(),
+                    description: data.description || '',
+                    cover_image: data.image
+                });
+                setPreviewUrl(data.image);
+            } catch (error) {
+                console.error("Fetch group failed:", error);
+                toast.error("Không thể lấy thông tin nhóm.");
+                navigate('/dashboard/groups');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchGroup();
+    }, [id, navigate]);
 
     const handleImageChange = (event, setFieldValue) => {
         const file = event.currentTarget.files[0];
         if (file) {
             if (!['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
-                toast.error("Chỉ chấp nhận ảnh JPG hoặc PNG", { theme: "dark" });
+                toast.error("Chỉ chấp nhận ảnh JPG hoặc PNG");
                 return;
             }
             setFieldValue("cover_image", file);
@@ -75,24 +77,18 @@ export default function EditGroupPage() {
             }
 
             const updatedGroupData = {
-                id: id,
                 name: values.group_name,
                 privacy: values.privacy,
                 description: values.description,
-                image: imageUrl
+                image: (typeof imageUrl === 'string') ? imageUrl : ''
             };
 
-            console.log("Updating DB:", updatedGroupData);
-
-            toast.success(`Cập nhật nhóm "${values.group_name}" thành công!`, { theme: "dark" });
-
-            setTimeout(() => {
-                setSubmitting(false);
-                navigate(-1);
-            }, 1000);
-
+            await updateGroup(id, updatedGroupData);
+            toast.success(`Cập nhật nhóm thành công!`);
+            navigate('/dashboard/groups');
         } catch (error) {
-            toast.error(`Lỗi cập nhật: ${error.message}`, { theme: "dark" });
+            toast.error(`Lỗi cập nhật: ${error.message}`);
+        } finally {
             setSubmitting(false);
         }
     };
@@ -100,10 +96,7 @@ export default function EditGroupPage() {
     if (isLoading) {
         return (
             <div className="bg-[#0f0a06] min-h-screen flex items-center justify-center">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="size-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-                    <p className="text-primary font-black text-xs uppercase tracking-widest">Đang tải dữ liệu nhóm...</p>
-                </div>
+                <div className="size-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
             </div>
         );
     }
@@ -126,8 +119,8 @@ export default function EditGroupPage() {
                         </button>
 
                         <div className="flex items-center gap-6">
-                            <div className="size-20 rounded-3xl bg-gradient-to-br from-primary to-orange-600 flex items-center justify-center shadow-2xl shadow-primary/20 transform -rotate-3">
-                                <span className="material-symbols-outlined text-4xl text-[#0f0a06]">settings</span>
+                            <div className="size-20 rounded-3xl bg-gradient-to-br from-primary to-orange-600 flex items-center justify-center shadow-2xl shadow-primary/20 transform -rotate-3 text-[#0f0a06]">
+                                <span className="material-symbols-outlined text-4xl">settings</span>
                             </div>
                             <div>
                                 <h1 className="text-4xl font-black tracking-tight mb-1">
@@ -144,48 +137,43 @@ export default function EditGroupPage() {
                         onSubmit={handleSubmit}
                         enableReinitialize={true}
                     >
-                        {({ errors, touched, isSubmitting, setFieldValue, values }) => (
+                        {({ errors, touched, isSubmitting, setFieldValue }) => (
                             <Form className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                                 <div className="lg:col-span-7 space-y-6">
                                     <div className="bg-[#1a120b] border border-[#2d1f14] rounded-[2.5rem] p-10 shadow-2xl space-y-8">
-                                        {/* Group Name */}
                                         <div className="space-y-3">
                                             <label className="text-[11px] font-black text-primary uppercase tracking-[0.2em] flex items-center gap-2 ml-2">
                                                 <span className="material-symbols-outlined text-sm">edit_note</span> Tên nhóm
                                             </label>
-                                            <div className="relative group">
-                                                <Field
-                                                    name="group_name"
-                                                    className={`w-full bg-[#120a05] border ${errors.group_name && touched.group_name ? 'border-red-500/50' : 'border-[#2d1f14] group-focus-within:border-primary/50'} rounded-2xl py-5 px-6 text-white text-base focus:outline-none transition-all shadow-inner`}
-                                                />
-                                            </div>
+                                            <Field
+                                                name="group_name"
+                                                className={`w-full bg-[#120a05] border ${errors.group_name && touched.group_name ? 'border-red-500/50' : 'border-[#2d1f14]'} rounded-2xl py-5 px-6 text-white text-base focus:outline-none focus:border-primary/50 transition-all shadow-inner`}
+                                            />
                                             {errors.group_name && touched.group_name && (
                                                 <p className="text-red-400 text-[10px] font-bold ml-2">{errors.group_name}</p>
                                             )}
                                         </div>
 
-                                        {/* Privacy */}
                                         <div className="space-y-3">
                                             <label className="text-[11px] font-black text-primary uppercase tracking-[0.2em] ml-2 flex items-center gap-2">
                                                 <span className="material-symbols-outlined text-sm">lock_person</span> Quyền riêng tư
                                             </label>
                                             <div className="grid grid-cols-2 gap-4">
-                                                <label className="relative cursor-pointer group">
-                                                    <Field type="radio" name="privacy" value="public" className="sr-only peer" />
-                                                    <div className="p-5 rounded-2xl bg-[#120a05] border border-[#2d1f14] transition-all peer-checked:border-primary peer-checked:bg-primary/5">
+                                                <label className="relative cursor-pointer">
+                                                    <Field type="radio" name="privacy" value="PUBLIC" className="sr-only peer" />
+                                                    <div className="p-5 rounded-2xl bg-[#120a05] border border-[#2d1f14] transition-all peer-checked:border-primary peer-checked:bg-primary/5 text-center">
                                                         <span className="text-xs font-black uppercase tracking-widest text-text-secondary peer-checked:text-white">Công khai</span>
                                                     </div>
                                                 </label>
-                                                <label className="relative cursor-pointer group">
-                                                    <Field type="radio" name="privacy" value="private" className="sr-only peer" />
-                                                    <div className="p-5 rounded-2xl bg-[#120a05] border border-[#2d1f14] transition-all peer-checked:border-primary peer-checked:bg-primary/5">
+                                                <label className="relative cursor-pointer">
+                                                    <Field type="radio" name="privacy" value="PRIVATE" className="sr-only peer" />
+                                                    <div className="p-5 rounded-2xl bg-[#120a05] border border-[#2d1f14] transition-all peer-checked:border-primary peer-checked:bg-primary/5 text-center">
                                                         <span className="text-xs font-black uppercase tracking-widest text-text-secondary peer-checked:text-white">Riêng tư</span>
                                                     </div>
                                                 </label>
                                             </div>
                                         </div>
 
-                                        {/* Description */}
                                         <div className="space-y-3">
                                             <label className="text-[11px] font-black text-primary uppercase tracking-[0.2em] flex items-center gap-2 ml-2">
                                                 <span className="material-symbols-outlined text-sm">description</span> Mô tả
@@ -202,7 +190,7 @@ export default function EditGroupPage() {
                                 <div className="lg:col-span-5 space-y-6">
                                     <div className="bg-[#1a120b] border border-[#2d1f14] rounded-[2.5rem] p-8 shadow-2xl flex flex-col items-center">
                                         <label className="text-[11px] font-black text-primary uppercase tracking-[0.2em] self-start mb-6 ml-2 flex items-center gap-2">
-                                            <span className="material-symbols-outlined text-sm">wallpaper</span> Ảnh bìa hiện tại
+                                            <span className="material-symbols-outlined text-sm">wallpaper</span> Ảnh bìa
                                         </label>
 
                                         <div
@@ -229,7 +217,7 @@ export default function EditGroupPage() {
                                             <button
                                                 type="submit"
                                                 disabled={isSubmitting}
-                                                className="w-full py-5 bg-gradient-to-r from-primary to-orange-600 text-[#0f0a06] font-black rounded-2xl shadow-xl hover:shadow-primary/30 active:scale-[0.98] transition-all uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-3"
+                                                className="w-full py-5 bg-gradient-to-r from-primary to-orange-600 text-[#0f0a06] font-black rounded-2xl shadow-xl hover:shadow-primary/30 active:scale-[0.98] transition-all uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-3 disabled:opacity-50"
                                             >
                                                 {isSubmitting ? 'Đang lưu...' : 'Lưu Thay đổi'}
                                             </button>
