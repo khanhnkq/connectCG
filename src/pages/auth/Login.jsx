@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
+import authService from '../../services/authService';
+import toast from 'react-hot-toast';
 
 // Validation schema
 const LoginSchema = Yup.object().shape({
@@ -22,7 +24,7 @@ export default function Login() {
         password: ''
     };
 
-    const handleSubmit = (values, { setSubmitting, setErrors }) => {
+    const handleSubmit = async (values, { setSubmitting, setErrors }) => {
         console.log('Login:', values);
 
         // TODO: Gọi API đăng nhập ở đây
@@ -32,11 +34,30 @@ export default function Login() {
         // } catch (error) {
         //     setErrors({ email: 'Email hoặc mật khẩu không đúng' });
         // }
-
-        setSubmitting(false);
+        try {
+            const response = await authService.login(values.email, values.password);
+        console.log("Login Success:", response.data);
+            const { accessToken, username } = response.data;
+            localStorage.setItem('accessToken', accessToken);
+            localStorage.setItem('user', JSON.stringify({ username })); // Lưu thông tin user giản lược
+            toast.success(`Chào mừng trở lại, ${username}!`);
+            navigate('/dashboard/feed');
+        } catch (error) {
+         console.error("Login Failed:", error);
+            
+            // Xử lý lỗi trả về từ Backend
+            if (error.response && error.response.status === 401) { // Sai pass hoặc username
+                 setErrors({ email: 'Tên đăng nhập hoặc mật khẩu không đúng' });
+                 toast.error('Đăng nhập thất bại. Vui lòng kiểm tra lại!');
+            } else {
+                 toast.error('Có lỗi xảy ra. Vui lòng thử lại sau.');
+            }
+        } finally {
+            setSubmitting(false);
+        }
 
         // Tạm thời chuyển đến dashboard
-        navigate('/dashboard/feed');
+        
     };
 
     return (
