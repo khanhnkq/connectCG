@@ -5,6 +5,7 @@ import * as Yup from 'yup';
 import toast from 'react-hot-toast';
 import Sidebar from '../../components/layout/Sidebar';
 import { uploadGroupCover } from '../../utils/uploadImage';
+import { addGroup } from "../../services/groups/GroupService.js";
 
 const createGroupSchema = Yup.object().shape({
     group_name: Yup.string()
@@ -51,8 +52,6 @@ export default function CreateGroupPage() {
     };
 
     const handleSubmit = async (values, { setSubmitting }) => {
-        // const loadingToast = toast.loading("Đang khởi tạo nhóm...", { theme: "dark" });
-
         try {
             let imageUrl = null;
             if (values.cover_image && typeof values.cover_image !== 'string') {
@@ -61,27 +60,19 @@ export default function CreateGroupPage() {
 
             const finalGroupData = {
                 name: values.group_name,
-                privacy: values.privacy,
+                privacy: values.privacy.toUpperCase(),
                 description: values.description,
-                image: imageUrl
+                image: imageUrl || ""
             };
-
-            console.log("Saving to DB:", finalGroupData);
-
-            toast.update( {
-                render: `Nhóm "${values.group_name}" đã sẵn sàng!`,
-                type: "success",
-                isLoading: false,
-                autoClose: 3000
-            });
-
+            await addGroup(finalGroupData);
+            toast.success(`Nhóm "${values.group_name}" đã sẵn sàng!`);
             setTimeout(() => {
                 setSubmitting(false);
                 navigate('/dashboard/groups');
             }, 1500);
 
         } catch (error) {
-            toast.update(loadingToast, { render: `Lỗi: ${error.message}`, type: "error", isLoading: false, autoClose: 4000 });
+            toast.error(`Lỗi: ${error.message}`, { id: loadingToast });
             setSubmitting(false);
         }
     };
