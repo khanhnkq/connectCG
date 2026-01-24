@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import toast from 'react-hot-toast';
 import Sidebar from '../../components/layout/Sidebar';
 import { uploadGroupCover } from '../../utils/uploadImage';
-import { findById, updateGroup } from '../../services/groups/GroupService';
+import { findById, updateGroup, deleteGroup } from '../../services/groups/GroupService';
 
 const editGroupSchema = Yup.object().shape({
     group_name: Yup.string()
@@ -222,6 +222,36 @@ export default function EditGroupPage() {
                                                 {isSubmitting ? 'Đang lưu...' : 'Lưu Thay đổi'}
                                             </button>
                                         </div>
+                                    </div>
+
+                                    {/* Danger Zone */}
+                                    <div className="bg-[#1a120b] border border-red-500/20 rounded-[2.5rem] p-8 shadow-2xl flex flex-col items-center">
+                                        <div className="flex items-center gap-2 mb-4 text-red-500">
+                                            <span className="material-symbols-outlined">warning</span>
+                                            <h3 className="text-sm font-black uppercase tracking-widest">Khu vực nguy hiểm</h3>
+                                        </div>
+                                        <p className="text-text-secondary text-xs text-center mb-6">
+                                            Hành động này không thể hoàn tác. Nhóm sẽ bị xóa vĩnh viễn và tất cả dữ liệu sẽ bị mất.
+                                        </p>
+                                        <button
+                                            type="button"
+                                            onClick={async () => {
+                                                if (window.confirm("CẢNH BÁO: Bạn có chắc chắn muốn xóa nhóm này vĩnh viễn không? Hành động này không thể hoàn tác.")) {
+                                                    try {
+                                                        await deleteGroup(id);
+                                                        toast.success("Đã xóa nhóm thành công");
+                                                        navigate('/dashboard/groups');
+                                                    } catch (error) {
+                                                        console.error("Failed to delete group:", error);
+                                                        toast.error(error.response?.data || "Không thể xóa nhóm");
+                                                    }
+                                                }
+                                            }}
+                                            className="w-full py-4 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white font-black rounded-2xl border border-red-500/20 transition-all uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-2"
+                                        >
+                                            <span className="material-symbols-outlined text-lg">delete_forever</span>
+                                            Xóa Nhóm
+                                        </button>
                                     </div>
                                 </div>
                             </Form>
