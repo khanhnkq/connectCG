@@ -72,7 +72,7 @@ export default function CreateGroupPage() {
             }, 1500);
 
         } catch (error) {
-            toast.error(`Lỗi: ${error.message}`, { id: loadingToast });
+            toast.error(`Lỗi: ${error.message}`);
             setSubmitting(false);
         }
     };

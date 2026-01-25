@@ -1,30 +1,30 @@
 import { Link, useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/layout/Sidebar';
 import React, { useEffect, useState } from 'react';
-import { findMyGroups, findDiscoverGroups, findAllGroup, searchGroups } from '../../services/groups/GroupService';
+import { findMyGroups, findDiscoverGroups, findPendingInvitations, acceptInvitation, declineInvitation, searchGroups } from '../../services/groups/GroupService';
 import toast from 'react-hot-toast';
 
 export default function GroupsManagement() {
     const navigate = useNavigate();
     const [yourGroups, setYourGroups] = useState([]);
     const [discoverGroups, setDiscoverGroups] = useState([]);
-    const [allGroups, setAllGroups] = useState([]);
+    const [pendingInvitations, setPendingInvitations] = useState([]);
     const [searchResults, setSearchResults] = useState(null); // null means not searching
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('all'); // 'all', 'my', 'discover'
+    const [activeTab, setActiveTab] = useState('my'); // 'my', 'discover', 'invites'
     const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
-                const [myGroupsData, discoverData, allData] = await Promise.all([
+                const [myGroupsData, discoverData, invitationsData] = await Promise.all([
                     findMyGroups(),
                     findDiscoverGroups(),
-                    findAllGroup()
+                    findPendingInvitations()
                 ]);
                 setYourGroups(myGroupsData);
                 setDiscoverGroups(discoverData);
-                setAllGroups(allData);
+                setPendingInvitations(invitationsData);
             } catch (error) {
                 console.error("Failed to fetch groups:", error);
                 toast.error("Không thể tải danh sách nhóm.");
@@ -52,6 +52,33 @@ export default function GroupsManagement() {
         }
     };
 
+    const handleAcceptInvite = async (groupId) => {
+        try {
+            await acceptInvitation(groupId);
+            toast.success("Đã chấp nhận lời mời tham gia nhóm!");
+            // Refresh data
+            const [myGroupsData, invitationsData] = await Promise.all([
+                findMyGroups(),
+                findPendingInvitations()
+            ]);
+            setYourGroups(myGroupsData);
+            setPendingInvitations(invitationsData);
+        } catch (error) {
+            toast.error("Không thể chấp nhận lời mời.");
+        }
+    };
+
+    const handleDeclineInvite = async (groupId) => {
+        try {
+            await declineInvitation(groupId);
+            toast.success("Đã từ chối lời mời.");
+            const invitationsData = await findPendingInvitations();
+            setPendingInvitations(invitationsData);
+        } catch (error) {
+            toast.error("Không thể từ chối lời mời.");
+        }
+    };
+
     const checkIfAdmin = (group) => {
         const userStr = localStorage.getItem('user');
         if (!userStr) return false;
@@ -75,7 +102,7 @@ export default function GroupsManagement() {
             >
                 {/* Wrap content in Link to make it clickable */}
                 <Link
-                    to={`/dashboard/feed?groupId=${group.id}`}
+                    to={`/dashboard/groups/${group.id}`}
                     className="flex flex-col h-full"
                 >
                     <div className="h-44 bg-cover bg-center relative" style={{ backgroundImage: `url("${imageUrl}")` }}>
@@ -99,11 +126,45 @@ export default function GroupsManagement() {
                     <div className="p-6 flex flex-col flex-1 bg-gradient-to-b from-card-dark to-[#1a120b]">
                         <p className="text-text-secondary text-sm mb-6 line-clamp-2 leading-relaxed h-10">{group.description || 'Chưa có mô tả cho nhóm này.'}</p>
                         <div className="mt-auto flex gap-3">
-                            <div
-                                className="flex-1 py-3 rounded-2xl bg-primary text-[#231810] font-black text-xs transition-all uppercase tracking-widest hover:bg-orange-600 active:scale-95 text-center flex items-center justify-center"
-                            >
-                                Vào nhóm
-                            </div>
+                            {activeTab === 'invites' ? (
+                                <>
+                                    <button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            handleAcceptInvite(group.id);
+                                        }}
+                                        className="flex-1 py-3 rounded-2xl bg-primary text-[#231810] font-black text-xs transition-all uppercase tracking-widest hover:bg-orange-600 active:scale-95 text-center flex items-center justify-center"
+                                    >
+                                        Chấp nhận
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            handleDeclineInvite(group.id);
+                                        }}
+                                        className="flex-1 py-3 rounded-2xl bg-[#342418] text-red-500 border border-red-500/20 font-black text-xs transition-all uppercase tracking-widest hover:bg-red-500 hover:text-white active:scale-95 text-center flex items-center justify-center"
+                                    >
+                                        Từ chối
+                                    </button>
+                                </>
+                            ) : searchResults !== null && group.currentUserStatus ? (
+                                <div
+                                    className={`flex-1 py-3 rounded-2xl font-black text-xs transition-all uppercase tracking-widest text-center flex items-center justify-center ${group.currentUserStatus === 'ACCEPTED'
+                                            ? 'bg-green-500/10 text-green-500 border border-green-500/20'
+                                            : 'bg-orange-500/10 text-orange-500 border border-orange-500/20'
+                                        }`}
+                                >
+                                    {group.currentUserStatus === 'ACCEPTED' ? 'Đã tham gia' : 'Đang chờ duyệt'}
+                                </div>
+                            ) : (
+                                <div
+                                    className="flex-1 py-3 rounded-2xl bg-primary text-[#231810] font-black text-xs transition-all uppercase tracking-widest hover:bg-orange-600 active:scale-95 text-center flex items-center justify-center"
+                                >
+                                    Vào nhóm
+                                </div>
+                            )}
 
                             {/* The settings button must BE OUTSIDE the parent Link or handle stopPropagation VERY carefully. 
                                 In React, nested Links/anchors are invalid. 
@@ -144,11 +205,11 @@ export default function GroupsManagement() {
 
     const displayedGroups = searchResults !== null
         ? searchResults
-        : activeTab === 'all'
-            ? allGroups
-            : activeTab === 'my'
-                ? yourGroups
-                : discoverGroups;
+        : activeTab === 'my'
+            ? yourGroups
+            : activeTab === 'discover'
+                ? discoverGroups
+                : pendingInvitations;
 
     return (
         <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden h-screen flex w-full">
@@ -163,7 +224,7 @@ export default function GroupsManagement() {
 
                             {/* Tabs */}
                             <div className="flex bg-[#1a120b] p-1 rounded-2xl border border-[#3e2b1d]">
-                                {['all', 'my', 'discover'].map((tab) => (
+                                {['my', 'discover', 'invites'].map((tab) => (
                                     <button
                                         key={tab}
                                         onClick={() => {
@@ -171,12 +232,20 @@ export default function GroupsManagement() {
                                             setSearchResults(null);
                                             setSearchQuery('');
                                         }}
-                                        className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === tab && searchResults === null
+                                        className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all relative ${activeTab === tab && searchResults === null
                                             ? 'bg-primary text-[#231810] shadow-lg'
                                             : 'text-text-secondary hover:text-white'
                                             }`}
                                     >
-                                        {tab === 'all' ? 'Tất cả' : tab === 'my' ? 'Của tôi' : 'Khám phá'}
+                                        {tab === 'my' ? 'Của tôi' : tab === 'discover' ? 'Khám phá' : 'Lời mời'}
+                                        {tab === 'invites' && pendingInvitations.length > 0 && (
+                                            <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                                <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 text-[10px] items-center justify-center text-white font-bold">
+                                                    {pendingInvitations.length}
+                                                </span>
+                                            </span>
+                                        )}
                                     </button>
                                 ))}
                             </div>

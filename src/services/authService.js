@@ -3,13 +3,13 @@ import axiosClient from "../config/axiosConfig";
 const authService = {
     login: (username, password) => {
         // Đường dẫn này nối đuôi vào baseURL -> http://localhost:8080/api/v1/auth/login
-        return axiosClient.post('/auth/login', { username, password });
+        return axiosClient.post('/v1/auth/login', { username, password });
     },
 
     register: (data) => {
-        return axiosClient.post('/auth/register', data);
+        return axiosClient.post('/v1/auth/register', data);
     },
-    
+
     logout: () => {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('user');
