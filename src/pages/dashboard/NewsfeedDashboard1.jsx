@@ -5,6 +5,7 @@ import PostComposer from '../../components/feed/PostComposer';
 import PostCard from '../../components/feed/PostCard';
 import toast from 'react-hot-toast';
 import ReportModal from "../../components/report/ReportModal";
+import reportService from "../../services/ReportService.js";
 
 export default function NewsfeedDashboard1() {
     const navigate = useNavigate();
@@ -340,6 +341,7 @@ export default function NewsfeedDashboard1() {
                 onClose={() => setShowReportGroup(false)}
                 title={`Báo cáo nhóm ${group.name}`}
                 subtitle="Hãy cho chúng tôi biết lý do bạn muốn báo cáo nhóm này"
+                question="Vì sao bạn muốn báo cáo nhóm này?"
                 reasons={[
                     "Nội dung không phù hợp",
                     "Spam hoặc lừa đảo",
@@ -348,10 +350,11 @@ export default function NewsfeedDashboard1() {
                     "Nhóm giả mạo",
                     "Khác",
                 ]}
-                targetPayload={{ targetType: "GROUP", groupId: group.id }}
-                onSubmit={(data) => {
-                    console.log("REPORT GROUP:", data);
-
+                targetPayload={{
+                    targetType: "GROUP",
+                    targetId: group.id, // ✅ ĐÚNG
+                }}
+                onSubmit={async (data) => {
                     const toastId = toast.loading("Đang gửi báo cáo...", {
                         style: {
                             background: "#1A120B",
@@ -359,7 +362,9 @@ export default function NewsfeedDashboard1() {
                         },
                     });
 
-                    setTimeout(() => {
+                    try {
+                        await reportService.createReport(data);
+
                         toast.success("Báo cáo thành công!", {
                             id: toastId,
                             style: {
@@ -369,9 +374,18 @@ export default function NewsfeedDashboard1() {
                                 fontWeight: "700",
                             },
                         });
-                    }, 1200);
 
-                    setShowReportGroup(false);
+                        setShowReportGroup(false);
+                    } catch (err) {
+                        console.error(err);
+                        toast.error("Gửi báo cáo thất bại. Vui lòng thử lại!", {
+                            id: toastId,
+                            style: {
+                                background: "#1A120B",
+                                color: "#FF6A00",
+                            },
+                        });
+                    }
                 }}
             />
 
