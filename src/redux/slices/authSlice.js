@@ -67,9 +67,7 @@ export const createProfile = createAsyncThunk(
 
 const authSlice = createSlice({
     name: 'auth',
-    initialState:{
-        hasProfile: false,
-    },
+    initialState,
     reducers: {
         logout: (state) => {
             authService.logout();
