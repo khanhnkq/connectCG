@@ -5,6 +5,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import UserProfileService from '../../services/user/UserProfileService';
 import { fetchUserProfile } from '../../redux/slices/userSlice';
 
+import { logout } from '../../redux/slices/authSlice'; // [NEW] Import action logout
 export default function Sidebar() {
   const { user } = useSelector((state) => state.auth);
   const { profile: userProfile, loading } = useSelector((state) => state.user);
@@ -17,6 +18,8 @@ export default function Sidebar() {
   const [notifications, setNotifications] = useState([]);
 
   const dropdownRef = useRef(null);
+
+
   useEffect(() => {
     function handleClickOutside(e) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -67,6 +70,12 @@ export default function Sidebar() {
     }
   };
 
+  const handleLogout = () => {
+    dispatch(logout()); // Xóa state và localStorage
+    navigate('/login'); // Chuyển hướng về trang đăng nhập
+    toast.success('Đã đăng xuất'); // Optional: Import toast nếu muốn hiện thông báo
+  };
+
   const handleMarkAsRead = async (id) => {
     try {
       await markAsRead(id);
@@ -103,12 +112,7 @@ export default function Sidebar() {
     }
 
     // 2. Navigate based on type
-    if (n.type === 'GROUP_JOIN_REQUEST') {
-      navigate(`/dashboard/groups/${n.targetId}?tab=Moderation&modTab=Requests`);
-    } else if (n.type === 'GROUP_INVITE' || n.targetType === 'GROUP') {
-      navigate(`/dashboard/groups/${n.targetId}`);
-    }
-    // Add other types as needed
+    // Group-related notifications are no longer handled here.
 
     setShowNotifications(false);
   };
@@ -142,6 +146,7 @@ export default function Sidebar() {
             <Link to={`/dashboard/profile/view?id=${userProfile?.id || user?.id}`} className="text-text-secondary text-sm font-medium cursor-pointer hover:text-primary transition-colors flex items-center gap-1">
               Xem hồ sơ <span className="material-symbols-outlined text-[14px]">visibility</span>
             </Link>
+            <h1 className="text-white text-lg font-bold leading-tight">{user?.username}</h1>
           </div>
 
           {/* Notification Button */}
@@ -156,6 +161,7 @@ export default function Sidebar() {
                 <span className="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-[#342418]"></span>
               )}
             </button>
+
 
             {/* DROPDOWN */}
             {showNotifications && (
@@ -251,6 +257,18 @@ export default function Sidebar() {
             </Link>
           );
         })}
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-4 px-4 py-3.5 rounded-full transition-all group text-text-secondary hover:bg-[#342418] hover:text-red-500 mt-auto"
+        >
+          <div className="flex items-center gap-4">
+            <span className="material-symbols-outlined group-hover:scale-110 transition-transform">
+              logout
+            </span>
+            <span className="text-sm font-bold tracking-wide">Logout</span>
+          </div>
+        </button>
       </nav>
       <div className="p-6 mt-auto">
         <div className="relative overflow-hidden bg-gradient-to-br from-[#342418] to-[#493222] rounded-2xl p-5 flex flex-col gap-3 border border-[#493222] shadow-xl">

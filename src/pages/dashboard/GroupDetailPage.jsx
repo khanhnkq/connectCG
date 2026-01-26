@@ -221,7 +221,7 @@ export default function GroupDetailPage() {
                         <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 flex flex-col md:flex-row md:items-end justify-between gap-6 max-w-7xl mx-auto">
                             <div className="flex flex-col gap-3">
                                 <div className="flex flex-wrap items-center gap-3">
-                                    <h1 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight drop-shadow-lg">
+                                    <h1 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight drop-shadow-lg flex items-center gap-3">
                                         {group.name}
                                     </h1>
                                     <div className="flex items-center gap-2">
@@ -238,7 +238,7 @@ export default function GroupDetailPage() {
                                 </div>
                                 <p className="text-white/90 font-medium text-sm md:text-base flex items-center gap-2 drop-shadow-sm">
                                     <span className="material-symbols-outlined !text-[18px] text-primary">groups</span>
-                                    <span>{members.length} Members</span>
+                                    <span>{group.memberCount || 0} Members</span>
                                     <span className="size-1 bg-white/40 rounded-full"></span>
                                     <span className="text-primary font-bold">Active</span>
                                 </p>
@@ -405,7 +405,7 @@ export default function GroupDetailPage() {
                             <div className="max-w-3xl mx-auto space-y-6">
                                 <div className="flex justify-between items-center px-2">
                                     <h3 className="text-xl font-bold text-white">Group Members</h3>
-                                    <span className="text-sm text-text-secondary">{members.length} members</span>
+                                    <span className="text-sm text-text-secondary">{group.memberCount || 0} members</span>
                                 </div>
                                 <div className="bg-card-dark border border-[#3e2b1d] rounded-3xl overflow-hidden divide-y divide-[#3e2b1d]">
                                     {members.length > 0 ? members.map((member) => (
@@ -415,7 +415,7 @@ export default function GroupDetailPage() {
                                                 <div>
                                                     <div className="flex items-center gap-2">
                                                         <p className="font-bold text-white">{member.username}</p>
-                                                        <span className={`px-2 py-0.5 text-[10px] font-black rounded uppercase ${member.role === 'admin' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'bg-zinc-800 text-zinc-400'
+                                                        <span className={`px-2 py-0.5 text-[10px] font-black rounded uppercase ${member.role === 'ADMIN' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'bg-zinc-800 text-zinc-400'
                                                             }`}>
                                                             {member.role}
                                                         </span>
