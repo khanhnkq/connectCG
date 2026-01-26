@@ -1,4 +1,4 @@
-import axiosClient from "../config/axiosConfig";
+import axiosClient from "../../config/axiosConfig";
 
 const UserProfileService = {
     /**

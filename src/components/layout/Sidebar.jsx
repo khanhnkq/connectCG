@@ -1,10 +1,15 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useRef, useEffect } from "react";
 import { getMyNotifications, markAsRead, deleteNotification } from '../../services/NotificationService';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import UserProfileService from '../../services/user/UserProfileService';
+import { fetchUserProfile } from '../../redux/slices/userSlice';
 
 export default function Sidebar() {
-  const {user} = useSelector((state)=>state.auth);
+  const { user } = useSelector((state) => state.auth);
+  const { profile: userProfile, loading } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+
   const location = useLocation();
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
@@ -21,6 +26,33 @@ export default function Sidebar() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+
+  useEffect(() => {
+      console.log(user)
+    // Chỉ gọi API nếu chưa có dữ liệu profile trong Redux
+    if (!userProfile) {
+      let userId = user?.id || user?.userId || user?.sub;
+
+      if (!userId) {
+        const token = localStorage.getItem('accessToken');
+        if (token) {
+          try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const payload = JSON.parse(atob(base64));
+            userId = payload.id || payload.userId || payload.sub;
+          } catch (e) {
+            console.error("Lỗi giải mã token:", e);
+          }
+        }
+      }
+
+      if (userId) {
+        dispatch(fetchUserProfile(userId));
+      }
+    }
+  }, [user, userProfile, dispatch]);
 
   useEffect(() => {
     fetchNotifications();
@@ -87,7 +119,7 @@ export default function Sidebar() {
 
   const menuItems = [
     { icon: 'home', label: 'Home', path: '/dashboard/feed' },
-    { icon: 'person', label: 'Profile', path: '/dashboard/profile/public' },
+    { icon: 'person', label: 'Profile', path: `/dashboard/${user?.sub}/profile/public` },
     { icon: 'explore', label: 'Explore', path: '/dashboard/explore' }, // Mapping to groups for now as explore
     { icon: 'groups', label: 'Groups', path: '/dashboard/groups' },
     { icon: 'chat_bubble', label: 'Messages', path: '/dashboard/chat', badge: '3' },
@@ -99,11 +131,16 @@ export default function Sidebar() {
     <aside className="w-72 hidden lg:flex flex-col border-r border-[#342418] bg-background-dark h-full overflow-y-auto shrink-0 z-20">
       <div className="p-6 pb-2">
         <div className="flex gap-4 items-center mb-8">
-          <div className="bg-center bg-no-repeat bg-cover rounded-full size-12 shadow-lg ring-2 ring-[#342418]" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAUO2YNLAxc1Nl_nCWaGx0Dwt8BIkrV0WsFtsI9ePfpuH2QDYaR2IL1U-BCix40iXmHOlV6rzlHb2YzzlKUEpD183YkjDBCAQtHPFoSaXz638Vjta7H-NlTtKESwQOh_CcHQs-rhd6cbbiyxlQVatQS90HHg710X2WFSTAS7LkytHfywWdbhdy-IVBZk0wtKYnjblM6Vy6IA3R_7kOjPY04ZFIVnhosSED60xtTRmy2ylVAGG80CffMYIEPaZ6iQHq6uonwSSfKBJw")' }}></div>
+          <div
+            className="bg-center bg-no-repeat bg-cover rounded-full size-12 shadow-lg ring-2 ring-[#342418]"
+            style={{ backgroundImage: `url("${userProfile?.avatarUrl || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}")` }}
+          ></div>
           <div className="flex flex-col">
-            <h1 className="text-white text-lg font-bold leading-tight">{user?.username}</h1>
-            <Link to="/dashboard/profile" className="text-text-secondary text-sm font-medium cursor-pointer hover:text-primary transition-colors flex items-center gap-1">
-              Edit Profile <span className="material-symbols-outlined text-[14px]">edit</span>
+            <h1 className="text-white text-lg font-bold leading-tight">
+              {userProfile?.displayName || userProfile?.username || user?.username || 'Đang tải...'}
+            </h1>
+            <Link to={`/dashboard/profile/view?id=${userProfile?.id || user?.id}`} className="text-text-secondary text-sm font-medium cursor-pointer hover:text-primary transition-colors flex items-center gap-1">
+              Xem hồ sơ <span className="material-symbols-outlined text-[14px]">visibility</span>
             </Link>
           </div>
 
