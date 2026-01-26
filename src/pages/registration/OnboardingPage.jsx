@@ -1,12 +1,21 @@
 import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { uploadAvatar } from '../../utils/uploadImage';
 import toast from 'react-hot-toast';
+import { useDispatch } from 'react-redux';
+import { createProfile } from '../../redux/slices/authSlice'; // Import thunk mới
 
 // Validation schema
 const Step2Schema = Yup.object().shape({
+    fullName: Yup.string()
+        .min(2, 'Họ tên phải có ít nhất 2 ký tự')
+        .max(50, 'Họ tên không được quá 50 ký tự')
+        .required('Vui lòng nhập họ và tên'),
+    dateOfBirth: Yup.date()
+        .max(new Date(), 'Ngày sinh không hợp lệ')
+        .required('Vui lòng chọn ngày sinh'),
     occupation: Yup.string()
         .min(2, 'Nghề nghiệp phải có ít nhất 2 ký tự')
         .max(50, 'Nghề nghiệp không được quá 50 ký tự')
@@ -28,11 +37,14 @@ const Step2Schema = Yup.object().shape({
 });
 
 export default function Step2() {
+    const dispatch = useDispatch();
     const navigate = useNavigate();
     const [avatarPreview, setAvatarPreview] = useState(null);
     const fileInputRef = useRef(null);
 
     const initialValues = {
+        fullName: '',
+        dateOfBirth: '',
         occupation: '',
         gender: '',
         maritalStatus: '',
@@ -43,9 +55,6 @@ export default function Step2() {
     };
 
     const handleSubmit = async (values, { setSubmitting, setErrors }) => {
-        // Lấy dữ liệu từ Step 1
-        const step1Data = JSON.parse(localStorage.getItem('registrationStep1') || '{}');
-
         let avatarUrl = null;
 
         // Upload avatar lên Cloudinary nếu có
@@ -62,14 +71,9 @@ export default function Step2() {
         }
 
         // Chuẩn bị dữ liệu để gửi lên backend
-        const registrationData = {
-            // Từ Step 1
-            fullName: step1Data.fullName || '',
-            username: step1Data.username || '',
-            email: step1Data.email || '',
-            password: step1Data.password || '',
-            dateOfBirth: step1Data.dateOfBirth || '',
-            // Từ Step 2
+        const profileData = {
+            fullName: values.fullName,
+            dateOfBirth: values.dateOfBirth,
             occupation: values.occupation,
             gender: values.gender,
             maritalStatus: values.maritalStatus,
@@ -80,15 +84,20 @@ export default function Step2() {
         };
 
         // Log dữ liệu để kiểm tra
-        console.log('Registration Data:', registrationData);
+        console.log('Profile Data:', profileData);
 
-        setSubmitting(false);
-
-        // Xóa dữ liệu tạm
-        localStorage.removeItem('registrationStep1');
-        toast.success('Đăng ký thành công');
-        // Chuyển đến trang đăng nhập hoặc dashboard
-        navigate('/login');
+        try {
+            // [NEW] Gọi Redux Action
+            await dispatch(createProfile(profileData)).unwrap();
+            navigate('/dashboard/feed');
+            
+        } catch (error) {
+            console.error("Failed:", error);
+            // Hiện lỗi
+            toast.error(error.message || 'Đăng ký thất bại')
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     const handleFileChange = (event, setFieldValue) => {
@@ -195,16 +204,7 @@ export default function Step2() {
 
                 <div className="flex-1 flex flex-col justify-center py-10 px-6 sm:px-12 md:px-20 lg:px-24">
                     <div className="max-w-[480px] w-full mx-auto">
-                        {/* Progress Bar */}
-                        <div className="flex flex-col gap-3 mb-10">
-                            <div className="flex gap-6 justify-between items-end">
-                                <p className="text-white text-base font-medium leading-normal">Bước 2 / 2</p>
-                                <span className="text-text-secondary text-sm font-medium">Hồ sơ & Khảo sát</span>
-                            </div>
-                            <div className="rounded-full bg-border-dark h-2 overflow-hidden">
-                                <div className="h-full rounded-full bg-primary w-full transition-all duration-500" />
-                            </div>
-                        </div>
+                        
 
                         <h1 className="text-3xl font-bold leading-tight tracking-tight mb-2 text-white">
                             Hãy xác nhận phong cách của bạn
@@ -255,6 +255,37 @@ export default function Step2() {
                                             <span className="material-symbols-outlined text-lg">videocam</span>
                                             Chụp từ Webcam
                                         </button>
+                                    </div>
+
+                                    {/* Full Name */}
+                                    <div className="flex flex-col gap-2">
+                                        <label htmlFor="fullName" className="text-white text-base font-medium">Họ và tên</label>
+                                        <Field
+                                            type="text"
+                                            name="fullName"
+                                            id="fullName"
+                                            className={`form-input w-full rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${errors.fullName && touched.fullName ? 'border-red-500' : 'border-border-dark'} bg-surface-dark h-14 px-4 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
+                                            placeholder="VD: Nguyễn Văn A"
+                                        />
+                                        {errors.fullName && touched.fullName && (
+                                            <span className="text-red-500 text-sm">{errors.fullName}</span>
+                                        )}
+                                    </div>
+
+                                    {/* Date of Birth */}
+                                    <div className="flex flex-col gap-2">
+                                        <label htmlFor="dateOfBirth" className="text-white text-base font-medium">Ngày sinh</label>
+                                        <div className="relative">
+                                            <Field
+                                                type="date"
+                                                name="dateOfBirth"
+                                                id="dateOfBirth"
+                                                className={`form-input w-full rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${errors.dateOfBirth && touched.dateOfBirth ? 'border-red-500' : 'border-border-dark'} bg-surface-dark h-14 px-4 text-base transition-all duration-200 appearance-none`}
+                                            />
+                                        </div>
+                                        {errors.dateOfBirth && touched.dateOfBirth && (
+                                            <span className="text-red-500 text-sm">{errors.dateOfBirth}</span>
+                                        )}
                                     </div>
 
                                     {/* Occupation */}

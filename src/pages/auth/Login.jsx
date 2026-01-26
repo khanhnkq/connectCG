@@ -8,7 +8,6 @@ import { useDispatch, useSelector } from 'react-redux';
 // Validation schema
 const LoginSchema = Yup.object().shape({
     email: Yup.string()
-        .email('Email không hợp lệ')
         .required('Vui lòng nhập email hoặc tên đăng nhập'),
     password: Yup.string()
         .min(1, 'Vui lòng nhập mật khẩu')
@@ -32,7 +31,11 @@ export default function Login() {
             const resultAction = await dispatch(loginUser(values)).unwrap();
             const userName = resultAction.user?.username;
             toast.success(`Đăng nhập thành công! Chào mừng ${userName}`);
-            navigate('/dashboard/feed');
+            if (resultAction.hasProfile) {
+                navigate('/dashboard/feed');
+            } else {
+                navigate('/onboarding');
+            }
             
         } catch (error) {
          console.error("Login Failed:", error);

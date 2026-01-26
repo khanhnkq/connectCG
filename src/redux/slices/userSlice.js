@@ -29,6 +29,12 @@ const userSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
+            // [FIX] Xóa profile khi logout
+            .addCase('auth/logout', (state) => {
+                state.profile = null;
+                state.error = null;
+                state.loading = false;
+            })
             .addCase(fetchUserProfile.pending, (state) => {
                 state.loading = true;
                 state.error = null;

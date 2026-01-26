@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useRef, useEffect } from "react";
 import { getMyNotifications, markAsRead, deleteNotification } from '../../services/NotificationService';
 import { useSelector, useDispatch } from 'react-redux';
+import toast from 'react-hot-toast';
 import UserProfileService from '../../services/user/UserProfileService';
 import { fetchUserProfile } from '../../redux/slices/userSlice';
 
@@ -35,6 +36,14 @@ export default function Sidebar() {
   useEffect(() => {
     // Chỉ gọi API nếu chưa có dữ liệu profile trong Redux
     const userId = user?.id || user?.userId || user?.sub;
+    
+    console.log("Sidebar Debug:", { 
+      user, 
+      userId, 
+      userProfile, 
+      hasToken: !!localStorage.getItem('accessToken') 
+    });
+
     if (userId && !userProfile) {
       dispatch(fetchUserProfile(userId));
     }
@@ -143,7 +152,7 @@ export default function Sidebar() {
               {userProfile?.fullName || userProfile?.username || user?.username || 'Đang tải...'}
             </h1>
             <Link to="/dashboard/my-profile" className="text-text-secondary text-sm font-medium cursor-pointer hover:text-primary transition-colors flex items-center gap-1">
-              Xem hồ sơ <span className="material-symbols-outlined text-[14px]">visibility</span>
+              Xem hồ sơ <span className="material-symbols-outlined text-sm">visibility</span>
             </Link>
           </div>
 
