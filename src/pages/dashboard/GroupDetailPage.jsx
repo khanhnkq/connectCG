@@ -5,9 +5,9 @@ import PostComposer from '../../components/feed/PostComposer';
 import PostCard from '../../components/feed/PostCard';
 import toast from 'react-hot-toast';
 import ReportModal from "../../components/report/ReportModal";
-import { findById, getGroupMembers, leaveGroup, inviteMembers, joinGroup, getPendingRequests, approveRequest, rejectRequest, kickMember } from '../../services/groups/GroupService';
+import { findById, getGroupMembers, leaveGroup, inviteMembers, joinGroup, getPendingRequests, approveRequest, rejectRequest, kickMember, transferOwnership } from '../../services/groups/GroupService';
 import InviteMemberModal from '../../components/groups/InviteMemberModal';
-
+import TransferOwnershipModal from '../../components/groups/TransferOwnershipModal';
 export default function GroupDetailPage() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -29,6 +29,7 @@ export default function GroupDetailPage() {
     const [members, setMembers] = useState([]);
     const [userMembership, setUserMembership] = useState(null); // { userId, status, role }
 
+    const [showTransferOwnershipModal, setShowTransferOwnershipModal] = useState(false);
     const fetchGroupData = async () => {
         try {
             const groupData = await findById(id);
@@ -89,7 +90,31 @@ export default function GroupDetailPage() {
         }
     }, [id, navigate, searchParams]);
 
+    // Helper function to decode JWT and get user ID
+    const getUserIdFromToken = () => {
+        const token = localStorage.getItem('accessToken');
+        if (!token) return null;
+
+        try {
+            // JWT có 3 phần: header.payload.signature
+            const payload = token.split('.')[1];
+            const decoded = JSON.parse(atob(payload));
+            return decoded.userId || decoded.sub || decoded.id;
+        } catch (error) {
+            console.error('Failed to decode token:', error);
+            return null;
+        }
+    };
+
     const handleLeaveGroup = () => {
+        if (!group) return;
+        const currentUserId = getUserIdFromToken();
+        const userIdNum = Number(currentUserId);
+        const ownerIdNum = Number(group.ownerId);
+        if (userIdNum && ownerIdNum && userIdNum === ownerIdNum) {
+            setShowTransferOwnershipModal(true);
+            return;
+        }
         setShowLeaveModal(true);
     };
 
@@ -102,6 +127,18 @@ export default function GroupDetailPage() {
         } catch (error) {
             console.error("Failed to leave group:", error);
             const errorMsg = error.response?.data?.message || (typeof error.response?.data === 'string' ? error.response.data : null) || "Không thể rời nhóm";
+            toast.error(errorMsg);
+        }
+    };
+    const handleTransferOwnership = async (selectedMember) => {
+        try {
+            await transferOwnership(group.id, selectedMember.userId);
+            toast.success(`Đã chuyển quyền cho ${selectedMember.username} và rời nhóm`);
+            setShowTransferOwnershipModal(false);
+            navigate('/dashboard/groups');
+        } catch (error) {
+            console.error("Failed to transfer ownership:", error);
+            const errorMsg = error.response?.data || "Không thể chuyển quyền";
             toast.error(errorMsg);
         }
     };
@@ -630,6 +667,15 @@ export default function GroupDetailPage() {
                     </div>
                 </div>
             )}
+            {/* Transfer Ownership Modal */}
+            <TransferOwnershipModal
+                isOpen={showTransferOwnershipModal}
+                onClose={() => setShowTransferOwnershipModal(false)}
+                members={members}
+                currentUserId={getUserIdFromToken()}
+                onTransfer={handleTransferOwnership}
+            />
         </div>
     );
+
 }
