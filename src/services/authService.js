@@ -9,6 +9,9 @@ const authService = {
     register: (data) => {
         return axiosClient.post('/v1/auth/register', data);
     },
+    createProfile: (data) => {
+        return axiosClient.post('/v1/auth/profile', data);
+    },
 
     logout: () => {
         localStorage.removeItem('accessToken');

@@ -5,7 +5,7 @@ import LandingPage from './pages/LandingPage';
 import Login from './pages/auth/Login';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import Step1 from './pages/registration/Step1';
-import Step2 from './pages/registration/Step2';
+import OnboardingPage from './pages/registration/OnboardingPage';
 import NewsfeedDashboard1 from './pages/dashboard/NewsfeedDashboard1';
 import GroupsManagement from './pages/dashboard/GroupsManagement';
 import AdvancedMemberSearch from './pages/search/AdvancedMemberSearch';
@@ -57,7 +57,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/registration/step-1" element={<Step1 />} />
-        <Route path="/registration/step-2" element={<Step2 />} />
+        <Route path="/onboarding" element={<OnboardingPage />} />  {/* THÊM DÒNG MỚI */}
         <Route path="/dashboard/newsfeed-1" element={<NewsfeedDashboard1 />} />
         <Route path="/dashboard/groups" element={<GroupsManagement />} />
         <Route path="/dashboard/groups/:id" element={<GroupDetailPage />} />
