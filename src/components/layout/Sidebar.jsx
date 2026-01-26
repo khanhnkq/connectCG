@@ -69,12 +69,7 @@ export default function Sidebar() {
     }
 
     // 2. Navigate based on type
-    if (n.type === 'GROUP_JOIN_REQUEST') {
-      navigate(`/dashboard/groups/${n.targetId}?tab=Moderation&modTab=Requests`);
-    } else if (n.type === 'GROUP_INVITE' || n.targetType === 'GROUP') {
-      navigate(`/dashboard/groups/${n.targetId}`);
-    }
-    // Add other types as needed
+    // Group-related notifications are no longer handled here.
 
     setShowNotifications(false);
   };

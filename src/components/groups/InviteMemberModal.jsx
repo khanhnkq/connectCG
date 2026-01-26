@@ -25,8 +25,8 @@ export default function InviteMemberModal({ isOpen, onClose, onInvite }) {
             const userStr = localStorage.getItem('user');
             if (userStr) {
                 const user = JSON.parse(userStr);
-                const data = await getFriends({ userId: user.id, size: 100 });
-                setFriends(data.content || data); // Adjust based on API response structure (Page vs List)
+                const data = await getFriends({ size: 100 }); // Backend already knows current user
+                setFriends(data.content || data || []);
             }
         } catch (error) {
             console.error("Failed to fetch friends:", error);
