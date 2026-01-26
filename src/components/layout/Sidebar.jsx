@@ -35,12 +35,12 @@ export default function Sidebar() {
   useEffect(() => {
     // Chỉ gọi API nếu chưa có dữ liệu profile trong Redux
     const userId = user?.id || user?.userId || user?.sub;
-    
-    console.log("Sidebar Debug:", { 
-      user, 
-      userId, 
-      userProfile, 
-      hasToken: !!localStorage.getItem('accessToken') 
+
+    console.log("Sidebar Debug:", {
+      user,
+      userId,
+      userProfile,
+      hasToken: !!localStorage.getItem('accessToken')
     });
 
     if (userId && !userProfile) {
@@ -119,7 +119,7 @@ export default function Sidebar() {
     { icon: 'person_add', label: 'Lời mời kết bạn', path: '/dashboard/requests', badge: '4' },
     { icon: 'favorite', label: 'Gợi ý kết bạn', path: '/dashboard/suggestions' },
     { icon: 'person_search', label: 'Tìm bạn mới', path: '/search/members' },
-    { icon: 'person', label: 'Hồ sơ', path: '/dashboard/my-profile' },
+    { icon: 'people', label: 'Bạn bè', path: '/dashboard/friends' },
   ];
 
   return (

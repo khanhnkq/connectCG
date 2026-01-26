@@ -17,7 +17,7 @@ export const fetchUserProfile = createAsyncThunk(
 const userSlice = createSlice({
     name: 'user',
     initialState: {
-        profile: null,
+        profile: JSON.parse(localStorage.getItem('userProfile')) || null, // Khôi phục từ localStorage
         loading: false,
         error: null,
     },
@@ -25,6 +25,7 @@ const userSlice = createSlice({
         clearProfile: (state) => {
             state.profile = null;
             state.error = null;
+            localStorage.removeItem('userProfile'); // Xóa khỏi localStorage
         }
     },
     extraReducers: (builder) => {
@@ -34,6 +35,7 @@ const userSlice = createSlice({
                 state.profile = null;
                 state.error = null;
                 state.loading = false;
+                localStorage.removeItem('userProfile'); // Xóa khỏi localStorage
             })
             .addCase(fetchUserProfile.pending, (state) => {
                 state.loading = true;
@@ -42,6 +44,8 @@ const userSlice = createSlice({
             .addCase(fetchUserProfile.fulfilled, (state, action) => {
                 state.loading = false;
                 state.profile = action.payload;
+                // Lưu profile vào localStorage
+                localStorage.setItem('userProfile', JSON.stringify(action.payload));
             })
             .addCase(fetchUserProfile.rejected, (state, action) => {
                 state.loading = false;
