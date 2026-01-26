@@ -85,9 +85,6 @@ export default function UserProfile() {
                                                 <span className="material-symbols-outlined text-[20px]">edit_square</span>
                                                 Chỉnh sửa hồ sơ
                                             </button>
-                                            <button className="flex items-center justify-center gap-2 bg-[#493222] hover:bg-[#5c402d] text-white font-bold px-4 py-3 rounded-xl transition-all">
-                                                <span className="material-symbols-outlined">settings</span>
-                                            </button>
                                         </div>
                                     </div>
                                 </div>

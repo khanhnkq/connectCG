@@ -135,7 +135,7 @@ export default function Sidebar() {
               {userProfile?.fullName || userProfile?.username || user?.username || 'Đang tải...'}
             </h1>
             <Link to="/dashboard/my-profile" className="text-text-secondary text-sm font-medium cursor-pointer hover:text-primary transition-colors flex items-center gap-1">
-              Xem hồ sơ <span className="material-symbols-outlined text-[14px]">visibility</span>
+              Xem hồ sơ <span className="material-symbols-outlined text-sm">visibility</span>
             </Link>
           </div>
 

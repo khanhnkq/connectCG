@@ -22,6 +22,12 @@ const authService = {
         const userStr = localStorage.getItem('user');
         if (userStr) return JSON.parse(userStr);
         return null;
+    },
+    forgotPassword(email) {
+        return axiosClient.post(`/v1/auth/forgot-password`, null, { params: { email } });
+    },
+    resetPassword(token, newPassword) {
+        return axiosClient.post(`/v1/auth/reset-password`, null, { params: { token, newPassword } });
     }
 };
 
