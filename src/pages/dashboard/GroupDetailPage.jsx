@@ -5,9 +5,9 @@ import PostComposer from '../../components/feed/PostComposer';
 import PostCard from '../../components/feed/PostCard';
 import toast from 'react-hot-toast';
 import ReportModal from "../../components/report/ReportModal";
-import { findById, getGroupMembers, leaveGroup, inviteMembers, joinGroup, getPendingRequests, approveRequest, rejectRequest, kickMember } from '../../services/groups/GroupService';
+import { findById, getGroupMembers, leaveGroup, inviteMembers, joinGroup, getPendingRequests, approveRequest, rejectRequest, kickMember, transferOwnership } from '../../services/groups/GroupService';
 import InviteMemberModal from '../../components/groups/InviteMemberModal';
-
+import TransferOwnershipModal from '../../components/groups/TransferOwnershipModal';
 export default function GroupDetailPage() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -29,6 +29,7 @@ export default function GroupDetailPage() {
     const [members, setMembers] = useState([]);
     const [userMembership, setUserMembership] = useState(null); // { userId, status, role }
 
+    const [showTransferOwnershipModal, setShowTransferOwnershipModal] = useState(false);
     const fetchGroupData = async () => {
         try {
             const groupData = await findById(id);
@@ -89,7 +90,31 @@ export default function GroupDetailPage() {
         }
     }, [id, navigate, searchParams]);
 
+    // Helper function to decode JWT and get user ID
+    const getUserIdFromToken = () => {
+        const token = localStorage.getItem('accessToken');
+        if (!token) return null;
+
+        try {
+            // JWT có 3 phần: header.payload.signature
+            const payload = token.split('.')[1];
+            const decoded = JSON.parse(atob(payload));
+            return decoded.userId || decoded.sub || decoded.id;
+        } catch (error) {
+            console.error('Failed to decode token:', error);
+            return null;
+        }
+    };
+
     const handleLeaveGroup = () => {
+        if (!group) return;
+        const currentUserId = getUserIdFromToken();
+        const userIdNum = Number(currentUserId);
+        const ownerIdNum = Number(group.ownerId);
+        if (userIdNum && ownerIdNum && userIdNum === ownerIdNum) {
+            setShowTransferOwnershipModal(true);
+            return;
+        }
         setShowLeaveModal(true);
     };
 
@@ -102,6 +127,18 @@ export default function GroupDetailPage() {
         } catch (error) {
             console.error("Failed to leave group:", error);
             const errorMsg = error.response?.data?.message || (typeof error.response?.data === 'string' ? error.response.data : null) || "Không thể rời nhóm";
+            toast.error(errorMsg);
+        }
+    };
+    const handleTransferOwnership = async (selectedMember) => {
+        try {
+            await transferOwnership(group.id, selectedMember.userId);
+            toast.success(`Đã chuyển quyền cho ${selectedMember.username} và rời nhóm`);
+            setShowTransferOwnershipModal(false);
+            navigate('/dashboard/groups');
+        } catch (error) {
+            console.error("Failed to transfer ownership:", error);
+            const errorMsg = error.response?.data || "Không thể chuyển quyền";
             toast.error(errorMsg);
         }
     };
@@ -223,6 +260,9 @@ export default function GroupDetailPage() {
                                 <div className="flex flex-wrap items-center gap-3">
                                     <h1 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight drop-shadow-lg flex items-center gap-3">
                                         {group.name}
+                                        {isAdmin && (
+                                            <span className="material-symbols-outlined text-yellow-400 text-3xl md:text-5xl drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]" title="Quản trị viên">workspace_premium</span>
+                                        )}
                                     </h1>
                                     <div className="flex items-center gap-2">
                                         <span className="bg-primary/20 backdrop-blur-sm text-primary border border-primary/30 text-[10px] sm:text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">
@@ -267,6 +307,7 @@ export default function GroupDetailPage() {
                                         <button
                                             onClick={() => setShowInviteModal(true)}
                                             className="flex-1 sm:flex-none px-6 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md font-bold text-sm transition-all flex items-center justify-center gap-2"
+                                            title="Mời bạn bè tham gia nhóm"
                                         >
                                             <span className="material-symbols-outlined !text-[20px]">person_add</span>
                                             Invite
@@ -626,6 +667,15 @@ export default function GroupDetailPage() {
                     </div>
                 </div>
             )}
+            {/* Transfer Ownership Modal */}
+            <TransferOwnershipModal
+                isOpen={showTransferOwnershipModal}
+                onClose={() => setShowTransferOwnershipModal(false)}
+                members={members}
+                currentUserId={getUserIdFromToken()}
+                onTransfer={handleTransferOwnership}
+            />
         </div>
     );
+
 }
