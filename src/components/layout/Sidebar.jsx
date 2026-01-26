@@ -36,12 +36,12 @@ export default function Sidebar() {
   useEffect(() => {
     // Chỉ gọi API nếu chưa có dữ liệu profile trong Redux
     const userId = user?.id || user?.userId || user?.sub;
-    
-    console.log("Sidebar Debug:", { 
-      user, 
-      userId, 
-      userProfile, 
-      hasToken: !!localStorage.getItem('accessToken') 
+
+    console.log("Sidebar Debug:", {
+      user,
+      userId,
+      userProfile,
+      hasToken: !!localStorage.getItem('accessToken')
     });
 
     if (userId && !userProfile) {
@@ -128,6 +128,8 @@ export default function Sidebar() {
   const isActive = (path) => {
     return location.pathname === path;
   };
+
+
 
   const menuItems = [
     { icon: 'home', label: 'Trang chủ', path: '/dashboard/feed' },
@@ -250,9 +252,14 @@ export default function Sidebar() {
           return (
             <Link key={index} to={item.path} className={className}>
               <div className="flex items-center gap-4">
-                <span className={`material-symbols-outlined ${!active && 'group-hover:scale-110'} transition-transform`}>
-                  {item.icon}
-                </span>
+                <div className="relative">
+                  <span className={`material-symbols-outlined ${!active && 'group-hover:scale-110'} transition-transform`}>
+                    {item.icon}
+                  </span>
+                  {item.hasDot && !active && (
+                    <span className="absolute -top-1 -right-1 size-2 bg-red-500 rounded-full border border-background-dark animate-pulse"></span>
+                  )}
+                </div>
                 <span className="text-sm font-bold tracking-wide">{item.label}</span>
               </div>
               {item.badge && (

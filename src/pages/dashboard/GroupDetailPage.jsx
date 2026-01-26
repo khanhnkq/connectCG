@@ -5,7 +5,7 @@ import PostComposer from '../../components/feed/PostComposer';
 import PostCard from '../../components/feed/PostCard';
 import toast from 'react-hot-toast';
 import ReportModal from "../../components/report/ReportModal";
-import { findById, getGroupMembers, leaveGroup, inviteMembers, joinGroup, getPendingRequests, approveRequest, rejectRequest, kickMember, transferOwnership } from '../../services/groups/GroupService';
+import { findById, getGroupMembers, leaveGroup, inviteMembers, joinGroup, getPendingRequests, approveRequest, rejectRequest, kickMember, transferOwnership, updateGroupMemberRole } from '../../services/groups/GroupService';
 import InviteMemberModal from '../../components/groups/InviteMemberModal';
 import TransferOwnershipModal from '../../components/groups/TransferOwnershipModal';
 export default function GroupDetailPage() {
@@ -15,17 +15,19 @@ export default function GroupDetailPage() {
     const [group, setGroup] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isAdmin, setIsAdmin] = useState(false);
-    const [activeTab, setActiveTab] = useState('Feed');
+    const [activeTab, setActiveTab] = useState('Bản tin');
     const [showReportGroup, setShowReportGroup] = useState(false);
     const [showInviteModal, setShowInviteModal] = useState(false);
     const [showPrivacyModal, setShowPrivacyModal] = useState(false);
     const [showKickModal, setShowKickModal] = useState(false);
     const [showLeaveModal, setShowLeaveModal] = useState(false);
+    const [showTransferConfirmModal, setShowTransferConfirmModal] = useState(false);
     const [memberToKick, setMemberToKick] = useState(null);
+    const [memberToTransfer, setMemberToTransfer] = useState(null);
 
     const [pendingPosts, setPendingPosts] = useState([]);
     const [memberRequests, setMemberRequests] = useState([]);
-    const [modTab, setModTab] = useState('Posts');
+    const [modTab, setModTab] = useState('Bài viết');
     const [members, setMembers] = useState([]);
     const [userMembership, setUserMembership] = useState(null); // { userId, status, role }
 
@@ -54,6 +56,12 @@ export default function GroupDetailPage() {
                     // Fetch pending requests if admin
                     const requests = await getPendingRequests(id);
                     setMemberRequests(requests);
+                } else {
+                    setIsAdmin(false);
+                    // If user was in Moderation tab but is no longer admin, switch to Feed
+                    if (activeTab === 'Kiểm duyệt') {
+                        setActiveTab('Bản tin');
+                    }
                 }
             }
 
@@ -133,9 +141,9 @@ export default function GroupDetailPage() {
     const handleTransferOwnership = async (selectedMember) => {
         try {
             await transferOwnership(group.id, selectedMember.userId);
-            toast.success(`Đã chuyển quyền cho ${selectedMember.username} và rời nhóm`);
+            toast.success(`Đã chuyển quyền cho ${selectedMember.fullName} thành công`);
             setShowTransferOwnershipModal(false);
-            navigate('/dashboard/groups');
+            fetchGroupData(); // Refresh current page instead of navigating away
         } catch (error) {
             console.error("Failed to transfer ownership:", error);
             const errorMsg = error.response?.data || "Không thể chuyển quyền";
@@ -179,11 +187,33 @@ export default function GroupDetailPage() {
         setShowKickModal(true);
     };
 
+    const handleUpdateRole = async (targetUserId, targetUsername, newRole) => {
+        if (newRole !== 'OWNER') return;
+
+        setMemberToTransfer({ userId: targetUserId, username: targetUsername });
+        setShowTransferConfirmModal(true);
+    };
+
+    const confirmTransferOwnership = async () => {
+        if (!memberToTransfer) return;
+        try {
+            await updateGroupMemberRole(group.id, memberToTransfer.userId, 'OWNER');
+            toast.success(`Đã chuyển quyền quản trị cho ${memberToTransfer.fullName}`);
+            setShowTransferConfirmModal(false);
+            setMemberToTransfer(null);
+            fetchGroupData();
+        } catch (error) {
+            console.error("Failed to update role:", error);
+            const errorMsg = error.response?.data?.message || (typeof error.response?.data === 'string' ? error.response.data : null) || "Thao tác thất bại";
+            toast.error(errorMsg);
+        }
+    };
+
     const confirmKickMember = async () => {
         if (!memberToKick) return;
         try {
             await kickMember(group.id, memberToKick.userId);
-            toast.success(`Đã mời ${memberToKick.username} ra khỏi nhóm`);
+            toast.success(`Đã mời ${memberToKick.fullName} ra khỏi nhóm`);
             setShowKickModal(false);
             setMemberToKick(null);
             fetchGroupData();
@@ -266,31 +296,31 @@ export default function GroupDetailPage() {
                                     </h1>
                                     <div className="flex items-center gap-2">
                                         <span className="bg-primary/20 backdrop-blur-sm text-primary border border-primary/30 text-[10px] sm:text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">
-                                            {group.privacy} Group
+                                            Nhóm {group.privacy === 'PUBLIC' ? 'Công khai' : 'Riêng tư'}
                                         </span>
                                         {isAdmin && (
                                             <span className="bg-orange-500/20 backdrop-blur-sm text-orange-400 border border-orange-500/30 text-[10px] sm:text-xs font-black px-3 py-1 rounded-full uppercase tracking-widest flex items-center gap-1.5 whitespace-nowrap">
                                                 <span className="material-symbols-outlined !text-[14px]">shield_person</span>
-                                                Admin View
+                                                Chế độ Quản trị
                                             </span>
                                         )}
                                     </div>
                                 </div>
                                 <p className="text-white/90 font-medium text-sm md:text-base flex items-center gap-2 drop-shadow-sm">
                                     <span className="material-symbols-outlined !text-[18px] text-primary">groups</span>
-                                    <span>{group.memberCount || 0} Members</span>
+                                    <span>{group.memberCount || 0} Thành viên</span>
                                     <span className="size-1 bg-white/40 rounded-full"></span>
-                                    <span className="text-primary font-bold">Active</span>
+                                    <span className="text-primary font-bold">Đang hoạt động</span>
                                 </p>
                             </div>
                             <div className="flex flex-wrap items-center gap-3">
                                 {isAdmin && (
                                     <button
                                         onClick={() => navigate(`/dashboard/groups/edit/${group.id}`)}
-                                        className="flex-1 sm:flex-none px-6 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md font-bold text-sm transition-all flex items-center justify-center gap-2"
+                                        className="flex-1 sm:flex-none h-10 px-6 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md font-bold text-sm transition-all flex items-center justify-center gap-2"
                                     >
                                         <span className="material-symbols-outlined !text-[20px]">settings_suggest</span>
-                                        Edit
+                                        Sửa
                                     </button>
                                 )}
 
@@ -298,50 +328,50 @@ export default function GroupDetailPage() {
                                     <>
                                         <button
                                             onClick={handleLeaveGroup}
-                                            className="flex-1 sm:flex-none px-6 py-2.5 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 backdrop-blur-md font-bold text-sm transition-all flex items-center justify-center gap-2"
+                                            className="flex-1 sm:flex-none h-10 px-6 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 backdrop-blur-md font-bold text-sm transition-all flex items-center justify-center gap-2"
                                         >
                                             <span className="material-symbols-outlined !text-[20px]">logout</span>
-                                            Leave
+                                            Rời nhóm
                                         </button>
 
                                         <button
                                             onClick={() => setShowInviteModal(true)}
-                                            className="flex-1 sm:flex-none px-6 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md font-bold text-sm transition-all flex items-center justify-center gap-2"
+                                            className="flex-1 sm:flex-none h-10 px-6 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md font-bold text-sm transition-all flex items-center justify-center gap-2"
                                             title="Mời bạn bè tham gia nhóm"
                                         >
                                             <span className="material-symbols-outlined !text-[20px]">person_add</span>
-                                            Invite
+                                            Mời
                                         </button>
                                     </>
                                 ) : userMembership?.status === 'REQUESTED' ? (
                                     <button
                                         disabled
-                                        className="flex-1 sm:flex-none px-6 py-2.5 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/20 backdrop-blur-md font-bold text-sm transition-all flex items-center justify-center gap-2"
+                                        className="flex-1 sm:flex-none h-10 px-6 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/20 backdrop-blur-md font-bold text-sm transition-all flex items-center justify-center gap-2"
                                     >
                                         <span className="material-symbols-outlined !text-[20px]">hourglass_empty</span>
-                                        Waiting Approval
+                                        Đang chờ duyệt
                                     </button>
                                 ) : userMembership?.status === 'PENDING' ? (
                                     <button
                                         onClick={handleJoinGroup}
-                                        className="flex-1 sm:flex-none px-6 py-2.5 rounded-full bg-primary hover:bg-orange-600 text-[#231810] font-black text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
+                                        className="flex-1 sm:flex-none h-10 px-6 rounded-full bg-primary hover:bg-orange-600 text-[#231810] font-black text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
                                     >
                                         <span className="material-symbols-outlined !text-[20px]">check_circle</span>
-                                        Accept Invitation
+                                        Chấp nhận lời mời
                                     </button>
                                 ) : (
                                     <button
                                         onClick={handleJoinGroup}
-                                        className="flex-1 sm:flex-none px-6 py-2.5 rounded-full bg-primary hover:bg-orange-600 text-[#231810] font-black text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
+                                        className="flex-1 sm:flex-none h-10 px-6 rounded-full bg-primary hover:bg-orange-600 text-[#231810] font-black text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
                                     >
                                         <span className="material-symbols-outlined !text-[20px]">add_circle</span>
-                                        {group.privacy === 'PRIVATE' ? 'Request to Join' : 'Join Group'}
+                                        {group.privacy === 'PRIVATE' ? 'Yêu cầu tham gia' : 'Tham gia nhóm'}
                                     </button>
                                 )}
 
                                 <button
                                     onClick={() => setShowReportGroup(true)}
-                                    className="size-10 flex items-center justify-center rounded-full bg-yellow-500/10 hover:bg-yellow-500 text-yellow-500 hover:text-white border border-yellow-500/20 backdrop-blur-md transition-all"
+                                    className="h-10 w-10 flex items-center justify-center rounded-full bg-yellow-500/10 hover:bg-yellow-500 text-yellow-500 hover:text-white border border-yellow-500/20 backdrop-blur-md transition-all"
                                     title="Báo cáo nhóm"
                                 >
                                     <span className="material-symbols-outlined !text-[20px]">report</span>
@@ -354,30 +384,30 @@ export default function GroupDetailPage() {
                     <div className="border-b border-[#342418] sticky top-0 bg-background-dark/95 backdrop-blur-xl z-30">
                         <div className="max-w-7xl mx-auto px-6">
                             <nav className="flex gap-8 overflow-x-auto hide-scrollbar">
-                                {['Feed', 'Members', 'Photos', 'Events']
+                                {[{ en: 'Feed', vi: 'Bản tin' }, { en: 'Members', vi: 'Thành viên' }, { en: 'Photos', vi: 'Ảnh' }, { en: 'Events', vi: 'Sự kiện' }]
                                     .filter(tab => group.privacy === 'PUBLIC' || userMembership?.status === 'ACCEPTED')
                                     .map(tab => (
                                         <button
-                                            key={tab}
-                                            onClick={() => setActiveTab(tab)}
-                                            className={`py-4 font-bold text-sm tracking-wide whitespace-nowrap transition-all border-b-2 ${activeTab === tab
+                                            key={tab.en}
+                                            onClick={() => setActiveTab(tab.vi)}
+                                            className={`py-4 font-bold text-sm tracking-wide whitespace-nowrap transition-all border-b-2 ${activeTab === tab.vi
                                                 ? 'text-primary border-primary'
                                                 : 'text-text-secondary hover:text-white border-transparent'
                                                 }`}
                                         >
-                                            {tab}
+                                            {tab.vi}
                                         </button>
                                     ))}
                                 {isAdmin && (
                                     <button
-                                        onClick={() => setActiveTab('Moderation')}
-                                        className={`py-4 font-black text-sm tracking-widest whitespace-nowrap transition-all border-b-2 flex items-center gap-2 ${activeTab === 'Moderation'
+                                        onClick={() => setActiveTab('Kiểm duyệt')}
+                                        className={`py-4 font-black text-sm tracking-widest whitespace-nowrap transition-all border-b-2 flex items-center gap-2 ${activeTab === 'Kiểm duyệt'
                                             ? 'text-orange-400 border-orange-400'
                                             : 'text-text-secondary hover:text-orange-400 border-transparent'
                                             }`}
                                     >
                                         <span className="material-symbols-outlined text-lg">gavel</span>
-                                        MODERATION
+                                        KIỂM DUYỆT
                                         {(pendingPosts.length > 0 || memberRequests.length > 0) && (
                                             <span className="size-5 bg-orange-500 text-[#231810] text-[10px] rounded-full flex items-center justify-center">
                                                 {pendingPosts.length + memberRequests.length}
@@ -391,7 +421,7 @@ export default function GroupDetailPage() {
 
                     {/* Content Section */}
                     <div className="max-w-7xl mx-auto w-full px-6 py-8">
-                        {activeTab === 'Feed' && (
+                        {activeTab === 'Bản tin' && (
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                                 <div className="lg:col-span-2 flex flex-col gap-6">
                                     {group.privacy === 'PRIVATE' && userMembership?.status !== 'ACCEPTED' ? (
@@ -399,7 +429,7 @@ export default function GroupDetailPage() {
                                             <div className="size-24 rounded-full bg-primary/10 flex items-center justify-center text-primary mx-auto mb-8">
                                                 <span className="material-symbols-outlined text-5xl">lock</span>
                                             </div>
-                                            <h2 className="text-3xl font-black text-white">This group is Private</h2>
+                                            <h2 className="text-3xl font-black text-white">Đây là nhóm Riêng tư</h2>
                                             <p className="text-text-secondary max-w-md mx-auto leading-relaxed">
                                                 Nội dung và danh sách thành viên của nhóm này đã được ẩn. Vui lòng gia nhập nhóm để tham gia cộng đồng.
                                             </p>
@@ -408,7 +438,7 @@ export default function GroupDetailPage() {
                                                 disabled={userMembership?.status === 'REQUESTED'}
                                                 className="px-10 py-4 bg-primary hover:bg-orange-600 text-[#231810] font-black rounded-2xl transition-all shadow-xl shadow-primary/20 uppercase tracking-widest disabled:opacity-50"
                                             >
-                                                {userMembership?.status === 'REQUESTED' ? 'Pending Approval...' : 'Send Join Request'}
+                                                {userMembership?.status === 'REQUESTED' ? 'Đang chờ duyệt...' : 'Gửi yêu cầu gia nhập'}
                                             </button>
                                         </div>
                                     ) : (
@@ -423,18 +453,18 @@ export default function GroupDetailPage() {
                                 </div>
                                 <div className="hidden lg:flex flex-col gap-6">
                                     <div className="bg-card-dark rounded-2xl p-6 border border-[#3e2b1d]">
-                                        <h3 className="text-white font-bold text-lg mb-3">About Group</h3>
+                                        <h3 className="text-white font-bold text-lg mb-3">Giới thiệu về nhóm</h3>
                                         <p className="text-text-secondary text-sm leading-relaxed mb-4">
                                             {group.description || "Chưa có mô tả."}
                                         </p>
                                         <div className="flex flex-col gap-3">
                                             <div className="flex items-center gap-3 text-sm text-gray-300">
                                                 <span className="material-symbols-outlined text-text-secondary text-[20px]">public</span>
-                                                <span>{group.privacy} Group</span>
+                                                <span>Nhóm {group.privacy === 'PUBLIC' ? 'Công khai' : 'Riêng tư'}</span>
                                             </div>
                                             <div className="flex items-center gap-3 text-sm text-gray-300">
                                                 <span className="material-symbols-outlined text-text-secondary text-[20px]">history</span>
-                                                <span>Created {new Date(group.createdAt).toLocaleDateString()}</span>
+                                                <span>Đã tạo vào {new Date(group.createdAt).toLocaleDateString()}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -442,11 +472,11 @@ export default function GroupDetailPage() {
                             </div>
                         )}
 
-                        {activeTab === 'Members' && (
+                        {activeTab === 'Thành viên' && (
                             <div className="max-w-3xl mx-auto space-y-6">
                                 <div className="flex justify-between items-center px-2">
-                                    <h3 className="text-xl font-bold text-white">Group Members</h3>
-                                    <span className="text-sm text-text-secondary">{group.memberCount || 0} members</span>
+                                    <h3 className="text-xl font-bold text-white">Thành viên nhóm</h3>
+                                    <span className="text-sm text-text-secondary">{group.memberCount || 0} thành viên</span>
                                 </div>
                                 <div className="bg-card-dark border border-[#3e2b1d] rounded-3xl overflow-hidden divide-y divide-[#3e2b1d]">
                                     {members.length > 0 ? members.map((member) => (
@@ -455,26 +485,39 @@ export default function GroupDetailPage() {
                                                 <img src={member.avatarUrl} className="size-12 rounded-full border-2 border-[#3e2b1d]" alt="" />
                                                 <div>
                                                     <div className="flex items-center gap-2">
-                                                        <p className="font-bold text-white">{member.username}</p>
+                                                        <p className="font-bold text-white">{member.fullName}</p>
                                                         <span className={`px-2 py-0.5 text-[10px] font-black rounded uppercase ${member.role === 'ADMIN' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'bg-zinc-800 text-zinc-400'
                                                             }`}>
-                                                            {member.role}
+                                                            {member.role === 'ADMIN' ? 'Quản trị viên' : member.role === 'OWNER' ? 'Chủ nhóm' : 'Thành viên'}
                                                         </span>
                                                     </div>
-                                                    <p className="text-xs text-text-secondary mt-0.5 italic">Joined {new Date(member.joinedAt).toLocaleDateString()}</p>
+                                                    <p className="text-xs text-text-secondary mt-0.5 italic">Đã gia nhập vào {new Date(member.joinedAt).toLocaleDateString()}</p>
                                                 </div>
                                             </div>
 
-                                            {/* Kick Button for Admins */}
-                                            {isAdmin && !checkIfAdmin(member) && (
-                                                <button
-                                                    onClick={() => handleKickMember(member)}
-                                                    className="p-2 text-red-500/40 hover:text-red-500 transition-colors"
-                                                    title="Mời ra khỏi nhóm"
-                                                >
-                                                    <span className="material-symbols-outlined">person_remove</span>
-                                                </button>
-                                            )}
+                                            {/* Role Management Actions */}
+                                            <div className="flex items-center gap-2">
+                                                {/* Only the Owner can transfer ownership to others */}
+                                                {Number(getUserIdFromToken()) === Number(group.ownerId) && member.userId !== Number(getUserIdFromToken()) && (
+                                                    <div className="flex gap-1">
+                                                        <button
+                                                            onClick={() => handleUpdateRole(member.userId, member.fullName, 'OWNER')}
+                                                            className="p-2 text-yellow-500/40 hover:text-yellow-500 transition-colors"
+                                                            title="Chuyển nhượng quyền sở hữu"
+                                                        >
+                                                            <span className="material-symbols-outlined">vpn_key</span>
+                                                        </button>
+
+                                                        <button
+                                                            onClick={() => handleKickMember(member)}
+                                                            className="p-2 text-red-500/40 hover:text-red-500 transition-colors"
+                                                            title="Mời ra khỏi nhóm"
+                                                        >
+                                                            <span className="material-symbols-outlined">person_remove</span>
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     )) : (
                                         <div className="p-10 text-center text-text-secondary">Chưa có thành viên nào.</div>
@@ -483,24 +526,24 @@ export default function GroupDetailPage() {
                             </div>
                         )}
 
-                        {activeTab === 'Moderation' && isAdmin && (
+                        {activeTab === 'Kiểm duyệt' && isAdmin && (
                             <div className="max-w-4xl mx-auto space-y-8">
                                 <div className="flex gap-4 border-b border-[#3e2b1d]">
                                     <button
-                                        onClick={() => setModTab('Posts')}
-                                        className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${modTab === 'Posts' ? 'text-primary border-primary' : 'text-text-secondary border-transparent'}`}
+                                        onClick={() => setModTab('Bài viết')}
+                                        className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${modTab === 'Bài viết' ? 'text-primary border-primary' : 'text-text-secondary border-transparent'}`}
                                     >
-                                        Pending Posts
+                                        Bài viết chờ duyệt
                                     </button>
                                     <button
-                                        onClick={() => setModTab('Requests')}
-                                        className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${modTab === 'Requests' ? 'text-primary border-primary' : 'text-text-secondary border-transparent'}`}
+                                        onClick={() => setModTab('Yêu cầu')}
+                                        className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${modTab === 'Yêu cầu' ? 'text-primary border-primary' : 'text-text-secondary border-transparent'}`}
                                     >
-                                        Join Requests ({memberRequests.length})
+                                        Yêu cầu tham gia ({memberRequests.length})
                                     </button>
                                 </div>
 
-                                {modTab === 'Posts' ? (
+                                {modTab === 'Bài viết' ? (
                                     <div className="text-center py-20 bg-card-dark rounded-3xl border border-[#3e2b1d] text-text-secondary">
                                         Không có bài viết nào đang chờ duyệt.
                                     </div>
@@ -516,8 +559,8 @@ export default function GroupDetailPage() {
                                                     <div className="flex items-center gap-4">
                                                         <img src={request.avatarUrl} className="size-14 rounded-full border-2 border-primary/20" alt="" />
                                                         <div>
-                                                            <p className="font-black text-white text-lg">{request.username}</p>
-                                                            <p className="text-xs text-text-secondary mt-1 italic">Requested {new Date(request.joinedAt).toLocaleDateString()}</p>
+                                                            <p className="font-black text-white text-lg">{request.fullName}</p>
+                                                            <p className="text-xs text-text-secondary mt-1 italic">Đã yêu cầu vào {new Date(request.joinedAt).toLocaleDateString()}</p>
                                                         </div>
                                                     </div>
                                                     <div className="flex gap-3">
@@ -525,13 +568,13 @@ export default function GroupDetailPage() {
                                                             onClick={() => handleActionRequest(request.userId, 'approve')}
                                                             className="px-6 py-2.5 bg-primary text-[#0f0a06] font-black rounded-xl text-sm transition-all hover:scale-105"
                                                         >
-                                                            Approve
+                                                            Phê duyệt
                                                         </button>
                                                         <button
                                                             onClick={() => handleActionRequest(request.userId, 'reject')}
                                                             className="px-6 py-2.5 bg-red-500/10 text-red-500 border border-red-500/20 font-black rounded-xl text-sm transition-all hover:bg-red-500/20"
                                                         >
-                                                            Reject
+                                                            Từ chối
                                                         </button>
                                                     </div>
                                                 </div>
@@ -581,7 +624,7 @@ export default function GroupDetailPage() {
                         <div className="space-y-2">
                             <h2 className="text-xl font-black text-white">Xác nhận xóa thành viên</h2>
                             <p className="text-text-secondary text-sm">
-                                Bạn có chắc chắn muốn mời <span className="text-white font-bold">{memberToKick.username}</span> ra khỏi nhóm không?
+                                Bạn có chắc chắn muốn mời <span className="text-white font-bold">{memberToKick.fullName}</span> ra khỏi nhóm không?
                             </p>
                         </div>
                         <div className="flex gap-3 pt-2">
@@ -599,6 +642,42 @@ export default function GroupDetailPage() {
                                 className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl transition-all shadow-lg shadow-red-500/20 text-xs uppercase tracking-widest"
                             >
                                 Đồng ý xóa
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showTransferConfirmModal && memberToTransfer && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div className="bg-[#1a120b] border border-[#3e2b1d] rounded-3xl p-8 max-w-sm w-full text-center space-y-6 shadow-2xl animate-in fade-in zoom-in duration-200">
+                        <div className="size-16 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500 mx-auto">
+                            <span className="material-symbols-outlined text-4xl">vpn_key</span>
+                        </div>
+                        <div className="space-y-2">
+                            <h2 className="text-xl font-black text-white">Xác nhận chuyển quyền</h2>
+                            <p className="text-text-secondary text-sm leading-relaxed">
+                                Bạn có chắc chắn muốn chuyển quyền chủ sở hữu cho <span className="text-white font-bold">{memberToTransfer.fullName}</span>?
+                            </p>
+                            <p className="text-text-secondary text-xs italic">
+                                * Bạn sẽ trở thành thành viên thường sau khi chuyển quyền.
+                            </p>
+                        </div>
+                        <div className="flex gap-3 pt-2">
+                            <button
+                                onClick={() => {
+                                    setShowTransferConfirmModal(false);
+                                    setMemberToTransfer(null);
+                                }}
+                                className="flex-1 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-bold rounded-xl transition-all text-xs uppercase tracking-widest"
+                            >
+                                Hủy
+                            </button>
+                            <button
+                                onClick={confirmTransferOwnership}
+                                className="flex-1 py-3 bg-orange-500 hover:bg-orange-600 text-white font-black rounded-xl transition-all shadow-lg shadow-orange-500/20 text-xs uppercase tracking-widest"
+                            >
+                                Xác nhận
                             </button>
                         </div>
                     </div>
