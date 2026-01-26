@@ -15,6 +15,7 @@ export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const [notifications, setNotifications] = useState([]);
 
@@ -51,6 +52,22 @@ export default function Sidebar() {
   useEffect(() => {
     fetchNotifications();
   }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      try {
+        const payload = token.split('.')[1];
+        const decoded = JSON.parse(atob(payload));
+        const rolesRaw = decoded.role || '';
+        const hasAdminRole = rolesRaw.includes('ROLE_ADMIN');
+        setIsAdmin(hasAdminRole);
+      } catch (error) {
+        setIsAdmin(false);
+      }
+    }
+  }, []);
+
 
   const fetchNotifications = async () => {
     try {
@@ -135,7 +152,7 @@ export default function Sidebar() {
               {userProfile?.fullName || userProfile?.username || user?.username || 'Đang tải...'}
             </h1>
             <Link to="/dashboard/my-profile" className="text-text-secondary text-sm font-medium cursor-pointer hover:text-primary transition-colors flex items-center gap-1">
-              Xem hồ sơ <span className="material-symbols-outlined text-[14px]">visibility</span>
+              Xem hồ sơ <span className="material-symbols-outlined text-sm">visibility</span>
             </Link>
           </div>
 
@@ -246,10 +263,25 @@ export default function Sidebar() {
             </Link>
           );
         })}
+        {/* Admin Panel Button */}
+        {isAdmin && (
+          <Link
+            to="/admin-website/groups"
+            className="flex items-center gap-4 px-4 py-3.5 rounded-full transition-all group bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/30 text-orange-400 hover:bg-orange-500/20 mb-3 mt-auto"
+          >
+            <div className="flex items-center gap-4">
+              <span className="material-symbols-outlined group-hover:scale-110 transition-transform">
+                admin_panel_settings
+              </span>
+              <span className="text-sm font-bold tracking-wide">Admin Panel</span>
+            </div>
+          </Link>
+        )}
+
         {/* Logout Button */}
         <button
           onClick={handleLogout}
-          className="flex items-center gap-4 px-4 py-3.5 rounded-full transition-all group text-text-secondary hover:bg-[#342418] hover:text-red-500 mt-auto mb-6"
+          className={`flex items-center gap-4 px-4 py-3.5 rounded-full transition-all group text-text-secondary hover:bg-[#342418] hover:text-red-500 mb-6 ${!isAdmin ? 'mt-auto' : ''}`}
         >
           <div className="flex items-center gap-4">
             <span className="material-symbols-outlined group-hover:scale-110 transition-transform">

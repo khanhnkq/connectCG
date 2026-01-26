@@ -56,7 +56,7 @@ const AdminGroupsManager = () => {
 
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {groups.map(group => (
+                    {groups.map((group, index)=> (
                         <div key={group.id} className="bg-surface-dark border border-border-dark/50 rounded-3xl overflow-hidden group hover:border-primary/30 transition-all shadow-xl">
                             <div className="h-44 relative overflow-hidden">
                                 <img
@@ -75,11 +75,11 @@ const AdminGroupsManager = () => {
                                 </div>
                                 <div className="absolute bottom-4 left-6 flex items-center gap-3">
                                     <div className="size-8 rounded-full bg-primary flex items-center justify-center text-[10px] font-black text-white shadow-lg">
-                                        {group.owner_id}
+                                        {index + 1}
                                     </div>
                                     <div>
                                         <p className="text-[10px] text-white/60 font-black uppercase tracking-tighter leading-none">Owner</p>
-                                        <p className="text-xs text-white font-bold">{group.ownerName || `User #${group.owner_id}`}</p>
+                                        <p className="text-xs text-white font-bold">{group.ownerName}</p>
                                     </div>
                                 </div>
                             </div>
@@ -87,7 +87,6 @@ const AdminGroupsManager = () => {
                                 <div>
                                     <div className="flex justify-between items-start">
                                         <h4 className="text-xl font-black text-white group-hover:text-primary transition-colors">{group.name}</h4>
-                                        <span className="text-[10px] text-text-muted font-bold">#{group.id}</span>
                                     </div>
                                     <p className="text-xs text-white/70 line-clamp-2 mt-2">{group.description}</p>
                                 </div>
