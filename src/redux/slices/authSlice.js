@@ -8,6 +8,7 @@ const initialState = {
     isAuthenticated: !!localStorage.getItem('accessToken'),
     loading: false,
     error: null,
+    hasProfile: false,
 };
 
 export const loginUser = createAsyncThunk('auth/loginUser', async ({email, password}, {rejectWithValue}) => {
@@ -33,9 +34,42 @@ export const loginUser = createAsyncThunk('auth/loginUser', async ({email, passw
     }
 });
 
+export const registerUser = createAsyncThunk(
+  'auth/registerUser',
+  async (registrationData, { rejectWithValue }) => {
+    try {
+      const response = await authService.register(registrationData);
+      return response.data;
+    } catch (error) {
+      if (error.response && error.response.data) {
+        return rejectWithValue(error.response.data);
+      }
+      return rejectWithValue('Đăng ký thất bại');
+    }
+  }
+);
+
+// [NEW] Thêm thunk createProfile
+export const createProfile = createAsyncThunk(
+  'auth/createProfile',
+  async (profileData, { rejectWithValue }) => {
+    try {
+      const response = await authService.createProfile(profileData);
+      return response.data;
+    } catch (error) {
+      if (error.response && error.response.data) {
+        return rejectWithValue(error.response.data);
+      }
+      return rejectWithValue('Cập nhật hồ sơ thất bại');
+    }
+  }
+);
+
 const authSlice = createSlice({
     name: 'auth',
-    initialState,
+    initialState:{
+        hasProfile: false,
+    },
     reducers: {
         logout: (state) => {
             authService.logout();
@@ -52,6 +86,7 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
         state.loading = false;
         state.error = null;
+        state.hasProfile = action.payload.hasProfile || false;
         localStorage.setItem('accessToken',accessToken);
         if(state.user){
             localStorage.setItem('user',JSON.stringify(state.user));
@@ -69,7 +104,7 @@ const authSlice = createSlice({
             state.user = action.payload.user; // Đã được xử lý trong thunk
             state.token = action.payload.accessToken;
             state.error = null;
-            
+            state.hasProfile = action.payload.hasProfile || false;
             localStorage.setItem('accessToken', action.payload.accessToken);
             if (state.user) {
                 localStorage.setItem('user', JSON.stringify(state.user));
@@ -79,6 +114,23 @@ const authSlice = createSlice({
             state.loading = false;
             state.error = action.payload||'Đăng nhập thất bại';
         })
+        .addCase(registerUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        })
+        .addCase(createProfile.fulfilled, (state) => {
+                state.hasProfile = true; // [IMPORTANT] Đã có hồ sơ
+        })
+        .addCase(registerUser.fulfilled, (state) => {
+        state.loading = false;
+        state.error = null;
+        // Đăng ký xong thường sẽ redirect về login nên không cần set user/token ở đây ngay
+        // Nếu API tự login sau khi đăng ký thì bạn có thể set state giống loginUser
+        })
+        .addCase(registerUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Đăng ký thất bại';
+      })
     }
     
 });
