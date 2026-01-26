@@ -32,28 +32,10 @@ export default function Sidebar() {
 
 
   useEffect(() => {
-      console.log(user)
     // Chỉ gọi API nếu chưa có dữ liệu profile trong Redux
-    if (!userProfile) {
-      let userId = user?.id || user?.userId || user?.sub;
-
-      if (!userId) {
-        const token = localStorage.getItem('accessToken');
-        if (token) {
-          try {
-            const base64Url = token.split('.')[1];
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const payload = JSON.parse(atob(base64));
-            userId = payload.id || payload.userId || payload.sub;
-          } catch (e) {
-            console.error("Lỗi giải mã token:", e);
-          }
-        }
-      }
-
-      if (userId) {
-        dispatch(fetchUserProfile(userId));
-      }
+    const userId = user?.id || user?.userId || user?.sub;
+    if (userId && !userProfile) {
+      dispatch(fetchUserProfile(userId));
     }
   }, [user, userProfile, dispatch]);
 
@@ -122,13 +104,13 @@ export default function Sidebar() {
   };
 
   const menuItems = [
-    { icon: 'home', label: 'Home', path: '/dashboard/feed' },
-    { icon: 'person', label: 'Profile', path: `/dashboard/${user?.sub}/profile/public` },
-    { icon: 'explore', label: 'Explore', path: '/dashboard/explore' }, // Mapping to groups for now as explore
-    { icon: 'groups', label: 'Groups', path: '/dashboard/groups' },
-    { icon: 'chat_bubble', label: 'Messages', path: '/dashboard/chat', badge: '3' },
-    { icon: 'favorite', label: 'Matches', path: '/dashboard/newsfeed-1' }, // Placeholder
-    { icon: 'star', label: 'VIP Upgrade', path: '#', highlight: true },
+    { icon: 'home', label: 'Trang chủ', path: '/dashboard/feed' },
+    { icon: 'chat_bubble', label: 'Tin nhắn', path: '/dashboard/chat', badge: '3' },
+    { icon: 'groups', label: 'Nhóm', path: '/dashboard/groups' },
+    { icon: 'person_add', label: 'Lời mời kết bạn', path: '/dashboard/requests', badge: '4' },
+    { icon: 'favorite', label: 'Gợi ý kết bạn', path: '/dashboard/suggestions' },
+    { icon: 'person_search', label: 'Tìm bạn mới', path: '/search/members' },
+    { icon: 'person', label: 'Hồ sơ', path: '/dashboard/my-profile' },
   ];
 
   return (
@@ -137,16 +119,15 @@ export default function Sidebar() {
         <div className="flex gap-4 items-center mb-8">
           <div
             className="bg-center bg-no-repeat bg-cover rounded-full size-12 shadow-lg ring-2 ring-[#342418]"
-            style={{ backgroundImage: `url("${userProfile?.avatarUrl || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}")` }}
+            style={{ backgroundImage: `url("${userProfile?.currentAvatarUrl || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}")` }}
           ></div>
           <div className="flex flex-col">
             <h1 className="text-white text-lg font-bold leading-tight">
-              {userProfile?.displayName || userProfile?.username || user?.username || 'Đang tải...'}
+              {userProfile?.fullName || userProfile?.username || user?.username || 'Đang tải...'}
             </h1>
-            <Link to={`/dashboard/profile/view?id=${userProfile?.id || user?.id}`} className="text-text-secondary text-sm font-medium cursor-pointer hover:text-primary transition-colors flex items-center gap-1">
+            <Link to="/dashboard/my-profile" className="text-text-secondary text-sm font-medium cursor-pointer hover:text-primary transition-colors flex items-center gap-1">
               Xem hồ sơ <span className="material-symbols-outlined text-[14px]">visibility</span>
             </Link>
-            <h1 className="text-white text-lg font-bold leading-tight">{user?.username}</h1>
           </div>
 
           {/* Notification Button */}
@@ -231,7 +212,6 @@ export default function Sidebar() {
       <nav className="flex-1 px-4 flex flex-col gap-2">
         {menuItems.map((item, index) => {
           const active = isActive(item.path);
-          const isVip = item.label === 'VIP Upgrade';
 
           let className = "flex items-center gap-4 px-4 py-3.5 rounded-full transition-all group ";
           if (active) {
@@ -244,7 +224,7 @@ export default function Sidebar() {
           return (
             <Link key={index} to={item.path} className={className}>
               <div className="flex items-center gap-4">
-                <span className={`material-symbols-outlined ${!active && 'group-hover:scale-110'} transition-transform ${isVip ? 'text-yellow-500 group-hover:rotate-12' : ''}`}>
+                <span className={`material-symbols-outlined ${!active && 'group-hover:scale-110'} transition-transform`}>
                   {item.icon}
                 </span>
                 <span className="text-sm font-bold tracking-wide">{item.label}</span>
@@ -260,31 +240,16 @@ export default function Sidebar() {
         {/* Logout Button */}
         <button
           onClick={handleLogout}
-          className="flex items-center gap-4 px-4 py-3.5 rounded-full transition-all group text-text-secondary hover:bg-[#342418] hover:text-red-500 mt-auto"
+          className="flex items-center gap-4 px-4 py-3.5 rounded-full transition-all group text-text-secondary hover:bg-[#342418] hover:text-red-500 mt-auto mb-6"
         >
           <div className="flex items-center gap-4">
             <span className="material-symbols-outlined group-hover:scale-110 transition-transform">
               logout
             </span>
-            <span className="text-sm font-bold tracking-wide">Logout</span>
+            <span className="text-sm font-bold tracking-wide">Đăng xuất</span>
           </div>
         </button>
       </nav>
-      <div className="p-6 mt-auto">
-        <div className="relative overflow-hidden bg-gradient-to-br from-[#342418] to-[#493222] rounded-2xl p-5 flex flex-col gap-3 border border-[#493222] shadow-xl">
-          <div className="absolute top-0 right-0 -mt-2 -mr-2 w-16 h-16 bg-primary/20 rounded-full blur-xl"></div>
-          <div className="size-10 rounded-full bg-primary/20 flex items-center justify-center text-primary mb-1">
-            <span className="material-symbols-outlined">diamond</span>
-          </div>
-          <div>
-            <h3 className="text-white font-bold text-base">Go Premium</h3>
-            <p className="text-text-secondary text-xs mt-1 leading-relaxed">Boost your profile and see who likes you instantly.</p>
-          </div>
-          <button className="w-full mt-2 bg-primary hover:bg-orange-600 text-[#231810] font-bold text-sm py-3 rounded-full transition-all shadow-lg shadow-orange-500/20 transform hover:-translate-y-0.5">
-            Get VIP Access
-          </button>
-        </div>
-      </div>
     </aside>
   );
 }
