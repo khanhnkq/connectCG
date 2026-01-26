@@ -1,5 +1,5 @@
-import Sidebar from '../../components/layout/Sidebar';
-import PostCard from '../../components/feed/PostCard';
+import Sidebar from '../../components/layout/Sidebar.jsx';
+import PostCard from '../../components/feed/PostCard.jsx';
 
 export default function UserProfile() {
     const photos = [

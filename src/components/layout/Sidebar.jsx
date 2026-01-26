@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useRef, useEffect } from "react";
 import { getMyNotifications, markAsRead, deleteNotification } from '../../services/NotificationService';
+import {jwtDecode} from "jwt-decode";
 
 export default function Sidebar() {
   const location = useLocation();
@@ -8,6 +9,13 @@ export default function Sidebar() {
   const [showNotifications, setShowNotifications] = useState(false);
 
   const [notifications, setNotifications] = useState([]);
+  const [user,setUser] = useState([]);
+
+    useEffect(() => {
+        const token = localStorage.getItem('accessToken');
+        const user = jwtDecode(token);
+        setUser(user);
+    }, []);
 
   const dropdownRef = useRef(null);
   useEffect(() => {
@@ -85,7 +93,7 @@ export default function Sidebar() {
 
   const menuItems = [
     { icon: 'home', label: 'Home', path: '/dashboard/feed' },
-    { icon: 'person', label: 'Profile', path: '/dashboard/profile/public' },
+    { icon: 'person', label: 'Profile', path: `/dashboard/${user?.sub}/profile/public` },
     { icon: 'explore', label: 'Explore', path: '/dashboard/explore' }, // Mapping to groups for now as explore
     { icon: 'groups', label: 'Groups', path: '/dashboard/groups' },
     { icon: 'chat_bubble', label: 'Messages', path: '/dashboard/chat', badge: '3' },

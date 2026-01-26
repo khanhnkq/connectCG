@@ -10,7 +10,7 @@ import NewsfeedDashboard1 from './pages/dashboard/NewsfeedDashboard1';
 import GroupsManagement from './pages/dashboard/GroupsManagement';
 import AdvancedMemberSearch from './pages/search/AdvancedMemberSearch';
 import ChatInterface from './pages/dashboard/ChatInterface';
-import UserProfile from './pages/dashboard/UserProfile';
+import UserProfile from './pages/user/UserProfile.jsx';
 import CreateGroupPage from './pages/dashboard/CreateGroupPage';
 import GroupDetailPage from './pages/dashboard/GroupDetailPage';
 import EditGroupPage from './pages/dashboard/EditGroupPage';
@@ -63,7 +63,7 @@ function App() {
         <Route path="/dashboard/groups/create" element={<CreateGroupPage />} />
         <Route path="/dashboard/groups/edit/:id" element={<EditGroupPage />} />
         <Route path="/dashboard/chat" element={<ChatInterface />} />
-        <Route path="/dashboard/profile/public" element={<UserProfile />} />
+        <Route path="/dashboard/:id/profile/public" element={<UserProfile />} />
         <Route path="/dashboard/feed" element={<Newsfeed />} />
         <Route path="/dashboard/requests" element={<FriendRequests />} />
         <Route path="/dashboard/profile/view" element={<MemberProfile />} />
