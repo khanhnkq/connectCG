@@ -82,17 +82,33 @@ export default function GroupsManagement() {
     const handleJoinGroup = async (groupId) => {
         try {
             await joinGroup(groupId);
-            toast.success("Đã gửi yêu cầu gia nhập nhóm!");
-            // Refresh data
-            const [myGroupsData, discoverData] = await Promise.all([
-                findMyGroups(),
-                findDiscoverGroups()
-            ]);
-            setYourGroups(myGroupsData);
-            setDiscoverGroups(discoverData);
+
+            // Tìm nhóm trong discoverGroups để kiểm tra privacy
+            const targetGroup = discoverGroups.find(g => g.id === groupId);
+            const isPublic = targetGroup?.privacy === 'PUBLIC';
+
+            if (isPublic) {
+                toast.success("Chào mừng bạn gia nhập nhóm!");
+                // Cập nhật state ngay lập tức cho nhóm Public
+                setDiscoverGroups(prev => prev.map(g =>
+                    g.id === groupId
+                        ? { ...g, currentUserStatus: 'ACCEPTED' }
+                        : g
+                ));
+                // Refresh myGroups để thêm nhóm mới vào
+                const myGroupsData = await findMyGroups();
+                setYourGroups(myGroupsData);
+            } else {
+                toast.success("Đã gửi yêu cầu gia nhập nhóm!");
+                // Cập nhật state cho nhóm Private
+                setDiscoverGroups(prev => prev.map(g =>
+                    g.id === groupId
+                        ? { ...g, currentUserStatus: 'REQUESTED' }
+                        : g
+                ));
+            }
         } catch (error) {
             console.error("Join failed:", error);
-            // Check for plain string error response from Backend
             const errorMsg = typeof error.response?.data === 'string'
                 ? error.response.data
                 : (error.response?.data?.message || "Không thể thực hiện yêu cầu gia nhập.");
@@ -105,7 +121,6 @@ export default function GroupsManagement() {
         if (!userStr) return false;
         try {
             const userData = JSON.parse(userStr);
-            // Use == for flexible type comparison (string vs number)
             return group.ownerId == userData.id || group.currentUserRole === 'ADMIN';
         } catch (e) {
             return false;
