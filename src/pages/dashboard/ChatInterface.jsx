@@ -2,6 +2,7 @@ import Sidebar from '../../components/layout/Sidebar';
 import ReportModal from "../../components/report/ReportModal";
 import { useState } from "react";
 import toast from 'react-hot-toast';
+import reportService from "../../services/reportService";
 
 
 export default function ChatInterface() {
@@ -244,17 +245,21 @@ export default function ChatInterface() {
                     "Khác",
                 ]}
                 user={user}
-                targetPayload={{ targetType: "USER", userId: user.id }}
-                onSubmit={(data) => {
-                    console.log("REPORT USER:", data);
-                  const toastId = toast.loading("Đang gửi báo cáo...", {
+                targetPayload={{
+                    targetType: "USER",
+                    targetId: user.id,
+                }}
+                onSubmit={async (data) => {
+                    const toastId = toast.loading("Đang gửi báo cáo...", {
                         style: {
                             background: "#1A120B",
                             color: "#FFD8B0",
                         },
                     });
 
-                    setTimeout(() => {
+                    try {
+                        await reportService.createReport(data);
+
                         toast.success("Báo cáo thành công!", {
                             id: toastId,
                             style: {
@@ -264,8 +269,21 @@ export default function ChatInterface() {
                                 fontWeight: "700",
                             },
                         });
-                    }, 1200);
-                    setShowReportUser(false);
+
+                        setShowReportUser(false);
+                    } catch (err) {
+                        toast.error(
+                            err?.response?.data?.message ||
+                            "Gửi báo cáo thất bại. Vui lòng thử lại!",
+                            {
+                                id: toastId,
+                                style: {
+                                    background: "#1A120B",
+                                    color: "#FF6A00",
+                                },
+                            }
+                        );
+                    }
                 }}
             />
 
