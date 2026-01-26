@@ -1,10 +1,11 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useRef, useEffect } from "react";
 import { getMyNotifications, markAsRead, deleteNotification } from '../../services/NotificationService';
-import { useSelector } from 'react-redux';
-
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../../redux/slices/authSlice'; // [NEW] Import action logout
 export default function Sidebar() {
   const {user} = useSelector((state)=>state.auth);
+  const dispatch = useDispatch();
   const location = useLocation();
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
@@ -12,6 +13,8 @@ export default function Sidebar() {
   const [notifications, setNotifications] = useState([]);
 
   const dropdownRef = useRef(null);
+
+  
   useEffect(() => {
     function handleClickOutside(e) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -33,6 +36,12 @@ export default function Sidebar() {
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
     }
+  };
+
+  const handleLogout = () => {
+    dispatch(logout()); // Xóa state và localStorage
+    navigate('/login'); // Chuyển hướng về trang đăng nhập
+    toast.success('Đã đăng xuất'); // Optional: Import toast nếu muốn hiện thông báo
   };
 
   const handleMarkAsRead = async (id) => {
@@ -102,9 +111,6 @@ export default function Sidebar() {
           <div className="bg-center bg-no-repeat bg-cover rounded-full size-12 shadow-lg ring-2 ring-[#342418]" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAUO2YNLAxc1Nl_nCWaGx0Dwt8BIkrV0WsFtsI9ePfpuH2QDYaR2IL1U-BCix40iXmHOlV6rzlHb2YzzlKUEpD183YkjDBCAQtHPFoSaXz638Vjta7H-NlTtKESwQOh_CcHQs-rhd6cbbiyxlQVatQS90HHg710X2WFSTAS7LkytHfywWdbhdy-IVBZk0wtKYnjblM6Vy6IA3R_7kOjPY04ZFIVnhosSED60xtTRmy2ylVAGG80CffMYIEPaZ6iQHq6uonwSSfKBJw")' }}></div>
           <div className="flex flex-col">
             <h1 className="text-white text-lg font-bold leading-tight">{user?.username}</h1>
-            <Link to="/dashboard/profile" className="text-text-secondary text-sm font-medium cursor-pointer hover:text-primary transition-colors flex items-center gap-1">
-              Edit Profile <span className="material-symbols-outlined text-[14px]">edit</span>
-            </Link>
           </div>
 
           {/* Notification Button */}
@@ -119,6 +125,7 @@ export default function Sidebar() {
                 <span className="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-[#342418]"></span>
               )}
             </button>
+
 
             {/* DROPDOWN */}
             {showNotifications && (
@@ -214,6 +221,18 @@ export default function Sidebar() {
             </Link>
           );
         })}
+        {/* Logout Button */}
+        <button 
+          onClick={handleLogout}
+          className="flex items-center gap-4 px-4 py-3.5 rounded-full transition-all group text-text-secondary hover:bg-[#342418] hover:text-red-500 mt-auto"
+        >
+          <div className="flex items-center gap-4">
+            <span className="material-symbols-outlined group-hover:scale-110 transition-transform">
+              logout
+            </span>
+            <span className="text-sm font-bold tracking-wide">Logout</span>
+          </div>
+        </button>
       </nav>
       <div className="p-6 mt-auto">
         <div className="relative overflow-hidden bg-gradient-to-br from-[#342418] to-[#493222] rounded-2xl p-5 flex flex-col gap-3 border border-[#493222] shadow-xl">
