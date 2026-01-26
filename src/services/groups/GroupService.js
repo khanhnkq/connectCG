@@ -107,3 +107,7 @@ export const kickMember = async (groupId, userId) => {
     const res = await axiosClient.delete(`${URL_GROUP}/${groupId}/kick/${userId}`);
     return res.data;
 };
+export const transferOwnership = async (groupId, newOwnerId) => {
+    const res = await axiosClient.post(`${URL_GROUP}/${groupId}/transfer-ownership`, { newOwnerId });
+    return res.data;
+};
