@@ -1,0 +1,227 @@
+import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import Sidebar from '../../components/layout/Sidebar.jsx';
+import UserProfileService from '../../services/user/UserProfileService';
+import ProfileAbout from '../../components/profile/ProfileAbout';
+import ProfilePhotos from '../../components/profile/ProfilePhotos';
+import ProfileHobbies from '../../components/profile/ProfileHobbies';
+import ProfileFriends from '../../components/profile/ProfileFriends';
+
+export default function MemberProfile() {
+    const { id } = useParams();
+    const { user: currentUser } = useSelector((state) => state.auth);
+    const [profile, setProfile] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState('timeline'); // timeline, about, photos, hobbies, friends
+
+    useEffect(() => {
+        const fetchMemberProfile = async () => {
+            try {
+                setLoading(true);
+                const response = await UserProfileService.getUserProfile(id);
+                setProfile(response.data);
+            } catch (error) {
+                console.error("Lỗi khi tải hồ sơ thành viên:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (id) {
+            fetchMemberProfile();
+        }
+    }, [id]);
+
+    if (loading) {
+        return (
+            <div className="bg-background-dark min-h-screen flex items-center justify-center text-white">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-text-secondary font-bold">Đang tải hồ sơ thành viên...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!profile) {
+        return (
+            <div className="bg-background-dark min-h-screen flex items-center justify-center text-white p-6 text-center">
+                <div>
+                    <span className="material-symbols-outlined text-6xl text-red-500 mb-4">person_off</span>
+                    <h2 className="text-2xl font-bold mb-2">Không tìm thấy thành viên</h2>
+                    <p className="text-text-secondary mb-6">Thông tin người dùng này không khả dụng.</p>
+                    <button onClick={() => window.history.back()} className="bg-primary text-[#231810] px-6 py-2 rounded-xl font-bold">Quay lại</button>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden h-screen flex w-full">
+            <Sidebar />
+
+            <main className="flex-1 h-full overflow-y-auto relative scroll-smooth bg-background-dark">
+                <div className="w-full mx-auto pb-20">
+                    {/* Header/Cover */}
+                    <div className="bg-[#342418] border-b border-[#3e2b1d]">
+                        <div className="w-full max-w-6xl mx-auto">
+                            <div className="relative w-full h-64 md:h-80 lg:h-96 group overflow-hidden rounded-b-3xl">
+                                <div
+                                    className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                                    style={{ backgroundImage: `url("${profile?.currentCoverUrl || 'https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&q=80'}")` }}
+                                ></div>
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                            </div>
+                            <div className="px-4 md:px-8 pb-4 relative">
+                                <div className="flex flex-col md:flex-row items-start md:items-end -mt-16 md:-mt-12 gap-6 relative z-10 mb-6">
+                                    <div className="relative shrink-0">
+                                        <div className="size-32 md:size-44 rounded-full border-4 border-[#342418] bg-[#221710] p-1 shadow-2xl">
+                                            <div
+                                                className="w-full h-full rounded-full bg-cover bg-center"
+                                                style={{ backgroundImage: `url("${profile?.currentAvatarUrl || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}")` }}
+                                            ></div>
+                                        </div>
+                                    </div>
+                                    <div className="flex-1 w-full flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+                                        <div className="mb-2 md:mb-4">
+                                            <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-1">
+                                                {profile?.fullName || profile?.username}
+                                            </h1>
+                                            <p className="text-text-secondary font-medium text-sm flex items-center gap-2">
+                                                <span className="text-text-secondary/80">{profile?.city?.name || 'Vị trí ẩn'}</span>
+                                            </p>
+                                            <div className="flex gap-4 mt-3 text-sm text-text-secondary">
+                                                <span><strong className="text-white">{profile?.friendsCount || 0}</strong> Bạn bè</span>
+                                                <span><strong className="text-white">{profile?.postsCount || 0}</strong> Bài viết</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-3 mb-4 w-full md:w-auto">
+                                            {profile.relationshipStatus === 'FRIEND' ? (
+                                                <button className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#493222] text-primary border border-primary/30 font-bold px-6 py-3 rounded-xl transition-all">
+                                                    <span className="material-symbols-outlined text-[20px]">person_check</span>
+                                                    Bạn bè
+                                                </button>
+                                            ) : (
+                                                <button className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-primary hover:bg-orange-600 text-[#231810] font-bold px-6 py-3 rounded-xl transition-all shadow-lg shadow-orange-500/20">
+                                                    <span className="material-symbols-outlined text-[20px]">person_add</span>
+                                                    Kết bạn
+                                                </button>
+                                            )}
+                                            <button className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#493222] hover:bg-primary/20 text-white hover:text-primary font-bold px-4 py-3 rounded-xl transition-all">
+                                                <span className="material-symbols-outlined text-[20px]">mail</span>
+                                                Nhắn tin
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex gap-1 overflow-x-auto pb-1 border-t border-[#493222] pt-2 scrollbar-hide">
+                                    <button
+                                        onClick={() => setActiveTab('timeline')}
+                                        className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${activeTab === 'timeline' ? 'text-primary border-b-2 border-primary' : 'text-text-secondary hover:text-white hover:bg-[#493222]/50 rounded-t-lg'}`}
+                                    >
+                                        Dòng thời gian
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveTab('about')}
+                                        className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${activeTab === 'about' ? 'text-primary border-b-2 border-primary' : 'text-text-secondary hover:text-white hover:bg-[#493222]/50 rounded-t-lg'}`}
+                                    >
+                                        Giới thiệu
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveTab('photos')}
+                                        className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${activeTab === 'photos' ? 'text-primary border-b-2 border-primary' : 'text-text-secondary hover:text-white hover:bg-[#493222]/50 rounded-t-lg'}`}
+                                    >
+                                        Ảnh
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveTab('hobbies')}
+                                        className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${activeTab === 'hobbies' ? 'text-primary border-b-2 border-primary' : 'text-text-secondary hover:text-white hover:bg-[#493222]/50 rounded-t-lg'}`}
+                                    >
+                                        Sở thích
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveTab('friends')}
+                                        className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${activeTab === 'friends' ? 'text-primary border-b-2 border-primary' : 'text-text-secondary hover:text-white hover:bg-[#493222]/50 rounded-t-lg'}`}
+                                    >
+                                        Bạn bè ({profile?.friendsCount || 0})
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="w-full max-w-6xl mx-auto px-4 md:px-8 mt-8">
+                        <div className={`grid grid-cols-1 ${activeTab === 'timeline' ? 'lg:grid-cols-12' : 'lg:grid-cols-1'} gap-6`}>
+                            {/* Left Column - Only show on timeline */}
+                            {activeTab === 'timeline' && (
+                                <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-6">
+                                    <div className="bg-[#342418] rounded-2xl border border-[#3e2b1d] p-5 shadow-sm">
+                                        <h3 className="text-white font-bold text-lg mb-4">Giới thiệu</h3>
+                                        <p className="text-text-secondary text-sm leading-relaxed mb-4">
+                                            {profile?.bio || 'Người dùng này chưa cập nhật tiểu sử.'}
+                                        </p>
+                                        <div className="flex flex-col gap-3">
+                                            <div className="flex items-center gap-3 text-text-secondary text-sm">
+                                                <span className="material-symbols-outlined text-[20px]">work</span>
+                                                <span>Nghề nghiệp: <strong>{profile?.occupation || 'Chưa cập nhật'}</strong></span>
+                                            </div>
+                                            <div className="flex items-center gap-3 text-text-secondary text-sm">
+                                                <span className="material-symbols-outlined text-[20px]">favorite</span>
+                                                <span>Tình trạng: <strong>{profile?.maritalStatus || 'Chưa cập nhật'}</strong></span>
+                                            </div>
+                                            <div className="flex items-center gap-3 text-text-secondary text-sm">
+                                                <span className="material-symbols-outlined text-[20px]">location_on</span>
+                                                <span>Đến từ: <strong>{profile?.city?.name || 'Chưa cập nhật'}</strong></span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Hobbies Section */}
+                                    {profile?.hobbies?.length > 0 && (
+                                        <div className="bg-[#342418] rounded-2xl border border-[#3e2b1d] p-5 shadow-sm">
+                                            <h3 className="text-white font-bold text-lg mb-4">Sở thích</h3>
+                                            <div className="flex flex-wrap gap-2">
+                                                {profile.hobbies.map((hobby, index) => (
+                                                    <span key={index} className="bg-[#493222] text-primary text-xs font-bold px-3 py-1.5 rounded-full border border-primary/20">
+                                                        {hobby.name}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Right Column */}
+                            <div className={`${activeTab === 'timeline' ? 'lg:col-span-7 xl:col-span-8' : 'lg:col-span-1'} flex flex-col gap-6`}>
+                                {activeTab === 'timeline' && (
+                                    <div className="flex flex-col gap-6 text-center py-20 bg-[#342418] rounded-2xl border border-[#3e2b1d]">
+                                        <span className="material-symbols-outlined text-5xl text-text-secondary/30 mb-4">lock</span>
+                                        <p className="text-text-secondary italic">Bài viết của người này đang được ẩn.</p>
+                                    </div>
+                                )}
+
+                                {activeTab === 'about' && (
+                                    <ProfileAbout profile={profile} isOwner={false} />
+                                )}
+
+                                {activeTab === 'photos' && (
+                                    <ProfilePhotos profile={profile} isOwner={false} />
+                                )}
+
+                                {activeTab === 'hobbies' && (
+                                    <ProfileHobbies profile={profile} isOwner={false} />
+                                )}
+
+                                {activeTab === 'friends' && (
+                                    <ProfileFriends profile={profile} isOwner={false} />
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    );
+}

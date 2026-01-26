@@ -1,14 +1,16 @@
 import { useState } from 'react';
-// Sidebar import removed as we are using a custom local sidebar
+import Sidebar from '../../components/layout/Sidebar.jsx';
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 export default function AdvancedMemberSearch() {
+    const { profile: userProfile } = useSelector((state) => state.user);
     const [onlineOnly, setOnlineOnly] = useState(true);
     const [ageRange, setAgeRange] = useState({ min: 24, max: 35 });
     const [distance, setDistance] = useState('10km');
-    const [selectedInterests, setSelectedInterests] = useState(['Travel', 'Hiking']);
+    const [selectedInterests, setSelectedInterests] = useState(['Du lịch', 'Leo núi']);
 
-    const interests = ['Travel', 'Music', 'Cooking', 'Hiking', 'Gaming', 'Art', 'Fitness'];
+    const interests = ['Du lịch', 'Âm thực', 'Nấu ăn', 'Leo núi', 'Chơi game', 'Nghệ thuật', 'Gym'];
 
     const toggleInterest = (interest) => {
         if (selectedInterests.includes(interest)) {
@@ -73,63 +75,18 @@ export default function AdvancedMemberSearch() {
         }
     ];
 
-    const sidebarItems = [
-        { icon: 'group', label: 'Trang chủ', active: true },
-        { icon: 'person_add', label: 'Lời mời kết bạn', hasArrow: true },
-        { icon: 'person_add_alt', label: 'Gợi ý', hasArrow: true },
-        { icon: 'contacts', label: 'Tất cả bạn bè', hasArrow: true },
-        { icon: 'cake', label: 'Sinh nhật', hasArrow: false },
-        { icon: 'checklist', label: 'Danh sách tùy chỉnh', hasArrow: true },
-    ];
-
     return (
         <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden h-screen flex w-full">
-            {/* Custom Friends Sidebar (Left) */}
-            <aside className="w-[360px] bg-[#221710] border-r border-[#342418] flex flex-col h-full flex-none z-20">
-                <div className="p-6 pb-2">
-                    <div className="flex gap-4 items-center mb-4">
-                        <div className="bg-center bg-no-repeat bg-cover rounded-full size-12 shadow-lg ring-2 ring-[#342418]" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAUO2YNLAxc1Nl_nCWaGx0Dwt8BIkrV0WsFtsI9ePfpuH2QDYaR2IL1U-BCix40iXmHOlV6rzlHb2YzzlKUEpD183YkjDBCAQtHPFoSaXz638Vjta7H-NlTtKESwQOh_CcHQs-rhd6cbbiyxlQVatQS90HHg710X2WFSTAS7LkytHfywWdbhdy-IVBZk0wtKYnjblM6Vy6IA3R_7kOjPY04ZFIVnhosSED60xtTRmy2ylVAGG80CffMYIEPaZ6iQHq6uonwSSfKBJw")' }}></div>
-                        <div className="flex flex-col">
-                            <h1 className="text-white text-lg font-bold leading-tight">Alex Doe</h1>
-                            <Link to="/dashboard/profile" className="text-text-secondary text-sm font-medium cursor-pointer hover:text-primary transition-colors flex items-center gap-1">
-                                Edit Profile <span className="material-symbols-outlined text-[14px]">edit</span>
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-                <nav className="flex-1 overflow-y-auto custom-scrollbar px-4 space-y-2">
-                    {sidebarItems.map((item, index) => (
-                        <div
-                            key={index}
-                            className={`flex items-center justify-between px-4 py-3.5 rounded-full cursor-pointer transition-colors group ${item.active
-                                ? 'bg-primary/20 text-primary'
-                                : 'text-text-secondary hover:bg-[#342418] hover:text-white'
-                                }`}
-                        >
-                            <div className="flex items-center gap-4">
-                                <span className={`material-symbols-outlined transition-transform ${!item.active && 'group-hover:scale-110'}`}>
-                                    {item.icon}
-                                </span>
-                                <span className="font-bold text-sm tracking-wide">
-                                    {item.label}
-                                </span>
-                            </div>
-                            {item.hasArrow && (
-                                <span className="material-symbols-outlined text-[20px]">chevron_right</span>
-                            )}
-                        </div>
-                    ))}
-                </nav>
-            </aside>
+            <Sidebar />
 
             <div className="flex flex-1 overflow-hidden relative">
-
                 {/* Main Content: Search Results */}
                 <main className="flex-1 overflow-y-auto bg-background-dark p-4 md:p-8 custom-scrollbar">
                     <div className="max-w-[1600px] mx-auto">
                         {/* Results Header */}
                         <div className="mb-6">
-                            <h1 className="text-2xl font-bold text-white">Danh sách lời mời kết bạn</h1>
+                            <h1 className="text-2xl font-bold text-white">Tìm bạn mới</h1>
+                            <p className="text-text-secondary text-sm mt-1">Sử dụng bộ lọc thông minh để tìm những người phù hợp nhất với bạn.</p>
                         </div>
 
                         {/* Grid */}
@@ -162,11 +119,12 @@ export default function AdvancedMemberSearch() {
 
                                         {/* Buttons */}
                                         <div className="mt-auto flex flex-col gap-2">
-                                            <button className="w-full py-2 rounded-lg bg-primary hover:bg-orange-600 text-[#231810] font-bold text-sm transition-colors">
-                                                Add Friend
+                                            <button className="w-full py-2 rounded-lg bg-primary hover:bg-orange-600 text-[#231810] font-bold text-sm transition-colors flex items-center justify-center gap-2">
+                                                <span className="material-symbols-outlined text-sm">person_add</span>
+                                                Kết bạn
                                             </button>
                                             <button className="w-full py-2 rounded-lg bg-[#3a2b22] hover:bg-[#493222] text-white font-bold text-sm transition-colors">
-                                                Remove
+                                                Để sau
                                             </button>
                                         </div>
                                     </div>
@@ -177,7 +135,7 @@ export default function AdvancedMemberSearch() {
                         {/* Load More */}
                         <div className="mt-12 flex justify-center pb-8">
                             <button className="px-8 py-3 rounded-full bg-[#342418] hover:bg-[#493222] text-white font-bold border border-[#493222] transition-all shadow-lg hover:-translate-y-0.5">
-                                Load More Matches
+                                Xem thêm kết quả
                             </button>
                         </div>
                     </div>
@@ -187,8 +145,8 @@ export default function AdvancedMemberSearch() {
                 <aside className="w-full md:w-[320px] lg:w-[340px] flex flex-col border-l border-[#342418] bg-[#221710] z-10 overflow-y-auto custom-scrollbar flex-none hidden md:flex">
                     <div className="p-5 pb-0">
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-white text-xl font-bold leading-tight">Filter Matches</h2>
-                            <button className="text-sm font-bold text-primary hover:text-orange-400">Reset</button>
+                            <h2 className="text-white text-xl font-bold leading-tight">Bộ lọc tìm kiếm</h2>
+                            <button className="text-sm font-bold text-primary hover:text-orange-400">Đặt lại</button>
                         </div>
 
                         {/* Search Bar */}
@@ -197,7 +155,7 @@ export default function AdvancedMemberSearch() {
                                 <span className="material-symbols-outlined text-text-secondary">search</span>
                                 <input
                                     className="w-full bg-transparent border-none text-white placeholder-text-secondary/60 focus:ring-0 text-sm ml-2 focus:outline-none"
-                                    placeholder="City, interest, or keyword"
+                                    placeholder="Tên, thành phố hoặc từ khóa..."
                                 />
                             </label>
                         </div>
@@ -205,8 +163,8 @@ export default function AdvancedMemberSearch() {
                         {/* Online Only Toggle */}
                         <div className="mb-6 rounded-xl border border-[#342418] bg-[#2a1d15] p-4 flex items-center justify-between">
                             <div className="flex flex-col gap-0.5">
-                                <p className="text-white text-sm font-bold">Online Only</p>
-                                <p className="text-text-secondary text-xs">Members online now</p>
+                                <p className="text-white text-sm font-bold">Đang online</p>
+                                <p className="text-text-secondary text-xs">Thành viên đang truy cập</p>
                             </div>
                             <label className="relative flex h-[24px] w-[44px] cursor-pointer items-center rounded-full bg-[#342418] p-1 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all duration-300">
                                 <div className="h-[18px] w-[18px] rounded-full bg-white shadow-sm" />
@@ -225,7 +183,7 @@ export default function AdvancedMemberSearch() {
                         {/* Age Range Accordion */}
                         <details className="group flex flex-col rounded-xl border border-[#342418] bg-[#2a1d15] overflow-hidden" open>
                             <summary className="flex cursor-pointer items-center justify-between gap-6 p-4 bg-transparent hover:bg-white/5 transition-colors list-none">
-                                <p className="text-white text-sm font-bold">Age Range</p>
+                                <p className="text-white text-sm font-bold">Độ tuổi</p>
                                 <span className="material-symbols-outlined text-text-secondary text-[20px] transition-transform group-open:rotate-180">
                                     expand_more
                                 </span>
@@ -244,7 +202,7 @@ export default function AdvancedMemberSearch() {
                         {/* Location Accordion */}
                         <details className="group flex flex-col rounded-xl border border-[#342418] bg-[#2a1d15] overflow-hidden" open>
                             <summary className="flex cursor-pointer items-center justify-between gap-6 p-4 bg-transparent hover:bg-white/5 transition-colors list-none">
-                                <p className="text-white text-sm font-bold">Location</p>
+                                <p className="text-white text-sm font-bold">Vị trí</p>
                                 <span className="material-symbols-outlined text-text-secondary text-[20px] transition-transform group-open:rotate-180">
                                     expand_more
                                 </span>
@@ -252,7 +210,7 @@ export default function AdvancedMemberSearch() {
                             <div className="px-4 pb-5 pt-1 flex flex-col gap-3">
                                 <div className="flex items-center gap-2 text-primary text-sm font-bold cursor-pointer mb-1">
                                     <span className="material-symbols-outlined text-[18px]">my_location</span>
-                                    <span>Use my current location</span>
+                                    <span>Sử dụng vị trí của tôi</span>
                                 </div>
                                 <div className="space-y-2">
                                     {['10km', '50km', 'anywhere'].map((val) => (
@@ -268,7 +226,7 @@ export default function AdvancedMemberSearch() {
                                                 className="hidden"
                                             />
                                             <span className={`text-sm group-hover/label:text-white transition-colors ${distance === val ? 'text-white' : 'text-text-secondary'}`}>
-                                                {val === 'anywhere' ? 'Anywhere' : `Within ${val}`}
+                                                {val === 'anywhere' ? 'Mọi nơi' : `Trong vòng ${val}`}
                                             </span>
                                         </label>
                                     ))}
@@ -279,7 +237,7 @@ export default function AdvancedMemberSearch() {
                         {/* Interests Accordion */}
                         <details className="group flex flex-col rounded-xl border border-[#342418] bg-[#2a1d15] overflow-hidden">
                             <summary className="flex cursor-pointer items-center justify-between gap-6 p-4 bg-transparent hover:bg-white/5 transition-colors list-none">
-                                <p className="text-white text-sm font-bold">Interests</p>
+                                <p className="text-white text-sm font-bold">Sở thích</p>
                                 <span className="material-symbols-outlined text-text-secondary text-[20px] transition-transform group-open:rotate-180">
                                     expand_more
                                 </span>
@@ -304,6 +262,6 @@ export default function AdvancedMemberSearch() {
                     </div>
                 </aside>
             </div>
-        </div>
+        </div >
     );
 }
