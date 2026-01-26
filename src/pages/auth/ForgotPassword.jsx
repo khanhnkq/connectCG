@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
+import toast from 'react-hot-toast';
+import authService from '../../services/authService';
 
 // Validation schema
 const ForgotPasswordSchema = Yup.object().shape({
@@ -17,19 +19,28 @@ export default function ForgotPassword() {
         email: ''
     };
 
-    const handleSubmit = (values, { setSubmitting }) => {
-        console.log('Reset link sent to:', values.email);
-
-        // TODO: Gọi API gửi email reset password ở đây
-        // try {
-        //     await sendResetEmail(values.email);
-        //     setIsEmailSent(true);
-        // } catch (error) {
-        //     setErrors({ email: 'Không thể gửi email. Vui lòng thử lại.' });
-        // }
-
-        setSubmitting(false);
-        setIsEmailSent(true);
+    const handleSubmit = async (values, { setSubmitting, setErrors }) => {
+        try {
+            await authService.forgotPassword(values.email);
+            setIsEmailSent(true);  
+            toast.success("Đã gửi email khôi phục!");
+        } catch (error) {
+            console.error(error);
+            let message = "Không thể gửi email. Vui lòng thử lại.";
+            if (error.response && error.response.data) {
+                // Nếu data là string thì dùng luôn, nếu là object thì lấy field message hoặc error
+                const data = error.response.data;
+                if (typeof data === 'string') {
+                    message = data;
+                } else if (typeof data === 'object') {
+                    message = data.message || data.error || JSON.stringify(data);
+                }
+            }
+            setErrors({ email: message });
+            toast.error(message);
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     return (
