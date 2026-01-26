@@ -1,8 +1,10 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useRef, useEffect } from "react";
 import { getMyNotifications, markAsRead, deleteNotification } from '../../services/NotificationService';
+import { useSelector } from 'react-redux';
 
 export default function Sidebar() {
+  const {user} = useSelector((state)=>state.auth);
   const location = useLocation();
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
@@ -99,7 +101,7 @@ export default function Sidebar() {
         <div className="flex gap-4 items-center mb-8">
           <div className="bg-center bg-no-repeat bg-cover rounded-full size-12 shadow-lg ring-2 ring-[#342418]" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAUO2YNLAxc1Nl_nCWaGx0Dwt8BIkrV0WsFtsI9ePfpuH2QDYaR2IL1U-BCix40iXmHOlV6rzlHb2YzzlKUEpD183YkjDBCAQtHPFoSaXz638Vjta7H-NlTtKESwQOh_CcHQs-rhd6cbbiyxlQVatQS90HHg710X2WFSTAS7LkytHfywWdbhdy-IVBZk0wtKYnjblM6Vy6IA3R_7kOjPY04ZFIVnhosSED60xtTRmy2ylVAGG80CffMYIEPaZ6iQHq6uonwSSfKBJw")' }}></div>
           <div className="flex flex-col">
-            <h1 className="text-white text-lg font-bold leading-tight">Alex Doe</h1>
+            <h1 className="text-white text-lg font-bold leading-tight">{user?.username}</h1>
             <Link to="/dashboard/profile" className="text-text-secondary text-sm font-medium cursor-pointer hover:text-primary transition-colors flex items-center gap-1">
               Edit Profile <span className="material-symbols-outlined text-[14px]">edit</span>
             </Link>

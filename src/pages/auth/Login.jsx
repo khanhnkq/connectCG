@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-import authService from '../../services/authService';
+import { loginUser } from '../../redux/slices/authSlice';
 import toast from 'react-hot-toast';
-
+import { useDispatch, useSelector } from 'react-redux';
 // Validation schema
 const LoginSchema = Yup.object().shape({
     email: Yup.string()
@@ -17,41 +17,28 @@ const LoginSchema = Yup.object().shape({
 
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
+    const dispatch = useDispatch();
     const navigate = useNavigate();
-
+    const { loading, error, isAuthenticated, user } = useSelector((state) => state.auth); 
     const initialValues = {
         email: '',
         password: ''
     };
+    
 
     const handleSubmit = async (values, { setSubmitting, setErrors }) => {
         console.log('Login:', values);
-
-        // TODO: Gọi API đăng nhập ở đây
-        // try {
-        //     await loginUser(values);
-        //     navigate('/dashboard/newsfeed-1');
-        // } catch (error) {
-        //     setErrors({ email: 'Email hoặc mật khẩu không đúng' });
-        // }
         try {
-            const response = await authService.login(values.email, values.password);
-        console.log("Login Success:", response.data);
-            const { accessToken, username } = response.data;
-            localStorage.setItem('accessToken', accessToken);
-            localStorage.setItem('user', JSON.stringify({ username })); // Lưu thông tin user giản lược
-            toast.success(`Chào mừng trở lại, ${username}!`);
+            const resultAction = await dispatch(loginUser(values)).unwrap();
+            const userName = resultAction.user?.username;
+            toast.success(`Đăng nhập thành công! Chào mừng ${userName}`);
             navigate('/dashboard/feed');
+            
         } catch (error) {
          console.error("Login Failed:", error);
-            
-            // Xử lý lỗi trả về từ Backend
-            if (error.response && error.response.status === 401) { // Sai pass hoặc username
-                 setErrors({ email: 'Tên đăng nhập hoặc mật khẩu không đúng' });
-                 toast.error('Đăng nhập thất bại. Vui lòng kiểm tra lại!');
-            } else {
-                 toast.error('Có lỗi xảy ra. Vui lòng thử lại sau.');
-            }
+            // error ở đây chính là payload từ rejectWithValue (message lỗi từ server)
+            setErrors({ email: error.message || 'Tên đăng nhập hoặc mật khẩu không đúng' });
+            toast.error(error.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại!');
         } finally {
             setSubmitting(false);
         }
@@ -156,10 +143,10 @@ export default function Login() {
 
                                     <button
                                         type="submit"
-                                        disabled={isSubmitting}
+                                        disabled={isSubmitting|| loading}
                                         className="mt-4 flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-full h-14 bg-primary hover:bg-orange-600 text-white text-lg font-bold leading-normal tracking-wide transition-colors shadow-lg shadow-orange-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        {isSubmitting ? 'Đang đăng nhập...' : 'Đăng nhập'}
+                                        {isSubmitting || loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
                                     </button>
                                 </Form>
                             )}
