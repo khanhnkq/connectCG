@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useRef, useEffect } from "react";
 import { getMyNotifications, markAsRead, deleteNotification } from '../../services/NotificationService';
 import { useSelector, useDispatch } from 'react-redux';
+import toast from 'react-hot-toast';
 import UserProfileService from '../../services/user/UserProfileService';
 import { fetchUserProfile } from '../../redux/slices/userSlice';
 
@@ -34,6 +35,14 @@ export default function Sidebar() {
   useEffect(() => {
     // Chỉ gọi API nếu chưa có dữ liệu profile trong Redux
     const userId = user?.id || user?.userId || user?.sub;
+    
+    console.log("Sidebar Debug:", { 
+      user, 
+      userId, 
+      userProfile, 
+      hasToken: !!localStorage.getItem('accessToken') 
+    });
+
     if (userId && !userProfile) {
       dispatch(fetchUserProfile(userId));
     }
