@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/layout/Sidebar';
 import React, { useEffect, useState } from 'react';
-import { findMyGroups, findDiscoverGroups, findPendingInvitations, acceptInvitation, declineInvitation, searchGroups } from '../../services/groups/GroupService';
+import { findMyGroups, findDiscoverGroups, findPendingInvitations, acceptInvitation, declineInvitation, searchGroups, joinGroup } from '../../services/groups/GroupService';
 import toast from 'react-hot-toast';
 
 export default function GroupsManagement() {
@@ -79,13 +79,45 @@ export default function GroupsManagement() {
         }
     };
 
+    const handleJoinGroup = async (groupId) => {
+        try {
+            await joinGroup(groupId);
+            toast.success("Đã gửi yêu cầu gia nhập nhóm!");
+            // Refresh data
+            const [myGroupsData, discoverData] = await Promise.all([
+                findMyGroups(),
+                findDiscoverGroups()
+            ]);
+            setYourGroups(myGroupsData);
+            setDiscoverGroups(discoverData);
+        } catch (error) {
+            console.error("Join failed:", error);
+            // Check for plain string error response from Backend
+            const errorMsg = typeof error.response?.data === 'string'
+                ? error.response.data
+                : (error.response?.data?.message || "Không thể thực hiện yêu cầu gia nhập.");
+            toast.error(errorMsg);
+        }
+    };
+
     const checkIfAdmin = (group) => {
         const userStr = localStorage.getItem('user');
         if (!userStr) return false;
         try {
             const userData = JSON.parse(userStr);
-            // Check both username and optional id for robustness
-            return group.ownerName === userData.username || (userData.id && group.ownerId === userData.id);
+            // Use == for flexible type comparison (string vs number)
+            return group.ownerId == userData.id || group.currentUserRole === 'ADMIN';
+        } catch (e) {
+            return false;
+        }
+    };
+
+    const isOwner = (group) => {
+        const userStr = localStorage.getItem('user');
+        if (!userStr) return false;
+        try {
+            const userData = JSON.parse(userStr);
+            return group.ownerId == userData.id;
         } catch (e) {
             return false;
         }
@@ -93,104 +125,140 @@ export default function GroupsManagement() {
 
     const renderGroupCard = (group) => {
         const isAdmin = checkIfAdmin(group);
+        const isOwnerVal = isOwner(group);
         const imageUrl = group.image || 'https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=1000';
+        const isMember = group.currentUserStatus === 'ACCEPTED';
+        const isPending = group.currentUserStatus === 'REQUESTED' || group.currentUserStatus === 'PENDING';
 
         return (
             <div
                 key={group.id}
-                className="bg-card-dark rounded-3xl border border-[#3e2b1d] overflow-hidden flex flex-col hover:border-primary/30 transition-all group h-full shadow-2xl relative"
+                className={`bg-card-dark rounded-3xl border overflow-hidden flex flex-col hover:border-primary/30 transition-all group h-full shadow-2xl relative ${isAdmin ? 'border-orange-500/50 shadow-orange-500/10' : 'border-[#3e2b1d]'}`}
             >
-                {/* Wrap content in Link to make it clickable */}
-                <Link
-                    to={`/dashboard/groups/${group.id}`}
-                    className="flex flex-col h-full"
-                >
-                    <div className="h-44 bg-cover bg-center relative" style={{ backgroundImage: `url("${imageUrl}")` }}>
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-                        <div className="absolute bottom-4 left-5 right-5">
-                            <h4 className="text-white font-bold text-xl leading-tight group-hover:text-primary transition-colors line-clamp-1">{group.name}</h4>
-                            <p className="text-gray-400 text-xs mt-1 font-medium italic">@{group.ownerName}</p>
-                        </div>
-                        <div className="absolute top-4 right-4 flex gap-2">
-                            {isAdmin && (
-                                <div className="bg-orange-500/90 backdrop-blur-md text-[#231810] text-[8px] font-black px-2.5 py-1 rounded-lg border border-white/20 shadow-lg">
-                                    ADMIN
+                {/* Clickable Area: Image & Header - Only if member or admin */}
+                <div className="relative h-44 overflow-hidden">
+                    {isMember || isAdmin ? (
+                        <Link
+                            to={`/dashboard/groups/${group.id}`}
+                            className="absolute inset-0 z-10 block cursor-pointer"
+                        />
+                    ) : null}
+
+                    <div
+                        className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
+                        style={{ backgroundImage: `url("${imageUrl}")` }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
+
+                    {/* Admin/Crown Badge - Top Left */}
+                    <div className="absolute top-3 left-3 z-20">
+                        {isAdmin && (
+                            <div className="bg-gradient-to-br from-yellow-300 via-orange-400 to-red-600 p-[2px] rounded-full shadow-[0_0_15px_rgba(234,179,8,0.4)]">
+                                <div className="bg-[#1a120b] size-9 rounded-full flex items-center justify-center border border-white/10">
+                                    <span className="material-symbols-outlined text-yellow-400 text-xl font-bold">workspace_premium</span>
                                 </div>
-                            )}
-                            <div className="bg-black/60 backdrop-blur-xl px-2.5 py-1.5 rounded-xl flex items-center gap-2 border border-white/10 shadow-lg">
-                                <span className="material-symbols-outlined text-primary text-[16px]">groups</span>
-                                <span className="text-white text-[11px] font-black uppercase tracking-tight">{group.privacy}</span>
                             </div>
+                        )}
+                    </div>
+
+                    {/* Status & Privacy Badges - Top Right */}
+                    <div className="absolute top-4 right-4 flex flex-col items-end gap-2 z-20">
+                        {isAdmin && (
+                            <div className="bg-orange-500 text-[#231810] text-[10px] font-black px-3 py-1.5 rounded-xl border border-white/20 shadow-xl flex items-center gap-1.5">
+                                <span className="material-symbols-outlined text-sm">shield_person</span>
+                                ADMIN
+                            </div>
+                        )}
+                        <div className="bg-black/60 backdrop-blur-xl px-3 py-1.5 rounded-xl flex items-center gap-2 border border-white/10 shadow-lg">
+                            <span className="material-symbols-outlined text-primary text-[18px]">
+                                {group.privacy === 'PUBLIC' ? 'public' : 'lock'}
+                            </span>
+                            <span className="text-white text-[11px] font-black uppercase tracking-wider">{group.privacy}</span>
                         </div>
                     </div>
-                    <div className="p-6 flex flex-col flex-1 bg-gradient-to-b from-card-dark to-[#1a120b]">
-                        <p className="text-text-secondary text-sm mb-6 line-clamp-2 leading-relaxed h-10">{group.description || 'Chưa có mô tả cho nhóm này.'}</p>
-                        <div className="mt-auto flex gap-3">
-                            {activeTab === 'invites' ? (
-                                <>
-                                    <button
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            handleAcceptInvite(group.id);
-                                        }}
-                                        className="flex-1 py-3 rounded-2xl bg-primary text-[#231810] font-black text-xs transition-all uppercase tracking-widest hover:bg-orange-600 active:scale-95 text-center flex items-center justify-center"
-                                    >
-                                        Chấp nhận
-                                    </button>
-                                    <button
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            handleDeclineInvite(group.id);
-                                        }}
-                                        className="flex-1 py-3 rounded-2xl bg-[#342418] text-red-500 border border-red-500/20 font-black text-xs transition-all uppercase tracking-widest hover:bg-red-500 hover:text-white active:scale-95 text-center flex items-center justify-center"
-                                    >
-                                        Từ chối
-                                    </button>
-                                </>
-                            ) : searchResults !== null && group.currentUserStatus ? (
-                                <div
-                                    className={`flex-1 py-3 rounded-2xl font-black text-xs transition-all uppercase tracking-widest text-center flex items-center justify-center ${group.currentUserStatus === 'ACCEPTED'
-                                            ? 'bg-green-500/10 text-green-500 border border-green-500/20'
-                                            : 'bg-orange-500/10 text-orange-500 border border-orange-500/20'
-                                        }`}
-                                >
-                                    {group.currentUserStatus === 'ACCEPTED' ? 'Đã tham gia' : 'Đang chờ duyệt'}
-                                </div>
-                            ) : (
-                                <div
-                                    className="flex-1 py-3 rounded-2xl bg-primary text-[#231810] font-black text-xs transition-all uppercase tracking-widest hover:bg-orange-600 active:scale-95 text-center flex items-center justify-center"
-                                >
-                                    Vào nhóm
+
+                    {/* Admin Counts (Pending items) */}
+                    {isAdmin && (group.pendingRequestsCount > 0 || group.pendingPostsCount > 0) && (
+                        <div className="absolute bottom-4 right-4 flex gap-2 z-20">
+                            {group.pendingRequestsCount > 0 && (
+                                <div className="bg-red-500/90 backdrop-blur-md text-white px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 border border-white/20 shadow-xl" title={`${group.pendingRequestsCount} yêu cầu tham gia`}>
+                                    <span className="material-symbols-outlined text-[16px]">person_add</span>
+                                    <span className="text-[11px] font-bold">{group.pendingRequestsCount}</span>
                                 </div>
                             )}
-
-                            {/* The settings button must BE OUTSIDE the parent Link or handle stopPropagation VERY carefully. 
-                                In React, nested Links/anchors are invalid. 
-                                So we place the button outside the Link and use absolute positioning OR 
-                                we make the settings button a separate element that is NOT inside the Link.
-                            */}
+                            {group.pendingPostsCount > 0 && (
+                                <div className="bg-blue-500/90 backdrop-blur-md text-white px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 border border-white/20 shadow-xl" title={`${group.pendingPostsCount} bài viết chờ duyệt`}>
+                                    <span className="material-symbols-outlined text-[16px]">post_add</span>
+                                    <span className="text-[11px] font-bold">{group.pendingPostsCount}</span>
+                                </div>
+                            )}
                         </div>
-                    </div>
-                </Link>
+                    )}
 
-                {/* Place settings button as a sibling to the Link, then position it. 
-                    Alternatively, keep it inside but use a separate container.
-                */}
-                {isAdmin && (
-                    <button
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            navigate(`/dashboard/groups/edit/${group.id}`);
-                        }}
-                        className="absolute bottom-6 right-8 px-4 py-3 rounded-2xl bg-[#342418] text-primary border border-primary/20 hover:bg-primary hover:text-white transition-all active:scale-95 flex items-center justify-center z-10"
-                        title="Cài đặt nhóm"
-                    >
-                        <span className="material-symbols-outlined text-lg leading-none">settings</span>
-                    </button>
-                )}
+                    <div className="absolute bottom-4 left-5 right-5 z-20 pointer-events-none">
+                        <h4 className="text-white font-bold text-xl leading-tight group-hover:text-primary transition-colors line-clamp-1">{group.name}</h4>
+                        <p className="text-text-secondary text-xs font-medium italic opacity-80 flex items-center gap-1 mt-1">
+                            <span className="material-symbols-outlined text-xs">person</span>
+                            @{group.ownerName}
+                            {isOwnerVal && <span className="text-primary font-bold ml-1">(Chủ sở hữu)</span>}
+                            {!isOwnerVal && isAdmin && <span className="text-orange-400 font-bold ml-1">(Quản trị viên)</span>}
+                        </p>
+                    </div>
+                </div>
+
+                {/* Content Area */}
+                <div className="p-6 flex flex-col flex-1 bg-gradient-to-b from-card-dark to-[#1a120b]">
+                    <p className="text-text-secondary text-sm mb-6 line-clamp-2 leading-relaxed h-10">{group.description || 'Chưa có mô tả cho nhóm này.'}</p>
+
+                    <div className="mt-auto flex gap-3 relative z-30">
+                        {activeTab === 'invites' ? (
+                            <>
+                                <button
+                                    onClick={() => handleAcceptInvite(group.id)}
+                                    className="flex-1 py-3 rounded-2xl bg-primary text-[#231810] font-black text-xs transition-all uppercase tracking-widest hover:bg-orange-600 active:scale-95 flex items-center justify-center"
+                                >
+                                    Chấp nhận
+                                </button>
+                                <button
+                                    onClick={() => handleDeclineInvite(group.id)}
+                                    className="flex-1 py-3 rounded-2xl bg-[#342418] text-red-500 border border-red-500/20 font-black text-xs transition-all uppercase tracking-widest hover:bg-red-500 hover:text-white active:scale-95 flex items-center justify-center"
+                                >
+                                    Từ chối
+                                </button>
+                            </>
+                        ) : isPending ? (
+                            <div className="flex-1 py-3 rounded-2xl bg-orange-500/10 text-orange-500 border border-orange-500/20 font-black text-xs transition-all uppercase tracking-widest text-center flex items-center justify-center italic">
+                                Đang chờ duyệt
+                            </div>
+                        ) : isMember || isAdmin ? (
+                            <button
+                                onClick={() => navigate(`/dashboard/groups/${group.id}`)}
+                                className="flex-1 py-3 rounded-2xl bg-primary/10 text-primary border border-primary/20 font-black text-xs transition-all uppercase tracking-widest hover:bg-primary hover:text-[#231810] active:scale-95 flex items-center justify-center"
+                            >
+                                <span className="material-symbols-outlined text-sm mr-2">login</span>
+                                Vào nhóm
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => handleJoinGroup(group.id)}
+                                className="flex-1 py-3 rounded-2xl bg-primary text-[#231810] font-black text-xs transition-all uppercase tracking-widest hover:bg-orange-600 active:scale-95 flex items-center justify-center"
+                            >
+                                <span className="material-symbols-outlined text-sm mr-2">person_add</span>
+                                Tham gia
+                            </button>
+                        )}
+
+                        {isAdmin && (
+                            <button
+                                onClick={() => navigate(`/dashboard/groups/edit/${group.id}`)}
+                                className="px-4 py-3 rounded-2xl bg-[#342418] text-primary border border-primary/20 hover:bg-primary hover:text-white transition-all active:scale-95 flex items-center justify-center group/settings"
+                                title="Cài đặt nhóm"
+                            >
+                                <span className="material-symbols-outlined text-lg leading-none group-hover/settings:rotate-90 transition-transform">settings</span>
+                            </button>
+                        )}
+                    </div>
+                </div>
             </div>
         );
     };
