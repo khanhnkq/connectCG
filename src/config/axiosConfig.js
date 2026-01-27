@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosClient = axios.create({
-    baseURL: 'https://probable-space-goggles-4jw7pp5jxqgqf4j7-8080.app.github.dev/api', // Chỉnh lại để có thể gọi cả /v1/auth và /groups
+    baseURL: 'http://localhost:8080/api', // Chỉnh lại để có thể gọi cả /v1/auth và /groups
     headers: {
         'Content-Type': 'application/json',
     },

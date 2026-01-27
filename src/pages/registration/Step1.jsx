@@ -34,19 +34,40 @@ export default function Step1() {
         password: ''
     };
 
+    const [isRegisterSuccess, setIsRegisterSuccess] = useState(false);
+
     const handleSubmit = async (values, { setSubmitting }) => {
-    try {
-        // Gọi API Đăng ký
-        console.log(values);
-        await dispatch(registerUser(values)).unwrap();
-        toast.success("Đăng ký thành công! Vui lòng đăng nhập.");
-        navigate('/login')
-    } catch (error) {
-        toast.error(error.message || "Đăng ký thất bại");
-    } finally {
-        setSubmitting(false);
+        try {
+            await dispatch(registerUser(values)).unwrap();
+            setIsRegisterSuccess(true);
+        } catch (error) {
+            toast.error(error.message || "Đăng ký thất bại");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    if (isRegisterSuccess) {
+        return (
+            <div className="min-h-screen flex w-full bg-background-light dark:bg-background-dark items-center justify-center p-4">
+                <div className="bg-surface-dark p-8 rounded-2xl border border-border-dark shadow-xl text-center max-w-md w-full">
+                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <span className="material-symbols-outlined text-4xl text-primary">mail</span>
+                    </div>
+                    <h2 className="text-2xl font-bold text-white mb-4">Kiểm tra email của bạn</h2>
+                    <p className="text-text-secondary mb-6">
+                        Chúng tôi đã gửi một liên kết xác thực đến email của bạn. Vui lòng kiểm tra và xác thực tài khoản để tiếp tục.
+                    </p>
+                    <Link 
+                        to="/login"
+                        className="inline-flex items-center justify-center px-6 py-3 bg-surface-dark border border-border-dark text-white rounded-full font-medium hover:bg-border-dark transition-colors"
+                    >
+                        Về trang đăng nhập
+                    </Link>
+                </div>
+            </div>
+        );
     }
-};
 
     return (
         <div className="min-h-screen flex w-full bg-background-light dark:bg-background-dark">

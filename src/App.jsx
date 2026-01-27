@@ -25,6 +25,7 @@ import AdminMembersManager from "./pages/admin-website/AdminMembersManager.jsx";
 import MainFeedManager from "./pages/admin-website/MainFeedManager.jsx";
 import AdminReportsManager from "./pages/admin-website/AdminReportsManager.jsx";
 import ResetPassword from './pages/auth/ResetPassword';
+import VerifyEmail from './pages/auth/VerifyEmail';
 
 function App() {
   return (
@@ -54,12 +55,15 @@ function App() {
           },
         }}
       />
+      
       <WebSocketProvider>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+
+        <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/registration/step-1" element={<Step1 />} />
           <Route path="/onboarding" element={<OnboardingPage />} />  {/* THÊM DÒNG MỚI */}
           <Route path="/dashboard/newsfeed-1" element={<NewsfeedDashboard1 />} />
