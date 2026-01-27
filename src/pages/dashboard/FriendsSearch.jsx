@@ -19,7 +19,7 @@ export default function FriendsSearch() {
     });
     const [pagination, setPagination] = useState({
         page: 0,
-        size: 12,
+        size: 8,
         totalPages: 0,
         totalElements: 0
     });
@@ -62,7 +62,8 @@ export default function FriendsSearch() {
 
             const response = await FriendService.getFriends(userId, filters);
 
-            setFriends(response.data.content);
+            // Append new data if loading more pages, replace if it's the first page
+            setFriends(prev => pagination.page === 0 ? response.data.content : [...prev, ...response.data.content]);
             setPagination(prev => ({
                 ...prev,
                 totalPages: response.data.totalPages,
@@ -131,16 +132,16 @@ export default function FriendsSearch() {
 
                         {/* Friends Grid */}
                         {friends.length > 0 && (
-                            <>
+                            <div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
                                     {friends.map((friend) => (
                                         <article
-                                            key={friend.userId}
+                                            key={friend.id}
                                             className="flex flex-col bg-[#2a1d15] rounded-xl overflow-hidden border border-[#3e2b1d] hover:border-primary/50 transition-colors shadow-lg"
                                         >
                                             {/* Avatar Section */}
                                             <div className="h-64 sm:h-[16rem] w-full overflow-hidden relative">
-                                                <Link to={`/dashboard/member/${friend.userId}`} className="block w-full h-full">
+                                                <Link to={`/dashboard/member/${friend.id}`} className="block w-full h-full">
                                                     <img
                                                         src={friend.avatarUrl || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
                                                         alt={friend.fullName}
@@ -152,7 +153,7 @@ export default function FriendsSearch() {
                                             {/* Content Section */}
                                             <div className="p-4 flex flex-col flex-1">
                                                 <h3 className="text-white font-bold text-lg leading-tight mb-1">
-                                                    <Link to={`/dashboard/member/${friend.userId}`} className="hover:text-primary transition-colors">
+                                                    <Link to={`/dashboard/member/${friend.id}`} className="hover:text-primary transition-colors">
                                                         {friend.fullName}
                                                     </Link>
                                                 </h3>
@@ -160,7 +161,7 @@ export default function FriendsSearch() {
                                                 <div className="flex items-center gap-2 mb-2">
                                                     <span className="material-symbols-outlined text-text-secondary text-sm">location_on</span>
                                                     <span className="text-text-secondary text-sm font-medium">
-                                                        {friend.city || 'Chưa cập nhật'}
+                                                        {friend.cityName || 'Chưa cập nhật'}
                                                     </span>
                                                 </div>
                                                 {friend.gender && (
@@ -176,10 +177,13 @@ export default function FriendsSearch() {
 
                                                 {/* Action Buttons */}
                                                 <div className="mt-auto flex flex-col gap-2">
-                                                    <button className="w-full py-2 rounded-lg bg-primary hover:bg-orange-600 text-[#231810] font-bold text-sm transition-colors flex items-center justify-center gap-2">
+                                                    <Link
+                                                        to={`/dashboard/member/${friend.id}`}
+                                                        className="w-full py-2 rounded-lg bg-primary hover:bg-orange-600 text-[#231810] font-bold text-sm transition-colors flex items-center justify-center gap-2"
+                                                    >
                                                         <span className="material-symbols-outlined text-sm">visibility</span>
                                                         Xem hồ sơ
-                                                    </button>
+                                                    </Link>
                                                     <button className="w-full py-2 rounded-lg bg-[#3a2b22] hover:bg-[#493222] text-white font-bold text-sm transition-colors flex items-center justify-center gap-2">
                                                         <span className="material-symbols-outlined text-sm">chat</span>
                                                         Nhắn tin
@@ -202,7 +206,7 @@ export default function FriendsSearch() {
                                         </button>
                                     </div>
                                 )}
-                            </>
+                            </div>
                         )}
                     </div>
                 </main>

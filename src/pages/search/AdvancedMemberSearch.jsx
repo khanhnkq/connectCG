@@ -4,13 +4,15 @@ import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import UserSearchService from '../../services/user/UserSearchService';
 import CityService from '../../services/CityService';
+import FriendRequestService from '../../services/friend/FriendRequestService';
 import toast from 'react-hot-toast';
 
 export default function AdvancedMemberSearch() {
     const [members, setMembers] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [sendingRequests, setSendingRequests] = useState({});
     const [keyword, setKeyword] = useState('');
-    const [pagination, setPagination] = useState({ page: 0, size: 12, totalPages: 0 });
+    const [pagination, setPagination] = useState({ page: 0, size: 8, totalPages: 0 });
 
     const [maritalStatus, setMaritalStatus] = useState('');
     const [lookingFor, setLookingFor] = useState('');
@@ -31,6 +33,11 @@ export default function AdvancedMemberSearch() {
     useEffect(() => {
         fetchCities();
     }, []);
+
+    // Reset to page 0 when filters change
+    useEffect(() => {
+        setPagination(prev => ({ ...prev, page: 0 }));
+    }, [maritalStatus, lookingFor, keyword, cityId]);
 
     useEffect(() => {
         fetchMembers();
@@ -57,7 +64,8 @@ export default function AdvancedMemberSearch() {
                 cityId: cityId || null,
             };
             const response = await UserSearchService.searchMembers(params);
-            setMembers(response.data.content);
+            // Append new data if loading more pages, replace if it's the first page
+            setMembers(prev => pagination.page === 0 ? response.data.content : [...prev, ...response.data.content]);
             setPagination(prev => ({ ...prev, totalPages: response.data.totalPages }));
         } catch (error) {
             console.error('Search failed', error);
@@ -73,6 +81,76 @@ export default function AdvancedMemberSearch() {
         setLookingFor('');
         setCityId('');
         setPagination(prev => ({ ...prev, page: 0 }));
+    };
+
+    const handleLoadMore = () => {
+        if (pagination.page < pagination.totalPages - 1) {
+            setPagination(prev => ({ ...prev, page: prev.page + 1 }));
+        }
+    };
+
+    const handleSendFriendRequest = async (receiverId) => {
+        setSendingRequests(prev => ({ ...prev, [receiverId]: true }));
+        try {
+            await FriendRequestService.sendRequest(receiverId);
+            toast.success('Đã gửi lời mời kết bạn!');
+            // Update local state to reflect request sent
+            setMembers(prevMembers =>
+                prevMembers.map(member =>
+                    member.userId === receiverId
+                        ? { ...member, requestSent: true }
+                        : member
+                )
+            );
+        } catch (error) {
+            console.error('Failed to send friend request', error);
+            const errorMessage = error.response?.data?.message || 'Không thể gửi lời mời kết bạn';
+            toast.error(errorMessage);
+        } finally {
+            setSendingRequests(prev => ({ ...prev, [receiverId]: false }));
+        }
+    };
+
+    const handleAcceptRequest = async (requestId, memberId) => {
+        setSendingRequests(prev => ({ ...prev, [memberId]: true }));
+        try {
+            await FriendRequestService.acceptRequest(requestId);
+            toast.success('Đã chấp nhận lời mời kết bạn!');
+            // Update member to friend status
+            setMembers(prevMembers =>
+                prevMembers.map(member =>
+                    member.userId === memberId
+                        ? { ...member, isFriend: true, requestSent: false, requestId: null, isRequestReceiver: false }
+                        : member
+                )
+            );
+        } catch (error) {
+            console.error('Failed to accept request', error);
+            toast.error('Không thể chấp nhận lời mời');
+        } finally {
+            setSendingRequests(prev => ({ ...prev, [memberId]: false }));
+        }
+    };
+
+    const handleRejectRequest = async (requestId, memberId) => {
+        setSendingRequests(prev => ({ ...prev, [memberId]: true }));
+        try {
+            await FriendRequestService.rejectRequest(requestId);
+            toast.success('Đã từ chối lời mời');
+            // Remove request status
+            setMembers(prevMembers =>
+                prevMembers.map(member =>
+                    member.userId === memberId
+                        ? { ...member, requestSent: false, requestId: null, isRequestReceiver: false }
+                        : member
+                )
+            );
+        } catch (error) {
+            console.error('Failed to reject request', error);
+            toast.error('Không thể từ chối lời mời');
+        } finally {
+            setSendingRequests(prev => ({ ...prev, [memberId]: false }));
+        }
     };
 
     return (
@@ -129,10 +207,44 @@ export default function AdvancedMemberSearch() {
                                                 <button className="w-full py-2 rounded-lg bg-[#3a2b22] text-white font-bold text-sm cursor-default">
                                                     Đã là bạn bè
                                                 </button>
+                                            ) : member.requestSent && member.isRequestReceiver ? (
+                                                // User received a request from this member
+                                                <div className="flex flex-col gap-2 w-full">
+                                                    <button
+                                                        onClick={() => handleAcceptRequest(member.requestId, member.userId)}
+                                                        disabled={sendingRequests[member.userId]}
+                                                        className="w-full py-2 rounded-lg bg-primary hover:bg-orange-600 text-[#231810] font-bold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
+                                                        <span className="material-symbols-outlined text-sm">
+                                                            {sendingRequests[member.userId] ? 'sync' : 'done'}
+                                                        </span>
+                                                        {sendingRequests[member.userId] ? 'Đang xử lý...' : 'Chấp nhận'}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleRejectRequest(member.requestId, member.userId)}
+                                                        disabled={sendingRequests[member.userId]}
+                                                        className="w-full py-2 rounded-lg bg-[#342418] hover:bg-red-500/20 hover:text-red-500 text-white font-bold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
+                                                        <span className="material-symbols-outlined text-sm">close</span>
+                                                        Từ chối
+                                                    </button>
+                                                </div>
+                                            ) : member.requestSent ? (
+                                                // User sent a request to this member
+                                                <button className="w-full py-2 rounded-lg bg-[#3a2b22] text-white/50 font-bold text-sm cursor-default flex items-center justify-center gap-2">
+                                                    <span className="material-symbols-outlined text-sm">done</span>
+                                                    Đã gửi yêu cầu
+                                                </button>
                                             ) : (
-                                                <button className="w-full py-2 rounded-lg bg-primary hover:bg-orange-600 text-[#231810] font-bold text-sm transition-colors flex items-center justify-center gap-2">
-                                                    <span className="material-symbols-outlined text-sm">person_add</span>
-                                                    Kết bạn
+                                                <button
+                                                    onClick={() => handleSendFriendRequest(member.userId)}
+                                                    disabled={sendingRequests[member.userId]}
+                                                    className="w-full py-2 rounded-lg bg-primary hover:bg-orange-600 text-[#231810] font-bold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                >
+                                                    <span className="material-symbols-outlined text-sm">
+                                                        {sendingRequests[member.userId] ? 'sync' : 'person_add'}
+                                                    </span>
+                                                    {sendingRequests[member.userId] ? '\u0110ang g\u1eedi...' : 'K\u1ebft b\u1ea1n'}
                                                 </button>
                                             )}
                                         </div>
@@ -141,12 +253,18 @@ export default function AdvancedMemberSearch() {
                             ))}
                         </div>
 
-                        {/* Load More */}
-                        <div className="mt-12 flex justify-center pb-8">
-                            <button className="px-8 py-3 rounded-full bg-[#342418] hover:bg-[#493222] text-white font-bold border border-[#493222] transition-all shadow-lg hover:-translate-y-0.5">
-                                Xem thêm kết quả
-                            </button>
-                        </div>
+                        {/* Load More Button */}
+                        {pagination.page < pagination.totalPages - 1 && (
+                            <div className="mt-12 flex justify-center pb-8">
+                                <button
+                                    onClick={handleLoadMore}
+                                    disabled={loading}
+                                    className="px-8 py-3 rounded-full bg-[#342418] hover:bg-[#493222] text-white font-bold border border-[#493222] transition-all shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {loading ? 'Đang tải...' : 'Xem thêm kết quả'}
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </main>
 
