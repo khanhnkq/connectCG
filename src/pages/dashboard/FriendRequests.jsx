@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import Sidebar from '../../components/layout/Sidebar';
+
 import RightSidebar from '../../components/layout/RightSidebar';
 import FriendRequestService from '../../services/friend/FriendRequestService';
 import toast from 'react-hot-toast';
@@ -71,10 +71,8 @@ export default function FriendRequests() {
     };
 
     return (
-        <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden h-screen flex w-full">
-            <Sidebar />
-
-            <main className="flex-1 h-full overflow-y-auto relative scroll-smooth bg-background-dark">
+        <div className="flex h-full w-full overflow-hidden">
+            <div className="flex-1 h-full overflow-y-auto relative scroll-smooth bg-background-dark">
                 <div className="max-w-4xl mx-auto w-full px-6 py-8 pb-20">
                     <header className="flex justify-between items-center mb-8 sticky top-0 bg-background-dark/95 backdrop-blur-sm z-30 py-4 -mt-4 border-b border-[#342418]">
                         <div>
@@ -179,7 +177,7 @@ export default function FriendRequests() {
                         </section>
                     </div>
                 </div>
-            </main>
+            </div>
 
             <RightSidebar />
         </div>
