@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import Sidebar from '../../components/layout/Sidebar';
+
 import PostComposer from '../../components/feed/PostComposer';
 import PostCard from '../../components/feed/PostCard';
 import toast from 'react-hot-toast';
@@ -303,13 +303,9 @@ export default function GroupDetailPage() {
     const imageUrl = group.image || 'https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=1000';
 
     return (
-        <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden h-screen flex w-full">
-            <Sidebar />
-
-            {/* Main Content */}
-            <main className="flex-1 h-full overflow-y-auto relative scroll-smooth bg-background-dark">
-                <div className="w-full pb-20">
-                    {/* Group Header */}
+        <>
+            <div className="w-full pb-20">
+            {/* Group Header */}
                     <div className="relative w-full h-64 md:h-80 lg:h-96">
                         <div
                             className="absolute inset-0 bg-cover bg-center"
@@ -709,8 +705,7 @@ export default function GroupDetailPage() {
                             </div>
                         )}
                     </div>
-                </div>
-            </main>
+        </div>
 
             <ReportModal
                 isOpen={showReportGroup}
@@ -878,7 +873,7 @@ export default function GroupDetailPage() {
                 currentUserId={getUserIdFromToken()}
                 onTransfer={handleTransferOwnership}
             />
-        </div>
+        </>
     );
 
 }

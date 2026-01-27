@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import Sidebar from '../../components/layout/Sidebar.jsx';
+
 import PostComposer from '../../components/feed/PostComposer';
 import { fetchUserProfile, updateUserAvatar, updateUserCover } from '../../redux/slices/userSlice';
 import { useNavigate } from 'react-router-dom';
@@ -82,11 +82,8 @@ export default function UserProfile() {
     }
 
     return (
-        <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden h-screen flex w-full">
-            <Sidebar />
-
-            <main className="flex-1 h-full overflow-y-auto relative scroll-smooth bg-background-dark">
-                <div className="w-full mx-auto pb-20">
+        <>
+            <div className="w-full mx-auto pb-20">
                     <div className="bg-[#342418] border-b border-[#3e2b1d]">
                         <div className="w-full max-w-6xl mx-auto">
                             <div className="relative w-full h-64 md:h-80 lg:h-96 group overflow-hidden rounded-b-3xl">
@@ -295,14 +292,14 @@ export default function UserProfile() {
                             </div>
                         </div>
                     </div>
-                </div>
-            </main>
 
+
+            </div>
             <EditProfileModal 
                 isOpen={isEditModalOpen} 
                 onClose={() => setIsEditModalOpen(false)} 
                 profile={profile} 
             />
-        </div>
+        </>
     );
 }
