@@ -10,13 +10,15 @@ import {
   IconHeart,
   IconSearch,
   IconBell,
-  IconSettings
+  IconSettings,
+  IconUserSearch
 } from "@tabler/icons-react";
 import { motion } from "framer-motion";
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../redux/slices/authSlice';
 import { fetchUserProfile } from '../../redux/slices/userSlice';
-import { getMyNotifications } from '../../services/NotificationService';
+import { getMyNotifications, markAsRead } from '../../services/NotificationService';
+import NotificationList from '../notification/NotificationList';
 
 export default function SidebarComponent() {
   const { user } = useSelector((state) => state.auth);
@@ -24,17 +26,18 @@ export default function SidebarComponent() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  
+  const [showNotifications, setShowNotifications] = useState(false);
+
   const [notifications, setNotifications] = useState([]);
-  
+
   useEffect(() => {
     const fetchNotificationsSync = async () => {
-        try {
-            const data = await getMyNotifications();
-            setNotifications(data || []);
-        } catch (error) {
-            console.error("Failed to fetch notifications:", error);
-        }
+      try {
+        const data = await getMyNotifications();
+        setNotifications(data || []);
+      } catch (error) {
+        console.error("Failed to fetch notifications:", error);
+      }
     };
     fetchNotificationsSync();
   }, []);
@@ -67,6 +70,16 @@ export default function SidebarComponent() {
     dispatch(logout());
     navigate('/login');
   };
+
+  const handeMarkAsRead = async (id) => {
+    try {
+      await markAsRead(id);
+      const updated = notifications.map(n => n.id === id ? { ...n, isRead: true } : n);
+      setNotifications(updated);
+    } catch (error) {
+      console.error("Failed to mark read:", error);
+    }
+  }
 
   const menuItems = [
 
@@ -101,12 +114,21 @@ export default function SidebarComponent() {
       icon: <IconSearch className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
+      label: "Tìm kiếm bạn bè",
+      href: "/dashboard/friends-search",
+      icon: <IconUserSearch className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    },
+    {
       label: "Thông báo",
-      href: "/dashboard/feed",
+      isNotificationTrigger: true,      // Custom flag
+      onClick: () => {
+        setOpen(true); // Ensure sidebar is open
+        setShowNotifications(!showNotifications);
+      },
       icon: (
         <div className="relative">
-             <IconBell className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-             {notifications.some(n => !n.isRead) && <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full animate-pulse"></span>}
+          <IconBell className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+          {notifications.some(n => !n.isRead) && <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full animate-pulse"></span>}
         </div>
       ),
     },
@@ -114,11 +136,11 @@ export default function SidebarComponent() {
 
   // Add Admin Panel if user is admin
   if (isAdmin) {
-      menuItems.push({
-          label: "Admin Panel",
-          href: "/admin-website/groups",
-          icon: <IconSettings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-      });
+    menuItems.push({
+      label: "Admin Panel",
+      href: "/admin-website/groups",
+      icon: <IconSettings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+    });
   }
 
   return (
@@ -128,15 +150,25 @@ export default function SidebarComponent() {
           {open ? <Logo /> : <LogoIcon />}
           <div className="mt-8 flex flex-col gap-2">
             {menuItems.map((link, idx) => (
-              <SidebarLink key={idx} link={link} />
+              <div key={idx}>
+                <SidebarLink link={link} />
+                {link.isNotificationTrigger && showNotifications && open && (
+                  <div className="pl-2 pr-2 mb-2">
+                    <NotificationList
+                      notifications={notifications}
+                      onMarkAsRead={handeMarkAsRead}
+                    />
+                  </div>
+                )}
+              </div>
             ))}
-            
-             <SidebarLink
-                link={{
+
+            <SidebarLink
+              link={{
                 label: "Đăng xuất",
                 onClick: handleLogout,
                 icon: <IconArrowLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
-                }}
+              }}
             />
           </div>
         </div>
