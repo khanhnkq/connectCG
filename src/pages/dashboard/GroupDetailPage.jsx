@@ -8,6 +8,7 @@ import ReportModal from "../../components/report/ReportModal";
 import { findById, getGroupMembers, leaveGroup, inviteMembers, joinGroup, getPendingRequests, approveRequest, rejectRequest, kickMember, transferOwnership, updateGroupMemberRole } from '../../services/groups/GroupService';
 import InviteMemberModal from '../../components/groups/InviteMemberModal';
 import TransferOwnershipModal from '../../components/groups/TransferOwnershipModal';
+import reportService from '../../services/ReportService';
 export default function GroupDetailPage() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -601,10 +602,16 @@ export default function GroupDetailPage() {
                     "Nhóm giả mạo",
                     "Khác",
                 ]}
-                targetPayload={{ targetType: "GROUP", groupId: group.id }}
-                onSubmit={(data) => {
-                    toast.success("Đã gửi báo cáo");
-                    setShowReportGroup(false);
+                targetPayload={{ targetType: "GROUP", targetId: group.id }}
+                onSubmit={async (data) => {
+                    try {
+                        await reportService.createReport(data);
+                        toast.success("Đã gửi báo cáo thành công");
+                        setShowReportGroup(false);
+                    } catch (error) {
+                        console.error("Report failed:", error);
+                        toast.error("Gửi báo cáo thất bại");
+                    }
                 }}
             />
 

@@ -16,28 +16,19 @@ import { motion } from "framer-motion";
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../redux/slices/authSlice';
 import { fetchUserProfile } from '../../redux/slices/userSlice';
-import { getMyNotifications } from '../../services/NotificationService';
+import { fetchNotifications } from '../../redux/slices/notificationSlice';
 
 export default function SidebarComponent() {
   const { user } = useSelector((state) => state.auth);
   const { profile: userProfile } = useSelector((state) => state.user);
+  const { items: notifications, unreadCount } = useSelector((state) => state.notifications);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  
-  const [notifications, setNotifications] = useState([]);
-  
+
   useEffect(() => {
-    const fetchNotificationsSync = async () => {
-        try {
-            const data = await getMyNotifications();
-            setNotifications(data || []);
-        } catch (error) {
-            console.error("Failed to fetch notifications:", error);
-        }
-    };
-    fetchNotificationsSync();
-  }, []);
+    dispatch(fetchNotifications());
+  }, [dispatch]);
 
   useEffect(() => {
     const userId = user?.id || user?.userId || user?.sub;
@@ -104,8 +95,8 @@ export default function SidebarComponent() {
       href: "/dashboard/feed",
       icon: (
         <div className="relative">
-             <IconBell className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-             {notifications.some(n => !n.isRead) && <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full animate-pulse"></span>}
+          <IconBell className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+          {unreadCount > 0 && <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full animate-pulse"></span>}
         </div>
       ),
     },
@@ -113,11 +104,11 @@ export default function SidebarComponent() {
 
   // Add Admin Panel if user is admin
   if (isAdmin) {
-      menuItems.push({
-          label: "Admin Panel",
-          href: "/admin-website/groups",
-          icon: <IconSettings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-      });
+    menuItems.push({
+      label: "Admin Panel",
+      href: "/admin-website/groups",
+      icon: <IconSettings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+    });
   }
 
   return (
@@ -129,13 +120,13 @@ export default function SidebarComponent() {
             {menuItems.map((link, idx) => (
               <SidebarLink key={idx} link={link} />
             ))}
-            
-             <SidebarLink
-                link={{
+
+            <SidebarLink
+              link={{
                 label: "Đăng xuất",
                 onClick: handleLogout,
                 icon: <IconArrowLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
-                }}
+              }}
             />
           </div>
         </div>
