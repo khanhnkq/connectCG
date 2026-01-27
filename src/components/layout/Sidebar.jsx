@@ -86,37 +86,37 @@ export default function SidebarComponent() {
     {
       label: "Trang chủ",
       href: "/dashboard/feed",
-      icon: <IconHome className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+      icon: <IconHome className="text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
       label: "Tin nhắn",
       href: "/dashboard/chat",
-      icon: <IconMessage className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+      icon: <IconMessage className="text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
       label: "Nhóm",
       href: "/dashboard/groups",
-      icon: <IconUsers className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+      icon: <IconUsers className="text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
       label: "Lời mời kết bạn",
       href: "/dashboard/requests",
-      icon: <IconUserPlus className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+      icon: <IconUserPlus className="text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
       label: "Gợi ý kết bạn",
       href: "/dashboard/suggestions",
-      icon: <IconHeart className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+      icon: <IconHeart className="text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
       label: "Tìm bạn mới",
       href: "/search/members",
-      icon: <IconSearch className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+      icon: <IconSearch className="text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
       label: "Tìm kiếm bạn bè",
       href: "/dashboard/friends-search",
-      icon: <IconUserSearch className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+      icon: <IconUserSearch className="text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
       label: "Thông báo",
@@ -127,7 +127,7 @@ export default function SidebarComponent() {
       },
       icon: (
         <div className="relative">
-          <IconBell className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+          <IconBell className="text-neutral-200 h-5 w-5 flex-shrink-0" />
           {notifications.some(n => !n.isRead) && <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full animate-pulse"></span>}
         </div>
       ),
@@ -139,13 +139,13 @@ export default function SidebarComponent() {
     menuItems.push({
       label: "Admin Panel",
       href: "/admin-website/groups",
-      icon: <IconSettings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      icon: <IconSettings className="text-neutral-200 h-5 w-5 flex-shrink-0" />
     });
   }
 
   return (
     <Sidebar open={open} setOpen={setOpen}>
-      <SidebarBody className="justify-between gap-10 bg-background-light dark:bg-background-dark border-r border-[#342418]">
+      <SidebarBody className="justify-between gap-10  bg-background-dark border-r border-[#342418]">
         <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
           {open ? <Logo /> : <LogoIcon />}
           <div className="mt-8 flex flex-col gap-2">
@@ -167,7 +167,7 @@ export default function SidebarComponent() {
               link={{
                 label: "Đăng xuất",
                 onClick: handleLogout,
-                icon: <IconArrowLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+                icon: <IconArrowLeft className="text-neutral-200 h-5 w-5 flex-shrink-0" />,
               }}
             />
           </div>
