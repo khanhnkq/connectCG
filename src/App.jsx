@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { WebSocketProvider } from './context/WebSocketContext';
 
 import LandingPage from './pages/LandingPage';
 import Login from './pages/auth/Login';
@@ -52,32 +53,33 @@ function App() {
           },
         }}
       />
-      <Routes>
-
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/registration/step-1" element={<Step1 />} />
-        <Route path="/onboarding" element={<OnboardingPage />} />  {/* THÊM DÒNG MỚI */}
-        <Route path="/dashboard/newsfeed-1" element={<NewsfeedDashboard1 />} />
-        <Route path="/dashboard/groups" element={<GroupsManagement />} />
-        <Route path="/dashboard/groups/:id" element={<GroupDetailPage />} />
-        <Route path="/dashboard/groups/create" element={<CreateGroupPage />} />
-        <Route path="/dashboard/groups/edit/:id" element={<EditGroupPage />} />
-        <Route path="/dashboard/chat" element={<ChatInterface />} />
-        <Route path="/dashboard/my-profile" element={<UserProfile />} />
-        <Route path="/dashboard/member/:id" element={<MemberProfile />} />
-        <Route path="/dashboard/feed" element={<Newsfeed />} />
-        <Route path="/dashboard/requests" element={<FriendRequests />} />
-        <Route path="/dashboard/suggestions" element={<FriendSuggestions />} />
-        <Route path="/dashboard/profile/view" element={<MemberProfile />} />
-        <Route path="/search/members" element={<AdvancedMemberSearch />} />
-        <Route path="/admin-website/groups" element={<AdminGroupsManager />} />
-        <Route path="/admin-website/members" element={<AdminMembersManager />} />
-        <Route path="/admin-website/contents" element={<MainFeedManager />} />
-        <Route path="/admin-website/reports" element={<AdminReportsManager />} />
-      </Routes>
+      <WebSocketProvider>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/registration/step-1" element={<Step1 />} />
+          <Route path="/onboarding" element={<OnboardingPage />} />  {/* THÊM DÒNG MỚI */}
+          <Route path="/dashboard/newsfeed-1" element={<NewsfeedDashboard1 />} />
+          <Route path="/dashboard/groups" element={<GroupsManagement />} />
+          <Route path="/dashboard/groups/:id" element={<GroupDetailPage />} />
+          <Route path="/dashboard/groups/create" element={<CreateGroupPage />} />
+          <Route path="/dashboard/groups/edit/:id" element={<EditGroupPage />} />
+          <Route path="/dashboard/chat" element={<ChatInterface />} />
+          <Route path="/dashboard/my-profile" element={<UserProfile />} />
+          <Route path="/dashboard/member/:id" element={<MemberProfile />} />
+          <Route path="/dashboard/feed" element={<Newsfeed />} />
+          <Route path="/dashboard/requests" element={<FriendRequests />} />
+          <Route path="/dashboard/suggestions" element={<FriendSuggestions />} />
+          <Route path="/dashboard/profile/view" element={<MemberProfile />} />
+          <Route path="/search/members" element={<AdvancedMemberSearch />} />
+          <Route path="/admin-website/groups" element={<AdminGroupsManager />} />
+          <Route path="/admin-website/members" element={<AdminMembersManager />} />
+          <Route path="/admin-website/contents" element={<MainFeedManager />} />
+          <Route path="/admin-website/reports" element={<AdminReportsManager />} />
+        </Routes>
+      </WebSocketProvider>
     </>
   );
 }
