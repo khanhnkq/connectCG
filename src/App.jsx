@@ -62,7 +62,6 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/registration/step-1" element={<Step1 />} />
           <Route path="/onboarding" element={<OnboardingPage />} />  {/* THÊM DÒNG MỚI */}
