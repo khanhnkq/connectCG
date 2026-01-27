@@ -168,6 +168,7 @@ export default function MemberProfile() {
 
                                 {/* Post 1 */}
                                 <PostCard
+                                    id={301}
                                     author={{ name: "Alex Doe", avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuAUO2YNLAxc1Nl_nCWaGx0Dwt8BIkrV0WsFtsI9ePfpuH2QDYaR2IL1U-BCix40iXmHOlV6rzlHb2YzzlKUEpD183YkjDBCAQtHPFoSaXz638Vjta7H-NlTtKESwQOh_CcHQs-rhd6cbbiyxlQVatQS90HHg710X2WFSTAS7LkytHfywWdbhdy-IVBZk0wtKYnjblM6Vy6IA3R_7kOjPY04ZFIVnhosSED60xtTRmy2ylVAGG80CffMYIEPaZ6iQHq6uonwSSfKBJw" }}
                                     timestamp="Just now"
                                     content="Updated my cover photo! 🗼 Had such an amazing time in Tokyo last month. Already missing the sushi and the neon lights. <a href='#' class='text-primary hover:underline font-medium ml-1'>#Travel</a> <a href='#' class='text-primary hover:underline font-medium'>#Japan</a> <a href='#' class='text-primary hover:underline font-medium'>#Memories</a>"
@@ -177,6 +178,7 @@ export default function MemberProfile() {
 
                                 {/* Post 2 */}
                                 <PostCard
+                                    id={302}
                                     author={{ name: "Alex Doe", avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuAUO2YNLAxc1Nl_nCWaGx0Dwt8BIkrV0WsFtsI9ePfpuH2QDYaR2IL1U-BCix40iXmHOlV6rzlHb2YzzlKUEpD183YkjDBCAQtHPFoSaXz638Vjta7H-NlTtKESwQOh_CcHQs-rhd6cbbiyxlQVatQS90HHg710X2WFSTAS7LkytHfywWdbhdy-IVBZk0wtKYnjblM6Vy6IA3R_7kOjPY04ZFIVnhosSED60xtTRmy2ylVAGG80CffMYIEPaZ6iQHq6uonwSSfKBJw" }}
                                     timestamp="Yesterday at 8:30 PM"
                                     privacy="friends"

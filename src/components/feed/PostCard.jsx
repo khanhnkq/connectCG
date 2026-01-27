@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import ReportModal from "../../components/report/ReportModal";
+import reportService from "../../services/ReportService";
 import toast from 'react-hot-toast';
 
 
-export default function PostCard({ author, time, content, image, stats = { likes: 0, comments: 0, shares: 0 }, type = 'feed', children }) {
+export default function PostCard({ id, author, time, content, image, stats = { likes: 0, comments: 0, shares: 0 }, type = 'feed', children }) {
     // type: 'feed' (Newsfeed/Timeline), 'dashboard' (NewsfeedDashboard1), or 'admin' (Admin moderation view)
     const [showMenu, setShowMenu] = useState(false);
     const menuRef = useRef(null);
@@ -181,22 +182,21 @@ export default function PostCard({ author, time, content, image, stats = { likes
                         <span className="material-symbols-outlined text-[18px]">report</span>
                         View Report
                     </button>
-             
+
                 </div>
             )}
-                   <ReportModal
-                        isOpen={showReportModal}
-                        onClose={() => setShowReportModal(false)}
-                        onSubmit={(payload) => {
-                            console.log("REPORT POST:", payload);
-                              const toastId = toast.loading("Đang gửi báo cáo...", {
+            <ReportModal
+                isOpen={showReportModal}
+                onClose={() => setShowReportModal(false)}
+                onSubmit={async (payload) => {
+                    const toastId = toast.loading("Đang gửi báo cáo...", {
                         style: {
                             background: "#1A120B",
                             color: "#FFD8B0",
                         },
                     });
-
-                    setTimeout(() => {
+                    try {
+                        await reportService.createReport(payload);
                         toast.success("Báo cáo thành công!", {
                             id: toastId,
                             style: {
@@ -206,26 +206,34 @@ export default function PostCard({ author, time, content, image, stats = { likes
                                 fontWeight: "700",
                             },
                         });
-                    }, 1200);
-                            setShowReportModal(false);
-                        }}
-                        title="Báo cáo bài viết"
-                        subtitle={`Bài viết của ${author.name}`}
-                        question="Vì sao bạn muốn báo cáo bài viết này?"
-                        reasons={[
-                            "Nội dung không phù hợp",
-                            "Spam hoặc lừa đảo",
-                            "Ngôn từ thù ghét",
-                            "Thông tin sai sự thật",
-                            "Khác",
-                        ]}
-                        targetPayload={{
-                            type: "post",
-                            postAuthor: author.name,
-                            postContent: content,
-                        }}
-                    />
+                        setShowReportModal(false);
+                    } catch (error) {
+                        console.error(error);
+                        toast.error("Gửi báo cáo thất bại!", {
+                            id: toastId,
+                            style: {
+                                background: "#1A120B",
+                                color: "#FF6A00",
+                            },
+                        });
+                    }
+                }}
+                title="Báo cáo bài viết"
+                subtitle={`Bài viết của ${author.name}`}
+                question="Vì sao bạn muốn báo cáo bài viết này?"
+                reasons={[
+                    "Nội dung không phù hợp",
+                    "Spam hoặc lừa đảo",
+                    "Ngôn từ thù ghét",
+                    "Thông tin sai sự thật",
+                    "Khác",
+                ]}
+                targetPayload={{
+                    targetType: "POST",
+                    targetId: id
+                }}
+            />
         </article>
-        
+
     );
 }
