@@ -116,7 +116,7 @@ export default function SidebarComponent() {
     {
       label: "Tìm kiếm bạn bè",
       href: "/dashboard/friends-search",
-      icon: <IconUserSearch className="text-neutral-200 h-5 w-5 flex-shrink-0" />,
+      icon: <IconUserSearch className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
       label: "Thông báo",
@@ -127,8 +127,8 @@ export default function SidebarComponent() {
       },
       icon: (
         <div className="relative">
-          <IconBell className="text-neutral-200 h-5 w-5 flex-shrink-0" />
-          {notifications.some(n => !n.isRead) && <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full animate-pulse"></span>}
+             <IconBell className="text-neutral-200 h-5 w-5 flex-shrink-0" />
+             {notifications.some(n => !n.isRead) && <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full animate-pulse"></span>}
         </div>
       ),
     },
@@ -136,16 +136,16 @@ export default function SidebarComponent() {
 
   // Add Admin Panel if user is admin
   if (isAdmin) {
-    menuItems.push({
-      label: "Admin Panel",
-      href: "/admin-website/groups",
-      icon: <IconSettings className="text-neutral-200 h-5 w-5 flex-shrink-0" />
-    });
+      menuItems.push({
+          label: "Admin Panel",
+          href: "/admin-website/groups",
+          icon: <IconSettings className="text-neutral-200 h-5 w-5 flex-shrink-0" />
+      });
   }
 
   return (
     <Sidebar open={open} setOpen={setOpen}>
-      <SidebarBody className="justify-between gap-10  bg-background-dark border-r border-[#342418]">
+      <SidebarBody className="justify-between gap-10 bg-background-dark border-r border-[#342418]">
         <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
           {open ? <Logo /> : <LogoIcon />}
           <div className="mt-8 flex flex-col gap-2">
@@ -168,7 +168,7 @@ export default function SidebarComponent() {
                 label: "Đăng xuất",
                 onClick: handleLogout,
                 icon: <IconArrowLeft className="text-neutral-200 h-5 w-5 flex-shrink-0" />,
-              }}
+                }}
             />
           </div>
         </div>
@@ -201,7 +201,7 @@ export const Logo = () => {
       <motion.span
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="font-medium text-black dark:text-white whitespace-pre"
+        className="font-medium text-white whitespace-pre"
       >
         Connect CG
       </motion.span>
