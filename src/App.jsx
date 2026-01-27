@@ -19,6 +19,7 @@ import EditGroupPage from './pages/dashboard/EditGroupPage';
 import Newsfeed from './pages/dashboard/Newsfeed';
 import FriendRequests from './pages/dashboard/FriendRequests';
 import FriendSuggestions from './pages/dashboard/FriendSuggestions';
+import FriendsSearch from './pages/dashboard/FriendsSearch';
 import AdminGroupsManager from "./pages/admin-website/AdminGroupsManager.jsx";
 import AdminMembersManager from "./pages/admin-website/AdminMembersManager.jsx";
 import MainFeedManager from "./pages/admin-website/MainFeedManager.jsx";
