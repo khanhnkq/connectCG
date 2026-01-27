@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../components/layout-admin/AdminLayout';
 import toast from 'react-hot-toast';
 import ConfirmModal from '../../components/admin/ConfirmModal';
-import { getAllUsers, updateUserRole } from '../../services/admin/AdminUserService';
+import { getAllUsers, updateUserRole, lockUser, deleteUser } from '../../services/admin/AdminUserService';
 
 const AdminMembersManager = () => {
     // 1. Initial State with Roles
@@ -17,6 +17,7 @@ const AdminMembersManager = () => {
         totalElements: 0,
         pageSize: 10
     });
+    const [confirmConfig, setConfirmConfig] = useState({ isOpen: false, title: '', message: '', onConfirm: null, type: 'danger' });
 
 
     useEffect(() => {
@@ -50,7 +51,7 @@ const AdminMembersManager = () => {
                 username: user.username,
                 email: user.email,
                 avatar: user.currentAvatarUrl || `https://ui-avatars.com/api/?name=${user.username}&background=random`,
-                status: user.isLocked ? "Banned" : "Active",
+                status: (user.isDeleted || user.is_deleted) ? "Deleted" : (user.isLocked ? "Banned" : "Active"),
                 role: user.role,
                 joinedDate: "N/A"
             }));
@@ -90,22 +91,26 @@ const AdminMembersManager = () => {
             }
         });
     };
-    const [confirmConfig, setConfirmConfig] = useState({ isOpen: false, title: '', message: '', onConfirm: null, type: 'danger' });
-
-
-
 
     const toggleStatus = (id, currentStatus) => {
         const action = currentStatus === "Active" ? "Ban" : "Unban";
+        const actionLabel = currentStatus === "Active" ? "Khóa" : "Mở khóa";
+
         setConfirmConfig({
             isOpen: true,
-            title: `${action} User Access?`,
-            message: `Are you sure you want to ${action.toLowerCase()} this user? They will ${action === "Ban" ? "lose" : "regain"} access to the platform.`,
-            type: action === "Ban" ? "danger" : "info",
-            onConfirm: () => {
-                setMembers(members.map(m => m.id === id ? { ...m, status: m.status === "Active" ? "Banned" : "Active" } : m));
-                toast(`User successfully ${action.toLowerCase()}ned`, { icon: 'ℹ️' });
-                setConfirmConfig({ ...confirmConfig, isOpen: false });
+            title: `${actionLabel} tài khoản?`,
+            message: `Bạn có chắc muốn ${actionLabel.toLowerCase()} người dùng này? Họ sẽ ${currentStatus === "Active" ? "không thể truy cập" : "có thể truy cập lại"} vào hệ thống.`,
+            type: currentStatus === "Active" ? "danger" : "info",
+            onConfirm: async () => {
+                try {
+                    await lockUser(id);
+                    toast.success(`Đã ${actionLabel.toLowerCase()} tài khoản thành công`);
+                    fetchUsers(pagination.currentPage, searchTerm, roleFilter);
+                } catch (error) {
+                    console.error("Failed to lock/unlock user:", error);
+                    toast.error("Không thể thay đổi trạng thái người dùng");
+                }
+                setConfirmConfig(prev => ({ ...prev, isOpen: false }));
             }
         });
     };
@@ -113,13 +118,19 @@ const AdminMembersManager = () => {
     const handleDelete = (id, name) => {
         setConfirmConfig({
             isOpen: true,
-            title: "Purge Identity?",
-            message: `This will permanently delete ${name}'s account and all associated data. This action cannot be undone.`,
+            title: "Xóa tài khoản?",
+            message: `Bạn có chắc muốn xóa tài khoản "${name}"? Tài khoản sẽ được chuyển vào thùng rác.`,
             type: "danger",
-            onConfirm: () => {
-                setMembers(members.filter(m => m.id !== id));
-                toast.error("User identity purged from system");
-                setConfirmConfig({ ...confirmConfig, isOpen: false });
+            onConfirm: async () => {
+                try {
+                    await deleteUser(id);
+                    toast.success("Đã chuyển tài khoản vào thùng rác");
+                    fetchUsers(pagination.currentPage, searchTerm, roleFilter);
+                } catch (error) {
+                    console.error("Failed to delete user:", error);
+                    toast.error("Không thể xóa người dùng");
+                }
+                setConfirmConfig(prev => ({ ...prev, isOpen: false }));
             }
         });
     };
