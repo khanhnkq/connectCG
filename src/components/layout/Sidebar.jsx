@@ -21,13 +21,9 @@ import { fetchUserProfile } from '../../redux/slices/userSlice';
 export default function SidebarComponent() {
   const { user } = useSelector((state) => state.auth);
   const { profile: userProfile } = useSelector((state) => state.user);
-  const { items: notifications, unreadCount } = useSelector((state) => state.notifications);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-
-
-
 
 
 
@@ -99,7 +95,7 @@ export default function SidebarComponent() {
       href: "/dashboard/friends-search",
       icon: <IconUserSearch className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
-    
+
 
   ];
 

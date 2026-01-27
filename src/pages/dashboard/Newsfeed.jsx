@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { IconBell } from '@tabler/icons-react';
+
 import { getMyNotifications, markAsRead } from '../../services/NotificationService';
 import NotificationList from '../../components/notification/NotificationList';
+
+
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchNotifications } from '../../redux/slices/notificationSlice';
+import { markAsRead } from '../../services/NotificationService';
+import NotificationList from '../../components/notification/NotificationList';
+
+import Sidebar from '../../components/layout/Sidebar';
 
 import RightSidebar from '../../components/layout/RightSidebar';
 import PostComposer from '../../components/feed/PostComposer';
@@ -9,7 +18,7 @@ import PostCard from '../../components/feed/PostCard';
 
 export default function Newsfeed() {
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState([]);
+
 
   useEffect(() => {
     const fetchNotificationsSync = async () => {
@@ -23,11 +32,23 @@ export default function Newsfeed() {
     fetchNotificationsSync();
   }, []);
 
+  const { items: notifications, unreadCount } = useSelector((state) => state.notifications);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchNotifications());
+  }, [dispatch]);
+
+
   const handleMarkAsRead = async (id) => {
     try {
       await markAsRead(id);
+
       const updated = notifications.map(n => n.id === id ? { ...n, isRead: true } : n);
       setNotifications(updated);
+
+      dispatch(fetchNotifications()); // Refresh notifications after marking as read
+
     } catch (error) {
       console.error("Failed to mark read:", error);
     }
