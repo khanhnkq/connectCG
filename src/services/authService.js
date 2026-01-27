@@ -28,6 +28,9 @@ const authService = {
     },
     resetPassword(token, newPassword) {
         return axiosClient.post(`/v1/auth/reset-password`, null, { params: { token, newPassword } });
+    },
+    verifyEmail(token) {
+        return axiosClient.get(`/v1/auth/verify-email`, { params: { token } });
     }
 };
 
