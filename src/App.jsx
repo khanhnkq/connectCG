@@ -55,7 +55,7 @@ function App() {
           },
         }}
       />
-      
+
       <WebSocketProvider>
         <Routes>
           <Route path="/" element={<LandingPage />} />
@@ -63,7 +63,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
 
-        <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/registration/step-1" element={<Step1 />} />
           <Route path="/onboarding" element={<OnboardingPage />} />  {/* THÊM DÒNG MỚI */}
           <Route path="/dashboard/newsfeed-1" element={<NewsfeedDashboard1 />} />
@@ -78,6 +78,7 @@ function App() {
           <Route path="/dashboard/requests" element={<FriendRequests />} />
           <Route path="/dashboard/suggestions" element={<FriendSuggestions />} />
           <Route path="/dashboard/profile/view" element={<MemberProfile />} />
+          <Route path="/dashboard/friends-search" element={<FriendsSearch />} />
           <Route path="/search/members" element={<AdvancedMemberSearch />} />
           <Route path="/admin-website/groups" element={<AdminGroupsManager />} />
           <Route path="/admin-website/members" element={<AdminMembersManager />} />
