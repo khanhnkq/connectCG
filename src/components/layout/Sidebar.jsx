@@ -18,6 +18,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../redux/slices/authSlice';
 import { fetchUserProfile } from '../../redux/slices/userSlice';
 
+
 export default function SidebarComponent() {
   const { user } = useSelector((state) => state.auth);
   const { profile: userProfile } = useSelector((state) => state.user);

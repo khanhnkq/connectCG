@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { IconBell } from '@tabler/icons-react';
 
+
 import { getMyNotifications, markAsRead } from '../../services/NotificationService';
 import NotificationList from '../../components/notification/NotificationList';
+
 
 
 import { useSelector, useDispatch } from 'react-redux';
@@ -11,6 +13,7 @@ import { markAsRead } from '../../services/NotificationService';
 import NotificationList from '../../components/notification/NotificationList';
 
 import Sidebar from '../../components/layout/Sidebar';
+
 
 import RightSidebar from '../../components/layout/RightSidebar';
 import PostComposer from '../../components/feed/PostComposer';
@@ -39,6 +42,18 @@ export default function Newsfeed() {
     dispatch(fetchNotifications());
   }, [dispatch]);
 
+
+
+  useEffect(() => {
+    const fetchNotificationsSync = async () => {
+      try {
+        const data = await getMyNotifications();
+      } catch (error) {
+        console.error("Failed to fetch notifications:", error);
+      }
+    };
+    fetchNotificationsSync();
+  }, []);
 
   const handleMarkAsRead = async (id) => {
     try {
@@ -79,7 +94,9 @@ export default function Newsfeed() {
                 {showNotifications && (
                   <div className="absolute right-0 top-12 w-80 z-50">
                      <NotificationList
+
                         notifications={notifications}
+
                         onMarkAsRead={handleMarkAsRead}
                       />
                   </div>
