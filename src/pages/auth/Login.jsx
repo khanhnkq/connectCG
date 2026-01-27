@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
@@ -14,16 +14,59 @@ const LoginSchema = Yup.object().shape({
         .required('Vui lòng nhập mật khẩu'),
 });
 
+const AccountLockedModal = ({ isOpen, message, onClose }) => {
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-surface-dark border border-red-500/30 w-full max-w-md rounded-2xl p-6 shadow-2xl scale-100 animate-in zoom-in-95 duration-200">
+                <div className="flex flex-col items-center text-center space-y-4">
+                    <div className="size-16 rounded-full bg-red-500/10 flex items-center justify-center mb-2">
+                        <span className="material-symbols-outlined text-3xl text-red-500">lock_person</span>
+                    </div>
+
+                    <h3 className="text-xl font-bold text-white">Tài khoản bị khóa</h3>
+
+                    <p className="text-text-secondary">
+                        {message || "Tài khoản của bạn đã bị khóa hoặc xóa do vi phạm quy tắc cộng đồng."}
+                    </p>
+                    <p className="text-text-secondary text-sm">
+                        Vui lòng liên hệ quản trị viên để biết thêm chi tiết.
+                    </p>
+
+                    <div className="w-full pt-2">
+                        <button
+                            onClick={onClose}
+                            className="w-full py-3 px-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-colors cursor-pointer"
+                        >
+                            Đã hiểu
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
+    const [lockedError, setLockedError] = useState(null);
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { loading, error, isAuthenticated, user } = useSelector((state) => state.auth); 
+    const { loading, error, isAuthenticated, user } = useSelector((state) => state.auth);
     const initialValues = {
         email: '',
         password: ''
     };
-    
+
+    useEffect(() => {
+        const errorMsg = localStorage.getItem("loginError");
+        if (errorMsg) {
+            setLockedError(errorMsg);
+            localStorage.removeItem("loginError");
+        }
+    }, []);
+
 
     const handleSubmit = async (values, { setSubmitting, setErrors }) => {
         console.log('Login:', values);
@@ -36,22 +79,34 @@ export default function Login() {
             } else {
                 navigate('/onboarding');
             }
-            
+
         } catch (error) {
-         console.error("Login Failed:", error);
+            console.error("Login Failed:", error);
             // error ở đây chính là payload từ rejectWithValue (message lỗi từ server)
             setErrors({ email: error.message || 'Tên đăng nhập hoặc mật khẩu không đúng' });
-            toast.error(error.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại!');
+
+            // Check if error relates to lock/ban to show modal instead of toast
+            const errorMsg = error.message?.toLowerCase() || '';
+            if (errorMsg.includes('khóa') || errorMsg.includes('lock') || errorMsg.includes('ban') || errorMsg.includes('xóa') || errorMsg.includes('delete')) {
+                setLockedError(error.message);
+            } else {
+                toast.error(error.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại!');
+            }
         } finally {
             setSubmitting(false);
         }
 
         // Tạm thời chuyển đến dashboard
-        
+
     };
 
     return (
         <div className="min-h-screen flex w-full bg-background-light dark:bg-background-dark">
+            <AccountLockedModal
+                isOpen={!!lockedError}
+                message={lockedError}
+                onClose={() => setLockedError(null)}
+            />
             {/* Left Side: Illustration */}
             <div className="hidden lg:flex w-1/2 relative flex-col justify-end p-12 overflow-hidden">
                 <div
@@ -146,7 +201,7 @@ export default function Login() {
 
                                     <button
                                         type="submit"
-                                        disabled={isSubmitting|| loading}
+                                        disabled={isSubmitting || loading}
                                         className="mt-4 flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-full h-14 bg-primary hover:bg-orange-600 text-white text-lg font-bold leading-normal tracking-wide transition-colors shadow-lg shadow-orange-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {isSubmitting || loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
