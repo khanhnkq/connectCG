@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import Sidebar from '../../components/layout/Sidebar';
 import { uploadGroupCover } from '../../utils/uploadImage';
 import { findById, updateGroup, deleteGroup } from '../../services/groups/GroupService';
+import DeleteGroupModal from '../../components/groups/DeleteGroupModal';
 
 const editGroupSchema = Yup.object().shape({
     group_name: Yup.string()
@@ -30,6 +31,7 @@ export default function EditGroupPage() {
         cover_image: null
     });
     const [isLoading, setIsLoading] = useState(true);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     useEffect(() => {
         const fetchGroup = async () => {
@@ -102,10 +104,10 @@ export default function EditGroupPage() {
     }
 
     return (
-        <div className="bg-[#0f0a06] text-white font-display min-h-screen flex w-full overflow-hidden">
+        <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden h-screen flex w-full">
             <Sidebar />
 
-            <main className="flex-1 h-screen overflow-y-auto relative custom-scrollbar">
+            <main className="flex-1 h-full overflow-y-auto relative scroll-smooth bg-background-dark">
                 <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-primary/10 blur-[120px] rounded-full pointer-events-none" />
 
                 <div className="max-w-6xl mx-auto px-8 py-12 relative z-10">
@@ -235,18 +237,7 @@ export default function EditGroupPage() {
                                         </p>
                                         <button
                                             type="button"
-                                            onClick={async () => {
-                                                if (window.confirm("CẢNH BÁO: Bạn có chắc chắn muốn xóa nhóm này vĩnh viễn không? Hành động này không thể hoàn tác.")) {
-                                                    try {
-                                                        await deleteGroup(id);
-                                                        toast.success("Đã xóa nhóm thành công");
-                                                        navigate('/dashboard/groups');
-                                                    } catch (error) {
-                                                        console.error("Failed to delete group:", error);
-                                                        toast.error(error.response?.data || "Không thể xóa nhóm");
-                                                    }
-                                                }
-                                            }}
+                                            onClick={() => setShowDeleteModal(true)}
                                             className="w-full py-4 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white font-black rounded-2xl border border-red-500/20 transition-all uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-2"
                                         >
                                             <span className="material-symbols-outlined text-lg">delete_forever</span>
@@ -257,6 +248,23 @@ export default function EditGroupPage() {
                             </Form>
                         )}
                     </Formik>
+
+                    <DeleteGroupModal
+                        isOpen={showDeleteModal}
+                        onClose={() => setShowDeleteModal(false)}
+                        groupName={initialValues.group_name}
+                        onConfirm={async () => {
+                            try {
+                                await deleteGroup(id);
+                                toast.success("Đã xóa nhóm thành công");
+                                navigate('/dashboard/groups');
+                            } catch (error) {
+                                console.error("Failed to delete group:", error);
+                                toast.error(error.response?.data || "Không thể xóa nhóm");
+                                setShowDeleteModal(false);
+                            }
+                        }}
+                    />
                 </div>
             </main>
         </div>

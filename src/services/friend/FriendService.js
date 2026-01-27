@@ -11,6 +11,14 @@ const FriendService = {
         return axiosClient.get(`/v1/friends/${userId}`, {
             params: { name, gender, cityId, page, size }
         });
+    },
+
+    /**
+     * Lấy danh sách bạn bè của chính người dùng hiện tại
+     * @param {Object} params - { page, size }
+     */
+    getMyFriends: (params) => {
+        return axiosClient.get("/v1/friends", { params });
     }
 };
 
