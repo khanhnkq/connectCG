@@ -78,7 +78,7 @@ export default function CreateGroupPage() {
     };
 
     return (
-        <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden h-screen flex w-full">
+        <div className="bg-background-light dark:bg-background-dark text-white font-display overflow-hidden h-screen flex w-full">
             <Sidebar />
 
             <main className="flex-1 h-full overflow-y-auto relative scroll-smooth bg-background-dark">
@@ -94,7 +94,7 @@ export default function CreateGroupPage() {
                             className="flex items-center gap-2 text-text-muted hover:text-primary transition-all mb-6 group"
                         >
                             <span className="material-symbols-outlined text-xl group-hover:-translate-x-1 transition-transform">keyboard_backspace</span>
-                            <span className="text-xs font-black uppercase tracking-widest">Quay lại</span>
+                            <span className="text-xs font-black uppercase tracking-widest text-white/50 group-hover:text-primary">Quay lại</span>
                         </button>
 
                         <div className="flex items-center gap-6">
@@ -102,7 +102,7 @@ export default function CreateGroupPage() {
                                 <span className="material-symbols-outlined text-4xl text-[#0f0a06]">groups_3</span>
                             </div>
                             <div>
-                                <h1 className="text-4xl font-black tracking-tight mb-1">
+                                <h1 className="text-4xl font-black tracking-tight mb-1 text-white">
                                     Thiết lập <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-400">Cộng đồng</span>
                                 </h1>
                                 <p className="text-text-secondary text-sm font-medium">Khởi tạo không gian riêng của bạn chỉ trong vài giây.</p>

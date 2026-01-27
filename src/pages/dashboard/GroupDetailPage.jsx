@@ -5,9 +5,29 @@ import PostComposer from '../../components/feed/PostComposer';
 import PostCard from '../../components/feed/PostCard';
 import toast from 'react-hot-toast';
 import ReportModal from "../../components/report/ReportModal";
-import { findById, getGroupMembers, leaveGroup, inviteMembers, joinGroup, getPendingRequests, approveRequest, rejectRequest, kickMember, transferOwnership, updateGroupMemberRole } from '../../services/groups/GroupService';
+import { findById, getGroupMembers, leaveGroup, inviteMembers, joinGroup, getPendingRequests, approveRequest, rejectRequest, kickMember, transferOwnership, updateGroupMemberRole, getPendingPosts, approvePost, rejectPost, getGroupPosts } from '../../services/groups/GroupService';
 import InviteMemberModal from '../../components/groups/InviteMemberModal';
 import TransferOwnershipModal from '../../components/groups/TransferOwnershipModal';
+
+// Tiện ích định dạng thời gian đơn giản để thay thế date-fns
+const formatTime = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+
+    if (diffInSeconds < 60) return 'Vừa xong';
+
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) return `${diffInMinutes} phút trước`;
+
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours} giờ trước`;
+
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 30) return `${diffInDays} ngày trước`;
+
+    return date.toLocaleDateString('vi-VN');
+};
 export default function GroupDetailPage() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -26,6 +46,7 @@ export default function GroupDetailPage() {
     const [memberToTransfer, setMemberToTransfer] = useState(null);
 
     const [pendingPosts, setPendingPosts] = useState([]);
+    const [approvedPosts, setApprovedPosts] = useState([]);
     const [memberRequests, setMemberRequests] = useState([]);
     const [modTab, setModTab] = useState('Bài viết');
     const [members, setMembers] = useState([]);
@@ -56,14 +77,18 @@ export default function GroupDetailPage() {
                     // Fetch pending requests if admin
                     const requests = await getPendingRequests(id);
                     setMemberRequests(requests);
+
+                    // Fetch pending posts if admin
+                    const pPosts = await getPendingPosts(id);
+                    setPendingPosts(pPosts);
                 } else {
                     setIsAdmin(false);
-                    // If user was in Moderation tab but is no longer admin, switch to Feed
-                    if (activeTab === 'Kiểm duyệt') {
-                        setActiveTab('Bản tin');
-                    }
                 }
             }
+
+            // Always fetch approved posts for the feed
+            const posts = await getGroupPosts(id);
+            setApprovedPosts(posts);
 
             // Try to fetch members list
             try {
@@ -220,6 +245,24 @@ export default function GroupDetailPage() {
         } catch (error) {
             console.error("Failed to kick member:", error);
             const errorMsg = error.response?.data?.message || (typeof error.response?.data === 'string' ? error.response.data : null) || "Không thể xóa thành viên";
+            toast.error(errorMsg);
+        }
+    };
+
+    const handleActionPost = async (postId, action) => {
+        try {
+            if (action === 'approve') {
+                await approvePost(group.id, postId);
+                toast.success("Đã duyệt bài viết!");
+            } else {
+                await rejectPost(group.id, postId);
+                toast.success("Đã xóa bài viết!");
+            }
+            // Refresh data
+            fetchGroupData();
+        } catch (error) {
+            console.error("Action failed:", error);
+            const errorMsg = error.response?.data?.message || (typeof error.response?.data === 'string' ? error.response.data : null) || "Thao tác thất bại";
             toast.error(errorMsg);
         }
     };
@@ -443,10 +486,36 @@ export default function GroupDetailPage() {
                                         </div>
                                     ) : (
                                         <>
-                                            <PostComposer userAvatar="https://lh3.googleusercontent.com/aida-public/AB6AXuAUO2YNLAxc1Nl_nCWaGx0Dwt8BIkrV0WsFtsI9ePfpuH2QDYaR2IL1U-BCix40iXmHOlV6rzlHb2YzzlKUEpD183YkjDBCAQtHPFoSaXz638Vjta7H-NlTtKESwQOh_CcHQs-rhd6cbbiyxlQVatQS90HHg710X2WFSTAS7LkytHfywWdbhdy-IVBZk0wtKYnjblM6Vy6IA3R_7kOjPY04ZFIVnhosSED60xtTRmy2ylVAGG80CffMYIEPaZ6iQHq6uonwSSfKBJw" />
-                                            {/* Posts will go here */}
-                                            <div className="text-center py-10 text-text-secondary">
-                                                Chức năng bài viết đang được cập nhật...
+                                            <PostComposer userAvatar={JSON.parse(localStorage.getItem('user'))?.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"} />
+
+                                            <div className="flex flex-col gap-6">
+                                                {approvedPosts.length > 0 ? (
+                                                    approvedPosts.map(post => (
+                                                        <PostCard
+                                                            key={post.id}
+                                                            author={{
+                                                                name: post.authorFullName,
+                                                                avatar: post.authorAvatar,
+                                                                originGroup: group.name
+                                                            }}
+                                                            time={formatTime(post.createdAt)}
+                                                            content={post.content}
+                                                            image={post.images?.[0]} // PostCard hiện hỗ trợ 1 image
+                                                            stats={{
+                                                                likes: Math.floor(Math.random() * 50),
+                                                                comments: Math.floor(Math.random() * 10),
+                                                                shares: 0
+                                                            }}
+                                                        />
+                                                    ))
+                                                ) : (
+                                                    <div className="bg-card-dark rounded-3xl p-12 border border-[#3e2b1d] text-center">
+                                                        <div className="size-16 rounded-full bg-white/5 flex items-center justify-center text-text-secondary mx-auto mb-4">
+                                                            <span className="material-symbols-outlined text-3xl">post_add</span>
+                                                        </div>
+                                                        <p className="text-text-secondary font-medium">Chưa có bài viết nào trong nhóm này.</p>
+                                                    </div>
+                                                )}
                                             </div>
                                         </>
                                     )}
@@ -544,8 +613,63 @@ export default function GroupDetailPage() {
                                 </div>
 
                                 {modTab === 'Bài viết' ? (
-                                    <div className="text-center py-20 bg-card-dark rounded-3xl border border-[#3e2b1d] text-text-secondary">
-                                        Không có bài viết nào đang chờ duyệt.
+                                    <div className="space-y-6">
+                                        {pendingPosts.length === 0 ? (
+                                            <div className="text-center py-20 bg-card-dark rounded-3xl border border-[#3e2b1d] text-text-secondary font-medium">
+                                                Không có bài viết nào đang chờ duyệt.
+                                            </div>
+                                        ) : (
+                                            pendingPosts.map(post => (
+                                                <div key={post.id} className="bg-card-dark border border-[#3e2b1d] rounded-3xl overflow-hidden shadow-2xl">
+                                                    {/* Post Header */}
+                                                    <div className="p-6 border-b border-[#3e2b1d] flex items-center justify-between bg-white/[0.02]">
+                                                        <div className="flex items-center gap-4">
+                                                            <img src={post.authorAvatar} className="size-12 rounded-full border-2 border-primary/20 object-cover" alt="" />
+                                                            <div>
+                                                                <p className="font-black text-white">{post.authorFullName}</p>
+                                                                <p className="text-[10px] text-text-secondary uppercase tracking-widest font-bold mt-0.5">
+                                                                    @{post.authorName} • {new Date(post.createdAt).toLocaleString()}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex gap-2">
+                                                            <button
+                                                                onClick={() => handleActionPost(post.id, 'approve')}
+                                                                className="px-5 py-2.5 bg-primary text-[#0f0a06] font-black rounded-xl text-xs uppercase tracking-widest transition-all hover:scale-105 hover:bg-orange-500 shadow-lg shadow-primary/20"
+                                                            >
+                                                                Phê duyệt
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleActionPost(post.id, 'reject')}
+                                                                className="px-5 py-2.5 bg-red-500/10 text-red-500 border border-red-500/20 font-black rounded-xl text-xs uppercase tracking-widest transition-all hover:bg-red-500/20"
+                                                            >
+                                                                Xóa bỏ
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Post Content */}
+                                                    <div className="p-6 space-y-4">
+                                                        <div className="text-white leading-relaxed whitespace-pre-wrap">
+                                                            {post.content}
+                                                        </div>
+
+                                                        {post.images && post.images.length > 0 && (
+                                                            <div className={`grid gap-2 ${post.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                                                                {post.images.map((img, idx) => (
+                                                                    <img
+                                                                        key={idx}
+                                                                        src={img}
+                                                                        className="w-full aspect-video object-cover rounded-2xl border border-white/5"
+                                                                        alt=""
+                                                                    />
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
                                     </div>
                                 ) : (
                                     <div className="space-y-4">
