@@ -69,6 +69,7 @@ export default function SidebarComponent() {
   };
 
   const menuItems = [
+
     {
       label: "Trang chủ",
       href: "/dashboard/feed",
