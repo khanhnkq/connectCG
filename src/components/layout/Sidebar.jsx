@@ -17,15 +17,21 @@ import { motion } from "framer-motion";
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../redux/slices/authSlice';
 import { fetchUserProfile } from '../../redux/slices/userSlice';
+import { fetchNotifications } from '../../redux/slices/notificationSlice';
 import { getMyNotifications, markAsRead } from '../../services/NotificationService';
 import NotificationList from '../notification/NotificationList';
 
 export default function SidebarComponent() {
   const { user } = useSelector((state) => state.auth);
   const { profile: userProfile } = useSelector((state) => state.user);
+  const { items: notifications, unreadCount } = useSelector((state) => state.notifications);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    dispatch(fetchNotifications());
+  }, [dispatch]);
   const [showNotifications, setShowNotifications] = useState(false);
 
   const [notifications, setNotifications] = useState([]);
@@ -127,6 +133,8 @@ export default function SidebarComponent() {
       },
       icon: (
         <div className="relative">
+          <IconBell className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+          {unreadCount > 0 && <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full animate-pulse"></span>}
              <IconBell className="text-neutral-200 h-5 w-5 flex-shrink-0" />
              {notifications.some(n => !n.isRead) && <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full animate-pulse"></span>}
         </div>
