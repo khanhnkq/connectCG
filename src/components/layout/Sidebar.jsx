@@ -138,7 +138,7 @@ export default function Sidebar() {
     { icon: 'person_add', label: 'Lời mời kết bạn', path: '/dashboard/requests', badge: '4' },
     { icon: 'favorite', label: 'Gợi ý kết bạn', path: '/dashboard/suggestions' },
     { icon: 'person_search', label: 'Tìm bạn mới', path: '/search/members' },
-    { icon: 'person', label: 'Hồ sơ', path: '/dashboard/my-profile' },
+    { icon: 'people', label: 'Bạn bè', path: '/dashboard/friends' },
   ];
 
   return (

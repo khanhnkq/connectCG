@@ -169,6 +169,7 @@ export default function NewsfeedDashboard1() {
                                 <div className="lg:col-span-2 flex flex-col gap-6">
                                     <PostComposer userAvatar="https://lh3.googleusercontent.com/aida-public/AB6AXuAUO2YNLAxc1Nl_nCWaGx0Dwt8BIkrV0WsFtsI9ePfpuH2QDYaR2IL1U-BCix40iXmHOlV6rzlHb2YzzlKUEpD183YkjDBCAQtHPFoSaXz638Vjta7H-NlTtKESwQOh_CcHQs-rhd6cbbiyxlQVatQS90HHg710X2WFSTAS7LkytHfywWdbhdy-IVBZk0wtKYnjblM6Vy6IA3R_7kOjPY04ZFIVnhosSED60xtTRmy2ylVAGG80CffMYIEPaZ6iQHq6uonwSSfKBJw" />
                                     <PostCard
+                                        id={201}
                                         author={{ name: 'Sarah Jenkins', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBuHYpNqBoJZ6H3wxyG6OtCnMMVU4FTUngw6LYZy4SgjA0mY2sYsDcePdMS10ev3_M8tw950TFDzIey60zy_0YaYchnCYNkI1EFXtTTC7THk5zGBor8yBtMr-aAf8sbShLZVQv8CQzSm5kNH7EvWmKXyi1RIv1DxZa3HFHT34tseJeUcKe6h6lFC6Ar26xYdz8DghOGsPL3pKr3Sb5Jj3_uULvl0M_QzCz6myNZnocquEnyZkGrndeht0XMB4Yrsu9Is2B6nJ3Mi9M' }}
                                         time="2 hours ago"
                                         content="Golden hour in Kyoto. The light was absolutely perfect this evening. Used a 85mm prime lens for this one. What do you think about the composition?"
@@ -275,6 +276,7 @@ export default function NewsfeedDashboard1() {
                                         {pendingPosts.map(post => (
                                             <PostCard
                                                 key={post.id}
+                                                id={post.id}
                                                 author={{ name: post.author, avatar: `https://i.pravatar.cc/150?u=${post.author}` }}
                                                 time={post.time}
                                                 content={post.content}

@@ -10,7 +10,9 @@ const UserProfileService = {
         // Trùng khớp với @GetMapping("/{userId}/profile") trong UserProfileController.java
         // Base URL đã là /api trong axiosConfig, nên ở đây dùng /v1/users/...
         return axiosClient.get(`/v1/users/${userId}/profile`);
-    }
+    },
+
+
 };
 
 export default UserProfileService;

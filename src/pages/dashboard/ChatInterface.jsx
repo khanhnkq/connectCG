@@ -2,7 +2,7 @@ import Sidebar from '../../components/layout/Sidebar';
 import ReportModal from "../../components/report/ReportModal";
 import { useState } from "react";
 import toast from 'react-hot-toast';
-import reportService from "../../services/reportService";
+import reportService from "../../services/ReportService";
 
 
 export default function ChatInterface() {
