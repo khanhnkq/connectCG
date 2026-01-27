@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getFriends } from '../../services/FriendService';
+import FriendService from '../../services/friend/FriendService';
 import toast from 'react-hot-toast';
 
 export default function InviteMemberModal({ isOpen, onClose, onInvite }) {
@@ -25,7 +25,8 @@ export default function InviteMemberModal({ isOpen, onClose, onInvite }) {
             const userStr = localStorage.getItem('user');
             if (userStr) {
                 const user = JSON.parse(userStr);
-                const data = await getFriends({ size: 100 }); // Backend already knows current user
+                const response = await FriendService.getMyFriends({ size: 100 });
+                const data = response.data;
                 setFriends(data.content || data || []);
             }
         } catch (error) {
@@ -50,8 +51,7 @@ export default function InviteMemberModal({ isOpen, onClose, onInvite }) {
     };
 
     const filteredFriends = friends.filter(friend =>
-        friend.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        friend.username.toLowerCase().includes(searchTerm.toLowerCase())
+        (friend.fullName || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     if (!isOpen) return null;
@@ -70,7 +70,7 @@ export default function InviteMemberModal({ isOpen, onClose, onInvite }) {
                         <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary">search</span>
                         <input
                             type="text"
-                            placeholder="Tìm kiếm bạn bè..."
+                            placeholder="Tìm kiếm bạn bè theo tên..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full bg-[#120a05] border border-[#3e2b1d] rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-primary/50 transition-all"
@@ -103,7 +103,6 @@ export default function InviteMemberModal({ isOpen, onClose, onInvite }) {
                                         <p className={`font-bold text-sm ${selectedFriends.includes(friend.id) ? 'text-primary' : 'text-white'}`}>
                                             {friend.fullName}
                                         </p>
-                                        <p className="text-xs text-text-secondary">@{friend.username}</p>
                                     </div>
                                 </div>
                                 <div className={`size-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedFriends.includes(friend.id)

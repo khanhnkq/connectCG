@@ -164,18 +164,6 @@ export default function GroupsManagement() {
                         style={{ backgroundImage: `url("${imageUrl}")` }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
-
-                    {/* Admin/Crown Badge - Top Left */}
-                    <div className="absolute top-3 left-3 z-20">
-                        {isAdmin && (
-                            <div className="bg-gradient-to-br from-yellow-300 via-orange-400 to-red-600 p-[2px] rounded-full shadow-[0_0_15px_rgba(234,179,8,0.4)]">
-                                <div className="bg-[#1a120b] size-9 rounded-full flex items-center justify-center border border-white/10">
-                                    <span className="material-symbols-outlined text-yellow-400 text-xl font-bold">workspace_premium</span>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
                     {/* Status & Privacy Badges - Top Right */}
                     <div className="absolute top-4 right-4 flex flex-col items-end gap-2 z-20">
                         {isAdmin && (
@@ -213,10 +201,8 @@ export default function GroupsManagement() {
                     <div className="absolute bottom-4 left-5 right-5 z-20 pointer-events-none">
                         <h4 className="text-white font-bold text-xl leading-tight group-hover:text-primary transition-colors line-clamp-1">{group.name}</h4>
                         <p className="text-text-secondary text-xs font-medium italic opacity-80 flex items-center gap-1 mt-1">
-                            <span className="material-symbols-outlined text-xs">person</span>
-                            @{group.ownerName}
-                            {isOwnerVal && <span className="text-primary font-bold ml-1">(Chủ sở hữu)</span>}
-                            {!isOwnerVal && isAdmin && <span className="text-orange-400 font-bold ml-1">(Quản trị viên)</span>}
+                            <span className="material-symbols-outlined text-xl">person</span>
+                            {group.ownerFullName || group.ownerName}
                         </p>
                     </div>
                 </div>

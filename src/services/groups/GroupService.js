@@ -111,3 +111,8 @@ export const transferOwnership = async (groupId, newOwnerId) => {
     const res = await axiosClient.post(`${URL_GROUP}/${groupId}/transfer-ownership`, { newOwnerId });
     return res.data;
 };
+
+export const updateGroupMemberRole = async (groupId, userId, role) => {
+    const res = await axiosClient.post(`${URL_GROUP}/${groupId}/members/${userId}/role`, { role });
+    return res.data;
+};
