@@ -9,8 +9,6 @@ import NotificationList from '../../components/notification/NotificationList';
 
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchNotifications } from '../../redux/slices/notificationSlice';
-import { markAsRead } from '../../services/NotificationService';
-import NotificationList from '../../components/notification/NotificationList';
 
 import Sidebar from '../../components/layout/Sidebar';
 
