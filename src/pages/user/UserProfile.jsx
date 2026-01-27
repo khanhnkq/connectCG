@@ -1,13 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import Sidebar from '../../components/layout/Sidebar.jsx';
 import PostComposer from '../../components/feed/PostComposer';
-import { fetchUserProfile } from '../../redux/slices/userSlice';
+import { fetchUserProfile, updateUserAvatar, updateUserCover } from '../../redux/slices/userSlice';
 import { useNavigate } from 'react-router-dom';
 import ProfileAbout from '../../components/profile/ProfileAbout';
 import ProfilePhotos from '../../components/profile/ProfilePhotos';
 import ProfileHobbies from '../../components/profile/ProfileHobbies';
 import ProfileFriends from '../../components/profile/ProfileFriends';
+import { uploadAvatar, uploadCover } from '../../utils/uploadImage';
+import { toast } from 'react-toastify';
+import EditProfileModal from '../../components/profile/EditProfileModal';
 
 export default function UserProfile() {
     const dispatch = useDispatch();
@@ -15,6 +18,13 @@ export default function UserProfile() {
     const { user } = useSelector((state) => state.auth);
     const { profile, loading } = useSelector((state) => state.user);
     const [activeTab, setActiveTab] = useState('timeline'); // timeline, about, photos, hobbies, friends
+    const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+    const [isUploadingCover, setIsUploadingCover] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+    // Hidden file inputs
+    const avatarInputRef = useRef(null);
+    const coverInputRef = useRef(null);
 
     useEffect(() => {
         const userId = user?.id || user?.userId || user?.sub;
@@ -22,6 +32,43 @@ export default function UserProfile() {
             dispatch(fetchUserProfile(userId));
         }
     }, [user, profile, dispatch]);
+
+    const handleAvatarChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        try {
+            setIsUploadingAvatar(true);
+            const url = await uploadAvatar(file);
+            await dispatch(updateUserAvatar(url)).unwrap();
+            toast.success("Cập nhật ảnh đại diện thành công!");
+        } catch (error) {
+            toast.error(typeof error === 'string' ? error : "Lỗi khi cập nhật ảnh");
+            console.error(error);
+        } finally {
+            setIsUploadingAvatar(false);
+            // Reset input
+            if (avatarInputRef.current) avatarInputRef.current.value = '';
+        }
+    };
+
+    const handleCoverChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        try {
+            setIsUploadingCover(true);
+            const url = await uploadCover(file);
+            await dispatch(updateUserCover(url)).unwrap();
+            toast.success("Cập nhật ảnh bìa thành công!");
+        } catch (error) {
+            toast.error(typeof error === 'string' ? error : "Lỗi khi cập nhật ảnh");
+            console.error(error);
+        } finally {
+            setIsUploadingCover(false);
+            if (coverInputRef.current) coverInputRef.current.value = '';
+        }
+    };
 
     if (loading || !profile) {
         return (
@@ -44,23 +91,60 @@ export default function UserProfile() {
                         <div className="w-full max-w-6xl mx-auto">
                             <div className="relative w-full h-64 md:h-80 lg:h-96 group overflow-hidden rounded-b-3xl">
                                 <div
-                                    className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                                    className="absolute inset-0 bg-cover bg-center transition-transform duration-700"
                                     style={{ backgroundImage: `url("${profile?.currentCoverUrl || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCsQ9A8n-xledNJ474f_Uhr7BscPR1rdWpPA3nmUJNmpVX91H1g0qzMfr9cBVIkAenCL-nwTE3eotkyfDk29zimFvN8-jZdH8iZX_YRdmarPfVxzJHgiu1ByzFcVxZgVSRg7T53DVEFW8xt5qrbXibpwvQ3F4V3ihwBBXzyqv1ev1YEqcfkx6qOp-1indkKl5YuDjQFL0NRPqq7VW_dBlXrrZONIiwbkNX-tnHGk4jNiXLsc5kJ9cNeUOM226fUgjqHbFWB_pkARIM'}")` }}
                                 ></div>
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                                <button className="absolute bottom-4 right-4 bg-black/50 hover:bg-black/70 text-white backdrop-blur-md px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all">
+                                
+                                {/* Cover Photo Upload */}
+                                <input 
+                                    type="file" 
+                                    ref={coverInputRef}
+                                    className="hidden" 
+                                    accept="image/*"
+                                    onChange={handleCoverChange}
+                                />
+                                <button 
+                                    onClick={() => coverInputRef.current?.click()}
+                                    disabled={isUploadingCover}
+                                    className="absolute bottom-4 right-4 bg-black/50 hover:bg-black/70 text-white backdrop-blur-md px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50 z-20"
+                                >
                                     <span className="material-symbols-outlined text-lg">camera_alt</span>
-                                    <span className="hidden sm:inline">Thay đổi ảnh bìa</span>
+                                    <span className="hidden sm:inline">
+                                        {isUploadingCover ? 'Đang tải lên...' : 'Thay đổi ảnh bìa'}
+                                    </span>
                                 </button>
                             </div>
                             <div className="px-4 md:px-8 pb-4 relative">
                                 <div className="flex flex-col md:flex-row items-start md:items-end -mt-16 md:-mt-12 gap-6 relative z-10 mb-6">
                                     <div className="relative shrink-0">
-                                        <div className="size-32 md:size-44 rounded-full border-4 border-[#342418] bg-[#221710] p-1 shadow-2xl">
+                                        <div className="size-32 md:size-44 rounded-full border-4 border-[#342418] bg-[#221710] p-1 shadow-2xl relative group">
                                             <div
-                                                className="w-full h-full rounded-full bg-cover bg-center"
+                                                className="w-full h-full rounded-full bg-cover bg-center group-hover:opacity-80 transition-opacity"
                                                 style={{ backgroundImage: `url("${profile?.currentAvatarUrl || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}")` }}
                                             ></div>
+                                            
+                                            {/* Avatar Upload */}
+                                            <input 
+                                                type="file" 
+                                                ref={avatarInputRef}
+                                                className="hidden" 
+                                                accept="image/*"
+                                                onChange={handleAvatarChange}
+                                            />
+                                            <button 
+                                                onClick={() => avatarInputRef.current?.click()}
+                                                disabled={isUploadingAvatar}
+                                                className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white disabled:opacity-100"
+                                            >
+                                                <span className="material-symbols-outlined text-3xl">photo_camera</span>
+                                            </button>
+                                            
+                                            {isUploadingAvatar && (
+                                                <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full z-10">
+                                                    <div className="size-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="absolute bottom-2 md:bottom-4 right-2 md:right-4 size-5 md:size-6 bg-green-500 border-4 border-[#342418] rounded-full" title="Online"></div>
                                     </div>
@@ -81,7 +165,10 @@ export default function UserProfile() {
                                             </div>
                                         </div>
                                         <div className="flex gap-3 mb-4 w-full md:w-auto">
-                                            <button className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-primary hover:bg-orange-600 text-[#231810] font-bold px-6 py-3 rounded-xl transition-all shadow-lg shadow-orange-500/20">
+                                            <button 
+                                                onClick={() => setIsEditModalOpen(true)}
+                                                className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-primary hover:bg-orange-600 text-[#231810] font-bold px-6 py-3 rounded-xl transition-all shadow-lg shadow-orange-500/20"
+                                            >
                                                 <span className="material-symbols-outlined text-[20px]">edit_square</span>
                                                 Chỉnh sửa hồ sơ
                                             </button>
@@ -210,6 +297,12 @@ export default function UserProfile() {
                     </div>
                 </div>
             </main>
+
+            <EditProfileModal 
+                isOpen={isEditModalOpen} 
+                onClose={() => setIsEditModalOpen(false)} 
+                profile={profile} 
+            />
         </div>
     );
 }
