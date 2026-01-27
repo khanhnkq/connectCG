@@ -95,20 +95,20 @@ const AdminMembersManager = () => {
 
 
 
-    const toggleStatus = (id, currentStatus) => {
-        const action = currentStatus === "Active" ? "Ban" : "Unban";
-        setConfirmConfig({
-            isOpen: true,
-            title: `${action} User Access?`,
-            message: `Are you sure you want to ${action.toLowerCase()} this user? They will ${action === "Ban" ? "lose" : "regain"} access to the platform.`,
-            type: action === "Ban" ? "danger" : "info",
-            onConfirm: () => {
-                setMembers(members.map(m => m.id === id ? { ...m, status: m.status === "Active" ? "Banned" : "Active" } : m));
-                toast(`User successfully ${action.toLowerCase()}ned`, { icon: 'ℹ️' });
-                setConfirmConfig({ ...confirmConfig, isOpen: false });
-            }
-        });
-    };
+    // const toggleStatus = (id, currentStatus) => {
+    //     const action = currentStatus === "Active" ? "Ban" : "Unban";
+    //     setConfirmConfig({
+    //         isOpen: true,
+    //         title: `${action} User Access?`,
+    //         message: `Are you sure you want to ${action.toLowerCase()} this user? They will ${action === "Ban" ? "lose" : "regain"} access to the platform.`,
+    //         type: action === "Ban" ? "danger" : "info",
+    //         onConfirm: () => {
+    //             setMembers(members.map(m => m.id === id ? { ...m, status: m.status === "Active" ? "Banned" : "Active" } : m));
+    //             toast(`User successfully ${action.toLowerCase()}ned`, { icon: 'ℹ️' });
+    //             setConfirmConfig({ ...confirmConfig, isOpen: false });
+    //         }
+    //     });
+    // };
 
     const handleDelete = (id, name) => {
         setConfirmConfig({

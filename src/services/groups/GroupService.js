@@ -116,3 +116,23 @@ export const updateGroupMemberRole = async (groupId, userId, role) => {
     const res = await axiosClient.post(`${URL_GROUP}/${groupId}/members/${userId}/role`, { role });
     return res.data;
 };
+
+export const getPendingPosts = async (groupId) => {
+    const res = await axiosClient.get(`${URL_GROUP}/${groupId}/posts/pending`);
+    return res.data;
+};
+
+export const getGroupPosts = async (groupId) => {
+    const res = await axiosClient.get(`${URL_GROUP}/${groupId}/posts`);
+    return res.data;
+};
+
+export const approvePost = async (groupId, postId) => {
+    const res = await axiosClient.post(`${URL_GROUP}/${groupId}/posts/${postId}/approve`);
+    return res.data;
+};
+
+export const rejectPost = async (groupId, postId) => {
+    const res = await axiosClient.post(`${URL_GROUP}/${groupId}/posts/${postId}/reject`);
+    return res.data;
+};
