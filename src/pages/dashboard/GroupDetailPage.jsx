@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom';
 import Sidebar from '../../components/layout/Sidebar';
 import PostComposer from '../../components/feed/PostComposer';
 import PostCard from '../../components/feed/PostCard';
@@ -28,13 +28,15 @@ const formatTime = (dateString) => {
 
     return date.toLocaleDateString('vi-VN');
 };
-export default function GroupDetailPage() {
+const GroupDetailPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const [searchParams] = useSearchParams();
     const [group, setGroup] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [isAdmin, setIsAdmin] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false); // Group-level admin/owner
+
     const [activeTab, setActiveTab] = useState('Bản tin');
     const [showReportGroup, setShowReportGroup] = useState(false);
     const [showInviteModal, setShowInviteModal] = useState(false);
@@ -53,6 +55,30 @@ export default function GroupDetailPage() {
     const [userMembership, setUserMembership] = useState(null); // { userId, status, role }
 
     const [showTransferOwnershipModal, setShowTransferOwnershipModal] = useState(false);
+    // Helper function to decode JWT and get user ID & ROLE
+    const getUserInfoFromToken = () => {
+        const token = localStorage.getItem('accessToken');
+        if (!token) return null;
+
+        try {
+            const payload = token.split('.')[1];
+            const decoded = JSON.parse(atob(payload));
+            return {
+                id: decoded.userId || decoded.sub || decoded.id,
+                role: decoded.role || decoded.authorities || (decoded.realm_access ? decoded.realm_access.roles : null)
+            };
+        } catch (error) {
+            console.error('Failed to decode token:', error);
+            return null;
+        }
+    };
+
+    // Legacy support for just ID
+    const getUserIdFromToken = () => {
+        const info = getUserInfoFromToken();
+        return info ? info.id : null;
+    };
+
     const fetchGroupData = async () => {
         try {
             const groupData = await findById(id);
@@ -68,34 +94,63 @@ export default function GroupDetailPage() {
                 setUserMembership(null);
             }
 
-            // Check if current user is admin
-            const userStr = localStorage.getItem('user');
-            if (userStr && groupData) {
-                const userData = JSON.parse(userStr);
-                if (groupData.ownerId === userData.id || groupData.currentUserRole === 'ADMIN') {
-                    setIsAdmin(true);
-                    // Fetch pending requests if admin
-                    const requests = await getPendingRequests(id);
-                    setMemberRequests(requests);
+            // Check if current user is admin (Group Owner OR Group Admin OR System Admin)
+            const userInfo = getUserInfoFromToken();
+            const userStr = localStorage.getItem('user'); // Fallback to localStorage user object if needed
 
-                    // Fetch pending posts if admin
-                    const pPosts = await getPendingPosts(id);
-                    setPendingPosts(pPosts);
+            let isSystemAdmin = false;
+            let currentUserId = null;
+
+            if (userInfo) {
+                currentUserId = Number(userInfo.id);
+                // Check role from token - handle both formats and case sensitivity
+                const roles = userInfo.role;
+                if (Array.isArray(roles)) {
+                    isSystemAdmin = roles.some(r => r === 'ADMIN' || r === 'ROLE_ADMIN');
+                } else if (typeof roles === 'string') {
+                    isSystemAdmin = roles === 'ADMIN' || roles === 'ROLE_ADMIN';
+                }
+            } else if (userStr) {
+                const userData = JSON.parse(userStr);
+                currentUserId = userData.id;
+                isSystemAdmin = userData.role === 'ADMIN' || userData.role === 'ROLE_ADMIN';
+            }
+
+            if (currentUserId) {
+                // Check Group management rights: Owner OR Group Admin
+                if (groupData.ownerId === currentUserId || groupData.currentUserRole === 'ADMIN') {
+                    setIsAdmin(true);
+
+                    // Admin capabilities: Fetch pending lists
+                    try {
+                        const requests = await getPendingRequests(id);
+                        setMemberRequests(requests);
+                        const pPosts = await getPendingPosts(id);
+                        setPendingPosts(pPosts);
+                    } catch (e) {
+                        console.log("Not authorized to fetch pending items (or handled by API)");
+                    }
                 } else {
                     setIsAdmin(false);
                 }
             }
 
-            // Always fetch approved posts for the feed
-            const posts = await getGroupPosts(id);
-            setApprovedPosts(posts);
+            // Fetch approved posts for the feed with its own catch
+            try {
+                const posts = await getGroupPosts(id);
+                setApprovedPosts(posts);
+            } catch (postError) {
+                console.error("Failed to fetch posts:", postError);
+                setApprovedPosts([]);
+            }
 
-            // Try to fetch members list
+            // Fetch members list with its own catch
             try {
                 const membersData = await getGroupMembers(id);
                 setMembers(membersData);
             } catch (memberError) {
-                // If private group, we show a modal if they aren't members
+                console.error("Failed to fetch members:", memberError);
+                // If private group AND not a member
                 if (groupData.privacy === 'PRIVATE' && groupData.currentUserStatus !== 'ACCEPTED') {
                     setShowPrivacyModal(true);
                 }
@@ -110,34 +165,9 @@ export default function GroupDetailPage() {
             setLoading(false);
         }
     };
-
     useEffect(() => {
-        if (id) {
-            fetchGroupData();
-
-            // Handle Deep Linking from Notifications
-            const tabParam = searchParams.get('tab');
-            const modTabParam = searchParams.get('modTab');
-            if (tabParam) setActiveTab(tabParam);
-            if (modTabParam) setModTab(modTabParam);
-        }
-    }, [id, navigate, searchParams]);
-
-    // Helper function to decode JWT and get user ID
-    const getUserIdFromToken = () => {
-        const token = localStorage.getItem('accessToken');
-        if (!token) return null;
-
-        try {
-            // JWT có 3 phần: header.payload.signature
-            const payload = token.split('.')[1];
-            const decoded = JSON.parse(atob(payload));
-            return decoded.userId || decoded.sub || decoded.id;
-        } catch (error) {
-            console.error('Failed to decode token:', error);
-            return null;
-        }
-    };
+        fetchGroupData();
+    }, [id]);
 
     const handleLeaveGroup = () => {
         if (!group) return;
@@ -341,12 +371,6 @@ export default function GroupDetailPage() {
                                         <span className="bg-primary/20 backdrop-blur-sm text-primary border border-primary/30 text-[10px] sm:text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">
                                             Nhóm {group.privacy === 'PUBLIC' ? 'Công khai' : 'Riêng tư'}
                                         </span>
-                                        {isAdmin && (
-                                            <span className="bg-orange-500/20 backdrop-blur-sm text-orange-400 border border-orange-500/30 text-[10px] sm:text-xs font-black px-3 py-1 rounded-full uppercase tracking-widest flex items-center gap-1.5 whitespace-nowrap">
-                                                <span className="material-symbols-outlined !text-[14px]">shield_person</span>
-                                                Chế độ Quản trị
-                                            </span>
-                                        )}
                                     </div>
                                 </div>
                                 <p className="text-white/90 font-medium text-sm md:text-base flex items-center gap-2 drop-shadow-sm">
@@ -428,7 +452,7 @@ export default function GroupDetailPage() {
                         <div className="max-w-7xl mx-auto px-6">
                             <nav className="flex gap-8 overflow-x-auto hide-scrollbar">
                                 {[{ en: 'Feed', vi: 'Bản tin' }, { en: 'Members', vi: 'Thành viên' }, { en: 'Photos', vi: 'Ảnh' }, { en: 'Events', vi: 'Sự kiện' }]
-                                    .filter(tab => group.privacy === 'PUBLIC' || userMembership?.status === 'ACCEPTED')
+                                    .filter(tab => group.privacy === 'PUBLIC' || (userMembership?.status === 'ACCEPTED' || isAdmin))
                                     .map(tab => (
                                         <button
                                             key={tab.en}
@@ -467,7 +491,7 @@ export default function GroupDetailPage() {
                         {activeTab === 'Bản tin' && (
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                                 <div className="lg:col-span-2 flex flex-col gap-6">
-                                    {group.privacy === 'PRIVATE' && userMembership?.status !== 'ACCEPTED' ? (
+                                    {group.privacy === 'PRIVATE' && (userMembership?.status !== 'ACCEPTED' && !isAdmin) ? (
                                         <div className="bg-card-dark rounded-[2.5rem] p-12 border border-[#3e2b1d] text-center space-y-6">
                                             <div className="size-24 rounded-full bg-primary/10 flex items-center justify-center text-primary mx-auto mb-8">
                                                 <span className="material-symbols-outlined text-5xl">lock</span>
@@ -486,7 +510,9 @@ export default function GroupDetailPage() {
                                         </div>
                                     ) : (
                                         <>
-                                            <PostComposer userAvatar={JSON.parse(localStorage.getItem('user'))?.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"} />
+                                            {userMembership?.status === 'ACCEPTED' && (
+                                                <PostComposer userAvatar={JSON.parse(localStorage.getItem('user'))?.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"} />
+                                            )}
 
                                             <div className="flex flex-col gap-6">
                                                 {approvedPosts.length > 0 ? (
@@ -880,5 +906,6 @@ export default function GroupDetailPage() {
             />
         </div>
     );
+};
 
-}
+export default GroupDetailPage;
