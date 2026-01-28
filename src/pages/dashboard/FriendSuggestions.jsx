@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import Sidebar from '../../components/layout/Sidebar.jsx';
+
 import RightSidebar from '../../components/layout/RightSidebar.jsx';
 
 export default function FriendSuggestions() {
@@ -47,11 +47,8 @@ export default function FriendSuggestions() {
     ]);
 
     return (
-        <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden h-screen flex w-full">
-            <Sidebar />
-
-            <div className="flex flex-1 overflow-hidden relative">
-                <main className="flex-1 overflow-y-auto bg-background-dark p-4 md:p-8 custom-scrollbar">
+        <div className="flex flex-1 overflow-hidden relative w-full h-full">
+            <div className="flex-1 overflow-y-auto bg-background-dark p-4 md:p-8 custom-scrollbar">
                     <div className="max-w-[1400px] mx-auto">
                         <header className="mb-8">
                             <h1 className="text-3xl font-extrabold text-white tracking-tight">Gợi ý kết bạn</h1>
@@ -115,9 +112,9 @@ export default function FriendSuggestions() {
                             </button>
                         </div>
                     </div>
-                </main>
+                </div>
                 <RightSidebar />
             </div>
-        </div>
+
     );
 }
