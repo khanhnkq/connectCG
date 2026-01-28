@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
@@ -6,6 +6,7 @@ import { uploadAvatar } from '../../utils/uploadImage';
 import toast from 'react-hot-toast';
 import { useDispatch } from 'react-redux';
 import { createProfile } from '../../redux/slices/authSlice'; // Import thunk mới
+import { useSelector } from 'react-redux';
 
 // Validation schema
 const Step2Schema = Yup.object().shape({
@@ -41,6 +42,13 @@ export default function Step2() {
     const navigate = useNavigate();
     const [avatarPreview, setAvatarPreview] = useState(null);
     const fileInputRef = useRef(null);
+    const { hasProfile } = useSelector((state) => state.auth);
+
+    useEffect(() => {
+        if (hasProfile) {
+             navigate('/dashboard/feed');
+        }
+    }, [hasProfile, navigate]);
 
     const initialValues = {
         fullName: '',

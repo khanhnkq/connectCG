@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import { WebSocketProvider } from './context/WebSocketContext';
 import DashboardLayout from './components/layout/DashboardLayout';
 import ProtectedRoute from './routes/ProtectedRoute';
+import GuestRoute from './routes/GuestRoute';
 
 import LandingPage from './pages/LandingPage';
 import Login from './pages/auth/Login';
@@ -58,17 +59,19 @@ function App() {
           },
         }}
       />
-
       <WebSocketProvider>
         <Routes>
-{/* Public Routes */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Login />} />
+          {/* Guest Routes - Redirect to Dashboard if already logged in */}
+          <Route element={<GuestRoute />}>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/verify-email" element={<VerifyEmail />} />
+              <Route path="/registration/step-1" element={<Step1 />} />
+          </Route>
+          
           <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/verify-email" element={<VerifyEmail />} />
-          <Route path="/registration/step-1" element={<Step1 />} />
 
           {/* Protected Onboarding Route */}
           <Route path="/onboarding" element={
