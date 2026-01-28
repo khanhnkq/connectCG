@@ -1,17 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const Sidebar = ({ brandName = "Social Admin", activeTab = "Groups" }) => {
+const Sidebar = ({ brandName = "Quản trị MXH", activeTab = "Groups" }) => {
   const navItems = [
-    // { name: "Dashboard", icon: "dashboard", path: "/admin-website" },
-    { name: "Groups", icon: "group", path: "/admin-website/groups" },
-    { name: "Users", icon: "person", path: "/admin-website/members" },
-    { name: "Content", icon: "article", path: "/admin-website/contents" },
-    { name: "Reports", icon: "analytics", path: "/admin-website/reports" },
+    // { name: "Dashboard", label: "Tổng quan", icon: "dashboard", path: "/admin-website" },
+    { name: "Groups", label: "Nhóm", icon: "group", path: "/admin-website/groups" },
+    { name: "Users", label: "Thành viên", icon: "person", path: "/admin-website/members" },
+    { name: "Content", label: "Nội dung", icon: "article", path: "/admin-website/contents" },
+    { name: "Reports", label: "Báo cáo", icon: "analytics", path: "/admin-website/reports" },
   ];
 
   const systemItems = [
-    { name: "Settings", icon: "settings", path: "#" },
+    { name: "Settings", label: "Cài đặt", icon: "settings", path: "#" },
   ];
 
   return (
@@ -22,7 +22,7 @@ const Sidebar = ({ brandName = "Social Admin", activeTab = "Groups" }) => {
         </div>
         <div className="flex flex-col">
           <h1 className="text-lg font-bold leading-none tracking-tight">{brandName}</h1>
-          <p className="text-text-muted text-[10px] uppercase tracking-widest mt-1 font-semibold">Management Portal</p>
+          <p className="text-text-muted text-[10px] uppercase tracking-widest mt-1 font-semibold">Cổng quản lý</p>
         </div>
       </div>
 
@@ -43,12 +43,12 @@ const Sidebar = ({ brandName = "Social Admin", activeTab = "Groups" }) => {
             >
               {item.icon}
             </span>
-            <span className="text-sm font-semibold">{item.name}</span>
+            <span className="text-sm font-semibold">{item.label}</span>
           </Link>
         ))}
 
         <div className="pt-8 px-5 pb-2">
-          <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">System</p>
+          <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">Hệ thống</p>
         </div>
 
         {systemItems.map((item) => (
@@ -66,7 +66,7 @@ const Sidebar = ({ brandName = "Social Admin", activeTab = "Groups" }) => {
             >
               {item.icon}
             </span>
-            <span className="text-sm font-semibold">{item.name}</span>
+            <span className="text-sm font-semibold">{item.label}</span>
           </Link>
         ))}
       </nav>
@@ -77,7 +77,7 @@ const Sidebar = ({ brandName = "Social Admin", activeTab = "Groups" }) => {
           className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-orange-500/10 text-orange-400 hover:bg-orange-500 hover:text-white transition-all font-black text-xs uppercase tracking-widest border border-orange-500/20"
         >
           <span className="material-symbols-outlined text-[18px]">visibility</span>
-          View User Feed
+          Xem trang chủ
         </Link>
         <div className="flex items-center gap-4 px-2 py-2 bg-surface-dark/50 rounded-2xl border border-border-dark">
           <div
@@ -86,7 +86,7 @@ const Sidebar = ({ brandName = "Social Admin", activeTab = "Groups" }) => {
           ></div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold truncate">Alex Rivera</p>
-            <p className="text-text-muted text-[10px] uppercase font-bold tracking-wider">Super Admin</p>
+            <p className="text-text-muted text-[10px] uppercase font-bold tracking-wider">Quản trị viên</p>
           </div>
         </div>
       </div>
