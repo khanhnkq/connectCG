@@ -63,22 +63,22 @@ export default function Newsfeed() {
             </div>
             <div className="flex gap-3 items-center">
               <div className="relative">
-                <button 
+                <button
                   onClick={() => setShowNotifications(!showNotifications)}
                   className="size-10 rounded-full bg-[#342418] hover:bg-[#3e2b1d] text-white flex items-center justify-center transition-all relative"
                 >
                   <IconBell className="text-neutral-200 h-5 w-5" />
                   {notifications.some(n => !n.isRead) && <span className="absolute top-2 right-2.5 h-2 w-2 bg-red-500 rounded-full animate-pulse border border-[#342418]"></span>}
                 </button>
-                
+
                 {showNotifications && (
                   <div className="absolute right-0 top-12 w-80 z-50">
-                     <NotificationList
+                    <NotificationList
 
-                        notifications={notifications}
+                      notifications={notifications}
 
-                        onMarkAsRead={handleMarkAsRead}
-                      />
+                      onMarkAsRead={handleMarkAsRead}
+                    />
                   </div>
                 )}
               </div>

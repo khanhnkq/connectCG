@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import FriendService from '../../services/friend/FriendService';
+
 import UserProfileService from '../../services/user/UserProfileService';
 import ProfileAbout from '../../components/profile/ProfileAbout';
 import ProfilePhotos from '../../components/profile/ProfilePhotos';
 import ProfileHobbies from '../../components/profile/ProfileHobbies';
 import ProfileFriends from '../../components/profile/ProfileFriends';
+import ReportModal from '../../components/report/ReportModal';
+import reportService from '../../services/ReportService';
+import toast from 'react-hot-toast';
 
 export default function MemberProfile() {
     const { id } = useParams();
@@ -14,6 +17,7 @@ export default function MemberProfile() {
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('timeline'); // timeline, about, photos, hobbies, friends
+    const [showReportModal, setShowReportModal] = useState(false);
 
     useEffect(() => {
         const fetchMemberProfile = async () => {
@@ -32,23 +36,6 @@ export default function MemberProfile() {
             fetchMemberProfile();
         }
     }, [id]);
-
-    const handleUnfriend = async () => {
-        if (window.confirm(`Bạn có chắc muốn hủy kết bạn với ${profile.fullName}?`)) {
-            try {
-                await FriendService.unfriend(profile.userId);
-                // Cập nhật state UI
-                setProfile(prev => ({
-                    ...prev,
-                    relationshipStatus: 'NONE',
-                    friendsCount: prev.friendsCount - 1
-                }));
-            } catch (error) {
-                console.error("Lỗi khi hủy kết bạn:", error);
-                alert("Có lỗi xảy ra, vui lòng thử lại.");
-            }
-        }
-    };
 
     if (loading) {
         return (
@@ -111,13 +98,9 @@ export default function MemberProfile() {
                                 </div>
                                 <div className="flex gap-3 mb-4 w-full md:w-auto">
                                     {profile.relationshipStatus === 'FRIEND' ? (
-                                        <button
-                                            onClick={handleUnfriend}
-                                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#493222] text-primary border border-primary/30 font-bold px-6 py-3 rounded-xl transition-all hover:bg-red-900/30 hover:text-red-500 hover:border-red-500/50"
-                                            title="Click để hủy kết bạn"
-                                        >
-                                            <span className="material-symbols-outlined text-[20px]">person_remove</span>
-                                            Đã là bạn bè
+                                        <button className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#493222] text-primary border border-primary/30 font-bold px-6 py-3 rounded-xl transition-all">
+                                            <span className="material-symbols-outlined text-[20px]">person_check</span>
+                                            Bạn bè
                                         </button>
                                     ) : (
                                         <button className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-primary hover:bg-orange-600 text-[#231810] font-bold px-6 py-3 rounded-xl transition-all shadow-lg shadow-orange-500/20">
@@ -128,6 +111,13 @@ export default function MemberProfile() {
                                     <button className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#493222] hover:bg-primary/20 text-white hover:text-primary font-bold px-4 py-3 rounded-xl transition-all">
                                         <span className="material-symbols-outlined text-[20px]">mail</span>
                                         Nhắn tin
+                                    </button>
+                                    <button
+                                        onClick={() => setShowReportModal(true)}
+                                        className="flex items-center justify-center gap-2 bg-[#493222] hover:bg-red-500/10 text-text-secondary hover:text-red-500 font-bold px-4 py-3 rounded-xl transition-all"
+                                        title="Báo cáo người dùng"
+                                    >
+                                        <span className="material-symbols-outlined text-[20px]">report</span>
                                     </button>
                                 </div>
                             </div>
@@ -237,6 +227,49 @@ export default function MemberProfile() {
                     </div>
                 </div>
             </div>
+            <ReportModal
+                isOpen={showReportModal}
+                onClose={() => setShowReportModal(false)}
+                onSubmit={async (payload) => {
+                    const toastId = toast.loading("Đang gửi báo cáo...", {
+                        style: { background: "#1A120B", color: "#FFD8B0" }
+                    });
+                    try {
+                        await reportService.createReport(payload);
+                        toast.success("Đã gửi báo cáo thành công!", {
+                            id: toastId,
+                            style: { background: "#1A120B", color: "#FF8A2A", border: "1px solid #FF8A2A" }
+                        });
+                        setShowReportModal(false);
+                    } catch (error) {
+                        console.error(error);
+                        toast.error("Gửi báo cáo thất bại!", {
+                            id: toastId,
+                            style: { background: "#1A120B", color: "#FF6A00" }
+                        });
+                    }
+                }}
+                title="Báo cáo người dùng"
+                subtitle={`Báo cáo ${profile?.fullName || 'người dùng'}`}
+                question="Tại sao bạn muốn báo cáo người dùng này?"
+                reasons={[
+                    "Giả mạo người khác",
+                    "Tên giả hoặc không phù hợp",
+                    "Đăng nội dung quấy rối/bắt nạt",
+                    "Spam hoặc lừa đảo",
+                    "Ngôn từ thù ghét",
+                    "Khác"
+                ]}
+                targetPayload={{
+                    targetType: "USER",
+                    targetId: parseInt(id)
+                }}
+                user={{
+                    avatar: profile?.currentAvatarUrl,
+                    name: profile?.fullName
+                }}
+            />
         </div>
+
     );
 }
