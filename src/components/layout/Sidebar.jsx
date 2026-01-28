@@ -159,7 +159,7 @@ export default function SidebarComponent() {
 export const Logo = () => {
   return (
     <div className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20">
-      <div className="h-5 w-6 bg-primary rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" />
+      <img src="/logo.png" className="h-7 w-auto object-contain flex-shrink-0" alt="Connect Logo" />
       <motion.span
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -174,7 +174,7 @@ export const Logo = () => {
 export const LogoIcon = () => {
   return (
     <div className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20">
-      <div className="h-5 w-6 bg-primary rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" />
+      <img src="/logo.png" className="h-7 w-auto object-contain flex-shrink-0" alt="Connect Logo" />
     </div>
   );
 };
