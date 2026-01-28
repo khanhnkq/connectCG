@@ -32,21 +32,8 @@ export default function SidebarComponent() {
   useEffect(() => {
     dispatch(fetchNotifications());
   }, [dispatch]);
+  /* Notifications are managed by Redux */
   const [showNotifications, setShowNotifications] = useState(false);
-
-  const [notifications, setNotifications] = useState([]);
-
-  useEffect(() => {
-    const fetchNotificationsSync = async () => {
-      try {
-        const data = await getMyNotifications();
-        setNotifications(data || []);
-      } catch (error) {
-        console.error("Failed to fetch notifications:", error);
-      }
-    };
-    fetchNotificationsSync();
-  }, []);
 
   useEffect(() => {
     const userId = user?.id || user?.userId || user?.sub;
@@ -80,8 +67,7 @@ export default function SidebarComponent() {
   const handeMarkAsRead = async (id) => {
     try {
       await markAsRead(id);
-      const updated = notifications.map(n => n.id === id ? { ...n, isRead: true } : n);
-      setNotifications(updated);
+      dispatch(fetchNotifications()); // Refresh Redux state
     } catch (error) {
       console.error("Failed to mark read:", error);
     }
@@ -133,10 +119,8 @@ export default function SidebarComponent() {
       },
       icon: (
         <div className="relative">
-          <IconBell className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+          <IconBell className="text-neutral-200 h-5 w-5 flex-shrink-0" />
           {unreadCount > 0 && <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full animate-pulse"></span>}
-             <IconBell className="text-neutral-200 h-5 w-5 flex-shrink-0" />
-             {notifications.some(n => !n.isRead) && <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full animate-pulse"></span>}
         </div>
       ),
     },
@@ -144,11 +128,11 @@ export default function SidebarComponent() {
 
   // Add Admin Panel if user is admin
   if (isAdmin) {
-      menuItems.push({
-          label: "Admin Panel",
-          href: "/admin-website/groups",
-          icon: <IconSettings className="text-neutral-200 h-5 w-5 flex-shrink-0" />
-      });
+    menuItems.push({
+      label: "Admin Panel",
+      href: "/admin-website/groups",
+      icon: <IconSettings className="text-neutral-200 h-5 w-5 flex-shrink-0" />
+    });
   }
 
   return (
@@ -176,7 +160,7 @@ export default function SidebarComponent() {
                 label: "Đăng xuất",
                 onClick: handleLogout,
                 icon: <IconArrowLeft className="text-neutral-200 h-5 w-5 flex-shrink-0" />,
-                }}
+              }}
             />
           </div>
         </div>
