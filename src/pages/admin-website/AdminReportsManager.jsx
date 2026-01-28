@@ -5,7 +5,9 @@ import reportService from "../../services/ReportService";
 import userService from "../../services/UserService";
 import postService from "../../services/PostService";
 import { findById as findGroupById, deleteGroup } from "../../services/groups/GroupService";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import GroupInspectorModal from "../../components/admin/GroupInspectorModal";
 
 const TABS = {
   USER: "Báo cáo người dùng",
@@ -39,6 +41,7 @@ const AdminReportsManagement = () => {
   const [activeTab, setActiveTab] = useState("USER");
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   // Modal State
   const [detailModal, setDetailModal] = useState({
@@ -47,6 +50,9 @@ const AdminReportsManagement = () => {
     targetData: null,
     loading: false,
   });
+
+  // Inspector State
+  const [inspectingGroupId, setInspectingGroupId] = useState(null);
 
   // Confirm Dialog State
   const [confirmConfig, setConfirmConfig] = useState({
@@ -354,6 +360,17 @@ const AdminReportsManagement = () => {
                           Chi tiết
                         </button>
 
+                        {/* View Group Button (Direct Link) */}
+                        {r.groupId && (
+                          <button
+                            onClick={() => setInspectingGroupId(r.groupId)}
+                            className="px-2 py-1.5 text-xs font-bold rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-all border border-blue-500/20 hover:border-blue-500/50"
+                            title="Xem Nhóm"
+                          >
+                            <span className="material-symbols-outlined text-sm">visibility</span>
+                          </button>
+                        )}
+
                         {r.status !== 'RESOLVED' && (
                           <>
                             {r.targetType === 'USER' && (
@@ -645,6 +662,19 @@ const AdminReportsManagement = () => {
             {/* Add more pagination logic if needed */}
           </div>
         </div>
+
+        {/* --- GROUP INSPECTOR MODAL --- */}
+        {inspectingGroupId && (
+          <GroupInspectorModal
+            groupId={inspectingGroupId}
+            onClose={() => setInspectingGroupId(null)}
+            onAction={(group) => confirmAction(
+              () => onDeleteGroup(group.id, null),
+              "Xóa nhóm?",
+              `Bạn có chắc chắn muốn xóa nhóm "${group.name}"?`
+            )}
+          />
+        )}
 
       </div>
     </AdminLayout>
