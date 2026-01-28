@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
 import FriendService from '../../services/friend/FriendService';
 import FriendRequestService from '../../services/friend/FriendRequestService';
 import UserProfileService from '../../services/user/UserProfileService';
+import ChatService from '../../services/chat/ChatService';
 import ProfileAbout from '../../components/profile/ProfileAbout';
 import ProfilePhotos from '../../components/profile/ProfilePhotos';
 import ProfileHobbies from '../../components/profile/ProfileHobbies';
@@ -16,12 +17,26 @@ import toast from 'react-hot-toast';
 
 export default function MemberProfile() {
     const { id } = useParams();
+    const navigate = useNavigate();
     const { user: currentUser } = useSelector((state) => state.auth);
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('timeline'); // timeline, about, photos, hobbies, friends
     const [showReportModal, setShowReportModal] = useState(false);
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: null }); // type: 'UNFRIEND' | 'CANCEL_REQUEST'
+
+    const handleStartChat = async () => {
+        const tid = toast.loading("Đang mở cuộc trò chuyện...");
+        try {
+            const response = await ChatService.getOrCreateDirectChat(profile.id);
+            const room = response.data;
+            toast.success("Đã kết nối!", { id: tid });
+            navigate('/chat', { state: { selectedRoomKey: room.firebaseRoomKey } });
+        } catch (error) {
+            console.error("Error starting chat:", error);
+            toast.error("Không thể tạo cuộc trò chuyện", { id: tid });
+        }
+    };
 
     useEffect(() => {
         const fetchMemberProfile = async () => {
@@ -180,7 +195,10 @@ export default function MemberProfile() {
                                             Kết bạn
                                         </button>
                                     )}
-                                    <button className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#493222] hover:bg-primary/20 text-white hover:text-primary font-bold px-4 py-3 rounded-xl transition-all">
+                                    <button
+                                        onClick={handleStartChat}
+                                        className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#493222] hover:bg-primary/20 text-white hover:text-primary font-bold px-4 py-3 rounded-xl transition-all"
+                                    >
                                         <span className="material-symbols-outlined text-[20px]">mail</span>
                                         Nhắn tin
                                     </button>
