@@ -40,8 +40,8 @@ const notificationSlice = createSlice({
             state.unreadCount = 0;
         },
         setNotifications: (state, action) => {
-            state.items = action.payload;
-            state.unreadCount = action.payload.filter(n => !n.isRead).length;
+            state.items = Array.isArray(action.payload) ? action.payload : [];
+            state.unreadCount = state.items.filter(n => !n.isRead).length;
         }
     },
     extraReducers: (builder) => {
@@ -51,8 +51,10 @@ const notificationSlice = createSlice({
             })
             .addCase(fetchNotifications.fulfilled, (state, action) => {
                 state.loading = false;
-                state.items = action.payload;
-                state.unreadCount = action.payload.filter(n => !n.isRead).length;
+                // Safe check if payload is array. If backend returns Page object, we might need .content
+                const payload = action.payload || [];
+                state.items = Array.isArray(payload) ? payload : (payload.content || []);
+                state.unreadCount = state.items.filter(n => !n.isRead).length;
             })
             .addCase(fetchNotifications.rejected, (state, action) => {
                 state.loading = false;

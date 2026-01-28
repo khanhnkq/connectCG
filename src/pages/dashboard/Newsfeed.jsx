@@ -10,7 +10,7 @@ import NotificationList from '../../components/notification/NotificationList';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchNotifications } from '../../redux/slices/notificationSlice';
 
-import Sidebar from '../../components/layout/Sidebar';
+import { setNotifications } from '../../redux/slices/notificationSlice';
 
 
 
@@ -22,22 +22,6 @@ export default function Newsfeed() {
   const [showNotifications, setShowNotifications] = useState(false);
 
 
-  // const [notifications, setNotifications] = useState([]); // CONFLICT WITH REDUX
-
-  // const fetchNotificationsSync = async () => { ... } // MOVED TO REDUX OR UNUSED
-
-
-
-  // Redux integration logic override or merge? 
-  // The code seems to duplicate logic (local state vs Redux state).
-  // The error is because setNotifications is not defined in the functional component scope before return.
-  // But looking at line 37: `const { items: notifications, unreadCount } = useSelector(...)`
-  // The component is using Redux for notifications, but lines 22-35 try to use local state without defining `notifications` state correctly (it shadowed line 37).
-  // Actually, line 22 is `const [showNotifications, setShowNotifications] = useState(false);`
-  // There is NO `setNotifications` defined.
-  // I should remove the conflicting local fetch logic if Redux is the source of truth, OR define the state.
-  // Given line 37 uses `notifications` from Redux, lines 25-35 seem redundant or conflicting.
-  // I will REMOVE the buggy useEffect at lines 25-35 and 46-55 to rely on Redux.
 
 
   const { items: notifications, unreadCount } = useSelector((state) => state.notifications);
@@ -56,7 +40,7 @@ export default function Newsfeed() {
       await markAsRead(id);
 
       const updated = notifications.map(n => n.id === id ? { ...n, isRead: true } : n);
-      setNotifications(updated);
+      dispatch(setNotifications(updated));
 
       dispatch(fetchNotifications()); // Refresh notifications after marking as read
 
