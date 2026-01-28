@@ -5,7 +5,6 @@ import reportService from "../../services/ReportService";
 import userService from "../../services/UserService";
 import postService from "../../services/PostService";
 import { findById as findGroupById, deleteGroup } from "../../services/groups/GroupService";
-import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import GroupInspectorModal from "../../components/admin/GroupInspectorModal";
 
@@ -41,7 +40,6 @@ const AdminReportsManagement = () => {
   const [activeTab, setActiveTab] = useState("USER");
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   // Modal State
   const [detailModal, setDetailModal] = useState({
