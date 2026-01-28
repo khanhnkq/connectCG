@@ -155,7 +155,6 @@ export default function AdvancedMemberSearch() {
 
     return (
         <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden h-screen flex w-full">
-            <Sidebar />
 
             <div className="flex flex-1 overflow-hidden relative">
                 {/* Main Content: Search Results */}

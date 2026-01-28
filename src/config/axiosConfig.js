@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosClient = axios.create({
-    baseURL: 'https://refactored-palm-tree-pjpr554jxrqrcr49q-8080.app.github.dev/api', // Chỉnh lại để có thể gọi cả /v1/auth và /groups
+    baseURL: 'http://localhost:8080/api', // Chỉnh lại để có thể gọi cả /v1/auth và /groups
     headers: {
         'Content-Type': 'application/json',
     },
