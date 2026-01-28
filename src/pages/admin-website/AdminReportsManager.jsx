@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/layout-admin/AdminLayout";
 import reportService from "../../services/ReportService";
 import userService from "../../services/UserService";
@@ -36,6 +37,7 @@ const statusMap = {
 };
 
 const AdminReportsManagement = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("USER");
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -82,21 +84,59 @@ const AdminReportsManagement = () => {
     (r) => r.targetType === activeTab
   );
 
-  const activeCount = filteredReports.filter(
-    (r) => r.status !== "RESOLVED"
-  ).length;
+  // GROUP REPORTS BY TARGET ID
+  const groupedReports = Object.values(filteredReports.reduce((acc, report) => {
+    // Only group Pending/Under Review reports. Resolved ones might stay separate or also grouped?
+    // Let's group all non-resolved ones together to process them.
+    if (report.status === 'RESOLVED') return acc; // Or handle resolved separately? 
+    // Usually admin wants to see pending stuff grouped.
 
-  const handleShowDetail = async (report) => {
-    setDetailModal({ isOpen: true, report, targetData: null, loading: true });
+    // For this request, let's group everything by target, but maybe filter by status first?
+    // The previous code filtered by ACTIVE (non-resolved) for the count.
+
+    const key = `${report.targetType}_${report.targetId}`;
+
+    if (!acc[key]) {
+      acc[key] = {
+        id: `group_${report.targetId}`, // Fake ID for key
+        targetType: report.targetType,
+        targetId: report.targetId,
+        targetData: null, // Fetched later
+        reports: [],
+        reason: report.reason, // Show first reason as display
+        createdAt: report.createdAt,
+        reporterUsername: report.reporterUsername,
+        status: report.status
+      };
+    }
+
+    acc[key].reports.push(report);
+    // Keep latest date
+    if (new Date(report.createdAt) > new Date(acc[key].createdAt)) {
+      acc[key].createdAt = report.createdAt;
+    }
+
+    return acc;
+  }, {}));
+
+
+  const displayReports = [...groupedReports].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  const activeCount = displayReports.length;
+
+  const handleShowDetail = async (groupItem) => {
+    // groupItem has .reports array
+    setDetailModal({ isOpen: true, report: groupItem, targetData: null, loading: true });
     try {
       let data = null;
-      if (report.targetType === "USER") {
-        const res = await userService.getUserById(report.targetId);
+      if (groupItem.targetType === "USER") {
+        const res = await userService.getUserById(groupItem.targetId);
         data = res.data;
-      } else if (report.targetType === "GROUP") {
-        data = await findGroupById(report.targetId);
-      } else if (report.targetType === "POST") {
-        const res = await postService.getPostById(report.targetId);
+      } else if (groupItem.targetType === "GROUP") {
+        const res = await findGroupById(groupItem.targetId);
+        data = res; // GroupService returns data directly
+      } else if (groupItem.targetType === "POST") {
+        const res = await postService.getPostById(groupItem.targetId);
         data = res.data;
       }
       setDetailModal(prev => ({ ...prev, targetData: data, loading: false }));
@@ -111,12 +151,18 @@ const AdminReportsManagement = () => {
     setDetailModal({ isOpen: false, report: null, targetData: null, loading: false });
   };
 
-  // --- ACTIONS ---
 
-  const handleResolveReport = async (reportId) => {
+  const handleResolveReport = async (reportsOrId) => {
     try {
-      await reportService.updateReportStatus(reportId, "RESOLVED");
-      toast.success("Đã đánh dấu báo cáo là đã giải quyết");
+      if (Array.isArray(reportsOrId)) {
+        // Bulk resolve
+        await Promise.all(reportsOrId.map(r => reportService.updateReportStatus(r.id, "RESOLVED")));
+        toast.success(`Đã xử lý ${reportsOrId.length} báo cáo`);
+      } else {
+        // Single resolve
+        await reportService.updateReportStatus(reportsOrId, "RESOLVED");
+        toast.success("Đã đánh dấu báo cáo là đã giải quyết");
+      }
       fetchReports();
       closeDetailModal();
     } catch (error) {
@@ -124,33 +170,33 @@ const AdminReportsManagement = () => {
     }
   };
 
-  const onBanUser = async (userId, reportId) => {
+  const onBanUser = async (userId, reportsOrId) => {
     try {
       await userService.banUser(userId);
       toast.success(`Đã khóa tài khoản người dùng #${userId}`);
-      if (reportId) await handleResolveReport(reportId);
+      if (reportsOrId) await handleResolveReport(reportsOrId);
       else fetchReports();
     } catch (error) {
       toast.error("Lỗi khi khóa tài khoản");
     }
   };
 
-  const onDeleteGroup = async (groupId, reportId) => {
+  const onDeleteGroup = async (groupId, reportsOrId) => {
     try {
       await deleteGroup(groupId);
       toast.success(`Đã xóa/khóa nhóm #${groupId}`);
-      if (reportId) await handleResolveReport(reportId);
+      if (reportsOrId) await handleResolveReport(reportsOrId);
       else fetchReports();
     } catch (error) {
       toast.error("Lỗi khi xóa nhóm");
     }
   };
 
-  const onDeletePost = async (postId, reportId) => {
+  const onDeletePost = async (postId, reportsOrId) => {
     try {
       await postService.deletePost(postId);
       toast.success(`Đã xóa bài viết #${postId}`);
-      if (reportId) await handleResolveReport(reportId);
+      if (reportsOrId) await handleResolveReport(reportsOrId);
       else fetchReports();
     } catch (error) {
       toast.error("Lỗi khi xóa bài viết");
@@ -240,8 +286,8 @@ const AdminReportsManagement = () => {
               )}
 
               {!loading &&
-                filteredReports.map((r) => (
-                  <tr key={r.id} className="hover:bg-surface-dark/40 transition-colors">
+                displayReports.map((r) => (
+                  <tr key={`${r.targetType}_${r.targetId}`} className="hover:bg-surface-dark/40 transition-colors">
                     {/* TARGET */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -253,20 +299,38 @@ const AdminReportsManagement = () => {
                             {r.targetType} #{r.targetId}
                           </p>
                           <span className="text-[10px] text-text-muted uppercase tracking-wide">ID: {r.targetId}</span>
+                          {r.reports.length > 1 && (
+                            <span className="ml-2 px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full animate-pulse">
+                              +{r.reports.length} báo cáo
+                            </span>
+                          )}
                         </div>
                       </div>
                     </td>
 
                     {/* REPORTER */}
                     <td className="px-6 py-4 font-medium text-gray-300">
-                      {r.reporterUsername || "Ẩn danh"}
+                      {r.reports.length > 1 ? (
+                        <span className="italic text-text-muted">Nhiều người báo cáo</span>
+                      ) : (
+                        r.reporterUsername || "Ẩn danh"
+                      )}
                     </td>
 
                     {/* REASON */}
                     <td className="px-6 py-4">
-                      <span className="px-3 py-1 text-[11px] font-bold rounded-lg bg-surface-dark text-white border border-border-dark/50 shadow-sm inline-block max-w-[200px] truncate">
-                        {r.reason}
-                      </span>
+                      {r.reports.length > 1 ? (
+                        <div className="flex flex-col gap-1">
+                          <span className="px-3 py-1 text-[11px] font-bold rounded-lg bg-surface-dark text-white border border-border-dark/50 shadow-sm inline-block max-w-[200px] truncate">
+                            {r.reason}
+                          </span>
+                          <span className="text-[10px] text-text-muted">và {r.reports.length - 1} lý do khác...</span>
+                        </div>
+                      ) : (
+                        <span className="px-3 py-1 text-[11px] font-bold rounded-lg bg-surface-dark text-white border border-border-dark/50 shadow-sm inline-block max-w-[200px] truncate">
+                          {r.reason}
+                        </span>
+                      )}
                     </td>
 
                     {/* DATE */}
@@ -312,7 +376,7 @@ const AdminReportsManagement = () => {
                             {r.targetType === 'USER' && (
                               <button
                                 onClick={() => confirmAction(
-                                  () => onBanUser(r.targetId, r.id),
+                                  () => onBanUser(r.targetId, r.reports[0].id), // Just pass one report ID for now or need bulk resolve
                                   "Cấm người dùng?",
                                   `Bạn có chắc chắn muốn khóa tài khoản người dùng #${r.targetId}? Hành động này sẽ vô hiệu hóa quyền truy cập của họ.`
                                 )}
@@ -324,7 +388,7 @@ const AdminReportsManagement = () => {
                             {r.targetType === 'GROUP' && (
                               <button
                                 onClick={() => confirmAction(
-                                  () => onDeleteGroup(r.targetId, r.id),
+                                  () => onDeleteGroup(r.targetId, r.reports[0].id),
                                   "Xóa nhóm?",
                                   `Bạn có chắc chắn muốn xóa nhóm #${r.targetId}?`
                                 )}
@@ -336,7 +400,7 @@ const AdminReportsManagement = () => {
                             {r.targetType === 'POST' && (
                               <button
                                 onClick={() => confirmAction(
-                                  () => onDeletePost(r.targetId, r.id),
+                                  () => onDeletePost(r.targetId, r.reports[0].id),
                                   "Xóa bài viết?",
                                   `Bạn có chắc chắn muốn xóa bài viết #${r.targetId}?`
                                 )}
@@ -350,7 +414,8 @@ const AdminReportsManagement = () => {
                       </div>
                     </td>
                   </tr>
-                ))}
+                ))
+              }
             </tbody>
           </table>
         </div>
@@ -370,17 +435,31 @@ const AdminReportsManagement = () => {
 
               {/* Modal Body */}
               <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                {/* Reporter Section */}
+                {/* Reporter Section - UPDATED FOR AGGREGATION */}
                 <div className="bg-white/5 rounded-xl p-4 border border-white/5">
-                  <h4 className="text-xs font-black uppercase tracking-wider text-text-muted mb-3">Người báo cáo</h4>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-                      {detailModal.report.reporterUsername?.charAt(0).toUpperCase() || '?'}
-                    </div>
-                    <div>
-                      <p className="text-white font-bold">{detailModal.report.reporterUsername || 'Ẩn danh'}</p>
-                      <p className="text-xs text-text-muted">Lý do: <span className="text-primary">{detailModal.report.reason}</span></p>
-                    </div>
+                  <h4 className="text-xs font-black uppercase tracking-wider text-text-muted mb-3">
+                    Người báo cáo ({detailModal.report.reports?.length || 1})
+                  </h4>
+                  <div className="space-y-3 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                    {detailModal.report.reports?.map((r, index) => (
+                      <div key={index}
+                        className="flex items-center gap-3 pb-3 border-b border-white/5 last:border-0 last:pb-0 cursor-pointer hover:bg-white/5 p-2 rounded-lg transition-colors"
+                        onClick={() => r.reporterId ? navigate(`/dashboard/member/${r.reporterId}`) : toast.error("Không tìm thấy ID người báo cáo (Cần update Backend)")}
+                      >
+                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs shrink-0">
+                          {r.reporterUsername?.charAt(0).toUpperCase() || '?'}
+                        </div>
+                        <div>
+                          <p className="text-white font-bold text-sm hover:underline">{r.reporterUsername || 'Ẩn danh'}</p>
+                          <p className="text-xs text-text-muted">
+                            <span className="text-primary font-medium">{r.reason}</span>
+                            <span className="mx-1">•</span>
+                            {new Date(r.createdAt).toLocaleString('vi-VN')}
+                          </p>
+                        </div>
+                        <span className="ml-auto text-[10px] text-text-muted border border-white/10 px-2 py-1 rounded">Xem Profile</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -394,14 +473,15 @@ const AdminReportsManagement = () => {
                     <div className="space-y-4">
                       {/* RENDER BASED ON TYPE */}
                       {detailModal.report.targetType === 'USER' && (
-                        <div className="flex items-start gap-4">
+                        <div className="flex items-start gap-4 cursor-pointer hover:opacity-80 transition-opacity"
+                          onClick={() => navigate(`/dashboard/member/${detailModal.targetData.id}`)}>
                           <img
                             src={detailModal.targetData.avatarUrl || "https://via.placeholder.com/150"}
                             alt="Avatar"
                             className="w-16 h-16 rounded-xl object-cover bg-black/20"
                           />
                           <div>
-                            <p className="text-lg font-bold text-white">{detailModal.targetData.username || detailModal.targetData.fullName}</p>
+                            <p className="text-lg font-bold text-white hover:underline">{detailModal.targetData.username || detailModal.targetData.fullName}</p>
                             <p className="text-text-muted text-sm">{detailModal.targetData.email}</p>
                             <p className="text-text-muted text-sm mt-1">ID: {detailModal.targetData.id}</p>
                             <div className="mt-3 flex gap-2">
@@ -414,17 +494,39 @@ const AdminReportsManagement = () => {
                       )}
 
                       {detailModal.report.targetType === 'GROUP' && (
-                        <div className="flex items-start gap-4">
-                          <img
-                            src={detailModal.targetData.avatar || "https://via.placeholder.com/150"}
-                            alt="Group Cover"
-                            className="w-16 h-16 rounded-xl object-cover bg-black/20"
-                          />
-                          <div>
-                            <p className="text-lg font-bold text-white">{detailModal.targetData.name}</p>
-                            <p className="text-text-muted text-sm">{detailModal.targetData.description}</p>
-                            <p className="text-text-muted text-sm mt-1">Thành viên: {detailModal.targetData.memberCount || 0}</p>
+                        <div className="space-y-4">
+                          {/* Group Info */}
+                          <div className="flex items-start gap-4 cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={() => navigate(`/dashboard/groups/${detailModal.targetData.id}`)}>
+                            <img
+                              src={detailModal.targetData.avatar || "https://via.placeholder.com/150"}
+                              alt="Group Cover"
+                              className="w-16 h-16 rounded-xl object-cover bg-black/20"
+                            />
+                            <div>
+                              <p className="text-lg font-bold text-white hover:underline">{detailModal.targetData.name}</p>
+                              <p className="text-text-muted text-sm">{detailModal.targetData.description}</p>
+                              <p className="text-text-muted text-sm mt-1">Thành viên: {detailModal.targetData.memberCount || 0}</p>
+                            </div>
                           </div>
+
+                          {/* Group Owner Info */}
+                          {detailModal.targetData.ownerId && (
+                            <div className="p-3 rounded-lg bg-black/20 border border-white/5 cursor-pointer hover:bg-black/30 transition-colors"
+                              onClick={() => navigate(`/dashboard/member/${detailModal.targetData.ownerId}`)}>
+                              <p className="text-[10px] text-text-muted uppercase font-bold mb-2">Chủ sở hữu nhóm</p>
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 font-bold text-xs">
+                                  {detailModal.targetData.ownerName?.charAt(0) || 'O'}
+                                </div>
+                                <div>
+                                  <p className="text-sm font-bold text-white hover:underline">{detailModal.targetData.ownerFullName || detailModal.targetData.ownerName}</p>
+                                  <p className="text-xs text-text-muted">ID: {detailModal.targetData.ownerId}</p>
+                                </div>
+                                <span className="ml-auto text-[10px] text-indigo-400">Xem Profile</span>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
 
@@ -440,8 +542,13 @@ const AdminReportsManagement = () => {
                               alt="Post content"
                             />
                           )}
-                          <div className="mt-2 text-xs text-text-muted">
-                            Post ID: {detailModal.targetData.id} • Tác giả ID: {detailModal.targetData.userId}
+                          <div className="mt-2 text-xs text-text-muted flex gap-2">
+                            <span>Post ID: {detailModal.targetData.id}</span>
+                            <span>•</span>
+                            <span className="cursor-pointer hover:text-white hover:underline"
+                              onClick={() => navigate(`/dashboard/member/${detailModal.targetData.userId}`)}>
+                              Tác giả ID: {detailModal.targetData.userId} (Xem Profile)
+                            </span>
                           </div>
                         </div>
                       )}
@@ -464,20 +571,20 @@ const AdminReportsManagement = () => {
                   <div className="bg-blue-500/5 rounded-xl p-4 border border-blue-500/10 flex items-center justify-between">
                     <div>
                       <p className="text-white font-bold text-sm">Hành động nhanh</p>
-                      <p className="text-xs text-text-muted">Xử lý báo cáo này ngay lập tức</p>
+                      <p className="text-xs text-text-muted">Xử lý {detailModal.report.reports?.length} báo cáo này ngay lập tức</p>
                     </div>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => handleResolveReport(detailModal.report.id)}
+                        onClick={() => handleResolveReport(detailModal.report.reports)}
                         className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-xs font-bold rounded-lg border border-white/10 transition-all"
                       >
-                        Bỏ qua (Đóng Report)
+                        Bỏ qua (Đóng tất cả)
                       </button>
 
                       {detailModal.report.targetType === 'USER' && (
                         <button
                           onClick={() => confirmAction(
-                            () => onBanUser(detailModal.report.targetId, detailModal.report.id),
+                            () => onBanUser(detailModal.report.targetId, detailModal.report.reports),
                             "Khóa tài khoản",
                             "Xác nhận khóa tài khoản người dùng này?"
                           )}
@@ -490,7 +597,7 @@ const AdminReportsManagement = () => {
                       {detailModal.report.targetType === 'POST' && (
                         <button
                           onClick={() => confirmAction(
-                            () => onDeletePost(detailModal.report.targetId, detailModal.report.id),
+                            () => onDeletePost(detailModal.report.targetId, detailModal.report.reports),
                             "Xóa bài viết",
                             "Xác nhận xóa bài viết này?"
                           )}
@@ -503,7 +610,7 @@ const AdminReportsManagement = () => {
                       {detailModal.report.targetType === 'GROUP' && (
                         <button
                           onClick={() => confirmAction(
-                            () => onDeleteGroup(detailModal.report.targetId, detailModal.report.id),
+                            () => onDeleteGroup(detailModal.report.targetId, detailModal.report.reports),
                             "Xóa nhóm",
                             "Xác nhận xóa nhóm này?"
                           )}
