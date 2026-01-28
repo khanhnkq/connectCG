@@ -467,11 +467,11 @@ export default function Step2() {
 
                         <div className="mt-8 text-center">
                             <Link
-                                to="/registration/step-1"
+                                to="/login"
                                 className="text-sm text-text-secondary hover:text-white transition-colors flex items-center justify-center gap-1"
                             >
                                 <span className="material-symbols-outlined text-sm">arrow_back</span>
-                                Quay lại Bước 1
+                                Quay lại 
                             </Link>
                         </div>
                     </div>
