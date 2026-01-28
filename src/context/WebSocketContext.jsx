@@ -21,7 +21,8 @@ export const WebSocketProvider = ({ children }) => {
             webSocketFactory: () => {
                 let url = import.meta.env.VITE_WS_URL;
                 // Fix Mixed Content: Automatically switch to https (wss) if running on https
-                if (window.location.protocol === 'https:' && url.startsWith('http:')) {
+                // But do NOT upgrade for localhost as it usually doesn't support SSL locally
+                if (window.location.protocol === 'https:' && url.startsWith('http:') && !url.includes('localhost')) {
                     url = url.replace('http:', 'https:');
                 }
                 return new SockJS(url);
