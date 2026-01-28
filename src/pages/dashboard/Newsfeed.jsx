@@ -17,8 +17,16 @@ import { setNotifications } from '../../redux/slices/notificationSlice';
 import RightSidebar from '../../components/layout/RightSidebar';
 import PostComposer from '../../components/feed/PostComposer';
 import PostCard from '../../components/feed/PostCard';
+import postService from '../../services/PostService';
+import toast from 'react-hot-toast';
 
 export default function Newsfeed() {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
   const [showNotifications, setShowNotifications] = useState(false);
 
 
@@ -49,6 +57,32 @@ export default function Newsfeed() {
     }
   }
 
+  const fetchPosts = async () => {
+    try {
+      setLoading(true);
+      const response = await postService.getPublicHomepagePosts();
+      setPosts(response.data);
+    } catch (error) {
+      console.error("Error fetching newsfeed:", error);
+      toast.error("Failed to load newsfeed posts");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePostCreated = (newPost) => {
+    // only add if approved (AI check result)
+    if (newPost.status === 'APPROVED') {
+      setPosts(prevPosts => [newPost, ...prevPosts]);
+    }
+  };
+
+  // Helper to format time (placeholder for now, can use date-fns/dayjs later)
+  const formatTime = (timestamp) => {
+    if (!timestamp) return 'Just now';
+    const date = new Date(timestamp);
+    return date.toLocaleString();
+  };
 
   return (
 
@@ -90,26 +124,36 @@ export default function Newsfeed() {
           </header>
 
           <div className="flex flex-col gap-6">
-            <PostComposer userAvatar="https://lh3.googleusercontent.com/aida-public/AB6AXuAUO2YNLAxc1Nl_nCWaGx0Dwt8BIkrV0WsFtsI9ePfpuH2QDYaR2IL1U-BCix40iXmHOlV6rzlHb2YzzlKUEpD183YkjDBCAQtHPFoSaXz638Vjta7H-NlTtKESwQOh_CcHQs-rhd6cbbiyxlQVatQS90HHg710X2WFSTAS7LkytHfywWdbhdy-IVBZk0wtKYnjblM6Vy6IA3R_7kOjPY04ZFIVnhosSED60xtTRmy2ylVAGG80CffMYIEPaZ6iQHq6uonwSSfKBJw" />
-
-            <PostCard
-              id={101}
-              author={{ name: 'Sarah Jenkins', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBuHYpNqBoJZ6H3wxyG6OtCnMMVU4FTUngw6LYZy4SgjA0mY2sYsDcePdMS10ev3_M8tw950TFDzIey60zy_0YaYchnCYNkI1EFXtTTC7THk5zGBor8yBtMr-aAf8sbShLZVQv8CQzSm5kNH7EvWmKXyi1RIv1DxZa3HFHT34tseJeUcKe6h6lFC6Ar26xYdz8DghOGsPL3pKr3Sb5Jj3_uULvl0M_QzCz6myNZnocquEnyZkGrndeht0XMB4Yrsu9Is2B6nJ3Mi9M' }}
-              time="2 giờ trước"
-              content="Thực sự thích không khí tại quán cà phê mới này! ☕️ Cà phê tuyệt vời và không gian thật hoàn hảo để làm việc. Rất khuyến khích các bạn ghé thử nếu có dịp ở gần đây!"
-              image="https://lh3.googleusercontent.com/aida-public/AB6AXuB5H7LQP89_ZyvOx7F5cl1FYMVnX-MFWL-CyfK4ZXJL_PYJnCoIl8ZQfS6hcPUIg20U2Y9NtA0u6tEvMAtdbXX7OuYPnlq15Bo-FQ6Swbqb-iVM7pLDFoVMpMpC9jeXWPszg-3mORsIVFncUTgYkKHk_zDbiqZFQ9R_O4k5tzf_rbG6LXkhpDkHpj_eZ83CRu03Xlyf_iE1svoJcndPrSOAOuGERcRUJQoJiNv5XFwlwZ8uSty1MtJOsSHs3Y2RbmyrHtxPayn-WcA"
-              stats={{ likes: 24, comments: 4, shares: 1 }}
-              type="feed"
+            <PostComposer
+              userAvatar="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+              onPostCreated={handlePostCreated}
             />
 
-            <PostCard
-              id={102}
-              author={{ name: 'David Kim', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCfCl1X2bsOD2anKofpFDzckD9z_a3CDOQqg1A1-nnzE0ALZhx8h2sNsn_PdV7-P6oEpg0XRttDsHUQJwA2Aa3MdUW6FIzwdzYDOxxjZFF7_x9QBl_cJ0NvpSwm_LFGlB5Yi4n9ksqFEjuIaIuQTyLOghyL8b2P7JdZiE9YN9aMocc7VfC_uvu-UaLuLtbGD9_5Kropk3H3Na2Of1n_kfzDW9PvINieVznAqTbyDeohff0qGU0J5IQTasq56bubbiAsxjbHlaBRaZ4' }}
-              time="5 giờ trước"
-              content="Vừa hoàn thành đường chạy 10k! 🏃‍♂️ Cảm thấy vừa thành tựu vừa kiệt sức. Tập luyện cho marathon thật gian nan nhưng rất đáng giá."
-              stats={{ likes: 156, comments: 23, shares: 0 }}
-              type="feed"
-            />
+            {loading ? (
+              <div className="text-center py-10 text-text-secondary">Loading feed...</div>
+            ) : posts.length === 0 ? (
+              <div className="text-center py-10 text-text-secondary">No posts to show yet.</div>
+            ) : (
+              posts.map((post) => (
+                <PostCard
+                  key={post.id}
+                  id={post.id}
+                  author={{
+                    name: post.author?.username || 'Anonymous',
+                    avatar: 'https://cdn-icons-png.flaticon.com/512/149/149071.png'
+                  }}
+                  time={formatTime(post.createdAt)}
+                  content={post.content}
+                  image={null} // TODO: Implement media handling if needed
+                  stats={{
+                    likes: post.reactCount || 0,
+                    comments: post.commentCount || 0,
+                    shares: post.shareCount || 0
+                  }}
+                  type="feed"
+                />
+              ))
+            )}
           </div>
         </div>
       </div>

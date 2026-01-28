@@ -1,5 +1,4 @@
 import { Link, useNavigate } from 'react-router-dom';
-
 import React, { useEffect, useState } from 'react';
 import { findMyGroups, findDiscoverGroups, findPendingInvitations, acceptInvitation, declineInvitation, searchGroups, joinGroup } from '../../services/groups/GroupService';
 import toast from 'react-hot-toast';
@@ -9,7 +8,6 @@ export default function GroupsManagement() {
     const [yourGroups, setYourGroups] = useState([]);
     const [discoverGroups, setDiscoverGroups] = useState([]);
     const [pendingInvitations, setPendingInvitations] = useState([]);
-    const [searchResults, setSearchResults] = useState(null); // null means not searching
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('my'); // 'my', 'discover', 'invites'
     const [searchQuery, setSearchQuery] = useState('');
@@ -36,20 +34,8 @@ export default function GroupsManagement() {
         fetchInitialData();
     }, []);
 
-    const handleSearch = async (e) => {
-        const query = e.target.value;
-        setSearchQuery(query);
-
-        if (query.trim().length > 0) {
-            try {
-                const results = await searchGroups(query);
-                setSearchResults(results);
-            } catch (error) {
-                console.error("Search failed:", error);
-            }
-        } else {
-            setSearchResults(null);
-        }
+    const handleSearch = (e) => {
+        setSearchQuery(e.target.value);
     };
 
     const handleAcceptInvite = async (groupId) => {
@@ -272,16 +258,22 @@ export default function GroupsManagement() {
         );
     }
 
-    const displayedGroups = searchResults !== null
-        ? searchResults
-        : activeTab === 'my'
-            ? yourGroups
-            : activeTab === 'discover'
-                ? discoverGroups
-                : pendingInvitations;
+    const filteredGroups = (groups) => {
+        if (!searchQuery.trim()) return groups;
+        const query = searchQuery.toLowerCase();
+        return groups.filter(g =>
+            g.name?.toLowerCase().includes(query) ||
+            g.description?.toLowerCase().includes(query)
+        );
+    };
+
+    const displayedGroups = activeTab === 'my'
+        ? filteredGroups(yourGroups)
+        : activeTab === 'discover'
+            ? filteredGroups(discoverGroups)
+            : filteredGroups(pendingInvitations);
 
     return (
-
         <div className="max-w-7xl mx-auto w-full pb-20">
             {/* Header */}
             <div className="sticky top-0 z-30 bg-background-dark/95 backdrop-blur-xl border-b border-[#342418] p-4 flex justify-between items-center px-8">
@@ -295,10 +287,9 @@ export default function GroupsManagement() {
                                 key={tab}
                                 onClick={() => {
                                     setActiveTab(tab);
-                                    setSearchResults(null);
                                     setSearchQuery('');
                                 }}
-                                className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all relative ${activeTab === tab && searchResults === null
+                                className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all relative ${activeTab === tab
                                     ? 'bg-primary text-[#231810] shadow-lg'
                                     : 'text-text-secondary hover:text-white'
                                     }`}
@@ -327,7 +318,11 @@ export default function GroupsManagement() {
                             value={searchQuery}
                             onChange={handleSearch}
                             className="block w-full pl-11 pr-4 py-2.5 border border-[#3e2b1d] rounded-2xl bg-[#1a120b] text-white placeholder-text-secondary/50 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all text-xs font-medium"
-                            placeholder="Tìm kiếm bộ lạc của bạn..."
+                            placeholder={
+                                activeTab === 'my' ? "Tìm kiếm nhóm của bạn..." :
+                                    activeTab === 'discover' ? "Khám phá nhóm mới..." :
+                                        "Tìm lời mời..."
+                            }
                         />
                     </div>
                     <Link
@@ -341,11 +336,11 @@ export default function GroupsManagement() {
             </div>
 
             <div className="px-8 py-10">
-                {searchResults !== null && (
+                {searchQuery.trim() !== '' && (
                     <div className="mb-8">
                         <h3 className="text-sm font-black text-primary uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                             <span className="material-symbols-outlined text-base">search_check</span>
-                            Kết quả tìm kiếm cho "{searchQuery}" ({searchResults.length})
+                            Tìm thấy {displayedGroups.length} nhóm {activeTab === 'my' ? 'của bạn' : 'để khám phá'} cho "{searchQuery}"
                         </h3>
                     </div>
                 )}
@@ -358,9 +353,9 @@ export default function GroupsManagement() {
                     <div className="flex flex-col items-center justify-center py-24 bg-card-dark/30 rounded-[3rem] border border-dashed border-[#3e2b1d]">
                         <span className="material-symbols-outlined text-6xl text-text-muted mb-4 opacity-20">groups_3</span>
                         <p className="text-text-secondary font-medium">Không tìm thấy nhóm nào phù hợp.</p>
-                        {searchResults !== null && (
+                        {searchQuery.trim() !== '' && (
                             <button
-                                onClick={() => { setSearchResults(null); setSearchQuery(''); }}
+                                onClick={() => setSearchQuery('')}
                                 className="mt-4 text-primary text-xs font-black uppercase tracking-widest hover:underline"
                             >
                                 Xóa tìm kiếm

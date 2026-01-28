@@ -7,11 +7,17 @@ const postService = {
     deletePost(id) {
         return axiosClient.delete(`/posts/${id}`);
     },
-    getHomepagePosts() {
-        return axiosClient.get('/admin/posts/homepage');
+    getPendingHomepagePosts() {
+        return axiosClient.get('/posts/admin/pending');
     },
-    checkPostWithAI(postId) {
-        return axiosClient.post(`/admin/posts/${postId}/check-ai`);
+    getAuditHomepagePosts() {
+        return axiosClient.get('/posts/admin/audit');
+    },
+    getPublicHomepagePosts() {
+        return axiosClient.get('/posts/public/homepage');
+    },
+    approvePost(postId) {
+        return axiosClient.post(`/posts/${postId}/approve`);
     }
 };
 
