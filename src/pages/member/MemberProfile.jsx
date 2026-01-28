@@ -11,6 +11,7 @@ import ProfilePhotos from '../../components/profile/ProfilePhotos';
 import ProfileHobbies from '../../components/profile/ProfileHobbies';
 import ProfileFriends from '../../components/profile/ProfileFriends';
 import ReportModal from '../../components/report/ReportModal';
+import ConfirmModal from '../../components/admin/ConfirmModal';
 import reportService from '../../services/ReportService';
 import toast from 'react-hot-toast';
 
@@ -22,6 +23,7 @@ export default function MemberProfile() {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('timeline'); // timeline, about, photos, hobbies, friends
     const [showReportModal, setShowReportModal] = useState(false);
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: null }); // type: 'UNFRIEND' | 'CANCEL_REQUEST'
 
     const handleStartChat = async () => {
         const tid = toast.loading("Đang mở cuộc trò chuyện...");
@@ -53,11 +55,21 @@ export default function MemberProfile() {
             fetchMemberProfile();
         }
     }, [id]);
-    const handleUnfriend = async () => {
-        if (window.confirm(`Bạn có chắc muốn hủy kết bạn với ${profile.fullName}?`)) {
+    const confirmUnfriend = () => {
+        setConfirmModal({ isOpen: true, type: 'UNFRIEND' });
+    };
+
+    const confirmCancelRequest = () => {
+        setConfirmModal({ isOpen: true, type: 'CANCEL_REQUEST' });
+    };
+
+    const handleConfirmAction = async () => {
+        const type = confirmModal.type;
+        setConfirmModal({ isOpen: false, type: null });
+
+        if (type === 'UNFRIEND') {
             try {
                 await FriendService.unfriend(profile.userId);
-                // Cập nhật state UI
                 setProfile(prev => ({
                     ...prev,
                     relationshipStatus: 'NONE',
@@ -67,6 +79,18 @@ export default function MemberProfile() {
             } catch (error) {
                 console.error("Lỗi khi hủy kết bạn:", error);
                 toast.error("Có lỗi xảy ra, vui lòng thử lại.");
+            }
+        } else if (type === 'CANCEL_REQUEST') {
+            const toastId = toast.loading("Đang hủy lời mời...");
+            try {
+                await FriendRequestService.cancelRequest(profile.userId);
+                setProfile(prev => ({
+                    ...prev,
+                    relationshipStatus: 'STRANGER'
+                }));
+                toast.success("Đã hủy lời mời kết bạn", { id: toastId });
+            } catch (error) {
+                toast.error("Không thể hủy lời mời", { id: toastId });
             }
         }
     };
@@ -147,7 +171,7 @@ export default function MemberProfile() {
                                 <div className="flex gap-3 mb-4 w-full md:w-auto">
                                     {profile.relationshipStatus === 'FRIEND' ? (
                                         <button
-                                            onClick={handleUnfriend}
+                                            onClick={confirmUnfriend}
                                             className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#493222] text-primary border border-primary/30 font-bold px-6 py-3 rounded-xl transition-all hover:bg-red-900/30 hover:text-red-500 hover:border-red-500/50"
                                             title="Click để hủy kết bạn"
                                         >
@@ -156,8 +180,8 @@ export default function MemberProfile() {
                                         </button>
                                     ) : profile.relationshipStatus === 'PENDING' ? (
                                         <button
-                                            disabled
-                                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#493222] text-text-secondary border border-primary/30 font-bold px-6 py-3 rounded-xl transition-all opacity-80 cursor-not-allowed"
+                                            onClick={confirmCancelRequest}
+                                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#493222] text-text-secondary border border-primary/30 font-bold px-6 py-3 rounded-xl transition-all hover:bg-red-900/30 hover:text-red-500 hover:border-red-500/50"
                                         >
                                             <span className="material-symbols-outlined text-[20px]">mark_email_read</span>
                                             Đã gửi lời mời
@@ -334,6 +358,18 @@ export default function MemberProfile() {
                     avatar: profile?.currentAvatarUrl,
                     name: profile?.fullName
                 }}
+            />
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ isOpen: false, type: null })}
+                onConfirm={handleConfirmAction}
+                title={confirmModal.type === 'UNFRIEND' ? "Hủy kết bạn" : "Hủy lời mời kết bạn"}
+                message={confirmModal.type === 'UNFRIEND'
+                    ? `Bạn có chắc muốn hủy kết bạn với ${profile?.fullName}?`
+                    : "Bạn có chắc chắn muốn hủy lời mời kết bạn này?"}
+                type="danger"
+                confirmText={confirmModal.type === 'UNFRIEND' ? "Hủy kết bạn" : "Hủy lời mời"}
+                cancelText="Đóng"
             />
         </div>
 
