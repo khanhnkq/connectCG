@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import Sidebar from '../../components/layout/Sidebar.jsx';
+
 import UserProfileService from '../../services/user/UserProfileService';
 import ProfileAbout from '../../components/profile/ProfileAbout';
 import ProfilePhotos from '../../components/profile/ProfilePhotos';
@@ -58,11 +58,7 @@ export default function MemberProfile() {
     }
 
     return (
-        <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden h-screen flex w-full">
-            <Sidebar />
-
-            <main className="flex-1 h-full overflow-y-auto relative scroll-smooth bg-background-dark">
-                <div className="w-full mx-auto pb-20">
+        <div className="w-full mx-auto pb-20">
                     {/* Header/Cover */}
                     <div className="bg-[#342418] border-b border-[#3e2b1d]">
                         <div className="w-full max-w-6xl mx-auto">
@@ -221,7 +217,6 @@ export default function MemberProfile() {
                         </div>
                     </div>
                 </div>
-            </main>
-        </div>
+
     );
 }

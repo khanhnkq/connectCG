@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import Sidebar from '../../components/layout/Sidebar.jsx';
+
 import toast from 'react-hot-toast';
 import CityService from '../../services/CityService';
 import FriendService from '../../services/friend/FriendService';
@@ -94,12 +94,9 @@ export default function FriendsSearch() {
     };
 
     return (
-        <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden h-screen flex w-full">
-            <Sidebar />
-
-            <div className="flex flex-1 overflow-hidden relative">
-                {/* Main Content: Friends List */}
-                <main className="flex-1 overflow-y-auto bg-background-dark p-4 md:p-8 custom-scrollbar">
+        <div className="flex flex-1 overflow-hidden relative w-full h-full">
+            {/* Main Content: Friends List */}
+            <div className="flex-1 overflow-y-auto bg-background-dark p-4 md:p-8 custom-scrollbar">
                     <div className="max-w-[1600px] mx-auto">
                         {/* Header */}
                         <div className="mb-6">
@@ -209,7 +206,7 @@ export default function FriendsSearch() {
                             </div>
                         )}
                     </div>
-                </main>
+                </div>
 
                 {/* Search Filters Sidebar */}
                 <aside className="w-full md:w-[320px] lg:w-[340px] flex flex-col border-l border-[#342418] bg-[#221710] z-10 overflow-y-auto custom-scrollbar flex-none hidden md:flex">
@@ -293,6 +290,6 @@ export default function FriendsSearch() {
                     </div>
                 </aside>
             </div>
-        </div>
+
     );
 }

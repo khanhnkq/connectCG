@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import toast from 'react-hot-toast';
-import Sidebar from '../../components/layout/Sidebar';
+
 import { uploadGroupCover } from '../../utils/uploadImage';
 import { findById, updateGroup, deleteGroup } from '../../services/groups/GroupService';
 import DeleteGroupModal from '../../components/groups/DeleteGroupModal';
@@ -104,10 +104,7 @@ export default function EditGroupPage() {
     }
 
     return (
-        <div className="bg-background-light dark:bg-background-dark text-white font-display overflow-hidden h-screen flex w-full">
-            <Sidebar />
-
-            <main className="flex-1 h-full overflow-y-auto relative scroll-smooth bg-background-dark">
+        <div className="w-full h-full overflow-y-auto relative scroll-smooth bg-background-dark">
                 {/* Visual Background Decorations - Dark Theme */}
                 <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-primary/10 blur-[120px] rounded-full pointer-events-none animate-pulse" />
                 <div className="absolute bottom-[5%] left-[-5%] w-[400px] h-[400px] bg-orange-600/5 blur-[100px] rounded-full pointer-events-none" />
@@ -315,7 +312,7 @@ export default function EditGroupPage() {
                         }}
                     />
                 </div>
-            </main>
         </div>
     );
+
 }
