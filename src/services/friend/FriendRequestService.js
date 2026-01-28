@@ -34,6 +34,14 @@ const FriendRequestService = {
      */
     sendRequest: (receiverId) => {
         return axiosClient.post(`/v1/friend-requests/send/${receiverId}`);
+    },
+
+    /**
+     * Hủy lời mời kết bạn đã gửi
+     * @param {number} receiverId 
+     */
+    cancelRequest: (receiverId) => {
+        return axiosClient.delete(`/v1/friend-requests/cancel/${receiverId}`);
     }
 };
 

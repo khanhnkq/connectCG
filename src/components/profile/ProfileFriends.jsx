@@ -1,11 +1,58 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FriendService from '../../services/friend/FriendService';
+import FriendRequestService from '../../services/friend/FriendRequestService';
+import ConfirmModal from '../admin/ConfirmModal';
+import toast from 'react-hot-toast';
 
 const ProfileFriends = ({ profile, isOwner }) => {
     const navigate = useNavigate();
     const [friends, setFriends] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: null, friend: null });
+
+    const confirmUnfriend = (friend) => {
+        setConfirmModal({ isOpen: true, type: 'UNFRIEND', friend });
+    };
+
+    const confirmCancelRequest = (friend) => {
+        setConfirmModal({ isOpen: true, type: 'CANCEL_REQUEST', friend });
+    };
+
+    const handleConfirmAction = async () => {
+        const { type, friend } = confirmModal;
+        setConfirmModal({ isOpen: false, type: null, friend: null });
+
+        if (!friend) return;
+
+        if (type === 'UNFRIEND') {
+            try {
+                await FriendService.unfriend(friend.id);
+                setFriends(prev => prev.map(f => f.id === friend.id ? { ...f, relationshipStatus: 'stranger' } : f));
+                toast.success(`Đã hủy kết bạn với ${friend.fullName}`);
+            } catch (error) {
+                toast.error("Lỗi khi hủy kết bạn");
+            }
+        } else if (type === 'CANCEL_REQUEST') {
+            try {
+                await FriendRequestService.cancelRequest(friend.id);
+                setFriends(prev => prev.map(f => f.id === friend.id ? { ...f, relationshipStatus: 'stranger' } : f));
+                toast.success("Đã hủy lời mời kết bạn");
+            } catch (error) {
+                toast.error("Không thể hủy lời mời");
+            }
+        }
+    };
+
+    const handleSendFriendRequest = async (friendId) => {
+        try {
+            await FriendRequestService.sendRequest(friendId);
+            setFriends(prev => prev.map(f => f.id === friendId ? { ...f, relationshipStatus: 'PENDING' } : f));
+            toast.success("Đã gửi lời mời kết bạn!");
+        } catch (error) {
+            toast.error("Không thể gửi lời mời.");
+        }
+    };
 
     useEffect(() => {
         if (profile?.userId) {
@@ -58,13 +105,43 @@ const ProfileFriends = ({ profile, isOwner }) => {
                                 <p className="text-text-secondary text-xs truncate">@{friend.username}</p>
                                 <p className="text-text-secondary/60 text-[10px] mt-1 italic">{friend.occupation || 'Chưa cập nhật nghề nghiệp'}</p>
                             </div>
-                            <button
-                                onClick={() => navigate(`/dashboard/member/${friend.id}`)}
-                                className="bg-primary/10 hover:bg-primary text-primary hover:text-[#231810] p-2.5 rounded-xl transition-all"
-                                title="Xem hồ sơ"
-                            >
-                                <span className="material-symbols-outlined text-[20px]">visibility</span>
-                            </button>
+                            <div className="flex flex-col gap-1 items-end">
+                                <button
+                                    onClick={() => navigate(`/dashboard/member/${friend.id}`)}
+                                    className={`bg-primary/10 hover:bg-primary text-primary hover:text-[#231810] p-2 rounded-lg transition-all ${friend.relationshipStatus === 'SELF' ? 'hidden' : ''}`}
+                                    title="Xem hồ sơ"
+                                >
+                                    <span className="material-symbols-outlined text-[18px]">visibility</span>
+                                </button>
+                                {friend.relationshipStatus === 'SELF' && (
+                                    <span className="text-primary font-bold text-sm bg-primary/10 px-3 py-2 rounded-lg pointer-events-none select-none">Bạn</span>
+                                )}
+                                {friend.relationshipStatus === 'FRIEND' ? (
+                                    <button
+                                        onClick={() => confirmUnfriend(friend)}
+                                        className="bg-[#342418] hover:bg-red-500/20 text-text-secondary hover:text-red-500 p-2 rounded-lg transition-all"
+                                        title="Hủy kết bạn"
+                                    >
+                                        <span className="material-symbols-outlined text-[18px]">person_remove</span>
+                                    </button>
+                                ) : friend.relationshipStatus === 'PENDING' ? (
+                                    <button
+                                        onClick={() => confirmCancelRequest(friend)}
+                                        className="bg-[#342418] hover:bg-red-500/20 text-text-secondary hover:text-red-500 p-2 rounded-lg transition-all"
+                                        title="Hủy lời mời"
+                                    >
+                                        <span className="material-symbols-outlined text-[18px]">mark_email_read</span>
+                                    </button>
+                                ) : friend.relationshipStatus === 'SELF' ? null : (
+                                    <button
+                                        onClick={() => handleSendFriendRequest(friend.id)}
+                                        className="bg-[#342418] hover:bg-primary text-text-secondary hover:text-[#231810] p-2 rounded-lg transition-all"
+                                        title="Kết bạn"
+                                    >
+                                        <span className="material-symbols-outlined text-[18px]">person_add</span>
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -84,6 +161,19 @@ const ProfileFriends = ({ profile, isOwner }) => {
                     )}
                 </div>
             )}
+
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ isOpen: false, type: null, friend: null })}
+                onConfirm={handleConfirmAction}
+                title={confirmModal.type === 'UNFRIEND' ? "Hủy kết bạn" : "Hủy lời mời kết bạn"}
+                message={confirmModal.type === 'UNFRIEND'
+                    ? `Bạn có chắc muốn hủy kết bạn với ${confirmModal.friend?.fullName}?`
+                    : "Bạn có chắc chắn muốn hủy lời mời kết bạn này?"}
+                type="danger"
+                confirmText={confirmModal.type === 'UNFRIEND' ? "Hủy kết bạn" : "Hủy lời mời"}
+                cancelText="Đóng"
+            />
         </div>
     );
 };
