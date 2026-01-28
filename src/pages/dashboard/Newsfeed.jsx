@@ -156,7 +156,7 @@ export default function Newsfeed() {
             )}
           </div>
         </div>
-      </main>
+      </div>
 
       <RightSidebar />
     </div>
