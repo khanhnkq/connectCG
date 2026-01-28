@@ -21,6 +21,10 @@ const ChatService = {
 
     updateAvatar: async (roomId, url) => {
         return axiosClient.put(`/chat/${roomId}/avatar`, { url });
+    },
+
+    inviteMembers: async (roomId, userIds) => {
+        return axiosClient.post(`/chat/${roomId}/invite`, { userIds });
     }
 };
 
