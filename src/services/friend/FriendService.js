@@ -27,7 +27,8 @@ const FriendService = {
      */
     unfriend: (friendId) => {
         return axiosClient.delete(`/v1/friends/${friendId}`);
-    }
+    },
+
 };
 
 export default FriendService;
