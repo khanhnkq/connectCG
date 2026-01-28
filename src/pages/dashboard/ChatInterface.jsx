@@ -229,7 +229,8 @@ export default function ChatInterface() {
         <>
             <div className="h-full w-full flex overflow-hidden bg-chat-bg relative">
                 {/* Conversations List */}
-                <div className="w-full md:w-80 lg:w-96 flex flex-col border-r border-[#3A2A20] bg-background-dark z-10 shrink-0">
+                {/* Conversations List */}
+                <div className={`${activeRoom ? 'hidden md:flex' : 'flex'} w-full md:w-80 lg:w-96 flex-col border-r border-[#3A2A20] bg-background-dark z-10 shrink-0`}>
                     <div className="p-5 border-b border-[#3A2A20] flex justify-between items-center bg-background-dark/95 backdrop-blur-md sticky top-0 z-10">
                         <h2 className="text-xl font-extrabold text-white tracking-tight">Messages</h2>
                         <button
@@ -277,11 +278,15 @@ export default function ChatInterface() {
                 </div>
 
                 {/* Chat Area */}
-                <div className="hidden md:flex flex-1 flex-col bg-chat-bg relative">
+                {/* Chat Area */}
+                <div className={`${activeRoom ? 'flex' : 'hidden'} md:flex flex-1 flex-col bg-chat-bg relative`}>
                     {activeRoom ? (
                         <>
                             <div className="h-20 px-6 border-b border-[#3A2A20] flex justify-between items-center bg-[#1A120B]/90 backdrop-blur-md z-10 shadow-sm">
                                 <div className="flex items-center gap-4">
+                                    <button onClick={() => setActiveRoom(null)} className="md:hidden text-text-secondary hover:text-white">
+                                        <span className="material-symbols-outlined">arrow_back</span>
+                                    </button>
                                     <div className="relative">
                                         <div className="size-10 rounded-full bg-cover bg-center ring-2 ring-[#3A2A20]" style={{ backgroundImage: `url("${activeRoom.avatarUrl || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}")` }}></div>
                                     </div>

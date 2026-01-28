@@ -276,8 +276,9 @@ export default function GroupsManagement() {
     return (
         <div className="max-w-7xl mx-auto w-full pb-20">
             {/* Header */}
-            <div className="sticky top-0 z-30 bg-background-dark/95 backdrop-blur-xl border-b border-[#342418] p-4 flex justify-between items-center px-8">
-                <div className="flex items-center gap-8">
+            {/* Header */}
+            <div className="sticky top-0 z-50 bg-background-dark/95 backdrop-blur-xl border-b border-[#342418] p-4 flex flex-col md:flex-row justify-between items-center px-4 md:px-8 gap-4 md:gap-0">
+                <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 w-full md:w-auto">
                     <h2 className="text-2xl font-extrabold text-white tracking-tight">Community Hub</h2>
 
                     {/* Tabs */}
@@ -308,8 +309,8 @@ export default function GroupsManagement() {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <div className="relative w-80 group">
+                <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+                    <div className="relative w-full md:w-80 group">
                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-text-secondary group-focus-within:text-primary transition-colors">
                             <span className="material-symbols-outlined text-lg">search</span>
                         </div>
@@ -335,7 +336,9 @@ export default function GroupsManagement() {
                 </div>
             </div>
 
-            <div className="px-8 py-10">
+
+
+            <div className="px-4 md:px-8 py-6 md:py-10">
                 {searchQuery.trim() !== '' && (
                     <div className="mb-8">
                         <h3 className="text-sm font-black text-primary uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
