@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/layout-admin/AdminLayout";
 import reportService from "../../services/ReportService";
-import userService from "../../services/UserService";
+import UserProfileService from "../../services/user/UserProfileService";
+import { lockUser } from "../../services/admin/AdminUserService";
 import postService from "../../services/PostService";
 import { findById as findGroupById, deleteGroup } from "../../services/groups/GroupService";
 import toast from "react-hot-toast";
@@ -39,6 +40,20 @@ const AdminReportsManagement = () => {
   const [activeTab, setActiveTab] = useState("USER");
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState(null);
+
+  useEffect(() => {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        setCurrentUserId(Number(user.id));
+        console.log("Current Admin ID:", Number(user.id));
+      } catch (e) {
+        console.error("Failed to parse user from localStorage", e);
+      }
+    }
+  }, []);
 
   // Modal State
   const [detailModal, setDetailModal] = useState({
@@ -88,26 +103,30 @@ const AdminReportsManagement = () => {
     // For this request, let's group everything by target, but maybe filter by status first?
     // The previous code filtered by ACTIVE (non-resolved) for the count.
 
-    const key = `${report.targetType}_${report.targetId}`;
+    const tType = report.targetType || report.target_type;
+    const tId = report.targetId || report.target_id || report.targetID;
+    const key = `${tType}_${tId}`;
 
     if (!acc[key]) {
       acc[key] = {
-        id: `group_${report.targetId}`, // Fake ID for key
-        targetType: report.targetType,
-        targetId: report.targetId,
+        id: `group_${report.targetId || report.target_id || report.targetID}`, // Fake ID for key
+        targetType: report.targetType || report.target_type,
+        targetId: report.targetId || report.target_id || report.targetID, // Standardize to targetId
         targetData: null, // Fetched later
         reports: [],
         reason: report.reason, // Show first reason as display
-        createdAt: report.createdAt,
-        reporterUsername: report.reporterUsername,
+        createdAt: report.createdAt || report.created_at,
+        reporterUsername: report.reporterUsername || report.reporter_username,
         status: report.status
       };
     }
 
     acc[key].reports.push(report);
     // Keep latest date
-    if (new Date(report.createdAt) > new Date(acc[key].createdAt)) {
-      acc[key].createdAt = report.createdAt;
+    const reportDate = new Date(report.createdAt || report.created_at);
+    const accDate = new Date(acc[key].createdAt);
+    if (reportDate > accDate) {
+      acc[key].createdAt = reportDate;
     }
 
     return acc;
@@ -118,13 +137,121 @@ const AdminReportsManagement = () => {
 
   const activeCount = displayReports.length;
 
+  // METADATA FETCHING (Names & Avatars)
+  const [targetMetadata, setTargetMetadata] = useState({});
+
+  useEffect(() => {
+    const fetchMetadata = async () => {
+      const newMetadata = {};
+      const promises = [];
+
+      for (const group of displayReports) {
+        // Skip if already fetched
+        if (targetMetadata[`${group.targetType}_${group.targetId}`]) continue;
+
+        if (group.targetType === 'USER') {
+          promises.push(
+            UserProfileService.getUserProfile(group.targetId)
+              .then(res => {
+                newMetadata[`USER_${group.targetId}`] = {
+                  name: res.data.fullName || res.data.username,
+                  avatar: res.data.currentAvatarUrl || "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+                  subtext: res.data.email
+                };
+              })
+              .catch(() => {
+                newMetadata[`USER_${group.targetId}`] = { name: `Unknown User #${group.targetId}`, error: true };
+              })
+          );
+        } else if (group.targetType === 'GROUP') {
+          promises.push(
+            findGroupById(group.targetId)
+              .then(res => {
+                newMetadata[`GROUP_${group.targetId}`] = {
+                  name: res.name,
+                  avatar: res.image || "https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=1000",
+                  subtext: `Owner ID: ${res.ownerId}`
+                };
+              })
+              .catch(() => {
+                newMetadata[`GROUP_${group.targetId}`] = { name: `Unknown Group #${group.targetId}`, error: true };
+              })
+          );
+        }
+
+        // Fetch Reporter Info (for single reporter display)
+        if (group.reports.length === 1) {
+          const reporterId = group.reports[0].reporterId;
+          const reporterKey = `USER_${reporterId}`;
+          if (reporterId && !targetMetadata[reporterKey] && !newMetadata[reporterKey]) {
+            promises.push(
+              UserProfileService.getUserProfile(reporterId)
+                .then(res => {
+                  newMetadata[reporterKey] = {
+                    name: res.data.fullName || res.data.username,
+                    avatar: res.data.currentAvatarUrl || "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+                    subtext: res.data.email
+                  };
+                })
+                .catch(() => {
+                  newMetadata[reporterKey] = { name: `User #${reporterId}`, error: true };
+                })
+            );
+          }
+        }
+      }
+
+      if (promises.length > 0) {
+        await Promise.allSettled(promises);
+        setTargetMetadata(prev => ({ ...prev, ...newMetadata }));
+      }
+    };
+
+    if (displayReports.length > 0) {
+      fetchMetadata();
+    }
+  }, [displayReports]); // Re-run when list changes
+
+
   const handleShowDetail = async (groupItem) => {
+    if (!groupItem.targetId) {
+      toast.error("Lỗi: Report không có targetId");
+      console.error("Missing targetId in report:", groupItem);
+      return;
+    }
+
+    // Fetch Reporters for this group (for Modal display)
+    const reporterIds = [...new Set(groupItem.reports.map(r => r.reporterId).filter(id => id))];
+    const newMeta = {};
+    const promises = [];
+
+    reporterIds.forEach(id => {
+      if (!targetMetadata[`USER_${id}`]) {
+        promises.push(
+          UserProfileService.getUserProfile(id).then(res => {
+            newMeta[`USER_${id}`] = {
+              name: res.data.fullName || res.data.username,
+              avatar: res.data.currentAvatarUrl || "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+              subtext: res.data.email
+            };
+          }).catch(() => { })
+        );
+      }
+    });
+
+    if (promises.length > 0) {
+      // Non-blocking fetch for UI update
+      Promise.allSettled(promises).then(() => {
+        setTargetMetadata(prev => ({ ...prev, ...newMeta }));
+      });
+    }
+
     // groupItem has .reports array
     setDetailModal({ isOpen: true, report: groupItem, targetData: null, loading: true });
     try {
       let data = null;
       if (groupItem.targetType === "USER") {
-        const res = await userService.getUserById(groupItem.targetId);
+        const res = await UserProfileService.getUserProfile(groupItem.targetId);
         data = res.data;
       } else if (groupItem.targetType === "GROUP") {
         const res = await findGroupById(groupItem.targetId);
@@ -164,14 +291,30 @@ const AdminReportsManagement = () => {
     }
   };
 
+
+
   const onBanUser = async (userId, reportsOrId) => {
+    if (!userId) {
+      toast.error("User ID is missing!");
+      return;
+    }
+
+    console.log(`Attempting to ban User ID: ${userId} (Type: ${typeof userId})`);
+    console.log(`Current Admin ID: ${currentUserId} (Type: ${typeof currentUserId})`);
+
+    if (currentUserId && Number(userId) === currentUserId) {
+      toast.error("Bạn không thể tự cấm chính mình! (Client check)");
+      return;
+    }
+
     try {
-      await userService.banUser(userId);
+      await lockUser(Number(userId));
       toast.success(`Đã khóa tài khoản người dùng #${userId}`);
       if (reportsOrId) await handleResolveReport(reportsOrId);
       else fetchReports();
     } catch (error) {
-      toast.error("Lỗi khi khóa tài khoản");
+      console.error("Ban user error:", error);
+      toast.error(error.response?.data?.message || "Lỗi khi khóa tài khoản");
     }
   };
 
@@ -285,14 +428,21 @@ const AdminReportsManagement = () => {
                     {/* TARGET */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className={`w-2 h-10 rounded-full ${r.targetType === 'USER' ? 'bg-blue-500' :
-                          r.targetType === 'GROUP' ? 'bg-purple-500' : 'bg-pink-500'
-                          }`}></div>
+                        {targetMetadata[`${r.targetType}_${r.targetId}`]?.avatar ? (
+                          <img src={targetMetadata[`${r.targetType}_${r.targetId}`].avatar} className="w-10 h-10 rounded-full object-cover bg-black/20" alt="" />
+                        ) : (
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs ${r.targetType === 'USER' ? 'bg-blue-500/20 text-blue-500' : 'bg-purple-500/20 text-purple-500'}`}>
+                            {r.targetType === 'USER' ? 'U' : r.targetType === 'GROUP' ? 'G' : 'P'}
+                          </div>
+                        )}
+
                         <div>
                           <p className="font-bold text-white">
-                            {r.targetType} #{r.targetId}
+                            {targetMetadata[`${r.targetType}_${r.targetId}`]?.name || `${r.targetType} #${r.targetId}`}
                           </p>
-                          <span className="text-[10px] text-text-muted uppercase tracking-wide">ID: {r.targetId}</span>
+                          <span className="text-[10px] text-text-muted uppercase tracking-wide">
+                            {targetMetadata[`${r.targetType}_${r.targetId}`]?.subtext || `ID: ${r.targetId}`}
+                          </span>
                           {r.reports.length > 1 && (
                             <span className="ml-2 px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full animate-pulse">
                               +{r.reports.length} báo cáo
@@ -307,7 +457,7 @@ const AdminReportsManagement = () => {
                       {r.reports.length > 1 ? (
                         <span className="italic text-text-muted">Nhiều người báo cáo</span>
                       ) : (
-                        r.reporterUsername || "Ẩn danh"
+                        targetMetadata[`USER_${r.reports[0].reporterId}`]?.name || r.reporterUsername || "Ẩn danh"
                       )}
                     </td>
 
@@ -429,11 +579,18 @@ const AdminReportsManagement = () => {
                         className="flex items-center gap-3 pb-3 border-b border-white/5 last:border-0 last:pb-0 cursor-pointer hover:bg-white/5 p-2 rounded-lg transition-colors"
                         onClick={() => r.reporterId ? navigate(`/dashboard/member/${r.reporterId}`) : toast.error("Không tìm thấy ID người báo cáo (Cần update Backend)")}
                       >
-                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs shrink-0">
-                          {r.reporterUsername?.charAt(0).toUpperCase() || '?'}
-                        </div>
+                        {targetMetadata[`USER_${r.reporterId}`]?.avatar ? (
+                          <img src={targetMetadata[`USER_${r.reporterId}`].avatar} className="w-8 h-8 rounded-full object-cover" alt="" />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs shrink-0">
+                            {(targetMetadata[`USER_${r.reporterId}`]?.name || r.reporterUsername || '?').charAt(0).toUpperCase()}
+                          </div>
+                        )}
+
                         <div>
-                          <p className="text-white font-bold text-sm hover:underline">{r.reporterUsername || 'Ẩn danh'}</p>
+                          <p className="text-white font-bold text-sm hover:underline">
+                            {targetMetadata[`USER_${r.reporterId}`]?.name || r.reporterUsername || 'Ẩn danh'}
+                          </p>
                           <p className="text-xs text-text-muted">
                             <span className="text-primary font-medium">{r.reason}</span>
                             <span className="mx-1">•</span>
@@ -457,16 +614,16 @@ const AdminReportsManagement = () => {
                       {/* RENDER BASED ON TYPE */}
                       {detailModal.report.targetType === 'USER' && (
                         <div className="flex items-start gap-4 cursor-pointer hover:opacity-80 transition-opacity"
-                          onClick={() => navigate(`/dashboard/member/${detailModal.targetData.id}`)}>
+                          onClick={() => navigate(`/dashboard/member/${detailModal.targetData.id || detailModal.report.targetId}`)}>
                           <img
-                            src={detailModal.targetData.avatarUrl || "https://via.placeholder.com/150"}
+                            src={detailModal.targetData.currentAvatarUrl || "https://via.placeholder.com/150"}
                             alt="Avatar"
                             className="w-16 h-16 rounded-xl object-cover bg-black/20"
                           />
                           <div>
-                            <p className="text-lg font-bold text-white hover:underline">{detailModal.targetData.username || detailModal.targetData.fullName}</p>
+                            <p className="text-lg font-bold text-white hover:underline">{detailModal.targetData.fullName || detailModal.targetData.username}</p>
                             <p className="text-text-muted text-sm">{detailModal.targetData.email}</p>
-                            <p className="text-text-muted text-sm mt-1">ID: {detailModal.targetData.id}</p>
+                            <p className="text-text-muted text-sm mt-1">ID: {detailModal.targetData.id || detailModal.report.targetId}</p>
                             <div className="mt-3 flex gap-2">
                               <span className={`px-2 py-0.5 text-xs rounded-md ${detailModal.targetData.locked ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}`}>
                                 {detailModal.targetData.locked ? 'Đã khóa' : 'Hoạt động'}
@@ -482,7 +639,7 @@ const AdminReportsManagement = () => {
                           <div className="flex items-start gap-4 cursor-pointer hover:opacity-80 transition-opacity"
                             onClick={() => navigate(`/dashboard/groups/${detailModal.targetData.id}`)}>
                             <img
-                              src={detailModal.targetData.avatar || "https://via.placeholder.com/150"}
+                              src={detailModal.targetData.image || "https://via.placeholder.com/150"}
                               alt="Group Cover"
                               className="w-16 h-16 rounded-xl object-cover bg-black/20"
                             />
