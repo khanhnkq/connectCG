@@ -1,5 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import Sidebar from '../../components/layout/Sidebar';
+import { IconBell } from '@tabler/icons-react';
+
+
+import { getMyNotifications, markAsRead } from '../../services/NotificationService';
+import NotificationList from '../../components/notification/NotificationList';
+
+
+
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchNotifications } from '../../redux/slices/notificationSlice';
+
+import { setNotifications } from '../../redux/slices/notificationSlice';
+
+
+
 import RightSidebar from '../../components/layout/RightSidebar';
 import PostComposer from '../../components/feed/PostComposer';
 import PostCard from '../../components/feed/PostCard';
@@ -13,6 +27,35 @@ export default function Newsfeed() {
   useEffect(() => {
     fetchPosts();
   }, []);
+  const [showNotifications, setShowNotifications] = useState(false);
+
+
+
+
+  const { items: notifications, unreadCount } = useSelector((state) => state.notifications);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchNotifications());
+  }, [dispatch]);
+
+
+
+
+
+  const handleMarkAsRead = async (id) => {
+    try {
+      await markAsRead(id);
+
+      const updated = notifications.map(n => n.id === id ? { ...n, isRead: true } : n);
+      dispatch(setNotifications(updated));
+
+      dispatch(fetchNotifications()); // Refresh notifications after marking as read
+
+    } catch (error) {
+      console.error("Failed to mark read:", error);
+    }
+  }
 
   const fetchPosts = async () => {
     try {
@@ -42,17 +85,38 @@ export default function Newsfeed() {
   };
 
   return (
-    <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden h-screen flex w-full">
-      <Sidebar />
 
-      <main className="flex-1 h-full overflow-y-auto relative scroll-smooth bg-background-dark">
+
+    <div className="flex w-full relative items-start">
+      <div className="flex-1 w-full">
         <div className="max-w-3xl mx-auto w-full px-6 py-8 pb-20">
           <header className="flex justify-between items-center mb-8 sticky top-0 bg-background-dark/95 backdrop-blur-sm z-30 py-4 -mt-4 border-b border-[#342418]">
             <div>
               <h1 className="text-3xl font-extrabold text-white tracking-tight">Bảng tin</h1>
               <p className="text-text-secondary text-sm font-medium">Xem những gì đang diễn ra xung quanh bạn</p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-3 items-center">
+              <div className="relative">
+                <button
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="size-10 rounded-full bg-[#342418] hover:bg-[#3e2b1d] text-white flex items-center justify-center transition-all relative"
+                >
+                  <IconBell className="text-neutral-200 h-5 w-5" />
+                  {notifications.some(n => !n.isRead) && <span className="absolute top-2 right-2.5 h-2 w-2 bg-red-500 rounded-full animate-pulse border border-[#342418]"></span>}
+                </button>
+
+                {showNotifications && (
+                  <div className="absolute right-0 top-12 w-80 z-50">
+                    <NotificationList
+
+                      notifications={notifications}
+
+                      onMarkAsRead={handleMarkAsRead}
+                    />
+                  </div>
+                )}
+              </div>
+
               <button className="lg:hidden size-10 rounded-full bg-[#342418] hover:bg-[#3e2b1d] text-white flex items-center justify-center transition-all">
                 <span className="material-symbols-outlined">menu</span>
               </button>
@@ -97,4 +161,5 @@ export default function Newsfeed() {
       <RightSidebar />
     </div>
   );
+
 }

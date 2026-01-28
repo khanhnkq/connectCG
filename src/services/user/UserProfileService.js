@@ -12,7 +12,17 @@ const UserProfileService = {
         return axiosClient.get(`/v1/users/${userId}/profile`);
     },
 
+    updateAvatar: (imageUrl) => {
+        return axiosClient.post('/v1/users/avatar', { url: imageUrl });
+    },
 
+    updateCover: (imageUrl) => {
+        return axiosClient.post('/v1/users/cover', { url: imageUrl });
+    },
+    
+    updateProfileInfo: (data) => {
+        return axiosClient.put('/v1/users/profile', data);
+    }
 };
 
 export default UserProfileService;

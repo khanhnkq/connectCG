@@ -1,4 +1,4 @@
-import Sidebar from '../../components/layout/Sidebar';
+
 import ReportModal from "../../components/report/ReportModal";
 import { useState } from "react";
 import toast from 'react-hot-toast';
@@ -32,10 +32,8 @@ export default function ChatInterface() {
 
 
     return (
-        <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden h-screen flex w-full">
-            <Sidebar />
-
-            <main className="flex-1 h-full flex overflow-hidden bg-chat-bg relative">
+        <>
+            <div className="h-full w-full flex overflow-hidden bg-chat-bg relative">
                 {/* Conversations List */}
                 <div className="w-full md:w-80 lg:w-96 flex flex-col border-r border-[#3A2A20] bg-background-dark z-10 shrink-0">
                     <div className="p-5 border-b border-[#3A2A20] flex justify-between items-center bg-background-dark/95 backdrop-blur-md sticky top-0 z-10">
@@ -230,7 +228,7 @@ export default function ChatInterface() {
                         </div>
                     </div>
                 </aside>
-            </main>
+            </div>
             <ReportModal
                 isOpen={showReportUser}
                 onClose={() => setShowReportUser(false)}
@@ -287,6 +285,6 @@ export default function ChatInterface() {
                 }}
             />
 
-        </div>
+        </>
     );
 }

@@ -14,7 +14,7 @@ export default function RightSidebar() {
     ];
 
     return (
-        <aside className="w-80 hidden xl:flex flex-col border-l border-[#342418] bg-background-dark p-6 h-full overflow-y-auto shrink-0 z-20">
+        <aside className="w-80 hidden xl:flex flex-col border-l border-[#342418] bg-background-dark p-6 h-screen sticky top-0 overflow-y-auto shrink-0 z-20">
             <div className="mb-8 group">
                 <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">

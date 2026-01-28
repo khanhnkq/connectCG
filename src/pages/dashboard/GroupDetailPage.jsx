@@ -8,6 +8,7 @@ import ReportModal from "../../components/report/ReportModal";
 import { findById, getGroupMembers, leaveGroup, inviteMembers, joinGroup, getPendingRequests, approveRequest, rejectRequest, kickMember, transferOwnership, updateGroupMemberRole, getPendingPosts, approvePost, rejectPost, getGroupPosts } from '../../services/groups/GroupService';
 import InviteMemberModal from '../../components/groups/InviteMemberModal';
 import TransferOwnershipModal from '../../components/groups/TransferOwnershipModal';
+import reportService from '../../services/ReportService';
 
 // Tiện ích định dạng thời gian đơn giản để thay thế date-fns
 const formatTime = (dateString) => {
@@ -333,13 +334,9 @@ const GroupDetailPage = () => {
     const imageUrl = group.image || 'https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=1000';
 
     return (
-        <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden h-screen flex w-full">
-            <Sidebar />
-
-            {/* Main Content */}
-            <main className="flex-1 h-full overflow-y-auto relative scroll-smooth bg-background-dark">
-                <div className="w-full pb-20">
-                    {/* Group Header */}
+        <>
+            <div className="w-full pb-20">
+            {/* Group Header */}
                     <div className="relative w-full h-64 md:h-80 lg:h-96">
                         <div
                             className="absolute inset-0 bg-cover bg-center"
@@ -735,8 +732,7 @@ const GroupDetailPage = () => {
                             </div>
                         )}
                     </div>
-                </div>
-            </main>
+        </div>
 
             <ReportModal
                 isOpen={showReportGroup}
@@ -751,10 +747,16 @@ const GroupDetailPage = () => {
                     "Nhóm giả mạo",
                     "Khác",
                 ]}
-                targetPayload={{ targetType: "GROUP", groupId: group.id }}
-                onSubmit={(data) => {
-                    toast.success("Đã gửi báo cáo");
-                    setShowReportGroup(false);
+                targetPayload={{ targetType: "GROUP", targetId: group.id }}
+                onSubmit={async (data) => {
+                    try {
+                        await reportService.createReport(data);
+                        toast.success("Đã gửi báo cáo thành công");
+                        setShowReportGroup(false);
+                    } catch (error) {
+                        console.error("Report failed:", error);
+                        toast.error("Gửi báo cáo thất bại");
+                    }
                 }}
             />
 
@@ -904,7 +906,7 @@ const GroupDetailPage = () => {
                 currentUserId={getUserIdFromToken()}
                 onTransfer={handleTransferOwnership}
             />
-        </div>
+        </>
     );
 };
 
