@@ -1,8 +1,11 @@
 import { useState } from 'react';
-
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import ChatService from '../../services/chat/ChatService';
 import RightSidebar from '../../components/layout/RightSidebar.jsx';
 
 export default function FriendSuggestions() {
+    const navigate = useNavigate();
     const [suggestions, setSuggestions] = useState([
         {
             id: 1,
@@ -45,6 +48,19 @@ export default function FriendSuggestions() {
             online: true
         }
     ]);
+
+    const handleStartChat = async (userId) => {
+        const tid = toast.loading("Đang mở cuộc trò chuyện...");
+        try {
+            const response = await ChatService.getOrCreateDirectChat(userId);
+            const room = response.data;
+            toast.success("Đã kết nối!", { id: tid });
+            navigate('/chat', { state: { selectedRoomKey: room.firebaseRoomKey } });
+        } catch (error) {
+            console.error("Error starting chat:", error);
+            toast.error("Không thể tạo cuộc trò chuyện", { id: tid });
+        }
+    };
 
     return (
         <div className="flex h-full relative">
@@ -93,12 +109,16 @@ export default function FriendSuggestions() {
                                     </p>
 
                                     <div className="mt-auto flex flex-col gap-3">
-                                        <button className="w-full py-3 rounded-xl bg-primary hover:bg-orange-600 text-[#231810] font-black text-sm uppercase tracking-widest transition-all shadow-lg shadow-orange-500/10 flex items-center justify-center gap-2">
+                                        <button className="w-full py-3 rounded-xl bg-primary hover:bg-orange-600 text-[#231810] font-black text-sm uppercase tracking-widest transition-all shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2">
                                             <span className="material-symbols-outlined font-black">person_add</span>
                                             Kết bạn
                                         </button>
-                                        <button className="w-full py-3 rounded-xl bg-[#3a2b22] hover:bg-[#493222] text-white font-bold text-sm transition-colors border border-white/5">
-                                            Để sau
+                                        <button
+                                            onClick={() => handleStartChat(person.id)}
+                                            className="w-full py-3 rounded-xl bg-[#3a2b22] hover:bg-[#493222] text-white font-bold text-sm transition-colors border border-white/5 flex items-center justify-center gap-2"
+                                        >
+                                            <span className="material-symbols-outlined text-[20px]">mail</span>
+                                            Nhắn tin
                                         </button>
                                     </div>
                                 </div>
