@@ -22,6 +22,9 @@ export default function ChatInterface() {
     const [friends, setFriends] = useState([]);
     const [selectedMembers, setSelectedMembers] = useState([]);
     const [groupName, setGroupName] = useState("");
+    const [showInviteModal, setShowInviteModal] = useState(false);
+    const [inviteFriends, setInviteFriends] = useState([]);
+    const [selectedInvitees, setSelectedInvitees] = useState([]);
 
     const handleCreateGroup = async () => {
         if (selectedMembers.length < 1) {
@@ -56,6 +59,61 @@ export default function ChatInterface() {
             toast.error(isDirect ? "Lỗi khi kết nối" : "Lỗi khi tạo nhóm", { id: tid });
         }
     };
+
+    const handleInviteMember = async () => {
+        if (!selectedInvitees || selectedInvitees.length === 0 || !activeRoom) return;
+
+        const tid = toast.loading(`Đang mời ${selectedInvitees.length} thành viên...`);
+        try {
+            const userIds = selectedInvitees.map(f => f.id);
+            const response = await ChatService.inviteMembers(activeRoom.id, userIds);
+            setActiveRoom(response.data);
+
+            // Update conversations list
+            setConversations(prev => prev.map(c =>
+                c.id === activeRoom.id ? response.data : c
+            ));
+
+            setShowInviteModal(false);
+            setSelectedInvitees([]);
+            toast.success(`Đã mời ${selectedInvitees.length} người vào nhóm!`, { id: tid });
+        } catch (error) {
+            console.error("Invite error:", error);
+            toast.error(error.response?.data?.message || "Lỗi khi mời thành viên", { id: tid });
+        }
+    };
+
+    const handleOpenInviteModal = async () => {
+        if (!activeRoom || activeRoom.type !== 'GROUP') return;
+
+        setShowInviteModal(true);
+        setSelectedInvitees([]);
+        try {
+            const response = await FriendService.getMyFriends({ size: 100 });
+            const allFriends = response.data.content || [];
+
+            // Lọc bỏ những người đã có trong nhóm
+            const currentMemberIds = activeRoom.members?.map(m => m.id) || [];
+            const availableFriends = allFriends.filter(f => !currentMemberIds.includes(f.id));
+
+            setInviteFriends(availableFriends);
+        } catch (error) {
+            console.error("Load friends error:", error);
+            toast.error("Không thể tải danh sách bạn bè");
+        }
+    };
+
+    const toggleInvitee = (friend) => {
+        setSelectedInvitees(prev => {
+            const isSelected = prev.some(f => f.id === friend.id);
+            if (isSelected) {
+                return prev.filter(f => f.id !== friend.id);
+            } else {
+                return [...prev, friend];
+            }
+        });
+    };
+
     const [searchTerm, setSearchTerm] = useState("");
     const messagesEndRef = useRef(null);
 
@@ -428,6 +486,17 @@ export default function ChatInterface() {
                                         </div>
                                         <span className="text-[10px] text-text-secondary font-bold uppercase tracking-wide group-hover:text-primary transition-colors">Profile</span>
                                     </button>
+                                    {activeRoom?.type === 'GROUP' && (
+                                        <button
+                                            onClick={handleOpenInviteModal}
+                                            className="flex flex-col items-center gap-1 group"
+                                        >
+                                            <div className="size-10 rounded-full bg-[#2A1D15] group-hover:bg-green-500 group-hover:text-white flex items-center justify-center text-white transition-all border border-[#3A2A20]">
+                                                <span className="material-symbols-outlined">person_add</span>
+                                            </div>
+                                            <span className="text-[10px] text-text-secondary font-bold uppercase tracking-wide group-hover:text-green-500 transition-colors">Invite</span>
+                                        </button>
+                                    )}
                                     <button className="flex flex-col items-center gap-1 group">
                                         <div className="size-10 rounded-full bg-[#2A1D15] group-hover:bg-primary group-hover:text-[#231810] flex items-center justify-center text-white transition-all border border-[#3A2A20]">
                                             <span className="material-symbols-outlined">notifications_off</span>
@@ -685,6 +754,76 @@ export default function ChatInterface() {
                                 </div>
                             )}
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Invite Member Modal */}
+            {showInviteModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-surface-dark w-full max-w-md rounded-3xl border border-border-dark/50 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-6 border-b border-border-dark/50 flex items-center justify-between">
+                            <h2 className="text-xl font-bold text-white">Mời bạn bè vào nhóm</h2>
+                            <button
+                                onClick={() => { setShowInviteModal(false); setSelectedInvitees([]); }}
+                                className="size-8 rounded-full bg-[#2A1D15] text-white flex items-center justify-center hover:bg-[#3A2A20] transition-all"
+                            >
+                                <span className="material-symbols-outlined text-[18px]">close</span>
+                            </button>
+                        </div>
+
+                        <div className="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                            {inviteFriends.length === 0 ? (
+                                <div className="text-center py-10 text-text-muted">
+                                    <span className="material-symbols-outlined text-5xl mb-3 opacity-30">person_off</span>
+                                    <p>Không có bạn bè nào để mời</p>
+                                    <p className="text-sm mt-1">Tất cả bạn bè đã có trong nhóm</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-2">
+                                    {inviteFriends.map(friend => {
+                                        const isSelected = selectedInvitees.some(f => f.id === friend.id);
+                                        return (
+                                            <div
+                                                key={friend.id}
+                                                onClick={() => toggleInvitee(friend)}
+                                                className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${isSelected
+                                                    ? 'bg-primary/10 border-primary/50'
+                                                    : 'bg-[#2A1D15] border-[#3A2A20] hover:bg-[#3A2A20]'
+                                                    }`}
+                                            >
+                                                <div
+                                                    className="size-10 rounded-full bg-cover bg-center border border-[#3A2A20]"
+                                                    style={{ backgroundImage: `url("${friend.avatarUrl || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}")` }}
+                                                ></div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-white font-bold truncate">{friend.fullName}</p>
+                                                </div>
+                                                <div className={`size-5 rounded border-2 flex items-center justify-center transition-all ${isSelected ? 'bg-primary border-primary' : 'border-[#3A2A20]'
+                                                    }`}>
+                                                    {isSelected && (
+                                                        <span className="material-symbols-outlined text-[#231810] text-[16px]">check</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+
+                        {inviteFriends.length > 0 && (
+                            <div className="p-6 border-t border-border-dark/50">
+                                <button
+                                    onClick={handleInviteMember}
+                                    disabled={selectedInvitees.length === 0}
+                                    className="w-full py-3 bg-primary hover:bg-orange-600 text-[#231810] font-bold rounded-xl shadow-lg shadow-orange-500/10 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
+                                >
+                                    <span className="material-symbols-outlined text-[20px]">person_add</span>
+                                    {selectedInvitees.length > 0 ? `Mời ${selectedInvitees.length} người` : 'Chọn bạn bè để mời'}
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
