@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Header = ({ title = "Management" }) => {
+const Header = ({ title = "Quản lý" }) => {
     return (
         <header className="flex items-center justify-between border-b border-border-dark px-10 py-5 bg-background-dark/80 backdrop-blur-md z-10 h-20">
             <div className="flex items-center gap-4">
