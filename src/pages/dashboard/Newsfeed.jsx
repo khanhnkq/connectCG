@@ -117,9 +117,7 @@ export default function Newsfeed() {
                 )}
               </div>
 
-              <button className="lg:hidden size-10 rounded-full bg-[#342418] hover:bg-[#3e2b1d] text-white flex items-center justify-center transition-all">
-                <span className="material-symbols-outlined">menu</span>
-              </button>
+
             </div>
           </header>
 
