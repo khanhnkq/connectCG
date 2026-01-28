@@ -6,6 +6,12 @@ const postService = {
     },
     deletePost(id) {
         return axiosClient.delete(`/posts/${id}`);
+    },
+    getHomepagePosts() {
+        return axiosClient.get('/admin/posts/homepage');
+    },
+    checkPostWithAI(postId) {
+        return axiosClient.post(`/admin/posts/${postId}/check-ai`);
     }
 };
 

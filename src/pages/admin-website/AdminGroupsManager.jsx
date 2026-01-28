@@ -4,6 +4,8 @@ import * as Yup from 'yup';
 import toast from 'react-hot-toast';
 import ConfirmModal from '../../components/admin/ConfirmModal';
 import { findAllGroup } from "../../services/groups/GroupService.js";
+import { useNavigate } from 'react-router-dom';
+import GroupInspectorModal from '../../components/admin/GroupInspectorModal';
 
 const AdminGroupsManager = () => {
     // 1. Initial State with Owners
@@ -11,6 +13,16 @@ const AdminGroupsManager = () => {
     const [isReloading, setIsReloading] = useState(false);
     const [confirmConfig, setConfirmConfig] = useState({ isOpen: false, title: '', message: '', onConfirm: null });
     const [selectedGroupReports, setSelectedGroupReports] = useState(null);
+    const [inspectingGroupId, setInspectingGroupId] = useState(null);
+    const navigate = useNavigate();
+
+    const handleInspect = (group) => {
+        setInspectingGroupId(group.id);
+    };
+
+    const closeInspector = () => {
+        setInspectingGroupId(null);
+    };
 
     // Mock report data added to the second group
     useState(() => {
@@ -56,7 +68,7 @@ const AdminGroupsManager = () => {
 
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {groups.map((group, index)=> (
+                    {groups.map((group, index) => (
                         <div key={group.id} className="bg-surface-dark border border-border-dark/50 rounded-3xl overflow-hidden group hover:border-primary/30 transition-all shadow-xl">
                             <div className="h-44 relative overflow-hidden">
                                 <img
@@ -102,6 +114,12 @@ const AdminGroupsManager = () => {
                                 </div>
                                 <div className="pt-4 border-t border-border-dark/30 flex justify-end items-center">
                                     <div className="flex gap-2">
+                                        <button
+                                            onClick={() => handleInspect(group)}
+                                            className="p-2.5 hover:bg-background-dark rounded-xl text-text-muted hover:text-white transition-all border border-transparent hover:border-border-dark"
+                                            title="Inspect Group Details">
+                                            <span className="material-symbols-outlined text-lg">visibility</span>
+                                        </button>
                                         <button className="p-2.5 hover:bg-background-dark rounded-xl text-text-muted hover:text-white transition-all border border-transparent hover:border-border-dark" title="Edit Group">
                                             <span className="material-symbols-outlined text-lg">edit</span>
                                         </button>
@@ -128,69 +146,13 @@ const AdminGroupsManager = () => {
                 confirmText="Confirm Action"
             />
 
-            {/* Detailed Reports Modal */}
-            {selectedGroupReports && (
-                <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-background-dark/95 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-surface-dark w-full max-w-2xl rounded-[2.5rem] border border-red-500/30 shadow-[0_0_50px_rgba(239,68,68,0.15)] overflow-hidden animate-in zoom-in-95 duration-300">
-                        <div className="p-10 space-y-8">
-                            <div className="flex justify-between items-start">
-                                <div className="space-y-1">
-                                    <div className="flex items-center gap-3">
-                                        <h4 className="text-2xl font-black text-white">{selectedGroupReports.name}</h4>
-                                        <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded">INCIDENT LOG</span>
-                                    </div>
-                                    <p className="text-text-muted text-sm font-medium">Reviewing {selectedGroupReports.reports} community-flagged violations</p>
-                                </div>
-                                <button onClick={() => setSelectedGroupReports(null)} className="size-10 rounded-full bg-background-dark flex items-center justify-center text-text-muted hover:text-white transition-all border border-border-dark/50">
-                                    <span className="material-symbols-outlined">close</span>
-                                </button>
-                            </div>
-
-                            <div className="space-y-3 max-h-[400px] overflow-y-auto pr-4 custom-scrollbar">
-                                {(selectedGroupReports.reportHistory || []).map((report) => (
-                                    <div key={report.id} className="bg-background-dark/40 p-5 rounded-3xl border border-border-dark/30 flex justify-between items-center group/item hover:border-red-500/30 transition-all">
-                                        <div className="flex items-center gap-4">
-                                            <div className="size-10 rounded-2xl bg-red-500/10 flex items-center justify-center text-red-400">
-                                                <span className="material-symbols-outlined">gavel</span>
-                                            </div>
-                                            <div>
-                                                <p className="text-white font-bold text-sm">{report.reason}</p>
-                                                <p className="text-[10px] text-text-muted font-bold uppercase tracking-tighter">Reported by {report.reporter} • {report.date}</p>
-                                            </div>
-                                        </div>
-                                        <button className="opacity-0 group-hover/item:opacity-100 px-3 py-1.5 rounded-lg text-[10px] font-black text-primary border border-primary/30 hover:bg-primary hover:text-white transition-all uppercase">Inspect Post</button>
-                                    </div>
-                                ))}
-                                {(!selectedGroupReports.reportHistory || selectedGroupReports.reportHistory.length === 0) && (
-                                    <div className="text-center py-10 space-y-3">
-                                        <span className="material-symbols-outlined text-4xl text-text-muted/30">task_alt</span>
-                                        <p className="text-text-muted text-sm font-bold uppercase tracking-widest">No active incident logs found</p>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4 pt-4">
-                                <button
-                                    onClick={() => setSelectedGroupReports(null)}
-                                    className="py-4 rounded-2xl border border-border-dark/50 text-text-muted font-bold hover:bg-background-dark hover:text-white transition-all"
-                                >
-                                    Dismiss Investigation
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        const groupToDeactivate = selectedGroupReports;
-                                        setSelectedGroupReports(null);
-                                        handleDeactivate(groupToDeactivate.id, groupToDeactivate.name);
-                                    }}
-                                    className="py-4 rounded-2xl bg-red-500 text-white font-black shadow-lg shadow-red-500/20 hover:bg-red-600 transition-all flex items-center justify-center gap-2"
-                                >
-                                    <span className="material-symbols-outlined">block</span>
-                                    Confirm Group Ban
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            {/* Group Inspector Modal */}
+            {inspectingGroupId && (
+                <GroupInspectorModal
+                    groupId={inspectingGroupId}
+                    onClose={closeInspector}
+                    onAction={(group) => handleDeactivate(group.id, group.name)}
+                />
             )}
         </AdminLayout>
     );
