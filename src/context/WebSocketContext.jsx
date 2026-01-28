@@ -18,7 +18,7 @@ export const WebSocketProvider = ({ children }) => {
         if (!token) return;
 
         const client = new Client({
-            webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+            webSocketFactory: () => new SockJS(import.meta.env.VITE_WS_URL),
             connectHeaders: {
                 Authorization: `Bearer ${token}`
             },

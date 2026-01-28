@@ -224,7 +224,7 @@ export default function Step1() {
                         {/* Social Login */}
                         <div className="grid grid-cols-2 gap-4 mb-8">
                             <a
-    href="http://localhost:8080/oauth2/authorization/facebook"
+    href={import.meta.env.VITE_OAUTH2_FACEBOOK_URL}
     className="flex items-center justify-center gap-3 rounded-xl border border-border-dark bg-surface-dark hover:bg-border-dark h-14 px-4 transition-colors"
 >
     <svg aria-hidden="true" className="h-5 w-5 fill-white" viewBox="0 0 24 24">
@@ -233,7 +233,7 @@ export default function Step1() {
     <span className="text-white font-medium">Facebook</span>
 </a>
                             <a
-                                href="http://localhost:8080/oauth2/authorization/google"
+                                href={import.meta.env.VITE_OAUTH2_GOOGLE_URL}
                                 className="flex items-center justify-center gap-3 rounded-xl border border-border-dark bg-surface-dark hover:bg-border-dark h-14 px-4 transition-colors"
                             >
                                 <svg aria-hidden="true" className="h-5 w-5 fill-white" viewBox="0 0 24 24">
