@@ -18,7 +18,14 @@ export const WebSocketProvider = ({ children }) => {
         if (!token) return;
 
         const client = new Client({
-            webSocketFactory: () => new SockJS(import.meta.env.VITE_WS_URL),
+            webSocketFactory: () => {
+                let url = import.meta.env.VITE_WS_URL;
+                // Fix Mixed Content: Automatically switch to https (wss) if running on https
+                if (window.location.protocol === 'https:' && url.startsWith('http:')) {
+                    url = url.replace('http:', 'https:');
+                }
+                return new SockJS(url);
+            },
             connectHeaders: {
                 Authorization: `Bearer ${token}`
             },
