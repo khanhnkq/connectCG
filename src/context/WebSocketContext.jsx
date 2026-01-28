@@ -18,7 +18,15 @@ export const WebSocketProvider = ({ children }) => {
         if (!token) return;
 
         const client = new Client({
-            webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+            webSocketFactory: () => {
+                let url = import.meta.env.VITE_WS_URL;
+                // Fix Mixed Content: Automatically switch to https (wss) if running on https
+                // But do NOT upgrade for localhost as it usually doesn't support SSL locally
+                if (window.location.protocol === 'https:' && url.startsWith('http:') && !url.includes('localhost')) {
+                    url = url.replace('http:', 'https:');
+                }
+                return new SockJS(url);
+            },
             connectHeaders: {
                 Authorization: `Bearer ${token}`
             },

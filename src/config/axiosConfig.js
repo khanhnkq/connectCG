@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosClient = axios.create({
-    baseURL: 'http://localhost:8080/api', // Chỉnh lại để có thể gọi cả /v1/auth và /groups
+    baseURL: import.meta.env.VITE_API_BASE_URL, // Chỉnh lại để có thể gọi cả /v1/auth và /groups
     headers: {
         'Content-Type': 'application/json',
     },

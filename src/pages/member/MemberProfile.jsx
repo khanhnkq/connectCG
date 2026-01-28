@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
+import FriendService from '../../services/friend/FriendService';
+import FriendRequestService from '../../services/friend/FriendRequestService';
 import UserProfileService from '../../services/user/UserProfileService';
 import ChatService from '../../services/chat/ChatService';
 import ProfileAbout from '../../components/profile/ProfileAbout';
@@ -51,6 +53,37 @@ export default function MemberProfile() {
             fetchMemberProfile();
         }
     }, [id]);
+    const handleUnfriend = async () => {
+        if (window.confirm(`Bạn có chắc muốn hủy kết bạn với ${profile.fullName}?`)) {
+            try {
+                await FriendService.unfriend(profile.userId);
+                // Cập nhật state UI
+                setProfile(prev => ({
+                    ...prev,
+                    relationshipStatus: 'NONE',
+                    friendsCount: prev.friendsCount - 1
+                }));
+                toast.success(`Đã hủy kết bạn với ${profile.fullName}`);
+            } catch (error) {
+                console.error("Lỗi khi hủy kết bạn:", error);
+                toast.error("Có lỗi xảy ra, vui lòng thử lại.");
+            }
+        }
+    };
+
+    const handleSendFriendRequest = async () => {
+        try {
+            await FriendRequestService.sendRequest(profile.userId);
+            setProfile(prev => ({
+                ...prev,
+                relationshipStatus: 'PENDING' // Update local state immediately
+            }));
+            toast.success("Đã gửi lời mời kết bạn!");
+        } catch (error) {
+            console.error("Lỗi khi gửi lời mời:", error);
+            toast.error(error.response?.data?.message || "Không thể gửi lời mời.");
+        }
+    };
 
     if (loading) {
         return (
@@ -113,12 +146,27 @@ export default function MemberProfile() {
                                 </div>
                                 <div className="flex gap-3 mb-4 w-full md:w-auto">
                                     {profile.relationshipStatus === 'FRIEND' ? (
-                                        <button className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#493222] text-primary border border-primary/30 font-bold px-6 py-3 rounded-xl transition-all">
-                                            <span className="material-symbols-outlined text-[20px]">person_check</span>
-                                            Bạn bè
+                                        <button
+                                            onClick={handleUnfriend}
+                                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#493222] text-primary border border-primary/30 font-bold px-6 py-3 rounded-xl transition-all hover:bg-red-900/30 hover:text-red-500 hover:border-red-500/50"
+                                            title="Click để hủy kết bạn"
+                                        >
+                                            <span className="material-symbols-outlined text-[20px]">person_remove</span>
+                                            Đã là bạn bè
+                                        </button>
+                                    ) : profile.relationshipStatus === 'PENDING' ? (
+                                        <button
+                                            disabled
+                                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#493222] text-text-secondary border border-primary/30 font-bold px-6 py-3 rounded-xl transition-all opacity-80 cursor-not-allowed"
+                                        >
+                                            <span className="material-symbols-outlined text-[20px]">mark_email_read</span>
+                                            Đã gửi lời mời
                                         </button>
                                     ) : (
-                                        <button className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-primary hover:bg-orange-600 text-[#231810] font-bold px-6 py-3 rounded-xl transition-all shadow-lg shadow-orange-500/20">
+                                        <button
+                                            onClick={handleSendFriendRequest}
+                                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-primary hover:bg-orange-600 text-[#231810] font-bold px-6 py-3 rounded-xl transition-all shadow-lg shadow-orange-500/20"
+                                        >
                                             <span className="material-symbols-outlined text-[20px]">person_add</span>
                                             Kết bạn
                                         </button>

@@ -19,7 +19,16 @@ const FriendService = {
      */
     getMyFriends: (params) => {
         return axiosClient.get("/v1/friends", { params });
-    }
+    },
+
+    /**
+     * Hủy kết bạn (Unfriend)
+     * @param {number} friendId 
+     */
+    unfriend: (friendId) => {
+        return axiosClient.delete(`/v1/friends/${friendId}`);
+    },
+
 };
 
 export default FriendService;

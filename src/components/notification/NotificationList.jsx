@@ -30,15 +30,8 @@ const NotificationList = ({ notifications, onMarkAsRead, onDelete }) => {
             onMarkAsRead(notification.id);
         }
 
-        // Navigation logic based on targetType
         switch (notification.targetType) {
             case 'POST':
-                // Assuming we have a post detail page or feed anchor
-                // For now, go to group or feed
-                // If it is a group post, maybe go to group?
-                // But we don't have groupId in notification easily unless we fetch it.
-                // Wait, payload usually has targetId = PostId.
-                // We might need to navigate to default feed or group
                 navigate(`/dashboard/feed`);
                 break;
             case 'GROUP':
