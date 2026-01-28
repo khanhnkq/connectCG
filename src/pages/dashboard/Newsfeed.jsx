@@ -10,7 +10,7 @@ import NotificationList from '../../components/notification/NotificationList';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchNotifications } from '../../redux/slices/notificationSlice';
 
-import Sidebar from '../../components/layout/Sidebar';
+import { setNotifications } from '../../redux/slices/notificationSlice';
 
 
 
@@ -22,17 +22,7 @@ export default function Newsfeed() {
   const [showNotifications, setShowNotifications] = useState(false);
 
 
-  useEffect(() => {
-    const fetchNotificationsSync = async () => {
-      try {
-        const data = await getMyNotifications();
-        setNotifications(data || []);
-      } catch (error) {
-        console.error("Failed to fetch notifications:", error);
-      }
-    };
-    fetchNotificationsSync();
-  }, []);
+
 
   const { items: notifications, unreadCount } = useSelector((state) => state.notifications);
   const dispatch = useDispatch();
@@ -43,23 +33,14 @@ export default function Newsfeed() {
 
 
 
-  useEffect(() => {
-    const fetchNotificationsSync = async () => {
-      try {
-        const data = await getMyNotifications();
-      } catch (error) {
-        console.error("Failed to fetch notifications:", error);
-      }
-    };
-    fetchNotificationsSync();
-  }, []);
+
 
   const handleMarkAsRead = async (id) => {
     try {
       await markAsRead(id);
 
       const updated = notifications.map(n => n.id === id ? { ...n, isRead: true } : n);
-      setNotifications(updated);
+      dispatch(setNotifications(updated));
 
       dispatch(fetchNotifications()); // Refresh notifications after marking as read
 
