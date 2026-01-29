@@ -17,7 +17,7 @@ export default function AdvancedMemberSearch() {
 
     const [maritalStatus, setMaritalStatus] = useState('');
     const [lookingFor, setLookingFor] = useState('');
-    const [cityId, setCityId] = useState('');
+    const [cityCode, setCityCode] = useState('');
     const [cities, setCities] = useState([]);
 
 
@@ -30,11 +30,11 @@ export default function AdvancedMemberSearch() {
     // Reset to page 0 when filters change
     useEffect(() => {
         setPagination(prev => ({ ...prev, page: 0 }));
-    }, [maritalStatus, lookingFor, keyword, cityId]);
+    }, [maritalStatus, lookingFor, keyword, cityCode]);
 
     useEffect(() => {
         fetchMembers();
-    }, [maritalStatus, lookingFor, keyword, cityId, pagination.page]);
+    }, [maritalStatus, lookingFor, keyword, cityCode, pagination.page]);
 
     const fetchCities = async () => {
         try {
@@ -54,7 +54,7 @@ export default function AdvancedMemberSearch() {
                 maritalStatus: maritalStatus || null,
                 lookingFor: lookingFor || null,
                 keyword: keyword || null,
-                cityId: cityId || null,
+                cityCode: cityCode || null,
             };
             const response = await UserSearchService.searchMembers(params);
             // Append new data if loading more pages, replace if it's the first page
@@ -72,7 +72,7 @@ export default function AdvancedMemberSearch() {
         setKeyword('');
         setMaritalStatus('');
         setLookingFor('');
-        setCityId('');
+        setCityCode('');
         setPagination(prev => ({ ...prev, page: 0 }));
     };
 
@@ -377,33 +377,33 @@ export default function AdvancedMemberSearch() {
                             <div className="px-4 pb-5 pt-1">
                                 <div className="space-y-2">
                                     <label className="flex items-center gap-3 cursor-pointer group/label">
-                                        <div className={`size-4 rounded-full border flex items-center justify-center ${!cityId ? 'border-primary' : 'border-[#493222]'}`}>
-                                            {!cityId && <div className="size-2 rounded-full bg-primary" />}
+                                        <div className={`size-4 rounded-full border flex items-center justify-center ${!cityCode ? 'border-primary' : 'border-[#493222]'}`}>
+                                            {!cityCode && <div className="size-2 rounded-full bg-primary" />}
                                         </div>
                                         <input
                                             type="radio"
-                                            name="cityId"
-                                            checked={!cityId}
-                                            onChange={() => setCityId('')}
+                                            name="cityCode"
+                                            checked={!cityCode}
+                                            onChange={() => setCityCode('')}
                                             className="hidden"
                                         />
-                                        <span className={`text-sm group-hover/label:text-white transition-colors ${!cityId ? 'text-white' : 'text-text-secondary'}`}>
+                                        <span className={`text-sm group-hover/label:text-white transition-colors ${!cityCode ? 'text-white' : 'text-text-secondary'}`}>
                                             Tất cả thành phố
                                         </span>
                                     </label>
                                     {cities.map((city) => (
-                                        <label key={city.id} className="flex items-center gap-3 cursor-pointer group/label">
-                                            <div className={`size-4 rounded-full border flex items-center justify-center ${cityId === city.id ? 'border-primary' : 'border-[#493222]'}`}>
-                                                {cityId === city.id && <div className="size-2 rounded-full bg-primary" />}
+                                        <label key={city.code} className="flex items-center gap-3 cursor-pointer group/label">
+                                            <div className={`size-4 rounded-full border flex items-center justify-center ${cityCode === city.code ? 'border-primary' : 'border-[#493222]'}`}>
+                                                {cityCode === city.code && <div className="size-2 rounded-full bg-primary" />}
                                             </div>
                                             <input
                                                 type="radio"
-                                                name="cityId"
-                                                checked={cityId === city.id}
-                                                onChange={() => setCityId(city.id)}
+                                                name="cityCode"
+                                                checked={cityCode === city.code}
+                                                onChange={() => setCityCode(city.code)}
                                                 className="hidden"
                                             />
-                                            <span className={`text-sm group-hover/label:text-white transition-colors ${cityId === city.id ? 'text-white' : 'text-text-secondary'}`}>
+                                            <span className={`text-sm group-hover/label:text-white transition-colors ${cityCode === city.code ? 'text-white' : 'text-text-secondary'}`}>
                                                 {city.name}
                                             </span>
                                         </label>
