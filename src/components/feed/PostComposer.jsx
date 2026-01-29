@@ -53,15 +53,15 @@ export default function PostComposer({ userAvatar, onPostCreated }) {
   };
 
   return (
-    <div className="flex flex-col gap-4 bg-card-dark p-5 rounded-2xl shadow-lg border border-[#3e2b1d] transition-shadow hover:shadow-[#f47b25]/5 mb-6">
+    <div className="flex flex-col gap-4 bg-surface-main p-5 rounded-2xl shadow-lg border border-border-main transition-shadow hover:shadow-primary/5 mb-6">
       <div className="flex gap-4">
         <div
-          className="bg-center bg-no-repeat bg-cover rounded-full size-12 shrink-0 border border-[#493222]"
+          className="bg-center bg-no-repeat bg-cover rounded-full size-12 shrink-0 border border-border-main"
           style={{ backgroundImage: `url("${userAvatar}")` }}
         ></div>
         <div className="flex-1">
           <textarea
-            className="w-full bg-transparent border-none focus:ring-0 text-white placeholder:text-text-secondary/60 resize-none text-lg py-2 h-14 leading-relaxed"
+            className="w-full bg-transparent border-none focus:ring-0 text-text-main placeholder:text-text-secondary/60 resize-none text-lg py-2 h-14 leading-relaxed"
             placeholder="What's on your mind?"
             value={content}
             onChange={(e) => setContent(e.target.value)}
@@ -69,13 +69,13 @@ export default function PostComposer({ userAvatar, onPostCreated }) {
           ></textarea>
         </div>
       </div>
-      <div className="flex flex-wrap gap-2 justify-between items-center border-t border-[#493222] pt-4 mt-1">
+      <div className="flex flex-wrap gap-2 justify-between items-center border-t border-border-main pt-4 mt-1">
         <div className="flex gap-1">
-          <button className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-[#493222] text-text-secondary hover:text-primary transition-colors">
+          <button className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-background-main text-text-secondary hover:text-primary transition-colors">
             <Image size={22} />
             <span className="text-sm font-medium hidden sm:block">Photo</span>
           </button>
-          <button className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-[#493222] text-text-secondary hover:text-blue-400 transition-colors">
+          <button className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-background-main text-text-secondary hover:text-blue-400 transition-colors">
             <Video size={22} />
             <span className="text-sm font-medium hidden sm:block">Video</span>
           </button>
@@ -92,7 +92,7 @@ export default function PostComposer({ userAvatar, onPostCreated }) {
               <ChevronDown size={16} />
             </button>
             {showVisibilityMenu && (
-              <div className="absolute top-full mt-2 bg-[#2a1f17] border border-[#493222] rounded-lg shadow-lg z-10">
+              <div className="absolute top-full mt-2 bg-surface-main border border-border-main rounded-lg shadow-lg z-10">
                 {["PUBLIC", "FRIENDS", "PRIVATE"].map((vis) => (
                   <button
                     key={vis}
@@ -100,7 +100,7 @@ export default function PostComposer({ userAvatar, onPostCreated }) {
                       setVisibility(vis);
                       setShowVisibilityMenu(false);
                     }}
-                    className="flex items-center gap-2 px-4 py-2 hover:bg-[#493222] text-white text-sm w-full text-left"
+                    className="flex items-center gap-2 px-4 py-2 hover:bg-background-main text-text-main text-sm w-full text-left"
                   >
                     {(() => {
                       const Icon = visibilityIcons[vis];

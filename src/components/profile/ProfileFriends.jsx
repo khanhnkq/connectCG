@@ -99,9 +99,9 @@ const ProfileFriends = ({ profile, isOwner }) => {
   }, [profile?.userId]);
 
   return (
-    <div className="bg-[#342418] rounded-2xl border border-[#3e2b1d] p-6 shadow-sm">
+    <div className="bg-surface-main rounded-2xl border border-border-main p-6 shadow-sm">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-white font-bold text-xl flex items-center gap-2">
+        <h3 className="text-text-main font-bold text-xl flex items-center gap-2">
           <Users className="text-primary" size={20} />
           {isOwner ? "Danh sách bạn bè" : "Bạn bè"}
         </h3>
@@ -121,7 +121,7 @@ const ProfileFriends = ({ profile, isOwner }) => {
           {friends.map((friend) => (
             <div
               key={friend.id}
-              className="bg-[#493222] hover:bg-[#5c402d] p-3 rounded-2xl border border-white/5 flex items-center gap-4 transition-all group"
+              className="bg-background-main hover:bg-surface-main p-3 rounded-2xl border border-white/5 flex items-center gap-4 transition-all group"
             >
               <div className="relative">
                 <div
@@ -136,7 +136,7 @@ const ProfileFriends = ({ profile, isOwner }) => {
                 <div className="absolute -bottom-1 -right-1 size-4 bg-green-500 border-2 border-[#493222] rounded-full"></div>
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="text-white font-bold text-lg truncate group-hover:text-primary transition-colors">
+                <h4 className="text-text-main font-bold text-lg truncate group-hover:text-primary transition-colors">
                   {friend.fullName}
                 </h4>
                 <p className="text-text-secondary text-xs truncate">
@@ -149,7 +149,7 @@ const ProfileFriends = ({ profile, isOwner }) => {
               <div className="flex flex-col gap-1 items-end">
                 <button
                   onClick={() => navigate(`/dashboard/member/${friend.id}`)}
-                  className={`bg-primary/10 hover:bg-primary text-primary hover:text-[#231810] p-2 rounded-lg transition-all flex items-center justify-center ${
+                  className={`bg-primary/10 hover:bg-primary text-primary hover:text-text-main p-2 rounded-lg transition-all flex items-center justify-center ${
                     friend.relationshipStatus === "SELF" ? "hidden" : ""
                   }`}
                   title="Xem hồ sơ"
@@ -164,7 +164,7 @@ const ProfileFriends = ({ profile, isOwner }) => {
                 {friend.relationshipStatus === "FRIEND" ? (
                   <button
                     onClick={() => confirmUnfriend(friend)}
-                    className="bg-[#342418] hover:bg-red-500/20 text-text-secondary hover:text-red-500 p-2 rounded-lg transition-all flex items-center justify-center"
+                    className="bg-surface-main hover:bg-red-500/20 text-text-secondary hover:text-red-500 p-2 rounded-lg transition-all flex items-center justify-center"
                     title="Hủy kết bạn"
                   >
                     <UserMinus size={18} />
@@ -172,7 +172,7 @@ const ProfileFriends = ({ profile, isOwner }) => {
                 ) : friend.relationshipStatus === "PENDING" ? (
                   <button
                     onClick={() => confirmCancelRequest(friend)}
-                    className="bg-[#342418] hover:bg-red-500/20 text-text-secondary hover:text-red-500 p-2 rounded-lg transition-all flex items-center justify-center"
+                    className="bg-surface-main hover:bg-red-500/20 text-text-secondary hover:text-red-500 p-2 rounded-lg transition-all flex items-center justify-center"
                     title="Hủy lời mời"
                   >
                     <UserX size={18} />
@@ -180,7 +180,7 @@ const ProfileFriends = ({ profile, isOwner }) => {
                 ) : friend.relationshipStatus === "SELF" ? null : (
                   <button
                     onClick={() => handleSendFriendRequest(friend.id)}
-                    className="bg-[#342418] hover:bg-primary text-text-secondary hover:text-[#231810] p-2 rounded-lg transition-all flex items-center justify-center"
+                    className="bg-surface-main hover:bg-primary text-text-secondary hover:text-text-main p-2 rounded-lg transition-all flex items-center justify-center"
                     title="Kết bạn"
                   >
                     <UserPlus size={18} />
