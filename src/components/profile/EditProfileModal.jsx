@@ -4,11 +4,12 @@ import * as Yup from 'yup';
 import { useDispatch } from 'react-redux';
 import { updateProfileInfo } from '../../redux/slices/userSlice';
 import { toast } from 'react-toastify';
+import CitySelect from '../common/CitySelect';
 
 export default function EditProfileModal({ isOpen, onClose, profile }) {
     const dispatch = useDispatch();
     const [isLoading, setIsLoading] = useState(false);
-    
+
     // Validation Schema
     const validationSchema = Yup.object({
         fullName: Yup.string().required('Họ tên không được để trống'),
@@ -18,7 +19,7 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
         lookingFor: Yup.string(),
         gender: Yup.string().oneOf(['MALE', 'FEMALE', 'OTHER'], 'Giới tính không hợp lệ'),
         dateOfBirth: Yup.date().max(new Date(), 'Ngày sinh không hợp lệ'),
-        // cityId: Yup.number().nullable()
+        city: Yup.mixed().nullable() // Cho phép null
     });
 
     const formik = useFormik({
@@ -30,7 +31,7 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
             lookingFor: profile?.lookingFor || 'FRIENDSHIP',
             gender: profile?.gender || 'MALE',
             dateOfBirth: profile?.dateOfBirth || '',
-            // cityId: profile?.city?.id || null
+            city: (profile?.cityCode) ? { code: profile.cityCode, name: profile.cityName } : null
         },
         enableReinitialize: true,
         validationSchema: validationSchema,
@@ -40,9 +41,11 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
                 // Convert date empty string to null if needed
                 const payload = {
                     ...values,
-                    dateOfBirth: values.dateOfBirth || null
+                    dateOfBirth: values.dateOfBirth || null,
+                    cityCode: values.city?.code,
+                    cityName: values.city?.name
                 };
-                
+
                 await dispatch(updateProfileInfo(payload)).unwrap();
                 toast.success("Cập nhật hồ sơ thành công!");
                 onClose();
@@ -62,7 +65,7 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-[#3e2b1d] sticky top-0 bg-[#221710] z-10">
                     <h2 className="text-xl font-bold text-white">Chỉnh sửa hồ sơ</h2>
-                    <button 
+                    <button
                         onClick={onClose}
                         className="text-text-secondary hover:text-white transition-colors"
                     >
@@ -72,7 +75,7 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
 
                 {/* Form */}
                 <form onSubmit={formik.handleSubmit} className="p-6 space-y-6">
-                    
+
                     {/* Full Name */}
                     <div className="space-y-2">
                         <label className="text-text-secondary text-sm font-bold">Họ và tên</label>
@@ -137,7 +140,7 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
                         <div className="flex justify-end text-xs text-text-secondary">
                             {formik.values.bio.length}/250
                         </div>
-                         {formik.touched.bio && formik.errors.bio && (
+                        {formik.touched.bio && formik.errors.bio && (
                             <p className="text-red-500 text-xs">{formik.errors.bio}</p>
                         )}
                     </div>
@@ -176,19 +179,19 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
                     </div>
 
                     {/* Looking For */}
-                     <div className="space-y-2">
-                            <label className="text-text-secondary text-sm font-bold">Tìm kiếm</label>
-                            <select
-                                name="lookingFor"
-                                value={formik.values.lookingFor}
-                                onChange={formik.handleChange}
-                                className="w-full bg-[#342418] border border-[#493222] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary appearance-none cursor-pointer"
-                            >
-                                <option value="FRIENDSHIP">Kết bạn</option>
-                                <option value="DATING">Hẹn hò</option>
-                                <option value="CHAT">Trò chuyện</option>
-                                <option value="NETWORKING">Networking</option>
-                            </select>
+                    <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-bold">Tìm kiếm</label>
+                        <select
+                            name="lookingFor"
+                            value={formik.values.lookingFor}
+                            onChange={formik.handleChange}
+                            className="w-full bg-[#342418] border border-[#493222] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary appearance-none cursor-pointer"
+                        >
+                            <option value="FRIENDSHIP">Kết bạn</option>
+                            <option value="DATING">Hẹn hò</option>
+                            <option value="CHAT">Trò chuyện</option>
+                            <option value="NETWORKING">Networking</option>
+                        </select>
                     </div>
 
                     {/* Footer Actions */}
