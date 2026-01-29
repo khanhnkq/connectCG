@@ -14,7 +14,6 @@ export default function FriendsSearch() {
     const [loading, setLoading] = useState(false);
     const [searchFilters, setSearchFilters] = useState({
         name: '',
-
         gender: '',
         cityCode: ''
     });

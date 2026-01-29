@@ -12,6 +12,7 @@ import ProfileHobbies from '../../components/profile/ProfileHobbies';
 import ProfileFriends from '../../components/profile/ProfileFriends';
 import ReportModal from '../../components/report/ReportModal';
 import ConfirmModal from '../../components/admin/ConfirmModal';
+import ProfileNavbar from '../../components/profile/ProfileNavbar';
 import reportService from '../../services/ReportService';
 import toast from 'react-hot-toast';
 
@@ -43,7 +44,31 @@ export default function MemberProfile() {
             try {
                 setLoading(true);
                 const response = await UserProfileService.getUserProfile(id);
-                setProfile(response.data);
+                let profileData = response.data;
+
+                // FIX: Check if we are the receiver of a pending request
+                // The API might not return isRequestReceiver, so we check our pending list
+                if (profileData.relationshipStatus !== 'FRIEND') {
+                    try {
+                        // Fetch first page of pending requests to see if this user sent one
+                        const requestsRes = await FriendRequestService.getPendingRequests(0, 100);
+                        const incomingReq = requestsRes.data.content.find(req => req.senderId == profileData.userId);
+
+                        if (incomingReq) {
+                            profileData = {
+                                ...profileData,
+                                relationshipStatus: 'PENDING',
+                                isRequestReceiver: true,
+                                requestId: incomingReq.requestId,
+                                requestSent: false // We didn't send it, we received it
+                            };
+                        }
+                    } catch (err) {
+                        console.error("Error checking pending requests", err);
+                    }
+                }
+
+                setProfile(profileData);
             } catch (error) {
                 console.error("Lỗi khi tải hồ sơ thành viên:", error);
             } finally {
@@ -100,12 +125,59 @@ export default function MemberProfile() {
             await FriendRequestService.sendRequest(profile.userId);
             setProfile(prev => ({
                 ...prev,
-                relationshipStatus: 'PENDING' // Update local state immediately
+                relationshipStatus: 'PENDING', // Update local state immediately
+                requestSent: true,
+                isRequestReceiver: false
             }));
             toast.success("Đã gửi lời mời kết bạn!");
         } catch (error) {
             console.error("Lỗi khi gửi lời mời:", error);
             toast.error(error.response?.data?.message || "Không thể gửi lời mời.");
+        }
+    };
+
+    const handleAcceptRequest = async () => {
+        try {
+            // Need requestId from profile. In AdvancedSearch it was member.requestId
+            // If profile doesn't have requestId, this might be tricky. 
+            // Usually UserProfile DTO should have requestId if relationshipStatus is PENDING.
+            // Assuming profile.requestId exists.
+            if (!profile.requestId) {
+                toast.error("Không tìm thấy thông tin lời mời.");
+                return;
+            }
+            await FriendRequestService.acceptRequest(profile.requestId);
+            setProfile(prev => ({
+                ...prev,
+                relationshipStatus: 'FRIEND',
+                friendsCount: (prev.friendsCount || 0) + 1,
+                isRequestReceiver: false,
+                requestId: null
+            }));
+            toast.success("Đã chấp nhận lời mời kết bạn!");
+        } catch (error) {
+            console.error("Lỗi khi chấp nhận:", error);
+            toast.error("Không thể chấp nhận lời mời.");
+        }
+    };
+
+    const handleRejectRequest = async () => {
+        try {
+            if (!profile.requestId) {
+                toast.error("Không tìm thấy thông tin lời mời.");
+                return;
+            }
+            await FriendRequestService.rejectRequest(profile.requestId);
+            setProfile(prev => ({
+                ...prev,
+                relationshipStatus: 'STRANGER', // or NONE
+                isRequestReceiver: false,
+                requestId: null
+            }));
+            toast.success("Đã từ chối lời mời.");
+        } catch (error) {
+            console.error("Lỗi khi từ chối:", error);
+            toast.error("Không thể từ chối lời mời.");
         }
     };
 
@@ -148,7 +220,7 @@ export default function MemberProfile() {
                     <div className="px-4 md:px-8 pb-4 relative">
                         <div className="flex flex-col md:flex-row items-start md:items-end -mt-16 md:-mt-12 gap-6 relative z-10 mb-6">
                             <div className="relative shrink-0">
-                                <div className="size-32 md:size-44 rounded-full border-4 border-[#342418] bg-[#221710] p-1 shadow-2xl">
+                                <div className="size-32 md:size-44 rounded-full border-4 border-[#342418] bg-[#221710] p-1 shadow-2xl relative group">
                                     <div
                                         className="w-full h-full rounded-full bg-cover bg-center"
                                         style={{ backgroundImage: `url("${profile?.currentAvatarUrl || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}")` }}
@@ -178,6 +250,23 @@ export default function MemberProfile() {
                                             <span className="material-symbols-outlined text-[20px]">person_remove</span>
                                             Đã là bạn bè
                                         </button>
+                                    ) : (profile.relationshipStatus === 'PENDING' && profile.isRequestReceiver) ? (
+                                        <div className="flex gap-3 w-full md:w-auto flex-1 md:flex-none">
+                                            <button
+                                                onClick={handleAcceptRequest}
+                                                className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-primary hover:bg-orange-600 text-[#231810] font-bold px-6 py-3 rounded-xl transition-all shadow-lg shadow-orange-500/20"
+                                            >
+                                                <span className="material-symbols-outlined text-[20px]">check</span>
+                                                Chấp nhận
+                                            </button>
+                                            <button
+                                                onClick={handleRejectRequest}
+                                                className="flex-1 flex items-center justify-center gap-2 bg-[#493222] hover:bg-red-500/20 text-white hover:text-red-500 font-bold px-6 py-3 rounded-xl transition-all"
+                                            >
+                                                <span className="material-symbols-outlined text-[20px]">close</span>
+                                                Từ chối
+                                            </button>
+                                        </div>
                                     ) : profile.relationshipStatus === 'PENDING' ? (
                                         <button
                                             onClick={confirmCancelRequest}
@@ -197,14 +286,14 @@ export default function MemberProfile() {
                                     )}
                                     <button
                                         onClick={handleStartChat}
-                                        className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#493222] hover:bg-primary/20 text-white hover:text-primary font-bold px-4 py-3 rounded-xl transition-all"
+                                        className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#493222] hover:bg-primary/20 text-white hover:text-primary font-bold px-6 py-3 rounded-xl transition-all"
                                     >
                                         <span className="material-symbols-outlined text-[20px]">mail</span>
                                         Nhắn tin
                                     </button>
                                     <button
                                         onClick={() => setShowReportModal(true)}
-                                        className="flex items-center justify-center gap-2 bg-[#493222] hover:bg-red-500/10 text-text-secondary hover:text-red-500 font-bold px-4 py-3 rounded-xl transition-all"
+                                        className="flex items-center justify-center gap-2 bg-[#493222] hover:bg-red-500/10 text-text-secondary hover:text-red-500 font-bold size-12 rounded-xl transition-all shrink-0"
                                         title="Báo cáo người dùng"
                                     >
                                         <span className="material-symbols-outlined text-[20px]">report</span>
@@ -212,38 +301,11 @@ export default function MemberProfile() {
                                 </div>
                             </div>
                         </div>
-                        <div className="flex gap-1 overflow-x-auto pb-1 border-t border-[#493222] pt-2 scrollbar-hide">
-                            <button
-                                onClick={() => setActiveTab('timeline')}
-                                className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${activeTab === 'timeline' ? 'text-primary border-b-2 border-primary' : 'text-text-secondary hover:text-white hover:bg-[#493222]/50 rounded-t-lg'}`}
-                            >
-                                Dòng thời gian
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('about')}
-                                className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${activeTab === 'about' ? 'text-primary border-b-2 border-primary' : 'text-text-secondary hover:text-white hover:bg-[#493222]/50 rounded-t-lg'}`}
-                            >
-                                Giới thiệu
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('photos')}
-                                className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${activeTab === 'photos' ? 'text-primary border-b-2 border-primary' : 'text-text-secondary hover:text-white hover:bg-[#493222]/50 rounded-t-lg'}`}
-                            >
-                                Ảnh
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('hobbies')}
-                                className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${activeTab === 'hobbies' ? 'text-primary border-b-2 border-primary' : 'text-text-secondary hover:text-white hover:bg-[#493222]/50 rounded-t-lg'}`}
-                            >
-                                Sở thích
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('friends')}
-                                className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${activeTab === 'friends' ? 'text-primary border-b-2 border-primary' : 'text-text-secondary hover:text-white hover:bg-[#493222]/50 rounded-t-lg'}`}
-                            >
-                                Bạn bè ({profile?.friendsCount || 0})
-                            </button>
-                        </div>
+                        <ProfileNavbar
+                            activeTab={activeTab}
+                            setActiveTab={setActiveTab}
+                            friendsCount={profile?.friendsCount}
+                        />
                     </div>
                 </div>
             </div>
