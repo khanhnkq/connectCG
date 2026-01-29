@@ -4,9 +4,9 @@ import { getIconComponent } from "../../utils/iconMap";
 
 const ProfileHobbies = ({ profile, isOwner }) => {
   return (
-    <div className="bg-[#342418] rounded-2xl border border-[#3e2b1d] p-6 shadow-sm">
+    <div className="bg-surface-main rounded-2xl border border-border-main p-6 shadow-sm">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-white font-bold text-xl flex items-center gap-2">
+        <h3 className="text-text-main font-bold text-xl flex items-center gap-2">
           <Sparkles className="text-primary" size={20} />
           {isOwner ? "Sở thích của bạn" : "Sở thích"}
         </h3>
@@ -21,14 +21,16 @@ const ProfileHobbies = ({ profile, isOwner }) => {
           {profile.hobbies.map((hobby, index) => (
             <div
               key={index}
-              className="bg-[#493222] hover:bg-[#5c402d] border border-primary/20 p-4 rounded-2xl flex flex-col items-center gap-2 transition-all cursor-pointer group"
+              className="bg-background-main hover:bg-surface-main border border-primary/20 p-4 rounded-2xl flex flex-col items-center gap-2 transition-all cursor-pointer group"
             >
               {getIconComponent(hobby.icon, {
                 size: 32,
                 className:
                   "text-primary group-hover:scale-110 transition-transform",
               })}
-              <span className="text-white font-bold text-sm">{hobby.name}</span>
+              <span className="text-text-main font-bold text-sm">
+                {hobby.name}
+              </span>
             </div>
           ))}
         </div>

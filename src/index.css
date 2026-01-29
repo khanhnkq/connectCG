@@ -6,16 +6,16 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #231810;
+  background: var(--background);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #493222;
+  background: var(--border);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #684831;
+  background: var(--text-muted);
 }
 
 /* Date picker icon color adjustment for dark mode */
@@ -49,16 +49,16 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #2c2018;
+  background: var(--background);
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #493222;
+  background: var(--border);
   border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #684831;
+  background: var(--text-muted);
 }
 
 /* Base styles */
@@ -67,26 +67,71 @@ body {
   font-family: 'Plus Jakarta Sans', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--background);
+  color: var(--text-main);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 * {
   box-sizing: border-box;
 }
 
+:root {
+  --background: #f8f7f5;
+  --foreground: #221710;
+  --surface: #ffffff;
+  --border: #e2e8f0;
+  --text-main: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #94a3b8;
+  
+  --primary: #f47b25;
+  --primary-hover: #ea580c;
+  
+  --chat-sent: #f47b25;
+  --chat-received: #f1f5f9;
+  --chat-bg: #ffffff;
+}
+
+.dark {
+  --background: #221710;
+  --foreground: #f8f7f5;
+  --surface: #342418;
+  --border: #493222;
+  --text-main: #ffffff;
+  --text-secondary: #cba990;
+  --text-muted: #684831;
+  
+  --primary: #f47b25;
+  --primary-hover: #ea580c;
+
+  --chat-sent: #f47b25;
+  --chat-received: #3A2A20;
+  --chat-bg: #1A120B;
+}
+
 /* Custom colors for Tailwind v4 */
 @theme {
-  --color-primary: #f47b25;
-  --color-background-light: #f8f7f5;
-  --color-background-dark: #221710;
-  --color-surface-dark: #342418;
-  --color-card-dark: #342418;
-  --color-border-dark: #684831;
-  --color-text-secondary: #cba990;
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-background-main: var(--background);
+  --color-foreground-main: var(--foreground);
+  --color-surface-main: var(--surface);
+  --color-border-main: var(--border);
+  --color-text-main: var(--text-main);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+
+  /* Legacy aliases for compatibility */
+  --color-background-dark: var(--background);
+  --color-surface-dark: var(--surface);
+  --color-card-dark: var(--surface);
+  --color-border-dark: var(--border);
 
   /* Chat colors */
-  --color-bubble-sent: #f47b25;
-  --color-bubble-received: #3A2A20;
-  --color-chat-bg: #1A120B;
+  --color-bubble-sent: var(--chat-sent);
+  --color-bubble-received: var(--chat-received);
+  --color-chat-bg: var(--chat-bg);
 
   --font-display: "Plus Jakarta Sans", sans-serif;
 

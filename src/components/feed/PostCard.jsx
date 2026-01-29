@@ -45,8 +45,8 @@ export default function PostCard({
 
   return (
     <article
-      className={`bg-card-dark rounded-2xl border border-[#3e2b1d] overflow-hidden ${
-        type === "dashboard" ? "shadow-lg" : "shadow-sm"
+      className={`bg-surface-main rounded-2xl border border-border-main overflow-hidden shadow-sm transition-colors duration-300 ${
+        type === "dashboard" ? "shadow-lg" : ""
       }`}
     >
       <div className="p-5 flex justify-between items-start">
@@ -57,7 +57,7 @@ export default function PostCard({
           ></div>
           <div className="flex flex-col justify-center">
             <div className="flex items-center gap-2">
-              <h3 className="text-white font-bold text-base hover:text-primary cursor-pointer transition-colors">
+              <h3 className="text-text-main font-bold text-base hover:text-primary cursor-pointer transition-colors">
                 {author.name}
               </h3>
               {author.isSystem && (
@@ -70,7 +70,7 @@ export default function PostCard({
             <p className="text-text-secondary text-[11px] mt-0.5 flex items-center gap-1 font-medium italic">
               {time} •
               {author.originGroup ? (
-                <span className="flex items-center gap-1 hover:text-white cursor-pointer transition-all">
+                <span className="flex items-center gap-1 hover:text-primary cursor-pointer transition-all">
                   <Users size={14} />
                   in {author.originGroup}
                 </span>
@@ -92,8 +92,8 @@ export default function PostCard({
       flex items-center justify-center
       rounded-full
       text-text-secondary
-      hover:text-white
-      hover:bg-[#493222]
+      hover:text-primary
+      hover:bg-background-main
       transition-all
       active:scale-95
     "
@@ -105,10 +105,10 @@ export default function PostCard({
             <div
               className="
         absolute right-0 mt-2 w-52
-        bg-[#1E140D]
-        border border-[#342418]
+        bg-surface-main
+        border border-border-main
         rounded-2xl
-        shadow-[0_10px_40px_rgba(0,0,0,0.6)]
+        shadow-xl
         z-50
         overflow-hidden
       "
@@ -120,8 +120,8 @@ export default function PostCard({
           w-full px-4 py-3
           flex items-center gap-2
           text-sm font-medium
-          text-white
-          hover:bg-[#2A1D15]
+          text-text-main
+          hover:bg-background-main
           transition-colors
         "
               >
@@ -155,14 +155,14 @@ export default function PostCard({
           children
         ) : (
           <div
-            className="text-gray-200 text-base font-normal leading-relaxed mb-4"
+            className="text-text-main text-base font-normal leading-relaxed mb-4"
             dangerouslySetInnerHTML={{ __html: content }}
           ></div>
         )}
       </div>
       {image && (
         <div
-          className={`w-full bg-[#2a1d15] bg-cover bg-center cursor-pointer relative group ${
+          className={`w-full bg-surface-main bg-cover bg-center cursor-pointer relative group ${
             type === "dashboard" ? "h-80" : "aspect-[4/3] sm:aspect-video"
           }`}
           style={{ backgroundImage: `url("${image}")` }}
@@ -170,7 +170,7 @@ export default function PostCard({
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
         </div>
       )}
-      <div className="px-5 py-3 border-b border-[#493222] flex items-center justify-between text-text-secondary text-sm">
+      <div className="px-5 py-3 border-b border-border-main flex items-center justify-between text-text-secondary text-sm">
         <div className="flex items-center gap-1.5 hover:text-primary cursor-pointer transition-colors">
           <div className="size-5 rounded-full bg-primary flex items-center justify-center text-white shadow-sm">
             <ThumbsUp size={10} strokeWidth={3} />
@@ -191,21 +191,21 @@ export default function PostCard({
       {type !== "admin" ? (
         <div className="p-2 px-3 flex items-center justify-between">
           <div className="flex gap-1 flex-1">
-            <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-full hover:bg-[#493222] text-text-secondary hover:text-red-500 transition-colors group">
+            <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-full hover:bg-background-main text-text-secondary hover:text-red-500 transition-colors group">
               <Heart
                 size={20}
                 className="group-hover:text-red-500 group-active:scale-90 transition-all"
               />
               <span className="text-sm font-bold">Like</span>
             </button>
-            <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-full hover:bg-[#493222] text-text-secondary hover:text-blue-400 transition-colors group">
+            <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-full hover:bg-background-main text-text-secondary hover:text-blue-400 transition-colors group">
               <MessageSquare
                 size={20}
                 className="group-active:scale-90 transition-all"
               />
               <span className="text-sm font-bold">Comment</span>
             </button>
-            <button className="hidden sm:flex items-center justify-center gap-2 px-4 py-2.5 rounded-full hover:bg-[#493222] text-text-secondary hover:text-green-400 transition-colors group">
+            <button className="hidden sm:flex items-center justify-center gap-2 px-4 py-2.5 rounded-full hover:bg-background-main text-text-secondary hover:text-green-400 transition-colors group">
               <Share2
                 size={20}
                 className="group-active:scale-90 transition-all"

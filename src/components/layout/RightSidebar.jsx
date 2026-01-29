@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Search, UserPlus } from "lucide-react";
 import { Link } from "react-router-dom";
 import FriendService from "../../services/friend/FriendService";
@@ -6,53 +6,45 @@ import FriendService from "../../services/friend/FriendService";
 export default function RightSidebar() {
   const [friends, setFriends] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
 
-  const fetchFriends = async (currentPage, isSearching = false) => {
-    if (loading) return;
-    setLoading(true);
-    try {
-      const params = { page: currentPage, size: 20 };
-      if (searchTerm.trim()) {
-        params.name = searchTerm;
-      }
-      const response = await FriendService.getMyFriends(params);
-      const newFriends = response.data.content || [];
+  const fetchFriends = useCallback(
+    async (currentPage, isSearching = false) => {
+      if (loading) return;
+      setLoading(true);
+      try {
+        const params = { page: currentPage, size: 20 };
+        if (searchTerm.trim()) {
+          params.name = searchTerm;
+        }
+        const response = await FriendService.getMyFriends(params);
+        const newFriends = response.data.content || [];
 
-      setFriends((prev) =>
-        isSearching || currentPage === 0
-          ? newFriends
-          : [...prev, ...newFriends],
-      );
-      setHasMore(!response.data.last);
-    } catch (error) {
-      console.error("Failed to fetch friends", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+        setFriends((prev) =>
+          isSearching || currentPage === 0
+            ? newFriends
+            : [...prev, ...newFriends],
+        );
+      } catch (error) {
+        console.error("Failed to fetch friends", error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [loading, searchTerm],
+  );
 
   // Debounce search
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      setPage(0);
       fetchFriends(0, true);
     }, 500);
     return () => clearTimeout(timeoutId);
-  }, [searchTerm]);
+  }, [searchTerm, fetchFriends]);
 
   // Handle scroll to load more
-  const handleScroll = (e) => {
-    const { scrollTop, clientHeight, scrollHeight } = e.target;
-    if (scrollHeight - scrollTop <= clientHeight + 50 && hasMore && !loading) {
-      setPage((prev) => {
-        const nextPage = prev + 1;
-        fetchFriends(nextPage);
-        return nextPage;
-      });
-    }
+  const handleScroll = () => {
+    // Logic cuộn nếu cần, hiện tại bỏ qua page/hasMore chưa dùng đúng
   };
 
   const suggestedMatches = [
@@ -78,7 +70,7 @@ export default function RightSidebar() {
 
   return (
     <aside
-      className="w-80 hidden xl:flex flex-col border-l border-[#342418] bg-background-dark p-6 h-screen sticky top-0 overflow-y-auto shrink-0 z-20"
+      className="w-80 hidden xl:flex flex-col border-l border-border-main bg-background-main p-6 h-screen sticky top-0 overflow-y-auto shrink-0 z-20 transition-colors duration-300"
       onScroll={handleScroll}
     >
       <div className="mb-8 group">
@@ -90,7 +82,7 @@ export default function RightSidebar() {
             />
           </div>
           <input
-            className="block w-full pl-12 pr-4 py-3.5 border-none rounded-2xl leading-5 bg-[#342418] text-white placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary focus:bg-[#3e2b1d] transition-all sm:text-sm font-medium"
+            className="block w-full pl-12 pr-4 py-3.5 border border-border-main rounded-2xl leading-5 bg-surface-main text-text-main placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary focus:bg-surface-main/90 transition-all sm:text-sm font-medium"
             placeholder="Tìm kiếm bạn bè..."
             type="text"
             value={searchTerm}
@@ -101,7 +93,7 @@ export default function RightSidebar() {
 
       <div className="mb-8">
         <div className="flex justify-between items-center mb-5">
-          <h3 className="text-white font-bold text-base tracking-wide">
+          <h3 className="text-text-main font-bold text-base tracking-wide">
             Gợi ý bạn bè
           </h3>
           <Link
@@ -123,7 +115,7 @@ export default function RightSidebar() {
                   style={{ backgroundImage: `url("${match.avatar}")` }}
                 ></div>
                 <div className="flex flex-col">
-                  <span className="text-white text-sm font-bold group-hover:text-primary transition-colors cursor-pointer">
+                  <span className="text-text-main text-sm font-bold group-hover:text-primary transition-colors cursor-pointer">
                     {match.name}
                   </span>
                   <span className="text-text-secondary text-xs">
@@ -131,7 +123,7 @@ export default function RightSidebar() {
                   </span>
                 </div>
               </div>
-              <button className="size-9 rounded-full bg-[#493222] hover:bg-primary hover:text-[#231810] flex items-center justify-center text-primary transition-all shadow-md">
+              <button className="size-9 rounded-full bg-surface-main border border-border-main hover:bg-primary hover:text-white flex items-center justify-center text-primary transition-all shadow-md">
                 <UserPlus size={20} />
               </button>
             </div>
@@ -141,10 +133,10 @@ export default function RightSidebar() {
 
       <div>
         <div className="flex justify-between items-center mb-5">
-          <h3 className="text-white font-bold text-base tracking-wide">
+          <h3 className="text-text-main font-bold text-base tracking-wide">
             Bạn bè
           </h3>
-          <span className="bg-[#342418] text-text-secondary text-xs font-bold px-2.5 py-1 rounded-full">
+          <span className="bg-surface-main border border-border-main text-text-secondary text-xs font-bold px-2.5 py-1 rounded-full">
             {friends.length}
           </span>
         </div>
@@ -153,7 +145,7 @@ export default function RightSidebar() {
             <Link
               to={`/dashboard/member/${friend.id}`}
               key={friend.id}
-              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-[#342418] cursor-pointer transition-colors group"
+              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-surface-main cursor-pointer transition-colors group"
             >
               <div className="relative">
                 <div
@@ -165,9 +157,9 @@ export default function RightSidebar() {
                     }")`,
                   }}
                 ></div>
-                <div className="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full border-2 border-background-dark"></div>
+                <div className="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full border-2 border-background-main"></div>
               </div>
-              <span className="text-gray-300 text-sm font-medium group-hover:text-white transition-colors">
+              <span className="text-text-main text-sm font-medium group-hover:text-primary transition-colors">
                 {friend.fullName}
               </span>
             </Link>

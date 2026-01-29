@@ -70,10 +70,10 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-[#221710] border border-[#3e2b1d] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl animate-in zoom-in-95 duration-200">
+      <div className="bg-surface-main border border-border-main rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl animate-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-[#3e2b1d] sticky top-0 bg-[#221710] z-10">
-          <h2 className="text-xl font-bold text-white">Chỉnh sửa hồ sơ</h2>
+        <div className="flex items-center justify-between p-6 border-b border-border-main sticky top-0 bg-surface-main z-10">
+          <h2 className="text-xl font-bold text-text-main">Chỉnh sửa hồ sơ</h2>
           <button
             onClick={onClose}
             className="text-text-secondary hover:text-white transition-colors"
@@ -97,11 +97,11 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
               value={formik.values.fullName}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
-              className={`w-full bg-[#342418] border ${
+              className={`w-full bg-background-main border ${
                 formik.touched.fullName && formik.errors.fullName
                   ? "border-red-500"
-                  : "border-[#493222]"
-              } rounded-xl px-4 py-3 text-white placeholder-text-secondary/50 focus:outline-none focus:border-primary transition-colors`}
+                  : "border-border-main"
+              } rounded-xl px-4 py-3 text-text-main placeholder:text-text-muted focus:outline-none focus:border-primary transition-colors`}
             />
             {formik.touched.fullName && formik.errors.fullName && (
               <p className="text-red-500 text-xs">{formik.errors.fullName}</p>
@@ -119,7 +119,7 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
                 name="gender"
                 value={formik.values.gender}
                 onChange={formik.handleChange}
-                className="w-full bg-[#342418] border border-[#493222] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary appearance-none cursor-pointer"
+                className="w-full bg-background-main border border-border-main rounded-xl px-4 py-3 text-text-main focus:outline-none focus:border-primary appearance-none cursor-pointer"
               >
                 <option value="MALE">Nam</option>
                 <option value="FEMALE">Nữ</option>
@@ -138,7 +138,7 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
                 name="dateOfBirth"
                 value={formik.values.dateOfBirth}
                 onChange={formik.handleChange}
-                className="w-full bg-[#342418] border border-[#493222] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary"
+                className="w-full bg-background-main border border-border-main rounded-xl px-4 py-3 text-text-main focus:outline-none focus:border-primary"
               />
               {formik.touched.dateOfBirth && formik.errors.dateOfBirth && (
                 <p className="text-red-500 text-xs">
@@ -161,11 +161,11 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
               value={formik.values.bio}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
-              className={`w-full bg-[#342418] border ${
+              className={`w-full bg-background-main border ${
                 formik.touched.bio && formik.errors.bio
                   ? "border-red-500"
-                  : "border-[#493222]"
-              } rounded-lg px-4 py-3 text-white placeholder-text-secondary/50 focus:outline-none focus:border-primary transition-colors resize-none`}
+                  : "border-border-main"
+              } rounded-lg px-4 py-3 text-text-main placeholder:text-text-muted focus:outline-none focus:border-primary transition-colors resize-none`}
             ></textarea>
             <div className="flex justify-end text-xs text-text-secondary">
               {formik.values.bio.length}/50
@@ -188,7 +188,7 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
                 placeholder="Công việc hiện tại"
                 value={formik.values.occupation}
                 onChange={formik.handleChange}
-                className="w-full bg-[#342418] border border-[#493222] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary"
+                className="w-full bg-background-main border border-border-main rounded-xl px-4 py-3 text-text-main focus:outline-none focus:border-primary"
               />
             </div>
 
@@ -202,7 +202,7 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
                 name="maritalStatus"
                 value={formik.values.maritalStatus}
                 onChange={formik.handleChange}
-                className="w-full bg-[#342418] border border-[#493222] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary appearance-none cursor-pointer"
+                className="w-full bg-background-main border border-border-main rounded-xl px-4 py-3 text-text-main focus:outline-none focus:border-primary appearance-none cursor-pointer"
               >
                 <option value="SINGLE">Độc thân</option>
                 <option value="DATING">Đang hẹn hò</option>
@@ -232,11 +232,11 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
           </div>
 
           {/* Footer Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-[#3e2b1d]">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border-main">
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2.5 rounded-xl font-bold text-text-secondary hover:text-white hover:bg-[#342418] transition-all"
+              className="px-6 py-2.5 rounded-xl font-bold text-text-secondary hover:text-text-main hover:bg-background-main transition-all"
             >
               Hủy bỏ
             </button>

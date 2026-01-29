@@ -180,7 +180,7 @@ export default function GroupsManagement() {
               ) : (
                 <Lock size={18} className="text-primary" />
               )}
-              <span className="text-white text-[11px] font-black uppercase tracking-wider">
+              <span className="text-text-main text-[11px] font-black uppercase tracking-wider">
                 {group.privacy}
               </span>
             </div>
@@ -192,7 +192,7 @@ export default function GroupsManagement() {
               <div className="absolute bottom-4 right-4 flex gap-2 z-20">
                 {group.pendingRequestsCount > 0 && (
                   <div
-                    className="bg-red-500/90 backdrop-blur-md text-white px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 border border-white/20 shadow-xl"
+                    className="bg-red-500/90 backdrop-blur-md text-white px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 border border-white/10 shadow-xl"
                     title={`${group.pendingRequestsCount} yêu cầu tham gia`}
                   >
                     <UserPlus size={16} />
@@ -216,7 +216,7 @@ export default function GroupsManagement() {
             )}
 
           <div className="absolute bottom-4 left-5 right-5 z-20 pointer-events-none">
-            <h4 className="text-white font-bold text-xl leading-tight group-hover:text-primary transition-colors line-clamp-1">
+            <h4 className="text-text-main font-bold text-xl leading-tight group-hover:text-primary transition-colors line-clamp-1">
               {group.name}
             </h4>
             <p className="text-text-secondary text-xs font-medium italic opacity-80 flex items-center gap-1 mt-1">
@@ -227,7 +227,7 @@ export default function GroupsManagement() {
         </div>
 
         {/* Content Area */}
-        <div className="p-6 flex flex-col flex-1 bg-gradient-to-b from-card-dark to-[#1a120b]">
+        <div className="p-6 flex flex-col flex-1 bg-surface-main">
           <p className="text-text-secondary text-sm mb-6 line-clamp-2 leading-relaxed h-10">
             {group.description || "Chưa có mô tả cho nhóm này."}
           </p>
@@ -237,13 +237,13 @@ export default function GroupsManagement() {
               <>
                 <button
                   onClick={() => handleAcceptInvite(group.id)}
-                  className="flex-1 py-3 rounded-2xl bg-primary text-[#231810] font-black text-xs transition-all uppercase tracking-widest hover:bg-orange-600 active:scale-95 flex items-center justify-center"
+                  className="flex-1 py-3 rounded-2xl bg-primary text-text-main font-black text-xs transition-all uppercase tracking-widest hover:bg-orange-600 active:scale-95 flex items-center justify-center"
                 >
                   Chấp nhận
                 </button>
                 <button
                   onClick={() => handleDeclineInvite(group.id)}
-                  className="flex-1 py-3 rounded-2xl bg-[#342418] text-red-500 border border-red-500/20 font-black text-xs transition-all uppercase tracking-widest hover:bg-red-500 hover:text-white active:scale-95 flex items-center justify-center"
+                  className="flex-1 py-3 rounded-2xl bg-surface-main text-red-500 border border-border-main font-black text-xs transition-all uppercase tracking-widest hover:bg-red-500 hover:text-white active:scale-95 flex items-center justify-center"
                 >
                   Từ chối
                 </button>
@@ -255,7 +255,7 @@ export default function GroupsManagement() {
             ) : isMember || isAdmin ? (
               <button
                 onClick={() => navigate(`/dashboard/groups/${group.id}`)}
-                className="flex-1 py-3 rounded-2xl bg-primary/10 text-primary border border-primary/20 font-black text-xs transition-all uppercase tracking-widest hover:bg-primary hover:text-[#231810] active:scale-95 flex items-center justify-center gap-2"
+                className="flex-1 py-3 rounded-2xl bg-primary/10 text-primary border border-primary/20 font-black text-xs transition-all uppercase tracking-widest hover:bg-primary hover:text-text-main active:scale-95 flex items-center justify-center gap-2"
               >
                 <LogIn size={16} />
                 Vào nhóm
@@ -263,7 +263,7 @@ export default function GroupsManagement() {
             ) : (
               <button
                 onClick={() => handleJoinGroup(group.id)}
-                className="flex-1 py-3 rounded-2xl bg-primary text-[#231810] font-black text-xs transition-all uppercase tracking-widest hover:bg-orange-600 active:scale-95 flex items-center justify-center gap-2"
+                className="flex-1 py-3 rounded-2xl bg-primary text-text-main font-black text-xs transition-all uppercase tracking-widest hover:bg-orange-600 active:scale-95 flex items-center justify-center gap-2"
               >
                 <UserPlus size={16} />
                 Tham gia
@@ -273,7 +273,7 @@ export default function GroupsManagement() {
             {isAdmin && (
               <button
                 onClick={() => navigate(`/dashboard/groups/edit/${group.id}`)}
-                className="px-4 py-3 rounded-2xl bg-[#342418] text-primary border border-primary/20 hover:bg-primary hover:text-white transition-all active:scale-95 flex items-center justify-center group/settings"
+                className="px-4 py-3 rounded-2xl bg-surface-main text-primary border border-border-main hover:bg-primary hover:text-white transition-all active:scale-95 flex items-center justify-center group/settings"
                 title="Cài đặt nhóm"
               >
                 <Settings
@@ -290,7 +290,7 @@ export default function GroupsManagement() {
 
   if (loading) {
     return (
-      <div className="bg-[#0f0a06] min-h-screen flex items-center justify-center">
+      <div className="bg-background-main min-h-screen flex items-center justify-center">
         <div className="size-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
       </div>
     );
@@ -314,17 +314,16 @@ export default function GroupsManagement() {
       : filteredGroups(pendingInvitations);
 
   return (
-    <div className="max-w-7xl mx-auto w-full pb-20">
+    <div className="max-w-7xl mx-auto w-full pb-20 bg-background-main transition-colors duration-300">
       {/* Header */}
-      {/* Header */}
-      <div className="sticky top-0 z-50 bg-background-dark/95 backdrop-blur-xl border-b border-[#342418] p-4 flex flex-col md:flex-row justify-between items-center px-4 md:px-8 gap-4 md:gap-0">
+      <div className="sticky top-0 z-50 bg-background-main/95 backdrop-blur-xl border-b border-border-main p-4 flex flex-col md:flex-row justify-between items-center px-4 md:px-8 gap-4 md:gap-0">
         <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 w-full md:w-auto">
-          <h2 className="text-2xl font-extrabold text-white tracking-tight">
+          <h2 className="text-2xl font-extrabold text-text-main tracking-tight">
             Community Hub
           </h2>
 
           {/* Tabs */}
-          <div className="flex bg-[#1a120b] p-1 rounded-2xl border border-[#3e2b1d]">
+          <div className="flex bg-surface-main p-1 rounded-2xl border border-border-main">
             {["my", "discover", "invites"].map((tab) => (
               <button
                 key={tab}
@@ -334,8 +333,8 @@ export default function GroupsManagement() {
                 }}
                 className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all relative ${
                   activeTab === tab
-                    ? "bg-primary text-[#231810] shadow-lg"
-                    : "text-text-secondary hover:text-white"
+                    ? "bg-primary text-text-main shadow-lg"
+                    : "text-text-secondary hover:text-primary"
                 }`}
               >
                 {tab === "my"
@@ -365,7 +364,7 @@ export default function GroupsManagement() {
               type="text"
               value={searchQuery}
               onChange={handleSearch}
-              className="block w-full pl-11 pr-4 py-2.5 border border-[#3e2b1d] rounded-2xl bg-[#1a120b] text-white placeholder-text-secondary/50 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all text-xs font-medium"
+              className="block w-full pl-11 pr-4 py-2.5 border border-border-main rounded-2xl bg-surface-main text-text-main placeholder-text-secondary/50 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all text-xs font-medium"
               placeholder={
                 activeTab === "my"
                   ? "Tìm kiếm nhóm của bạn..."
@@ -377,7 +376,7 @@ export default function GroupsManagement() {
           </div>
           <Link
             to="/dashboard/groups/create"
-            className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-primary text-[#231810] hover:bg-orange-600 transition-all font-black text-xs uppercase tracking-widest shadow-lg shadow-orange-500/20 active:scale-95 group"
+            className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-primary text-text-main hover:bg-orange-600 transition-all font-black text-xs uppercase tracking-widest shadow-lg shadow-orange-500/20 active:scale-95 group"
           >
             <Plus
               size={18}
@@ -405,7 +404,7 @@ export default function GroupsManagement() {
             {displayedGroups.map((group) => renderGroupCard(group))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-24 bg-card-dark/30 rounded-[3rem] border border-dashed border-[#3e2b1d]">
+          <div className="flex flex-col items-center justify-center py-24 bg-surface-main rounded-[3rem] border border-dashed border-border-main">
             <Users size={60} className="text-text-muted mb-4 opacity-20" />
             <p className="text-text-secondary font-medium">
               Không tìm thấy nhóm nào phù hợp.

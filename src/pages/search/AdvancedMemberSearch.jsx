@@ -1,201 +1,219 @@
-import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import UserSearchService from '../../services/user/UserSearchService';
-import CityService from '../../services/CityService';
-import FriendRequestService from '../../services/friend/FriendRequestService';
-import ChatService from '../../services/chat/ChatService';
-import ConfirmModal from '../../components/admin/ConfirmModal';
-import toast from 'react-hot-toast';
+
+import { Loader2, Check, X, UserPlus, Search, ChevronDown } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Link } from "react-router-dom";
+import UserSearchService from "../../services/user/UserSearchService";
+import CityService from "../../services/CityService";
+import FriendRequestService from "../../services/friend/FriendRequestService";
+import ConfirmModal from "../../components/admin/ConfirmModal";
+import toast from "react-hot-toast";
+
 
 import CitySelect from '../../components/common/CitySelect';
 
 export default function AdvancedMemberSearch() {
-    const navigate = useNavigate();
-    const [members, setMembers] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [sendingRequests, setSendingRequests] = useState({});
-    const [keyword, setKeyword] = useState('');
-    const [pagination, setPagination] = useState({ page: 0, size: 8, totalPages: 0 });
-    const [confirmModal, setConfirmModal] = useState({ isOpen: false, receiverId: null });
 
-    const [maritalStatus, setMaritalStatus] = useState('');
-    const [lookingFor, setLookingFor] = useState('');
-    const [cityCode, setCityCode] = useState('');
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [sendingRequests, setSendingRequests] = useState({});
+  const [keyword, setKeyword] = useState("");
+  const [pagination, setPagination] = useState({
+    page: 0,
+    size: 8,
+    totalPages: 0,
+  });
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    receiverId: null,
+  });
 
-    // Mock suggestions data (merged from FriendSuggestions)
-    const [suggestions, setSuggestions] = useState([
-        {
-            id: 1,
-            name: 'Hồng Nhung',
-            age: 24,
-            location: 'Hà Nội',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA61rF2qJA_61d08hoKQD1vgLttk99SWH-2mhQvPCoH57mhr0UjI8L7ybrsEWnI2oLFtMUesiVK-j9CGmOjLqaDBSP4VGvvtSiwItxsARYkGe8mEsW7qwBkWXGsCjQLKe10vZ7AQv05zjKn0dsPLE5BUEJCjrwzv9TUcPhyKj43H7MuKHeGmqxrZrq5_s7ODalnsrwBejsIxD4NsrZetKdfuu5WRkwVCT304dnvOmT15inm4rJUGChESlWiT5jnp5f3NqPpm8kKCv0',
-            mutualFriends: 12,
-            reason: 'Có cùng sở thích: Du lịch',
-            online: true
-        },
-        {
-            id: 2,
-            name: 'Tuấn Anh',
-            age: 29,
-            location: 'TP. HCM',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBdoLrCwAT83JCL6U8m7TnDC0oM8kn4OVr5XeeYADi_UYRinmq2C0fIwzychqDESZvGWD0nS5EqD_0hTACwjoHHIUqj1bI5Ic1EQZ75Oef8FoxX0B7g4dp_lmTjf44WtIpjrF_Ygs2b0iQ90dlQzFyapA7Oh2Pm1-peCNesZBogBZhUpUCXOnp5_KqLP9H-cm69o1uTTt-sGGAzw11HFpXZ7pvgNJkIjC9OPnhWLCMwXKlgZz2nKU2pguarVqXSrrVwTiSrRLt4h5g',
-            mutualFriends: 8,
-            reason: 'Thành viên mới gần bạn',
-            online: false
-        },
-        {
-            id: 3,
-            name: 'Minh Thư',
-            age: 26,
-            location: 'Đà Nẵng',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCA2lYtnTFCA75HFG_52JszPx-az718WMOboPAn-G1i24N852_c8WMA84zaSIjPhM2bLmVoY8itXvafnzxb5VjPbzRUZp6AXCKTfAEXa9jysG_6eND1TYZ0D1OFOXHtOKIWA2x0OJxEozgg2vR_FVWQLKzKDMrEuV3ZX9MEa8yOLevyaZjSYY0z7uQTwuSXWp4HBjjqAcBcZLqU4iAoqv71JyHkK1TW8TD9Rt3KVz3qa5jC8Xq-idWXHr3qpktV4H962cWYDM__P1Y',
-            mutualFriends: 5,
-            reason: 'Có cùng sở thích: Nghệ thuật',
-            online: true
-        },
-        {
-            id: 4,
-            name: 'Quốc Bảo',
-            age: 28,
-            location: 'Cần Thơ',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC5XMIpiqrD96rbcu3BjxqHOkpiTb_uUr6zVOzb3_EuEuyT7BKqTEpoqxuP4Q5_KQvP60A_2VSvikFgb-T6dHDeoW_JBguXbEb2aBZWpYU2ZHqnq9-UbMsPrpz9nuSS5PoGtucwsXXNpETlS5qomt4Lt5QiBEH-IIExc6OiETtXvtpKy0BwNQlgjk1GYSXjtSmGV42SJAbFmDxmcSZYbOTUNXQk7EwH1M2sDDKY33EOblUP98AmvedKaka_lnog0uPtQE6vFnDMUuk',
-            mutualFriends: 18,
-            reason: 'Bạn của Sarah Jenkins',
-            online: true
-        }
-    ]);
-
-    const handleStartChat = async (userId) => {
-        const tid = toast.loading("Đang mở cuộc trò chuyện...");
-        try {
-            const response = await ChatService.getOrCreateDirectChat(userId);
-            const room = response.data;
-            toast.success("Đã kết nối!", { id: tid });
-            navigate('/chat', { state: { selectedRoomKey: room.firebaseRoomKey } });
-        } catch (error) {
-            console.error("Error starting chat:", error);
-            toast.error("Không thể tạo cuộc trò chuyện", { id: tid });
-        }
-    };
+  const [maritalStatus, setMaritalStatus] = useState("");
+  const [lookingFor, setLookingFor] = useState("");
+  const [cityCode, setCityCode] = useState("");
+  const [cities, setCities] = useState([]);
 
 
+  const fetchCities = useCallback(async () => {
+    try {
+      const data = await CityService.getAllCities();
+      setCities(data);
+    } catch (error) {
+      console.error("Failed to fetch cities", error);
+    }
+  }, []);
+
+  const fetchMembers = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = {
+        page: pagination.page,
+        size: pagination.size,
+        maritalStatus: maritalStatus || null,
+        lookingFor: lookingFor || null,
+        keyword: keyword || null,
+        cityCode: cityCode || null,
+      };
+      const response = await UserSearchService.searchMembers(params);
+      // Append new data if loading more pages, replace if it's the first page
+      setMembers((prev) =>
+        pagination.page === 0
+          ? response.data.content
+          : [...prev, ...response.data.content],
+      );
+      setPagination((prev) => ({
+        ...prev,
+        totalPages: response.data.totalPages,
+      }));
+    } catch (error) {
+      console.error("Search failed", error);
+      // toast.error('Lỗi khi tải danh sách thành viên');
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    pagination.page,
+    pagination.size,
+    maritalStatus,
+    lookingFor,
+    keyword,
+    cityCode,
+  ]);
+
+  useEffect(() => {
+    fetchCities();
+  }, [fetchCities]);
 
 
-    useEffect(() => {
-        // No fetchCities needed here
-    }, []);
+  // Reset to page 0 when filters change
+  useEffect(() => {
+    setPagination((prev) => ({ ...prev, page: 0 }));
+  }, [maritalStatus, lookingFor, keyword, cityCode]);
 
-    // Reset to page 0 when filters change
-    useEffect(() => {
-        setPagination(prev => ({ ...prev, page: 0 }));
-    }, [maritalStatus, lookingFor, keyword, cityCode]);
 
-    useEffect(() => {
-        fetchMembers();
-    }, [maritalStatus, lookingFor, keyword, cityCode, pagination.page]);
+  useEffect(() => {
+    fetchMembers();
+  }, [fetchMembers]);
 
-    const fetchMembers = async () => {
-        setLoading(true);
-        try {
-            const params = {
-                page: pagination.page,
-                size: pagination.size,
-                maritalStatus: maritalStatus || null,
-                lookingFor: lookingFor || null,
-                keyword: keyword || null,
-                cityCode: cityCode || null,
-            };
-            const response = await UserSearchService.searchMembers(params);
-            // Append new data if loading more pages, replace if it's the first page
-            setMembers(prev => pagination.page === 0 ? response.data.content : [...prev, ...response.data.content]);
-            setPagination(prev => ({ ...prev, totalPages: response.data.totalPages }));
-        } catch (error) {
-            console.error('Search failed', error);
-            // toast.error('Lỗi khi tải danh sách thành viên');
-        } finally {
-            setLoading(false);
-        }
-    };
+  const handleReset = () => {
+    setKeyword("");
+    setMaritalStatus("");
+    setLookingFor("");
+    setCityCode("");
+    setPagination((prev) => ({ ...prev, page: 0 }));
+  };
 
-    const handleReset = () => {
-        setKeyword('');
-        setMaritalStatus('');
-        setLookingFor('');
-        setCityCode('');
-        setPagination(prev => ({ ...prev, page: 0 }));
-    };
 
-    const handleLoadMore = () => {
-        if (pagination.page < pagination.totalPages - 1) {
-            setPagination(prev => ({ ...prev, page: prev.page + 1 }));
-        }
-    };
+  const handleLoadMore = () => {
+    if (pagination.page < pagination.totalPages - 1) {
+      setPagination((prev) => ({ ...prev, page: prev.page + 1 }));
+    }
+  };
 
-    const handleSendFriendRequest = async (receiverId) => {
-        setSendingRequests(prev => ({ ...prev, [receiverId]: true }));
-        try {
-            await FriendRequestService.sendRequest(receiverId);
-            toast.success('Đã gửi lời mời kết bạn!');
-            // Update local state to reflect request sent
-            setMembers(prevMembers =>
-                prevMembers.map(member =>
-                    member.userId === receiverId
-                        ? { ...member, requestSent: true }
-                        : member
-                )
-            );
-        } catch (error) {
-            console.error('Failed to send friend request', error);
-            const errorMessage = error.response?.data?.message || 'Không thể gửi lời mời kết bạn';
-            toast.error(errorMessage);
-        } finally {
-            setSendingRequests(prev => ({ ...prev, [receiverId]: false }));
-        }
-    };
+  const handleSendFriendRequest = async (receiverId) => {
+    setSendingRequests((prev) => ({ ...prev, [receiverId]: true }));
+    try {
+      await FriendRequestService.sendRequest(receiverId);
+      toast.success("Đã gửi lời mời kết bạn!");
+      // Update local state to reflect request sent
+      setMembers((prevMembers) =>
+        prevMembers.map((member) =>
+          member.userId === receiverId
+            ? { ...member, requestSent: true }
+            : member,
+        ),
+      );
+    } catch (error) {
+      console.error("Failed to send friend request", error);
+      const errorMessage =
+        error.response?.data?.message || "Không thể gửi lời mời kết bạn";
+      toast.error(errorMessage);
+    } finally {
+      setSendingRequests((prev) => ({ ...prev, [receiverId]: false }));
+    }
+  };
 
-    const handleAcceptRequest = async (requestId, memberId) => {
-        setSendingRequests(prev => ({ ...prev, [memberId]: true }));
-        try {
-            await FriendRequestService.acceptRequest(requestId);
-            toast.success('Đã chấp nhận lời mời kết bạn!');
-            // Update member to friend status
-            setMembers(prevMembers =>
-                prevMembers.map(member =>
-                    member.userId === memberId
-                        ? { ...member, isFriend: true, requestSent: false, requestId: null, isRequestReceiver: false }
-                        : member
-                )
-            );
-        } catch (error) {
-            console.error('Failed to accept request', error);
-            toast.error('Không thể chấp nhận lời mời');
-        } finally {
-            setSendingRequests(prev => ({ ...prev, [memberId]: false }));
-        }
-    };
 
-    const handleRejectRequest = async (requestId, memberId) => {
-        setSendingRequests(prev => ({ ...prev, [memberId]: true }));
-        try {
-            await FriendRequestService.rejectRequest(requestId);
-            toast.success('Đã từ chối lời mời');
-            // Remove request status
-            setMembers(prevMembers =>
-                prevMembers.map(member =>
-                    member.userId === memberId
-                        ? { ...member, requestSent: false, requestId: null, isRequestReceiver: false }
-                        : member
-                )
-            );
-        } catch (error) {
-            console.error('Failed to reject request', error);
-            toast.error('Không thể từ chối lời mời');
-        } finally {
-            setSendingRequests(prev => ({ ...prev, [memberId]: false }));
-        }
-    };
+  const handleAcceptRequest = async (requestId, memberId) => {
+    setSendingRequests((prev) => ({ ...prev, [memberId]: true }));
+    try {
+      await FriendRequestService.acceptRequest(requestId);
+      toast.success("Đã chấp nhận lời mời kết bạn!");
+      // Update member to friend status
+      setMembers((prevMembers) =>
+        prevMembers.map((member) =>
+          member.userId === memberId
+            ? {
+                ...member,
+                isFriend: true,
+                requestSent: false,
+                requestId: null,
+                isRequestReceiver: false,
+              }
+            : member,
+        ),
+      );
+    } catch (error) {
+      console.error("Failed to accept request", error);
+      toast.error("Không thể chấp nhận lời mời");
+    } finally {
+      setSendingRequests((prev) => ({ ...prev, [memberId]: false }));
+    }
+  };
+
+  const handleRejectRequest = async (requestId, memberId) => {
+    setSendingRequests((prev) => ({ ...prev, [memberId]: true }));
+    try {
+      await FriendRequestService.rejectRequest(requestId);
+      toast.success("Đã từ chối lời mời");
+      // Remove request status
+      setMembers((prevMembers) =>
+        prevMembers.map((member) =>
+          member.userId === memberId
+            ? {
+                ...member,
+                requestSent: false,
+                requestId: null,
+                isRequestReceiver: false,
+              }
+            : member,
+        ),
+      );
+    } catch (error) {
+      console.error("Failed to reject request", error);
+      toast.error("Không thể từ chối lời mời");
+    } finally {
+      setSendingRequests((prev) => ({ ...prev, [memberId]: false }));
+    }
+  };
+
+  const confirmCancelRequest = (receiverId) => {
+    setConfirmModal({ isOpen: true, receiverId });
+  };
+
+  const handleCancelRequest = async () => {
+    const receiverId = confirmModal.receiverId;
+    setConfirmModal({ isOpen: false, receiverId: null });
+
+    const toastId = toast.loading("Đang hủy lời mời...");
+    setSendingRequests((prev) => ({ ...prev, [receiverId]: true }));
+    try {
+      await FriendRequestService.cancelRequest(receiverId);
+      toast.success("Đã hủy lời mời kết bạn", { id: toastId });
+      setMembers((prevMembers) =>
+        prevMembers.map((member) =>
+          member.userId === receiverId
+            ? { ...member, requestSent: false }
+            : member,
+        ),
+      );
+    } catch (error) {
+      console.error("Failed to cancel request", error);
+      toast.error("Không thể hủy lời mời", { id: toastId });
+    } finally {
+      setSendingRequests((prev) => ({ ...prev, [receiverId]: false }));
+    }
+  };
+
 
     const confirmCancelRequest = (receiverId) => {
         setConfirmModal({ isOpen: true, receiverId });
@@ -497,3 +515,386 @@ export default function AdvancedMemberSearch() {
     );
 }
 
+  return (
+    <>
+      <div className="flex flex-1 overflow-hidden relative">
+        <main className="flex-1 overflow-y-auto bg-background-main p-4 md:p-8 custom-scrollbar">
+          <div className="max-w-[1600px] mx-auto">
+            <div className="mb-6">
+              <h1 className="text-2xl font-bold text-text-main">Tìm bạn mới</h1>
+              <p className="text-text-secondary text-sm mt-1">
+                Sử dụng bộ lọc thông minh để tìm những người phù hợp nhất với
+                bạn.
+              </p>
+            </div>
+
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+              {members.map((member) => (
+                <article
+                  key={member.userId}
+                  className="flex flex-col bg-surface-main rounded-xl overflow-hidden border border-border-main hover:border-primary/50 transition-colors shadow-lg"
+                >
+                  <div className="h-64 sm:h-[16rem] w-full overflow-hidden relative">
+                    <Link
+                      to={`/dashboard/member/${member.userId}`}
+                      className="block w-full h-full"
+                    >
+                      <img
+                        src={
+                          member.avatarUrl ||
+                          "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                        }
+                        alt={member.fullName}
+                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                      />
+                    </Link>
+                  </div>
+
+                  <div className="p-4 flex flex-col flex-1">
+                    <h3 className="text-text-main font-bold text-lg leading-tight mb-1">
+                      <Link
+                        to={`/dashboard/member/${member.userId}`}
+                        className="hover:text-primary transition-colors"
+                      >
+                        {member.fullName}
+                      </Link>
+                    </h3>
+                    <p className="text-text-secondary text-sm mb-2">
+                      {member.cityName || "Chưa cập nhật"}
+                    </p>
+
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="text-text-secondary text-sm font-medium">
+                        {member.mutualFriends
+                          ? `${member.mutualFriends} bạn chung`
+                          : "Không có bạn chung"}
+                      </span>
+                    </div>
+
+                    <div className="mt-auto flex flex-col gap-2">
+                      {member.isFriend ? (
+                        <button className="w-full py-2 rounded-lg bg-background-main text-text-main border border-border-main font-bold text-sm cursor-default">
+                          Đã là bạn bè
+                        </button>
+                      ) : member.requestSent && member.isRequestReceiver ? (
+                        <div className="flex flex-col gap-2 w-full">
+                          <button
+                            onClick={() =>
+                              handleAcceptRequest(
+                                member.requestId,
+                                member.userId,
+                              )
+                            }
+                            disabled={sendingRequests[member.userId]}
+                            className="w-full py-2 rounded-lg bg-primary hover:bg-orange-600 text-[#231810] font-bold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {sendingRequests[member.userId] ? (
+                              <Loader2 size={16} className="animate-spin" />
+                            ) : (
+                              <Check size={16} />
+                            )}
+                            {sendingRequests[member.userId]
+                              ? "Đang xử lý..."
+                              : "Chấp nhận"}
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleRejectRequest(
+                                member.requestId,
+                                member.userId,
+                              )
+                            }
+                            disabled={sendingRequests[member.userId]}
+                            className="w-full py-2 rounded-lg bg-background-main hover:bg-red-500/20 hover:text-red-500 text-text-main font-bold text-sm transition-colors border border-border-main flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <X size={16} />
+                            Từ chối
+                          </button>
+                        </div>
+                      ) : member.requestSent ? (
+                        <button
+                          onClick={() => confirmCancelRequest(member.userId)}
+                          disabled={sendingRequests[member.userId]}
+                          className="w-full py-2 rounded-lg bg-background-main text-text-secondary hover:text-red-500 hover:bg-red-500/10 font-bold text-sm cursor-pointer transition-colors border border-border-main flex items-center justify-center gap-2"
+                        >
+                          <Check size={16} />
+                          {sendingRequests[member.userId]
+                            ? "Đang hủy..."
+                            : "Đã gửi yêu cầu"}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleSendFriendRequest(member.userId)}
+                          disabled={sendingRequests[member.userId]}
+                          className="w-full py-2 rounded-lg bg-primary hover:bg-orange-600 text-[#231810] font-bold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {sendingRequests[member.userId] ? (
+                            <Loader2 size={16} className="animate-spin" />
+                          ) : (
+                            <UserPlus size={16} />
+                          )}
+                          {sendingRequests[member.userId]
+                            ? "Đang gửi..."
+                            : "Kết bạn"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            {pagination.page < pagination.totalPages - 1 && (
+              <div className="mt-12 flex justify-center pb-8">
+                <button
+                  onClick={handleLoadMore}
+                  disabled={loading}
+                  className="px-8 py-3 rounded-full bg-surface-main hover:bg-background-main text-text-main font-bold border border-border-main transition-all shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? "Đang tải..." : "Xem thêm kết quả"}
+                </button>
+              </div>
+            )}
+          </div>
+        </main>
+
+        <aside className="w-full md:w-[320px] lg:w-[340px] flex flex-col border-l border-border-main bg-background-main z-10 overflow-y-auto custom-scrollbar flex-none hidden md:flex">
+          <div className="p-5 pb-0">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-text-main text-xl font-bold leading-tight">
+                Bộ lọc tìm kiếm
+              </h2>
+              <button
+                onClick={handleReset}
+                className="text-sm font-bold text-primary hover:text-orange-400"
+              >
+                Đặt lại
+              </button>
+            </div>
+
+            <div className="mb-6">
+              <label className="flex w-full items-center rounded-xl bg-surface-main border border-border-main h-12 px-4 focus-within:ring-1 ring-primary/50 transition-all">
+                <Search className="text-text-secondary" size={20} />
+                <input
+                  className="w-full bg-transparent border-none text-text-main placeholder-text-secondary/60 focus:ring-0 text-sm ml-2 focus:outline-none"
+                  placeholder="Tên, thành phố hoặc từ khóa..."
+                  value={keyword}
+                  onChange={(e) => setKeyword(e.target.value)}
+                />
+              </label>
+            </div>
+          </div>
+
+          <div className="flex flex-col px-5 pb-10 gap-4">
+            <details
+              className="group flex flex-col rounded-xl border border-border-main bg-surface-main overflow-hidden"
+              open
+            >
+              <summary className="flex cursor-pointer items-center justify-between gap-6 p-4 bg-transparent hover:bg-white/5 transition-colors list-none">
+                <p className="text-text-main text-sm font-bold">
+                  Tình trạng hôn nhân
+                </p>
+                <span className="material-symbols-outlined text-text-secondary text-[20px] transition-transform group-open:rotate-180">
+                  expand_more
+                </span>
+              </summary>
+              <div className="px-4 pb-5 pt-1">
+                <div className="space-y-2">
+                  {["", "SINGLE", "MARRIED", "DIVORCED", "WIDOWED"].map(
+                    (status) => (
+                      <label
+                        key={status}
+                        className="flex items-center gap-3 cursor-pointer group/label"
+                      >
+                        <div
+                          className={`size-4 rounded-full border flex items-center justify-center ${
+                            maritalStatus === status
+                              ? "border-primary"
+                              : "border-border-main"
+                          }`}
+                        >
+                          {maritalStatus === status && (
+                            <div className="size-2 rounded-full bg-primary" />
+                          )}
+                        </div>
+                        <input
+                          type="radio"
+                          name="maritalStatus"
+                          checked={maritalStatus === status}
+                          onChange={() => setMaritalStatus(status)}
+                          className="hidden"
+                        />
+                        <span
+                          className={`text-sm group-hover/label:text-text-main transition-colors ${
+                            maritalStatus === status
+                              ? "text-text-main"
+                              : "text-text-secondary"
+                          }`}
+                        >
+                          {status === ""
+                            ? "Tất cả"
+                            : status === "SINGLE"
+                            ? "Độc thân"
+                            : status === "MARRIED"
+                            ? "Đã kết hôn"
+                            : status === "DIVORCED"
+                            ? "Đã ly hôn"
+                            : "Góa"}
+                        </span>
+                      </label>
+                    ),
+                  )}
+                </div>
+              </div>
+            </details>
+
+            <details
+              className="group flex flex-col rounded-xl border border-border-main bg-surface-main overflow-hidden"
+              open
+            >
+              <summary className="flex cursor-pointer items-center justify-between gap-6 p-4 bg-transparent hover:bg-white/5 transition-colors list-none">
+                <p className="text-text-main text-sm font-bold">
+                  Mục đích kết bạn
+                </p>
+                <ChevronDown
+                  className="text-text-secondary transition-transform group-open:rotate-180"
+                  size={20}
+                />
+              </summary>
+              <div className="px-4 pb-5 pt-1">
+                <div className="space-y-2">
+                  {[
+                    { value: "", label: "Tất cả" },
+                    { value: "love", label: "Tìm tình yêu" },
+                    { value: "friends", label: "Kết bạn" },
+                    { value: "networking", label: "Kết nối" },
+                  ].map((option) => (
+                    <label
+                      key={option.value}
+                      className="flex items-center gap-3 cursor-pointer group/label"
+                    >
+                      <div
+                        className={`size-4 rounded-full border flex items-center justify-center ${
+                          lookingFor === option.value
+                            ? "border-primary"
+                            : "border-border-main"
+                        }`}
+                      >
+                        {lookingFor === option.value && (
+                          <div className="size-2 rounded-full bg-primary" />
+                        )}
+                      </div>
+                      <input
+                        type="radio"
+                        name="lookingFor"
+                        checked={lookingFor === option.value}
+                        onChange={() => setLookingFor(option.value)}
+                        className="hidden"
+                      />
+                      <span
+                        className={`text-sm group-hover/label:text-text-main transition-colors ${
+                          lookingFor === option.value
+                            ? "text-text-main"
+                            : "text-text-secondary"
+                        }`}
+                      >
+                        {option.label}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </details>
+
+            <details
+              className="group flex flex-col rounded-xl border border-border-main bg-surface-main overflow-hidden"
+              open
+            >
+              <summary className="flex cursor-pointer items-center justify-between gap-6 p-4 bg-transparent hover:bg-white/5 transition-colors list-none">
+                <p className="text-text-main text-sm font-bold">Thành phố</p>
+                <ChevronDown
+                  className="text-text-secondary transition-transform group-open:rotate-180"
+                  size={20}
+                />
+              </summary>
+              <div className="px-4 pb-5 pt-1">
+                <div className="space-y-2">
+                  <label className="flex items-center gap-3 cursor-pointer group/label">
+                    <div
+                      className={`size-4 rounded-full border flex items-center justify-center ${
+                        !cityCode ? "border-primary" : "border-border-main"
+                      }`}
+                    >
+                      {!cityCode && (
+                        <div className="size-2 rounded-full bg-primary" />
+                      )}
+                    </div>
+                    <input
+                      type="radio"
+                      name="cityCode"
+                      checked={!cityCode}
+                      onChange={() => setCityCode("")}
+                      className="hidden"
+                    />
+                    <span
+                      className={`text-sm group-hover/label:text-text-main transition-colors ${
+                        !cityCode ? "text-text-main" : "text-text-secondary"
+                      }`}
+                    >
+                      Tất cả thành phố
+                    </span>
+                  </label>
+                  {cities.map((city) => (
+                    <label
+                      key={city.code}
+                      className="flex items-center gap-3 cursor-pointer group/label"
+                    >
+                      <div
+                        className={`size-4 rounded-full border flex items-center justify-center ${
+                          cityCode === city.code
+                            ? "border-primary"
+                            : "border-border-main"
+                        }`}
+                      >
+                        {cityCode === city.code && (
+                          <div className="size-2 rounded-full bg-primary" />
+                        )}
+                      </div>
+                      <input
+                        type="radio"
+                        name="cityCode"
+                        checked={cityCode === city.code}
+                        onChange={() => setCityCode(city.code)}
+                        className="hidden"
+                      />
+                      <span
+                        className={`text-sm group-hover/label:text-text-main transition-colors ${
+                          cityCode === city.code
+                            ? "text-text-main"
+                            : "text-text-secondary"
+                        }`}
+                      >
+                        {city.name}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </details>
+          </div>
+        </aside>
+      </div>
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ isOpen: false, receiverId: null })}
+        onConfirm={handleCancelRequest}
+        title="Hủy lời mời kết bạn"
+        message="Bạn có chắc chắn muốn hủy lời mời kết bạn này? Hành động này không thể hoàn tác."
+        type="danger"
+        confirmText="Hủy kết bạn"
+        cancelText="Đóng"
+      />
+    </>
+  );
+}
