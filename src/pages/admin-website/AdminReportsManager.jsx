@@ -159,6 +159,15 @@ const AdminReportsManagement = () => {
 
   const activeCount = displayReports.length;
 
+  // HISTORY LOGIC
+  const getViolationHistory = (targetId, type) => {
+    return reports.filter(r =>
+      r.status === 'RESOLVED' &&
+      String(r.targetId || r.target_id) === String(targetId) &&
+      (r.targetType || r.target_type) === type
+    );
+  };
+
   // METADATA FETCHING (Names & Avatars)
   const [targetMetadata, setTargetMetadata] = useState({});
 
@@ -579,9 +588,19 @@ const AdminReportsManagement = () => {
                           )}
 
                           <div>
-                            <p className="font-bold text-white">
-                              {meta?.name || `${r.targetType} #${r.targetId}`}
-                            </p>
+                            <div className="flex items-center gap-2">
+                              <p className="font-bold text-white">
+                                {meta?.name || `${r.targetType} #${r.targetId}`}
+                              </p>
+                              {getViolationHistory(r.targetId, r.targetType).length > 0 && (
+                                <div className="group relative" title="Đối tượng này đã có vi phạm trước đó">
+                                  <span className="material-symbols-outlined text-orange-500 text-sm cursor-help">history</span>
+                                  <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black/90 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                    {getViolationHistory(r.targetId, r.targetType).length} vi phạm trước đó
+                                  </span>
+                                </div>
+                              )}
+                            </div>
                             <span className="text-[10px] text-text-muted uppercase tracking-wide">
                               {meta?.subtext || `ID: ${r.targetId}`}
                             </span>
@@ -740,9 +759,12 @@ const AdminReportsManagement = () => {
                     ) : detailModal.targetData ? (
                       <div className="bg-white/5 rounded-2xl p-6 border border-white/5 space-y-4">
                         {/* Dynamic Render based on type */}
-                        <div className="flex items-center gap-4">
+                        <div
+                          className={`flex items-center gap-4 ${detailModal.report.targetType === 'USER' ? 'cursor-pointer hover:bg-white/5 p-2 -m-2 rounded-lg transition-colors' : ''}`}
+                          onClick={() => detailModal.report.targetType === 'USER' && setViewingReporterId(detailModal.report.targetId)}
+                        >
                           {detailModal.report.targetType === 'USER' && (
-                            <img src={detailModal.targetData.avatarUrl || detailModal.targetData.currentAvatarUrl} className="w-16 h-16 rounded-full bg-black/30" alt="" />
+                            <img src={detailModal.targetData.avatarUrl || detailModal.targetData.currentAvatarUrl} className="w-16 h-16 rounded-full bg-black/30 object-cover" alt="" />
                           )}
                           <div>
                             <h3 className="text-xl font-bold text-white">
@@ -750,6 +772,9 @@ const AdminReportsManagement = () => {
                             </h3>
                             <p className="text-text-muted text-sm">{detailModal.report.targetType} #{detailModal.report.targetId}</p>
                           </div>
+                          {detailModal.report.targetType === 'USER' && (
+                            <span className="material-symbols-outlined text-text-muted ml-auto">chevron_right</span>
+                          )}
                         </div>
 
                         {/* Content Preview for Post */}
@@ -767,6 +792,32 @@ const AdminReportsManagement = () => {
                         Không tìm thấy dữ liệu đối tượng (Có thể đã bị xóa)
                       </div>
                     )}
+
+                    {/* HISTORY SECTION */}
+                    {(() => {
+                      const history = getViolationHistory(detailModal.report.targetId, detailModal.report.targetType);
+                      return (
+                        <div className="mt-6 bg-orange-500/5 border border-orange-500/10 rounded-lg p-5">
+                          <h4 className="text-sm font-black text-orange-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <span className="material-symbols-outlined text-lg">history</span>
+                            Lịch sử vi phạm ({history.length})
+                          </h4>
+                          {history.length > 0 ? (
+                            <div className="space-y-2 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                              {history.map((h, i) => (
+                                <div key={i} className="text-xs text-text-muted border-l-2 border-orange-500/20 pl-3 py-1">
+                                  <span className="font-bold text-gray-300">{h.reason}</span>
+                                  <span className="mx-2 text-[10px]">•</span>
+                                  <span className="text-[10px]">{new Date(h.createdAt || h.created_at).toLocaleDateString()}</span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-xs text-text-muted italic">Không có vi phạm nào trước đây.</p>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {/* RIGHT: REPORTS LIST */}
@@ -789,7 +840,7 @@ const AdminReportsManagement = () => {
                             <div className="flex justify-between items-start">
                               <p
                                 className="text-white font-bold text-sm hover:underline cursor-pointer truncate"
-                                onClick={() => r.reporterId && navigate(`/dashboard/member/${r.reporterId}`)}
+                                onClick={() => r.reporterId && setViewingReporterId(r.reporterId)}
                               >
                                 {targetMetadata[`USER_${r.reporterId}`]?.name || r.reporterUsername || 'Ẩn danh'}
                               </p>
@@ -810,8 +861,13 @@ const AdminReportsManagement = () => {
                 </div>
 
                 {/* Quick Actions in Modal */}
-                {!detailModal.loading && detailModal.targetData && detailModal.report.status !== 'RESOLVED' && (
-                  <div className="bg-blue-500/5 rounded-xl p-4 border border-blue-500/10 flex items-center justify-between">
+
+              </div>
+
+              {/* Quick Actions - Sticky Bottom */}
+              {!detailModal.loading && detailModal.targetData && detailModal.report.status !== 'RESOLVED' && (
+                <div className="p-6 border-t border-white/10 bg-black/20 backdrop-blur-sm">
+                  <div className="flex items-center justify-between">
                     <div>
                       <p className="text-white font-bold text-sm">Hành động nhanh</p>
                       <p className="text-xs text-text-muted">Xử lý {detailModal.report.reports?.length} báo cáo này ngay lập tức</p>
@@ -864,8 +920,8 @@ const AdminReportsManagement = () => {
                       )}
                     </div>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -914,7 +970,9 @@ const AdminReportsManagement = () => {
           groupId={inspectingGroupId}
           reports={inspectingReports}
           reporterMetadata={targetMetadata}
+          violationHistory={getViolationHistory(inspectingGroupId, 'GROUP')}
           initialTab={inspectorInitialTab}
+          onReporterClick={(userId) => setViewingReporterId(userId)}
           onClose={() => {
             setInspectingGroupId(null);
             setInspectingReports([]);

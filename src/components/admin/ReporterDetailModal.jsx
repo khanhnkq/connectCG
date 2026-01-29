@@ -32,7 +32,7 @@ const ReporterDetailModal = ({ userId, onClose, onBan }) => {
                     <div>
                         {/* Cover & Avatar */}
                         <div className="relative h-24 bg-gradient-to-r from-primary/20 to-purple-500/20">
-                            <img src={user.coverUrl || "https://via.placeholder.com/400x150"} className="w-full h-full object-cover opacity-50" alt="" />
+                            <img src={user.currentCoverUrl || "https://via.placeholder.com/400x150"} className="w-full h-full object-cover opacity-50" alt="" />
                             <div className="absolute -bottom-8 left-6">
                                 <img src={user.currentAvatarUrl || "https://via.placeholder.com/100"} className="size-16 rounded-full border-4 border-surface-dark bg-surface-dark" alt="" />
                             </div>
@@ -68,6 +68,10 @@ const ReporterDetailModal = ({ userId, onClose, onBan }) => {
                                 <div className="flex items-center gap-3 text-sm text-gray-300">
                                     <span className="material-symbols-outlined text-text-muted text-lg">cake</span>
                                     {user.dob ? new Date(user.dob).toLocaleDateString() : 'N/A'}
+                                </div>
+                                <div className="flex items-center gap-3 text-sm text-gray-300">
+                                    <span className="material-symbols-outlined text-text-muted text-lg">calendar_month</span>
+                                    Joined: {user.createdAt || user.created_at ? new Date(user.createdAt || user.created_at).toLocaleDateString() : 'Unknown'}
                                 </div>
                             </div>
 

@@ -149,6 +149,3 @@ export default function SidebarComponent() {
     </Sidebar>
   );
 }
-
-
-
