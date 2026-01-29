@@ -14,8 +14,9 @@ export default function FriendsSearch() {
     const [loading, setLoading] = useState(false);
     const [searchFilters, setSearchFilters] = useState({
         name: '',
+
         gender: '',
-        cityId: ''
+        cityCode: ''
     });
     const [pagination, setPagination] = useState({
         page: 0,
@@ -57,7 +58,7 @@ export default function FriendsSearch() {
                 size: pagination.size,
                 ...(searchFilters.name && { name: searchFilters.name }),
                 ...(searchFilters.gender && { gender: searchFilters.gender }),
-                ...(searchFilters.cityId && { cityId: searchFilters.cityId })
+                ...(searchFilters.cityCode && { cityCode: searchFilters.cityCode })
             };
 
             const response = await FriendService.getFriends(userId, filters);
@@ -83,7 +84,7 @@ export default function FriendsSearch() {
     };
 
     const handleResetFilters = () => {
-        setSearchFilters({ name: '', gender: '', cityId: '' });
+        setSearchFilters({ name: '', gender: '', cityCode: '' });
         setPagination(prev => ({ ...prev, page: 0 }));
     };
 
@@ -261,13 +262,13 @@ export default function FriendsSearch() {
                     <div className="mb-6">
                         <label className="text-white text-sm font-bold mb-3 block">Thành phố</label>
                         <select
-                            value={searchFilters.cityId}
-                            onChange={(e) => handleSearchChange('cityId', e.target.value)}
+                            value={searchFilters.cityCode}
+                            onChange={(e) => handleSearchChange('cityCode', e.target.value)}
                             className="w-full rounded-xl bg-[#342418] border border-[#493222] text-white h-12 px-4 focus:ring-1 ring-primary/50 focus:outline-none text-sm"
                         >
                             <option value="">Tất cả thành phố</option>
                             {cities.map((city) => (
-                                <option key={city.id} value={city.id}>
+                                <option key={city.code} value={city.code}>
                                     {city.name}
                                 </option>
                             ))}

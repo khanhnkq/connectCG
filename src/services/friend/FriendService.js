@@ -18,7 +18,7 @@ const FriendService = {
      * @param {Object} params - { page, size }
      */
     getMyFriends: (params) => {
-        return axiosClient.get("/v1/friends", { params });
+        return axiosClient.get("/v1/friends/my-friends", { params });
     },
 
     /**
