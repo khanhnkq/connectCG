@@ -217,7 +217,7 @@ export default function AdvancedMemberSearch() {
             <div className="mb-8">
               {/* Suggestions Section */}
               <div className="mb-12">
-                <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                <h2 className="text-xl font-bold text-text-main mb-6 flex items-center gap-2">
                   <span className="material-symbols-outlined text-primary">
                     recommend
                   </span>
@@ -227,7 +227,7 @@ export default function AdvancedMemberSearch() {
                   {suggestions.map((person) => (
                     <article
                       key={person.id}
-                      className="flex flex-col bg-[#2a1d15] rounded-2xl overflow-hidden border border-[#3e2b1d] hover:border-primary/50 transition-all shadow-xl group"
+                      className="flex flex-col bg-surface-main rounded-2xl overflow-hidden border border-border-main hover:border-primary/50 transition-all shadow-xl group"
                     >
                       <div className="h-48 w-full overflow-hidden relative">
                         <img
@@ -236,10 +236,10 @@ export default function AdvancedMemberSearch() {
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         />
                         {person.online && (
-                          <div className="absolute top-4 right-4 size-3 bg-green-500 border-2 border-[#2a1d15] rounded-full shadow-lg"></div>
+                          <div className="absolute top-4 right-4 size-3 bg-green-500 border-2 border-surface-main rounded-full shadow-lg"></div>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#2a1d15] via-transparent to-transparent opacity-60"></div>
-                        <div className="absolute bottom-3 left-3 bg-[#3a2b22]/90 backdrop-blur-sm px-2 py-1 rounded-lg border border-white/10">
+                        <div className="absolute inset-0 bg-gradient-to-t from-surface-main via-transparent to-transparent opacity-60"></div>
+                        <div className="absolute bottom-3 left-3 bg-background-main/90 backdrop-blur-sm px-2 py-1 rounded-lg border border-border-main">
                           <p className="text-primary text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
                             <span className="material-symbols-outlined text-[12px]">
                               info
@@ -251,10 +251,10 @@ export default function AdvancedMemberSearch() {
 
                       <div className="p-4 flex flex-col flex-1">
                         <div className="flex justify-between items-start mb-2">
-                          <h3 className="text-white font-bold text-lg group-hover:text-primary transition-colors">
+                          <h3 className="text-text-main font-bold text-lg group-hover:text-primary transition-colors">
                             {person.name}, {person.age}
                           </h3>
-                          <span className="text-text-secondary text-xs flex items-center gap-1 font-medium bg-[#3a2b22] px-2 py-1 rounded-full">
+                          <span className="text-text-secondary text-xs flex items-center gap-1 font-medium bg-background-main px-2 py-1 rounded-full">
                             <span className="material-symbols-outlined text-[12px]">
                               location_on
                             </span>
@@ -278,7 +278,7 @@ export default function AdvancedMemberSearch() {
                           </button>
                           <button
                             onClick={() => handleStartChat(person.id)}
-                            className="size-9 rounded-xl bg-[#3a2b22] hover:bg-[#493222] text-white transition-colors border border-white/5 flex items-center justify-center"
+                            className="size-9 rounded-xl bg-background-main hover:bg-surface-main text-text-main transition-colors border border-border-main flex items-center justify-center"
                             title="Nhắn tin"
                           >
                             <span className="material-symbols-outlined text-[18px]">
@@ -292,18 +292,20 @@ export default function AdvancedMemberSearch() {
                 </div>
               </div>
 
-              <div className="h-[1px] w-full bg-[#3e2b1d] mb-10"></div>
+              <div className="h-[1px] w-full bg-border-main mb-10"></div>
 
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                 <div>
-                  <h1 className="text-2xl font-bold text-white">Tìm bạn mới</h1>
+                  <h1 className="text-2xl font-bold text-text-main">
+                    Tìm bạn mới
+                  </h1>
                   <p className="text-text-secondary text-sm mt-1">
                     Kết nối với những người phù hợp nhất.
                   </p>
                 </div>
                 <button
                   onClick={handleReset}
-                  className="text-sm font-bold text-primary hover:text-orange-400 flex items-center gap-1 bg-[#2a1d15] px-4 py-2 rounded-lg border border-[#3e2b1d] hover:border-primary/50 transition-all"
+                  className="text-sm font-bold text-primary hover:text-orange-400 flex items-center gap-1 bg-surface-main px-4 py-2 rounded-lg border border-border-main hover:border-primary/50 transition-all"
                 >
                   <span className="material-symbols-outlined text-sm">
                     restart_alt
@@ -313,14 +315,14 @@ export default function AdvancedMemberSearch() {
               </div>
 
               {/* Filter Bar */}
-              <div className="bg-[#2a1d15] p-5 rounded-2xl border border-[#3e2b1d] shadow-lg flex flex-col xl:flex-row gap-4">
+              <div className="bg-surface-main p-5 rounded-2xl border border-border-main shadow-lg flex flex-col xl:flex-row gap-4">
                 {/* Keyword */}
                 <div className="relative flex-1">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary material-symbols-outlined">
                     search
                   </span>
                   <input
-                    className="w-full h-12 bg-[#1c120d] border border-[#493222] rounded-xl pl-11 pr-4 text-white placeholder-text-secondary/40 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
+                    className="w-full h-12 bg-background-main border border-border-main rounded-xl pl-11 pr-4 text-text-main placeholder-text-secondary/40 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all font-medium"
                     placeholder="Tìm theo tên..."
                     value={keyword}
                     onChange={(e) => setKeyword(e.target.value)}
@@ -462,7 +464,7 @@ export default function AdvancedMemberSearch() {
                               )
                             }
                             disabled={sendingRequests[member.userId]}
-                            className="w-full py-2 rounded-lg bg-[#342418] hover:bg-red-500/20 hover:text-red-500 text-white font-bold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full py-2 rounded-lg bg-surface-main hover:bg-red-500/10 hover:text-red-500 text-text-main font-bold text-sm transition-all flex items-center justify-center gap-2 border border-border-main hover:border-red-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <span className="material-symbols-outlined text-sm">
                               close
@@ -474,7 +476,7 @@ export default function AdvancedMemberSearch() {
                         <button
                           onClick={() => confirmCancelRequest(member.userId)}
                           disabled={sendingRequests[member.userId]}
-                          className="w-full py-2 rounded-lg bg-[#3a2b22] text-white/50 hover:text-red-500 hover:bg-red-500/10 font-bold text-sm cursor-pointer transition-colors flex items-center justify-center gap-2"
+                          className="w-full py-2 rounded-lg bg-background-main text-text-secondary hover:text-red-500 hover:bg-red-500/10 font-bold text-sm cursor-pointer transition-all flex items-center justify-center gap-2 border border-border-main hover:border-red-500/50"
                         >
                           <span className="material-symbols-outlined text-sm">
                             done
