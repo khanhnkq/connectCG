@@ -151,6 +151,7 @@ const AdminGroupsManager = () => {
                 <GroupInspectorModal
                     groupId={inspectingGroupId}
                     onClose={closeInspector}
+                    actionLabel="Deactivate Group"
                     onAction={(group) => handleDeactivate(group.id, group.name)}
                 />
             )}
