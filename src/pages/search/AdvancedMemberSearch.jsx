@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import UserSearchService from '../../services/user/UserSearchService';
 import CityService from '../../services/CityService';
 import FriendRequestService from '../../services/friend/FriendRequestService';
+import ChatService from '../../services/chat/ChatService';
 import ConfirmModal from '../../components/admin/ConfirmModal';
 import toast from 'react-hot-toast';
 
+import CitySelect from '../../components/common/CitySelect';
+
 export default function AdvancedMemberSearch() {
+    const navigate = useNavigate();
     const [members, setMembers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [sendingRequests, setSendingRequests] = useState({});
@@ -18,13 +22,69 @@ export default function AdvancedMemberSearch() {
     const [maritalStatus, setMaritalStatus] = useState('');
     const [lookingFor, setLookingFor] = useState('');
     const [cityCode, setCityCode] = useState('');
-    const [cities, setCities] = useState([]);
+
+    // Mock suggestions data (merged from FriendSuggestions)
+    const [suggestions, setSuggestions] = useState([
+        {
+            id: 1,
+            name: 'Hồng Nhung',
+            age: 24,
+            location: 'Hà Nội',
+            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA61rF2qJA_61d08hoKQD1vgLttk99SWH-2mhQvPCoH57mhr0UjI8L7ybrsEWnI2oLFtMUesiVK-j9CGmOjLqaDBSP4VGvvtSiwItxsARYkGe8mEsW7qwBkWXGsCjQLKe10vZ7AQv05zjKn0dsPLE5BUEJCjrwzv9TUcPhyKj43H7MuKHeGmqxrZrq5_s7ODalnsrwBejsIxD4NsrZetKdfuu5WRkwVCT304dnvOmT15inm4rJUGChESlWiT5jnp5f3NqPpm8kKCv0',
+            mutualFriends: 12,
+            reason: 'Có cùng sở thích: Du lịch',
+            online: true
+        },
+        {
+            id: 2,
+            name: 'Tuấn Anh',
+            age: 29,
+            location: 'TP. HCM',
+            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBdoLrCwAT83JCL6U8m7TnDC0oM8kn4OVr5XeeYADi_UYRinmq2C0fIwzychqDESZvGWD0nS5EqD_0hTACwjoHHIUqj1bI5Ic1EQZ75Oef8FoxX0B7g4dp_lmTjf44WtIpjrF_Ygs2b0iQ90dlQzFyapA7Oh2Pm1-peCNesZBogBZhUpUCXOnp5_KqLP9H-cm69o1uTTt-sGGAzw11HFpXZ7pvgNJkIjC9OPnhWLCMwXKlgZz2nKU2pguarVqXSrrVwTiSrRLt4h5g',
+            mutualFriends: 8,
+            reason: 'Thành viên mới gần bạn',
+            online: false
+        },
+        {
+            id: 3,
+            name: 'Minh Thư',
+            age: 26,
+            location: 'Đà Nẵng',
+            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCA2lYtnTFCA75HFG_52JszPx-az718WMOboPAn-G1i24N852_c8WMA84zaSIjPhM2bLmVoY8itXvafnzxb5VjPbzRUZp6AXCKTfAEXa9jysG_6eND1TYZ0D1OFOXHtOKIWA2x0OJxEozgg2vR_FVWQLKzKDMrEuV3ZX9MEa8yOLevyaZjSYY0z7uQTwuSXWp4HBjjqAcBcZLqU4iAoqv71JyHkK1TW8TD9Rt3KVz3qa5jC8Xq-idWXHr3qpktV4H962cWYDM__P1Y',
+            mutualFriends: 5,
+            reason: 'Có cùng sở thích: Nghệ thuật',
+            online: true
+        },
+        {
+            id: 4,
+            name: 'Quốc Bảo',
+            age: 28,
+            location: 'Cần Thơ',
+            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC5XMIpiqrD96rbcu3BjxqHOkpiTb_uUr6zVOzb3_EuEuyT7BKqTEpoqxuP4Q5_KQvP60A_2VSvikFgb-T6dHDeoW_JBguXbEb2aBZWpYU2ZHqnq9-UbMsPrpz9nuSS5PoGtucwsXXNpETlS5qomt4Lt5QiBEH-IIExc6OiETtXvtpKy0BwNQlgjk1GYSXjtSmGV42SJAbFmDxmcSZYbOTUNXQk7EwH1M2sDDKY33EOblUP98AmvedKaka_lnog0uPtQE6vFnDMUuk',
+            mutualFriends: 18,
+            reason: 'Bạn của Sarah Jenkins',
+            online: true
+        }
+    ]);
+
+    const handleStartChat = async (userId) => {
+        const tid = toast.loading("Đang mở cuộc trò chuyện...");
+        try {
+            const response = await ChatService.getOrCreateDirectChat(userId);
+            const room = response.data;
+            toast.success("Đã kết nối!", { id: tid });
+            navigate('/chat', { state: { selectedRoomKey: room.firebaseRoomKey } });
+        } catch (error) {
+            console.error("Error starting chat:", error);
+            toast.error("Không thể tạo cuộc trò chuyện", { id: tid });
+        }
+    };
 
 
 
 
     useEffect(() => {
-        fetchCities();
+        // No fetchCities needed here
     }, []);
 
     // Reset to page 0 when filters change
@@ -35,15 +95,6 @@ export default function AdvancedMemberSearch() {
     useEffect(() => {
         fetchMembers();
     }, [maritalStatus, lookingFor, keyword, cityCode, pagination.page]);
-
-    const fetchCities = async () => {
-        try {
-            const data = await CityService.getAllCities();
-            setCities(data);
-        } catch (error) {
-            console.error('Failed to fetch cities', error);
-        }
-    };
 
     const fetchMembers = async () => {
         setLoading(true);
@@ -179,12 +230,162 @@ export default function AdvancedMemberSearch() {
             <div className="flex flex-1 overflow-hidden relative">
                 <main className="flex-1 overflow-y-auto bg-background-dark p-4 md:p-8 custom-scrollbar">
                     <div className="max-w-[1600px] mx-auto">
-                        <div className="mb-6">
-                            <h1 className="text-2xl font-bold text-white">Tìm bạn mới</h1>
-                            <p className="text-text-secondary text-sm mt-1">Sử dụng bộ lọc thông minh để tìm những người phù hợp nhất với bạn.</p>
+                        <div className="mb-8">
+                            {/* Suggestions Section */}
+                            <div className="mb-12">
+                                <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-primary">recommend</span>
+                                    Gợi ý kết bạn
+                                </h2>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                                    {suggestions.map((person) => (
+                                        <article
+                                            key={person.id}
+                                            className="flex flex-col bg-[#2a1d15] rounded-2xl overflow-hidden border border-[#3e2b1d] hover:border-primary/50 transition-all shadow-xl group"
+                                        >
+                                            <div className="h-48 w-full overflow-hidden relative">
+                                                <img
+                                                    src={person.image}
+                                                    alt={person.name}
+                                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                                />
+                                                {person.online && (
+                                                    <div className="absolute top-4 right-4 size-3 bg-green-500 border-2 border-[#2a1d15] rounded-full shadow-lg"></div>
+                                                )}
+                                                <div className="absolute inset-0 bg-gradient-to-t from-[#2a1d15] via-transparent to-transparent opacity-60"></div>
+                                                <div className="absolute bottom-3 left-3 bg-[#3a2b22]/90 backdrop-blur-sm px-2 py-1 rounded-lg border border-white/10">
+                                                    <p className="text-primary text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+                                                        <span className="material-symbols-outlined text-[12px]">info</span>
+                                                        {person.reason}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div className="p-4 flex flex-col flex-1">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <h3 className="text-white font-bold text-lg group-hover:text-primary transition-colors">
+                                                        {person.name}, {person.age}
+                                                    </h3>
+                                                    <span className="text-text-secondary text-xs flex items-center gap-1 font-medium bg-[#3a2b22] px-2 py-1 rounded-full">
+                                                        <span className="material-symbols-outlined text-[12px]">location_on</span>
+                                                        {person.location}
+                                                    </span>
+                                                </div>
+
+                                                <p className="text-text-secondary text-xs mb-4 flex items-center gap-2">
+                                                    <span className="material-symbols-outlined text-[16px]">group</span>
+                                                    {person.mutualFriends} bạn chung
+                                                </p>
+
+                                                <div className="mt-auto flex gap-2">
+                                                    <button className="flex-1 py-2 rounded-xl bg-primary hover:bg-orange-600 text-[#231810] font-bold text-xs uppercase tracking-wider transition-all shadow-lg flex items-center justify-center gap-1">
+                                                        <span className="material-symbols-outlined text-[16px]">person_add</span>
+                                                        Kết bạn
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleStartChat(person.id)}
+                                                        className="size-9 rounded-xl bg-[#3a2b22] hover:bg-[#493222] text-white transition-colors border border-white/5 flex items-center justify-center"
+                                                        title="Nhắn tin"
+                                                    >
+                                                        <span className="material-symbols-outlined text-[18px]">chat_bubble</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </article>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="h-[1px] w-full bg-[#3e2b1d] mb-10"></div>
+
+                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                                <div>
+                                    <h1 className="text-2xl font-bold text-white">Tìm bạn mới</h1>
+                                    <p className="text-text-secondary text-sm mt-1">Kết nối với những người phù hợp nhất.</p>
+                                </div>
+                                <button
+                                    onClick={handleReset}
+                                    className="text-sm font-bold text-primary hover:text-orange-400 flex items-center gap-1 bg-[#2a1d15] px-4 py-2 rounded-lg border border-[#3e2b1d] hover:border-primary/50 transition-all"
+                                >
+                                    <span className="material-symbols-outlined text-sm">restart_alt</span>
+                                    Đặt lại bộ lọc
+                                </button>
+                            </div>
+
+                            {/* Filter Bar */}
+                            <div className="bg-[#2a1d15] p-5 rounded-2xl border border-[#3e2b1d] shadow-lg flex flex-col xl:flex-row gap-4">
+                                {/* Keyword */}
+                                <div className="relative flex-1">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary material-symbols-outlined">search</span>
+                                    <input
+                                        className="w-full h-12 bg-[#1c120d] border border-[#493222] rounded-xl pl-11 pr-4 text-white placeholder-text-secondary/40 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
+                                        placeholder="Tìm theo tên..."
+                                        value={keyword}
+                                        onChange={(e) => setKeyword(e.target.value)}
+                                    />
+                                </div>
+
+                                {/* City Select */}
+                                <div className="flex-1">
+                                    <CitySelect
+                                        label=""
+                                        value={cityCode ? { code: cityCode, name: '' } : null}
+                                        onChange={(city) => {
+                                            setCityCode(city.code);
+                                            setPagination(prev => ({ ...prev, page: 0 }));
+                                        }}
+                                        error={null}
+                                    />
+                                </div>
+
+                                {/* Marital Status */}
+                                <div className="relative group flex-1">
+                                    <select
+                                        value={maritalStatus}
+                                        onChange={(e) => setMaritalStatus(e.target.value)}
+                                        className="w-full h-12 bg-[#1c120d] border border-[#493222] rounded-xl px-4 text-white focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer transition-all"
+                                    >
+                                        <option value="">Hôn nhân (Tất cả)</option>
+                                        <option value="SINGLE">Độc thân</option>
+                                        <option value="MARRIED">Đã kết hôn</option>
+                                        <option value="DIVORCED">Đã ly hôn</option>
+                                        <option value="WIDOWED">Góa</option>
+                                    </select>
+                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none material-symbols-outlined transition-transform group-hover:text-primary">
+                                        expand_more
+                                    </span>
+                                </div>
+
+                                {/* Looking For */}
+                                <div className="relative group flex-1">
+                                    <select
+                                        value={lookingFor}
+                                        onChange={(e) => setLookingFor(e.target.value)}
+                                        className="w-full h-12 bg-[#1c120d] border border-[#493222] rounded-xl px-4 text-white focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer transition-all"
+                                    >
+                                        <option value="">Mục đích (Tất cả)</option>
+                                        <option value="love">Tìm tình yêu</option>
+                                        <option value="friends">Kết bạn</option>
+                                        <option value="networking">Kết nối</option>
+                                    </select>
+                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none material-symbols-outlined transition-transform group-hover:text-primary">
+                                        expand_more
+                                    </span>
+                                </div>
+
+                                {/* Reset Button */}
+                                <button
+                                    onClick={handleReset}
+                                    className="h-12 px-6 rounded-xl bg-[#3a2b22] hover:bg-[#493222] text-white font-bold border border-[#493222] transition-all flex items-center justify-center gap-2 whitespace-nowrap min-w-fit hover:text-primary"
+                                    title="Đặt lại bộ lọc"
+                                >
+                                    <span className="material-symbols-outlined">restart_alt</span>
+                                    <span className="hidden xl:inline">Đặt lại</span>
+                                </button>
+                            </div>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
                             {members.map((member) => (
                                 <article
                                     key={member.userId}
@@ -279,143 +480,9 @@ export default function AdvancedMemberSearch() {
                             </div>
                         )}
                     </div>
-                </main>
+                </main >
 
-                <aside className="w-full md:w-[320px] lg:w-[340px] flex flex-col border-l border-[#342418] bg-[#221710] z-10 overflow-y-auto custom-scrollbar flex-none hidden md:flex">
-                    <div className="p-5 pb-0">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-white text-xl font-bold leading-tight">Bộ lọc tìm kiếm</h2>
-                            <button onClick={handleReset} className="text-sm font-bold text-primary hover:text-orange-400">Đặt lại</button>
-                        </div>
-
-                        <div className="mb-6">
-                            <label className="flex w-full items-center rounded-xl bg-[#342418] border border-[#493222] h-12 px-4 focus-within:ring-1 ring-primary/50 transition-all">
-                                <span className="material-symbols-outlined text-text-secondary">search</span>
-                                <input
-                                    className="w-full bg-transparent border-none text-white placeholder-text-secondary/60 focus:ring-0 text-sm ml-2 focus:outline-none"
-                                    placeholder="Tên, thành phố hoặc từ khóa..."
-                                    value={keyword}
-                                    onChange={(e) => setKeyword(e.target.value)}
-                                />
-                            </label>
-                        </div>
-                    </div>
-
-                    <div className="flex flex-col px-5 pb-10 gap-4">
-                        <details className="group flex flex-col rounded-xl border border-[#342418] bg-[#2a1d15] overflow-hidden" open>
-                            <summary className="flex cursor-pointer items-center justify-between gap-6 p-4 bg-transparent hover:bg-white/5 transition-colors list-none">
-                                <p className="text-white text-sm font-bold">Tình trạng hôn nhân</p>
-                                <span className="material-symbols-outlined text-text-secondary text-[20px] transition-transform group-open:rotate-180">
-                                    expand_more
-                                </span>
-                            </summary>
-                            <div className="px-4 pb-5 pt-1">
-                                <div className="space-y-2">
-                                    {['', 'SINGLE', 'MARRIED', 'DIVORCED', 'WIDOWED'].map((status) => (
-                                        <label key={status} className="flex items-center gap-3 cursor-pointer group/label">
-                                            <div className={`size-4 rounded-full border flex items-center justify-center ${maritalStatus === status ? 'border-primary' : 'border-[#493222]'}`}>
-                                                {maritalStatus === status && <div className="size-2 rounded-full bg-primary" />}
-                                            </div>
-                                            <input
-                                                type="radio"
-                                                name="maritalStatus"
-                                                checked={maritalStatus === status}
-                                                onChange={() => setMaritalStatus(status)}
-                                                className="hidden"
-                                            />
-                                            <span className={`text-sm group-hover/label:text-white transition-colors ${maritalStatus === status ? 'text-white' : 'text-text-secondary'}`}>
-                                                {status === '' ? 'Tất cả' : status === 'SINGLE' ? 'Độc thân' : status === 'MARRIED' ? 'Đã kết hôn' : status === 'DIVORCED' ? 'Đã ly hôn' : 'Góa'}
-                                            </span>
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
-                        </details>
-
-                        <details className="group flex flex-col rounded-xl border border-[#342418] bg-[#2a1d15] overflow-hidden" open>
-                            <summary className="flex cursor-pointer items-center justify-between gap-6 p-4 bg-transparent hover:bg-white/5 transition-colors list-none">
-                                <p className="text-white text-sm font-bold">Mục đích kết bạn</p>
-                                <span className="material-symbols-outlined text-text-secondary text-[20px] transition-transform group-open:rotate-180">
-                                    expand_more
-                                </span>
-                            </summary>
-                            <div className="px-4 pb-5 pt-1">
-                                <div className="space-y-2">
-                                    {[
-                                        { value: '', label: 'Tất cả' },
-                                        { value: 'love', label: 'Tìm tình yêu' },
-                                        { value: 'friends', label: 'Kết bạn' },
-                                        { value: 'networking', label: 'Kết nối' }
-                                    ].map((option) => (
-                                        <label key={option.value} className="flex items-center gap-3 cursor-pointer group/label">
-                                            <div className={`size-4 rounded-full border flex items-center justify-center ${lookingFor === option.value ? 'border-primary' : 'border-[#493222]'}`}>
-                                                {lookingFor === option.value && <div className="size-2 rounded-full bg-primary" />}
-                                            </div>
-                                            <input
-                                                type="radio"
-                                                name="lookingFor"
-                                                checked={lookingFor === option.value}
-                                                onChange={() => setLookingFor(option.value)}
-                                                className="hidden"
-                                            />
-                                            <span className={`text-sm group-hover/label:text-white transition-colors ${lookingFor === option.value ? 'text-white' : 'text-text-secondary'}`}>
-                                                {option.label}
-                                            </span>
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
-                        </details>
-
-                        <details className="group flex flex-col rounded-xl border border-[#342418] bg-[#2a1d15] overflow-hidden" open>
-                            <summary className="flex cursor-pointer items-center justify-between gap-6 p-4 bg-transparent hover:bg-white/5 transition-colors list-none">
-                                <p className="text-white text-sm font-bold">Thành phố</p>
-                                <span className="material-symbols-outlined text-text-secondary text-[20px] transition-transform group-open:rotate-180">
-                                    expand_more
-                                </span>
-                            </summary>
-                            <div className="px-4 pb-5 pt-1">
-                                <div className="space-y-2">
-                                    <label className="flex items-center gap-3 cursor-pointer group/label">
-                                        <div className={`size-4 rounded-full border flex items-center justify-center ${!cityCode ? 'border-primary' : 'border-[#493222]'}`}>
-                                            {!cityCode && <div className="size-2 rounded-full bg-primary" />}
-                                        </div>
-                                        <input
-                                            type="radio"
-                                            name="cityCode"
-                                            checked={!cityCode}
-                                            onChange={() => setCityCode('')}
-                                            className="hidden"
-                                        />
-                                        <span className={`text-sm group-hover/label:text-white transition-colors ${!cityCode ? 'text-white' : 'text-text-secondary'}`}>
-                                            Tất cả thành phố
-                                        </span>
-                                    </label>
-                                    {cities.map((city) => (
-                                        <label key={city.code} className="flex items-center gap-3 cursor-pointer group/label">
-                                            <div className={`size-4 rounded-full border flex items-center justify-center ${cityCode === city.code ? 'border-primary' : 'border-[#493222]'}`}>
-                                                {cityCode === city.code && <div className="size-2 rounded-full bg-primary" />}
-                                            </div>
-                                            <input
-                                                type="radio"
-                                                name="cityCode"
-                                                checked={cityCode === city.code}
-                                                onChange={() => setCityCode(city.code)}
-                                                className="hidden"
-                                            />
-                                            <span className={`text-sm group-hover/label:text-white transition-colors ${cityCode === city.code ? 'text-white' : 'text-text-secondary'}`}>
-                                                {city.name}
-                                            </span>
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
-                        </details>
-
-
-                    </div>
-                </aside>
-            </div>
+            </div >
             <ConfirmModal
                 isOpen={confirmModal.isOpen}
                 onClose={() => setConfirmModal({ isOpen: false, receiverId: null })}
