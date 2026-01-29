@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { useDispatch } from 'react-redux';
 import { createProfile } from '../../redux/slices/authSlice'; // Import thunk mới
 import { useSelector } from 'react-redux';
+import CitySelect from '../../components/common/CitySelect';
 
 // Validation schema
 const Step2Schema = Yup.object().shape({
@@ -33,8 +34,7 @@ const Step2Schema = Yup.object().shape({
     hobbies: Yup.array()
         .min(1, 'Vui lòng chọn ít nhất 1 sở thích')
         .required('Vui lòng chọn sở thích'),
-    city: Yup.string()
-        .required('Vui lòng chọn thành phố'),
+    city: Yup.mixed().required('Vui lòng chọn thành phố'),
 });
 
 export default function Step2() {
@@ -46,7 +46,7 @@ export default function Step2() {
 
     useEffect(() => {
         if (hasProfile) {
-             navigate('/dashboard/feed');
+            navigate('/dashboard/feed');
         }
     }, [hasProfile, navigate]);
 
@@ -58,7 +58,7 @@ export default function Step2() {
         maritalStatus: '',
         purpose: '',
         hobbies: [],
-        city: '',
+        city: null, // Change to object or null
         avatar: null
     };
 
@@ -87,7 +87,8 @@ export default function Step2() {
             maritalStatus: values.maritalStatus,
             purpose: values.purpose,
             hobbyIds: values.hobbies, // Array IDs
-            cityId: values.city, // ID
+            cityCode: values.city?.code,
+            cityName: values.city?.name,
             avatarUrl: avatarUrl, // URL từ Cloudinary
         };
 
@@ -98,7 +99,7 @@ export default function Step2() {
             // [NEW] Gọi Redux Action
             await dispatch(createProfile(profileData)).unwrap();
             navigate('/dashboard/feed');
-            
+
         } catch (error) {
             console.error("Failed:", error);
             // Hiện lỗi
@@ -154,27 +155,7 @@ export default function Step2() {
         { id: 12, value: 'technology', icon: 'computer', label: 'Công nghệ' },
     ];
 
-    const cityOptions = [
-        { id: 1, value: 'hanoi', label: 'Hà Nội' },
-        { id: 2, value: 'hochiminh', label: 'TP. Hồ Chí Minh' },
-        { id: 3, value: 'danang', label: 'Đà Nẵng' },
-        { id: 4, value: 'haiphong', label: 'Hải Phòng' },
-        { id: 5, value: 'cantho', label: 'Cần Thơ' },
-        { id: 6, value: 'bienhoa', label: 'Biên Hòa' },
-        { id: 7, value: 'nhatrang', label: 'Nha Trang' },
-        { id: 8, value: 'hue', label: 'Huế' },
-        { id: 9, value: 'vungtau', label: 'Vũng Tàu' },
-        { id: 10, value: 'dalat', label: 'Đà Lạt' },
-        { id: 11, value: 'quynhon', label: 'Quy Nhơn' },
-        { id: 12, value: 'buonmethuot', label: 'Buôn Ma Thuột' },
-        { id: 13, value: 'thanhhoa', label: 'Thanh Hóa' },
-        { id: 14, value: 'ninhbinh', label: 'Ninh Bình' },
-        { id: 15, value: 'halong', label: 'Hạ Long' },
-        { id: 16, value: 'vinh', label: 'Vinh' },
-        { id: 17, value: 'rachgia', label: 'Rạch Giá' },
-        { id: 18, value: 'longan', label: 'Long An' },
-        { id: 99, value: 'other', label: 'Khác' },
-    ];
+
 
     return (
         <div className="min-h-screen flex w-full bg-background-light dark:bg-background-dark">
@@ -212,7 +193,7 @@ export default function Step2() {
 
                 <div className="flex-1 flex flex-col justify-center py-10 px-6 sm:px-12 md:px-20 lg:px-24">
                     <div className="max-w-[480px] w-full mx-auto">
-                        
+
 
                         <h1 className="text-3xl font-bold leading-tight tracking-tight mb-2 text-white">
                             Hãy xác nhận phong cách của bạn
@@ -436,31 +417,13 @@ export default function Step2() {
                                     </div>
 
                                     {/* City */}
-                                    <div className="flex flex-col gap-2">
-                                        <label htmlFor="city" className="text-white text-base font-medium">Thành phố</label>
-                                        <div className="relative">
-                                            <select
-                                                id="city"
-                                                name="city"
-                                                value={values.city}
-                                                onChange={(e) => setFieldValue('city', e.target.value)}
-                                                className={`form-select w-full rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${errors.city && touched.city ? 'border-red-500' : 'border-border-dark'} bg-surface-dark h-14 px-4 text-base transition-all duration-200 appearance-none cursor-pointer`}
-                                            >
-                                                <option value="" className="bg-surface-dark text-text-secondary">Chọn thành phố...</option>
-                                                {cityOptions.map((city) => (
-                                                    <option key={city.id} value={city.id} className="bg-surface-dark text-white">
-                                                        {city.label}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none">
-                                                expand_more
-                                            </span>
-                                        </div>
-                                        {errors.city && touched.city && (
-                                            <span className="text-red-500 text-sm">{errors.city}</span>
-                                        )}
-                                    </div>
+                                    {/* City */}
+                                    <CitySelect
+                                        label="Thành phố"
+                                        value={values.city}
+                                        onChange={(newCity) => setFieldValue('city', newCity)}
+                                        error={errors.city && touched.city ? errors.city : null}
+                                    />
 
                                     <button
                                         type="submit"
@@ -479,7 +442,7 @@ export default function Step2() {
                                 className="text-sm text-text-secondary hover:text-white transition-colors flex items-center justify-center gap-1"
                             >
                                 <span className="material-symbols-outlined text-sm">arrow_back</span>
-                                Quay lại 
+                                Quay lại
                             </Link>
                         </div>
                     </div>
