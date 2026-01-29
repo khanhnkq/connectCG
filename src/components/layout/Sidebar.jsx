@@ -11,7 +11,8 @@ import {
   IconSearch,
   IconBell,
   IconSettings,
-  IconUserSearch
+  IconUserSearch,
+  IconUserHeart
 } from "@tabler/icons-react";
 
 import { useSelector, useDispatch } from 'react-redux';
@@ -81,6 +82,11 @@ export default function SidebarComponent() {
       label: "Lời mời kết bạn",
       href: "/dashboard/requests",
       icon: <IconUserPlus className="text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    },
+    {
+      label: "Bạn bè",
+      href: "/dashboard/friends",
+      icon: <IconUserHeart className="text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
       label: "Tìm bạn mới",

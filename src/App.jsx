@@ -23,6 +23,7 @@ import Newsfeed from "./pages/dashboard/Newsfeed";
 import FriendRequests from "./pages/dashboard/FriendRequests";
 import FriendSuggestions from "./pages/dashboard/FriendSuggestions";
 import FriendsSearch from "./pages/dashboard/FriendsSearch";
+import FriendsPage from "./pages/dashboard/FriendsPage";
 import AdminGroupsManager from "./pages/admin-website/AdminGroupsManager.jsx";
 import AdminMembersManager from "./pages/admin-website/AdminMembersManager.jsx";
 import MainFeedManager from "./pages/admin-website/MainFeedManager.jsx";
@@ -107,6 +108,7 @@ function App() {
             <Route path="suggestions" element={<FriendSuggestions />} />
             <Route path="profile/view" element={<MemberProfile />} />
             <Route path="friends-search" element={<FriendsSearch />} />
+            <Route path="friends" element={<FriendsPage />} />
           </Route>
 
           {/* Search Routes - Assuming they share Dashboard layout, if not, keep separate */}
