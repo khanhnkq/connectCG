@@ -444,7 +444,7 @@ const GroupDetailPage = () => {
                 </div>
 
                 {/* Navigation Tabs */}
-                <div className="border-b border-[#342418] sticky top-0 bg-background-dark/95 backdrop-blur-xl z-30">
+                <div className="border-b border-[#342418] sticky top-0 bg-background-dark/95 backdrop-blur-xl z-50">
                     <div className="max-w-7xl mx-auto px-6">
                         <nav className="flex gap-8 overflow-x-auto hide-scrollbar">
                             {[{ en: 'Feed', vi: 'Bản tin' }, { en: 'Members', vi: 'Thành viên' }, { en: 'Photos', vi: 'Ảnh' }, { en: 'Events', vi: 'Sự kiện' }]

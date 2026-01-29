@@ -118,7 +118,7 @@ export default function Login() {
                 <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#231810] via-[#231810]/60 to-transparent opacity-90" />
                 <div className="relative z-20 max-w-lg">
                     <div className="flex items-center gap-3 mb-6 text-primary">
-                        <span className="material-symbols-outlined text-4xl">favorite</span>
+                        <img src="/logo.png" alt="Connect Logo" className="h-10 w-auto object-contain" />
                         <span className="text-2xl font-bold tracking-tight text-white">Connect</span>
                     </div>
                     <h2 className="text-4xl md:text-5xl font-extrabold leading-tight mb-4 tracking-tight text-white">
@@ -134,7 +134,7 @@ export default function Login() {
             <div className="w-full lg:w-1/2 flex flex-col h-screen overflow-y-auto bg-background-dark relative">
                 <div className="w-full p-6 flex justify-between items-center lg:hidden">
                     <div className="flex items-center gap-2 text-white">
-                        <span className="material-symbols-outlined text-primary">favorite</span>
+                        <img src="/logo.png" alt="Connect Logo" className="h-8 w-auto object-contain" />
                         <span className="text-lg font-bold">Connect</span>
                     </div>
                 </div>

@@ -7,7 +7,7 @@ export default function LandingPage() {
             <nav className="fixed top-0 inset-x-0 z-50 bg-[#1A120B]/90 backdrop-blur-md border-b border-white/5 transition-all">
                 <div className="max-w-7xl mx-auto px-4 md:px-6 h-20 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-primary text-4xl">diversity_3</span>
+                        <img src="/logo.png" alt="Connect Logo" className="h-10 w-auto object-contain" />
                         <span className="text-xl font-extrabold tracking-tight">Connect<span className="text-primary">.</span></span>
                     </div>
                     <div className="hidden md:flex items-center gap-8">
@@ -168,7 +168,7 @@ export default function LandingPage() {
                     <div className="flex flex-col md:flex-row justify-between items-start gap-12 mb-16">
                         <div className="max-w-xs">
                             <div className="flex items-center gap-2 mb-6">
-                                <span className="material-symbols-outlined text-primary text-3xl">diversity_3</span>
+                                <img src="/logo.png" alt="Connect Logo" className="h-8 w-auto object-contain" />
                                 <span className="text-xl font-extrabold tracking-tight">Connect<span className="text-primary">.</span></span>
                             </div>
                             <p className="text-gray-500 text-sm leading-relaxed mb-6">
