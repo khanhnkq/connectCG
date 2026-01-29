@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { findById as findGroupById, getGroupMembers, getGroupPosts } from "../../services/groups/GroupService";
 import toast from 'react-hot-toast';
 
-const GroupInspectorModal = ({ groupId, reports = [], reporterMetadata = {}, onClose, onIgnore, onAction, actionLabel = "Delete Group" }) => {
+const GroupInspectorModal = ({ groupId, reports = [], reporterMetadata = {}, violationHistory = [], onClose, onIgnore, onAction, onReporterClick, actionLabel = "Delete Group" }) => {
     const [inspectorData, setInspectorData] = useState({
         group: null,
         members: [],
@@ -212,23 +212,47 @@ const GroupInspectorModal = ({ groupId, reports = [], reporterMetadata = {}, onC
                                 </button>
                             </div>
 
+                            {/* History Block */}
+                            <div className="p-4 bg-orange-500/5 mx-4 mt-4 mb-0 rounded-lg border border-orange-500/10">
+                                <h4 className="text-[10px] font-black uppercase text-orange-400 tracking-wider mb-2 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-sm">history</span>
+                                    Tiền án ({violationHistory.length})
+                                </h4>
+                                {violationHistory.length > 0 ? (
+                                    <div className="space-y-2 max-h-32 overflow-y-auto custom-scrollbar">
+                                        {violationHistory.map((h, i) => (
+                                            <div key={i} className="text-[10px] text-text-muted border-l-2 border-orange-500/20 pl-2">
+                                                <span className="text-white font-bold block truncate">{h.reason}</span>
+                                                <span>{new Date(h.createdAt).toLocaleDateString()}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-[10px] text-text-muted italic">Nhóm này chưa có tiền án nào.</p>
+                                )}
+                            </div>
+
                             {/* Reports List */}
                             <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
                                 {reports.map((report, idx) => {
                                     const reporterInfo = reporterMetadata[`USER_${report.reporterId}`];
                                     return (
-                                        <div key={idx} className="bg-white/5 p-4 rounded-2xl border border-white/5 space-y-3 hover:bg-white/10 transition-colors">
-                                            <div className="flex items-center gap-3">
+                                        <div key={idx} className="bg-white/5 p-4 rounded-lg border border-white/5 space-y-3 hover:bg-white/10 transition-colors">
+                                            <div
+                                                className="flex items-center gap-3 cursor-pointer group"
+                                                onClick={() => onReporterClick && onReporterClick(report.reporterId)}
+                                                title="Xem thông tin người báo cáo"
+                                            >
                                                 {reporterInfo?.avatar ? (
-                                                    <img src={reporterInfo.avatar} className="size-10 rounded-full object-cover border border-white/10 shadow-sm" alt="" />
+                                                    <img src={reporterInfo.avatar} className="size-10 rounded-full object-cover border border-white/10 shadow-sm group-hover:border-primary/50 transition-colors" alt="" />
                                                 ) : (
-                                                    <div className="size-10 rounded-full bg-gradient-to-br from-primary/80 to-purple-600 flex items-center justify-center text-white font-bold text-xs shadow-lg shadow-purple-500/20">
+                                                    <div className="size-10 rounded-full bg-gradient-to-br from-primary/80 to-purple-600 flex items-center justify-center text-white font-bold text-xs shadow-lg shadow-purple-500/20 group-hover:scale-105 transition-transform">
                                                         {(reporterInfo?.name || report.reporterUsername || 'R').charAt(0).toUpperCase()}
                                                     </div>
                                                 )}
 
                                                 <div className="overflow-hidden flex-1">
-                                                    <p className="text-white font-bold text-sm truncate leading-tight">
+                                                    <p className="text-white font-bold text-sm truncate leading-tight group-hover:text-primary transition-colors">
                                                         {reporterInfo?.name || report.reporterUsername || "Người Báo Cáo"}
                                                     </p>
                                                     <p className="text-[11px] text-text-muted font-medium mt-0.5">
@@ -237,7 +261,7 @@ const GroupInspectorModal = ({ groupId, reports = [], reporterMetadata = {}, onC
                                                 </div>
                                             </div>
 
-                                            <div className="bg-black/20 rounded-xl p-3 border border-white/5">
+                                            <div className="bg-black/20 rounded-lg p-3 border border-white/5">
                                                 <p className="text-xs text-text-muted uppercase tracking-wider font-bold mb-1">Lý do báo cáo</p>
                                                 <p className="text-sm font-medium text-red-400 leading-snug">
                                                     {report.reason}
