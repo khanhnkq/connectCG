@@ -1,3 +1,4 @@
+import { Mail, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Formik, Form, Field } from "formik";
@@ -59,14 +60,12 @@ export default function Step1() {
 
   if (isRegisterSuccess) {
     return (
-      <div className="min-h-screen flex w-full bg-background-light dark:bg-background-dark items-center justify-center p-4">
-        <div className="bg-surface-dark p-8 rounded-2xl border border-border-dark shadow-xl text-center max-w-md w-full">
+      <div className="min-h-screen flex w-full bg-background-main items-center justify-center p-4 transition-colors duration-300">
+        <div className="bg-surface-main p-8 rounded-2xl border border-border-main shadow-xl text-center max-w-md w-full">
           <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-            <span className="material-symbols-outlined text-4xl text-primary">
-              mail
-            </span>
+            <Mail className="size-10 text-primary" />
           </div>
-          <h2 className="text-2xl font-bold text-white mb-4">
+          <h2 className="text-2xl font-bold text-text-main mb-4">
             Kiểm tra email của bạn
           </h2>
           <p className="text-text-secondary mb-6">
@@ -75,7 +74,7 @@ export default function Step1() {
           </p>
           <Link
             to="/login"
-            className="inline-flex items-center justify-center px-6 py-3 bg-surface-dark border border-border-dark text-white rounded-full font-medium hover:bg-border-dark transition-colors"
+            className="inline-flex items-center justify-center px-6 py-3 bg-surface-main border border-border-main text-text-main rounded-full font-medium hover:bg-border-main transition-colors"
           >
             Về trang đăng nhập
           </Link>
@@ -85,7 +84,7 @@ export default function Step1() {
   }
 
   return (
-    <div className="min-h-screen flex w-full bg-background-light dark:bg-background-dark">
+    <div className="min-h-screen flex w-full bg-background-main transition-colors duration-300">
       {/* Left Side: Illustration/Image */}
       <div className="hidden lg:flex w-1/2 relative flex-col justify-end p-12 overflow-hidden">
         {/* Background Image */}
@@ -106,11 +105,11 @@ export default function Step1() {
               alt="Connect Logo"
               className="h-10 w-auto object-contain"
             />
-            <span className="text-2xl font-bold tracking-tight text-white">
+            <span className="text-2xl font-bold tracking-tight text-text-main">
               Connect
             </span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-extrabold leading-tight mb-4 tracking-tight text-white">
+          <h2 className="text-4xl md:text-5xl font-extrabold leading-tight mb-4 tracking-tight text-text-main">
             Tìm kiếm những kết nối ý nghĩa dành riêng cho bạn.
           </h2>
           <p className="text-text-secondary text-lg leading-relaxed max-w-md">
@@ -121,7 +120,7 @@ export default function Step1() {
       </div>
 
       {/* Right Side: Form */}
-      <div className="w-full lg:w-1/2 flex flex-col h-screen overflow-y-auto bg-background-dark relative">
+      <div className="w-full lg:w-1/2 flex flex-col h-screen overflow-y-auto bg-background-main relative transition-colors duration-300">
         {/* Top Navigation (Mobile/Tablet only) */}
         <div className="w-full p-6 flex justify-between items-center lg:hidden">
           <div className="flex items-center gap-2 text-white">
@@ -148,7 +147,7 @@ export default function Step1() {
                         </div> */}
 
             {/* Title */}
-            <h1 className="text-3xl font-bold leading-tight tracking-tight mb-2 text-white">
+            <h1 className="text-3xl font-bold leading-tight tracking-tight mb-2 text-text-main">
               Tạo hồ sơ của bạn
             </h1>
             <p className="text-text-secondary text-base mb-8">
@@ -167,7 +166,7 @@ export default function Step1() {
                   <div className="flex flex-col gap-2">
                     <label
                       htmlFor="username"
-                      className="text-white text-base font-medium"
+                      className="text-text-main text-base font-medium"
                     >
                       Tên đăng nhập
                     </label>
@@ -180,11 +179,11 @@ export default function Step1() {
                         type="text"
                         name="username"
                         id="username"
-                        className={`form-input w-full rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${
+                        className={`form-input w-full rounded-xl text-text-main focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${
                           errors.username && touched.username
                             ? "border-red-500"
-                            : "border-border-dark"
-                        } bg-surface-dark h-14 pl-10 pr-4 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
+                            : "border-border-main"
+                        } bg-surface-main h-14 pl-10 pr-4 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
                         placeholder="nguyen_van_a"
                       />
                     </div>
@@ -199,7 +198,7 @@ export default function Step1() {
                   <div className="flex flex-col gap-2">
                     <label
                       htmlFor="email"
-                      className="text-white text-base font-medium"
+                      className="text-text-main text-base font-medium"
                     >
                       Địa chỉ Email
                     </label>
@@ -208,11 +207,11 @@ export default function Step1() {
                       type="email"
                       name="email"
                       id="email"
-                      className={`form-input w-full rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${
+                      className={`form-input w-full rounded-xl text-text-main focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${
                         errors.email && touched.email
                           ? "border-red-500"
-                          : "border-border-dark"
-                      } bg-surface-dark h-14 px-4 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
+                          : "border-border-main"
+                      } bg-surface-main h-14 px-4 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
                       placeholder="email@example.com"
                     />
                     {errors.email && touched.email && (
@@ -226,7 +225,7 @@ export default function Step1() {
                   <div className="flex flex-col gap-2">
                     <label
                       htmlFor="password"
-                      className="text-white text-base font-medium"
+                      className="text-text-main text-base font-medium"
                     >
                       Mật khẩu
                     </label>
@@ -236,11 +235,11 @@ export default function Step1() {
                         type={showPassword ? "text" : "password"}
                         name="password"
                         id="password"
-                        className={`form-input w-full rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${
+                        className={`form-input w-full rounded-xl text-text-main focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${
                           errors.password && touched.password
                             ? "border-red-500"
-                            : "border-border-dark"
-                        } bg-surface-dark h-14 pl-4 pr-12 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
+                            : "border-border-main"
+                        } bg-surface-main h-14 pl-4 pr-12 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
                         placeholder="Tối thiểu 8 ký tự"
                       />
                       <button
@@ -248,9 +247,11 @@ export default function Step1() {
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-4 cursor-pointer text-text-secondary hover:text-primary transition-colors"
                       >
-                        <span className="material-symbols-outlined text-[20px] leading-none">
-                          {showPassword ? "visibility_off" : "visibility"}
-                        </span>
+                        {showPassword ? (
+                          <EyeOff size={20} />
+                        ) : (
+                          <Eye size={20} />
+                        )}
                       </button>
                     </div>
                     {errors.password && touched.password && (
@@ -263,7 +264,7 @@ export default function Step1() {
                   <div className="flex flex-col gap-2">
                     <label
                       htmlFor="confirmPassword"
-                      className="text-white text-base font-medium"
+                      className="text-text-main text-base font-medium"
                     >
                       Xác nhận mật khẩu
                     </label>
@@ -273,11 +274,11 @@ export default function Step1() {
                         type={showPassword ? "text" : "password"}
                         name="confirmPassword"
                         id="confirmPassword"
-                        className={`form-input w-full rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${
+                        className={`form-input w-full rounded-xl text-text-main focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${
                           errors.confirmPassword && touched.confirmPassword
                             ? "border-red-500"
-                            : "border-border-dark"
-                        } bg-surface-dark h-14 px-4 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
+                            : "border-border-main"
+                        } bg-surface-main h-14 px-4 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
                         placeholder="Nhập lại mật khẩu"
                       />
                     </div>
@@ -321,7 +322,7 @@ export default function Step1() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="mt-4 flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-full h-14 bg-primary hover:bg-orange-600 text-white text-lg font-bold leading-normal tracking-wide transition-colors shadow-lg shadow-orange-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="mt-4 flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-full h-14 bg-primary hover:bg-primary-hover text-white text-lg font-bold leading-normal tracking-wide transition-colors shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? "Đang xử lý..." : "Tiếp tục"}
                   </button>
@@ -335,10 +336,10 @@ export default function Step1() {
                 aria-hidden="true"
                 className="absolute inset-0 flex items-center"
               >
-                <div className="w-full border-t border-border-dark" />
+                <div className="w-full border-t border-border-main" />
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-background-dark px-4 text-sm text-text-secondary">
+                <span className="bg-background-main px-4 text-sm text-text-secondary">
                   Hoặc tiếp tục với
                 </span>
               </div>
@@ -348,7 +349,7 @@ export default function Step1() {
             <div className="grid grid-cols-2 gap-4 mb-8">
               <a
                 href={import.meta.env.VITE_OAUTH2_FACEBOOK_URL}
-                className="flex items-center justify-center gap-3 rounded-xl border border-border-dark bg-surface-dark hover:bg-border-dark h-14 px-4 transition-colors"
+                className="flex items-center justify-center gap-3 rounded-xl border border-border-main bg-surface-main hover:bg-border-main h-14 px-4 transition-colors"
               >
                 <svg
                   aria-hidden="true"
@@ -357,11 +358,11 @@ export default function Step1() {
                 >
                   <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" />
                 </svg>
-                <span className="text-white font-medium">Facebook</span>
+                <span className="text-text-main font-medium">Facebook</span>
               </a>
               <a
                 href={import.meta.env.VITE_OAUTH2_GOOGLE_URL}
-                className="flex items-center justify-center gap-3 rounded-xl border border-border-dark bg-surface-dark hover:bg-border-dark h-14 px-4 transition-colors"
+                className="flex items-center justify-center gap-3 rounded-xl border border-border-main bg-surface-main hover:bg-border-main h-14 px-4 transition-colors"
               >
                 <svg
                   aria-hidden="true"
@@ -370,7 +371,7 @@ export default function Step1() {
                 >
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09zM12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23zM5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84zM12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                 </svg>
-                <span className="text-white font-medium">Google</span>
+                <span className="text-text-main font-medium">Google</span>
               </a>
             </div>
 
@@ -379,7 +380,7 @@ export default function Step1() {
               Đã có tài khoản?{" "}
               <Link
                 to="/login"
-                className="text-primary hover:text-white font-bold transition-colors"
+                className="text-primary hover:text-text-main font-bold transition-colors"
               >
                 Đăng nhập
               </Link>

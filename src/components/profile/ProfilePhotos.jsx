@@ -3,14 +3,14 @@ import { Image, ZoomIn, Trash2, Images } from "lucide-react";
 
 const ProfilePhotos = ({ profile, isOwner }) => {
   return (
-    <div className="bg-[#342418] rounded-2xl border border-[#3e2b1d] p-6 shadow-sm">
+    <div className="bg-surface-main rounded-2xl border border-border-main p-6 shadow-sm">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-white font-bold text-xl flex items-center gap-2">
+        <h3 className="text-text-main font-bold text-xl flex items-center gap-2">
           <Image className="text-primary" size={20} />
           {isOwner ? "Ảnh của bạn" : "Bộ sưu tập ảnh"}
         </h3>
         {isOwner && (
-          <button className="bg-primary hover:bg-orange-600 text-[#231810] text-xs font-bold px-4 py-2 rounded-lg transition-all">
+          <button className="bg-primary hover:bg-orange-600 text-text-main text-xs font-bold px-4 py-2 rounded-lg transition-all">
             Thêm ảnh
           </button>
         )}

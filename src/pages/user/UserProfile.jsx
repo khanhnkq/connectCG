@@ -95,7 +95,7 @@ export default function UserProfile() {
 
   if (loading || !profile) {
     return (
-      <div className="bg-background-dark min-h-screen flex items-center justify-center text-white">
+      <div className="bg-background-main min-h-screen flex items-center justify-center text-text-main">
         <div className="flex flex-col items-center gap-4">
           <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
           <p className="text-text-secondary font-bold">
@@ -109,7 +109,7 @@ export default function UserProfile() {
   return (
     <>
       <div className="w-full mx-auto pb-20">
-        <div className="bg-[#342418] border-b border-[#3e2b1d]">
+        <div className="bg-surface-main border-b border-border-main">
           <div className="w-full max-w-6xl mx-auto">
             <div className="relative w-full h-64 md:h-80 lg:h-96 group overflow-hidden rounded-b-3xl">
               <div
@@ -145,7 +145,7 @@ export default function UserProfile() {
             <div className="px-4 md:px-8 pb-4 relative">
               <div className="flex flex-col md:flex-row items-start md:items-end -mt-16 md:-mt-12 gap-6 relative z-10 mb-6">
                 <div className="relative shrink-0">
-                  <div className="size-32 md:size-44 rounded-full border-4 border-[#342418] bg-[#221710] p-1 shadow-2xl relative group">
+                  <div className="size-32 md:size-44 rounded-full border-4 border-surface-main bg-background-main p-1 shadow-2xl relative group">
                     <div
                       className="w-full h-full rounded-full bg-cover bg-center group-hover:opacity-80 transition-opacity"
                       style={{
@@ -179,13 +179,13 @@ export default function UserProfile() {
                     )}
                   </div>
                   <div
-                    className="absolute bottom-2 md:bottom-4 right-2 md:right-4 size-5 md:size-6 bg-green-500 border-4 border-[#342418] rounded-full"
+                    className="absolute bottom-2 md:bottom-4 right-2 md:right-4 size-5 md:size-6 bg-green-500 border-4 border-surface-main rounded-full"
                     title="Online"
                   ></div>
                 </div>
                 <div className="flex-1 w-full flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
                   <div className="mb-2 md:mb-4">
-                    <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-1">
+                    <h1 className="text-3xl md:text-4xl font-extrabold text-text-main tracking-tight mb-1">
                       {profile?.fullName || profile?.username}
                     </h1>
                     <p className="text-text-secondary font-medium text-sm flex items-center gap-2">
@@ -198,13 +198,13 @@ export default function UserProfile() {
                     </p>
                     <div className="flex gap-4 mt-3 text-sm text-text-secondary">
                       <span>
-                        <strong className="text-white">
+                        <strong className="text-text-main">
                           {profile?.friendsCount || 0}
                         </strong>{" "}
                         Bạn bè
                       </span>
                       <span>
-                        <strong className="text-white">
+                        <strong className="text-text-main">
                           {profile?.postsCount || 0}
                         </strong>{" "}
                         Bài viết
@@ -222,13 +222,13 @@ export default function UserProfile() {
                   </div>
                 </div>
               </div>
-              <div className="flex gap-1 overflow-x-auto pb-1 border-t border-[#493222] pt-2 scrollbar-hide">
+              <div className="flex gap-1 overflow-x-auto pb-1 border-t border-border-main pt-2 scrollbar-hide">
                 <button
                   onClick={() => setActiveTab("timeline")}
                   className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${
                     activeTab === "timeline"
                       ? "text-primary border-b-2 border-primary"
-                      : "text-text-secondary hover:text-white hover:bg-[#493222]/50 rounded-t-lg"
+                      : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
                   }`}
                 >
                   Dòng thời gian
@@ -238,7 +238,7 @@ export default function UserProfile() {
                   className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${
                     activeTab === "about"
                       ? "text-primary border-b-2 border-primary"
-                      : "text-text-secondary hover:text-white hover:bg-[#493222]/50 rounded-t-lg"
+                      : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
                   }`}
                 >
                   Giới thiệu
@@ -248,7 +248,7 @@ export default function UserProfile() {
                   className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${
                     activeTab === "photos"
                       ? "text-primary border-b-2 border-primary"
-                      : "text-text-secondary hover:text-white hover:bg-[#493222]/50 rounded-t-lg"
+                      : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
                   }`}
                 >
                   Ảnh
@@ -287,8 +287,8 @@ export default function UserProfile() {
             {/* Left Column - Only show on timeline */}
             {activeTab === "timeline" && (
               <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-6">
-                <div className="bg-[#342418] rounded-2xl border border-[#3e2b1d] p-5 shadow-sm">
-                  <h3 className="text-white font-bold text-lg mb-4">
+                <div className="bg-surface-main rounded-2xl border border-border-main p-5 shadow-sm">
+                  <h3 className="text-text-main font-bold text-lg mb-4">
                     Giới thiệu
                   </h3>
                   <p className="text-text-secondary text-sm leading-relaxed mb-4">
@@ -342,15 +342,15 @@ export default function UserProfile() {
 
                 {/* Hobbies Section */}
                 {profile?.hobbies?.length > 0 && (
-                  <div className="bg-[#342418] rounded-2xl border border-[#3e2b1d] p-5 shadow-sm">
-                    <h3 className="text-white font-bold text-lg mb-4">
+                  <div className="bg-surface-main rounded-2xl border border-border-main p-5 shadow-sm">
+                    <h3 className="text-text-main font-bold text-lg mb-4">
                       Sở thích
                     </h3>
                     <div className="flex flex-wrap gap-2">
                       {profile.hobbies.map((hobby, index) => (
                         <span
                           key={index}
-                          className="bg-[#493222] text-primary text-xs font-bold px-3 py-1.5 rounded-full border border-primary/20"
+                          className="bg-background-main text-primary text-xs font-bold px-3 py-1.5 rounded-full border border-primary/20"
                         >
                           {hobby.name}
                         </span>
@@ -373,19 +373,19 @@ export default function UserProfile() {
                 <>
                   <PostComposer userAvatar={profile?.currentAvatarUrl} />
 
-                  <div className="flex items-center justify-between bg-[#342418] p-3 px-5 rounded-2xl border border-[#3e2b1d]">
-                    <h2 className="text-white font-bold text-lg">
+                  <div className="flex items-center justify-between bg-surface-main p-3 px-5 rounded-2xl border border-border-main">
+                    <h2 className="text-text-main font-bold text-lg">
                       Bài viết của bạn
                     </h2>
                     <div className="flex gap-2">
-                      <button className="flex items-center gap-1 bg-[#493222] text-white text-xs font-bold px-3 py-2 rounded-lg hover:bg-[#5c402d] transition-colors">
+                      <button className="flex items-center gap-1 bg-background-main text-text-main text-xs font-bold px-3 py-2 rounded-lg hover:bg-surface-main transition-colors border border-border-main">
                         <SlidersHorizontal size={16} />
                         Bộ lọc
                       </button>
                     </div>
                   </div>
 
-                  <div className="text-center py-20 bg-[#342418] rounded-2xl border border-[#3e2b1d] flex flex-col items-center justify-center">
+                  <div className="text-center py-20 bg-surface-main rounded-2xl border border-border-main flex flex-col items-center justify-center">
                     <PlusSquare
                       size={48}
                       className="text-text-secondary/30 mb-4"

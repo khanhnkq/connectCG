@@ -1,3 +1,4 @@
+import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function TermsOfService() {
@@ -9,7 +10,7 @@ export default function TermsOfService() {
             to="/registration/step-1"
             className="text-primary hover:underline font-medium flex items-center gap-2"
           >
-            <span className="material-symbols-outlined">arrow_back</span>
+            <ArrowLeft size={20} />
           </Link>
           <div className="flex items-center gap-2">
             <img src="/logo.png" alt="Connect Logo" className="h-8 w-auto" />

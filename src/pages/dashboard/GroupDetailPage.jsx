@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   ArrowLeft,
   ShieldCheck,
@@ -18,12 +18,7 @@ import {
   Key,
   UserMinus,
 } from "lucide-react";
-import {
-  useNavigate,
-  useParams,
-  useSearchParams,
-  useLocation,
-} from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import PostComposer from "../../components/feed/PostComposer";
 import PostCard from "../../components/feed/PostCard";
 import toast from "react-hot-toast";
@@ -71,8 +66,6 @@ const formatTime = (dateString) => {
 const GroupDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [searchParams] = useSearchParams();
   const [group, setGroup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false); // Group-level admin/owner
@@ -124,7 +117,7 @@ const GroupDetailPage = () => {
     return info ? info.id : null;
   };
 
-  const fetchGroupData = async () => {
+  const fetchGroupData = useCallback(async () => {
     try {
       const groupData = await findById(id);
       setGroup(groupData);
@@ -143,27 +136,16 @@ const GroupDetailPage = () => {
       const userInfo = getUserInfoFromToken();
       const userStr = localStorage.getItem("user"); // Fallback to localStorage user object if needed
 
-      let isSystemAdmin = false;
       let currentUserId = null;
 
       if (userInfo) {
         currentUserId = Number(userInfo.id);
         // Check role from token - handle both formats and case sensitivity
-        const roles = userInfo.role;
-        if (Array.isArray(roles)) {
-          isSystemAdmin = roles.some(
-            (r) => r === "ADMIN" || r === "ROLE_ADMIN",
-          );
-        } else if (typeof roles === "string") {
-          isSystemAdmin = roles === "ADMIN" || roles === "ROLE_ADMIN";
-        }
+        // Check system admin role if needed in future
       } else if (userStr) {
         const userData = JSON.parse(userStr);
         currentUserId = userData.id;
-        isSystemAdmin =
-          userData.role === "ADMIN" || userData.role === "ROLE_ADMIN";
       }
-
       if (currentUserId) {
         // Check Group management rights: Owner OR Group Admin
         if (
@@ -178,7 +160,7 @@ const GroupDetailPage = () => {
             setMemberRequests(requests);
             const pPosts = await getPendingPosts(id);
             setPendingPosts(pPosts);
-          } catch (e) {
+          } catch {
             console.log(
               "Not authorized to fetch pending items (or handled by API)",
             );
@@ -219,10 +201,11 @@ const GroupDetailPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, navigate]);
+
   useEffect(() => {
     fetchGroupData();
-  }, [id]);
+  }, [fetchGroupData]);
 
   const handleLeaveGroup = () => {
     if (!group) return;
@@ -404,18 +387,9 @@ const GroupDetailPage = () => {
     }
   };
 
-  const checkIfAdmin = (member) => {
-    if (!member) return false;
-    return (
-      member.role === "ADMIN" ||
-      member.role === "OWNER" ||
-      member.userId === group?.ownerId
-    );
-  };
-
   if (loading) {
     return (
-      <div className="bg-[#0f0a06] min-h-screen flex items-center justify-center">
+      <div className="bg-background-main min-h-screen flex items-center justify-center">
         <div className="size-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
       </div>
     );
@@ -438,7 +412,7 @@ const GroupDetailPage = () => {
               backgroundImage: `url("${imageUrl}")`,
             }}
           >
-            <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/60 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background-main via-background-main/60 to-transparent" />
           </div>
 
           <button
@@ -454,7 +428,7 @@ const GroupDetailPage = () => {
           <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 flex flex-col md:flex-row md:items-end justify-between gap-6 max-w-7xl mx-auto">
             <div className="flex flex-col gap-3">
               <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight drop-shadow-lg flex items-center gap-3">
+                <h1 className="text-3xl md:text-5xl font-extrabold text-text-main tracking-tight drop-shadow-lg flex items-center gap-3">
                   {group.name}
                   {isAdmin && (
                     <ShieldCheck
@@ -500,7 +474,7 @@ const GroupDetailPage = () => {
 
                   <button
                     onClick={() => setShowInviteModal(true)}
-                    className="flex-1 sm:flex-none h-10 px-6 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md font-bold text-sm transition-all flex items-center justify-center gap-2"
+                    className="flex-1 sm:flex-none h-10 px-6 rounded-full bg-white/10 hover:bg-white/20 text-text-main border border-white/20 backdrop-blur-md font-bold text-sm transition-all flex items-center justify-center gap-2"
                     title="Mời bạn bè tham gia nhóm"
                   >
                     <UserPlus size={20} />
@@ -547,7 +521,7 @@ const GroupDetailPage = () => {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="border-b border-[#342418] sticky top-0 bg-background-dark/95 backdrop-blur-xl z-50">
+        <div className="border-b border-border-main sticky top-0 bg-background-main/95 backdrop-blur-xl z-50">
           <div className="max-w-7xl mx-auto px-6">
             <nav className="flex gap-8 overflow-x-auto hide-scrollbar">
               {[
@@ -557,7 +531,7 @@ const GroupDetailPage = () => {
                 { en: "Events", vi: "Sự kiện" },
               ]
                 .filter(
-                  (tab) =>
+                  () =>
                     group.privacy === "PUBLIC" ||
                     userMembership?.status === "ACCEPTED" ||
                     isAdmin,
@@ -569,7 +543,7 @@ const GroupDetailPage = () => {
                     className={`py-4 font-bold text-sm tracking-wide whitespace-nowrap transition-all border-b-2 ${
                       activeTab === tab.vi
                         ? "text-primary border-primary"
-                        : "text-text-secondary hover:text-white border-transparent"
+                        : "text-text-secondary hover:text-text-main border-transparent"
                     }`}
                   >
                     {tab.vi}
@@ -587,7 +561,7 @@ const GroupDetailPage = () => {
                   <Gavel size={18} />
                   KIỂM DUYỆT
                   {(pendingPosts.length > 0 || memberRequests.length > 0) && (
-                    <span className="size-5 bg-orange-500 text-[#231810] text-[10px] rounded-full flex items-center justify-center">
+                    <span className="size-5 bg-orange-500 text-text-main text-[10px] rounded-full flex items-center justify-center">
                       {pendingPosts.length + memberRequests.length}
                     </span>
                   )}
@@ -605,11 +579,11 @@ const GroupDetailPage = () => {
                 {group.privacy === "PRIVATE" &&
                 userMembership?.status !== "ACCEPTED" &&
                 !isAdmin ? (
-                  <div className="bg-card-dark rounded-[2.5rem] p-12 border border-[#3e2b1d] text-center space-y-6">
+                  <div className="bg-surface-main rounded-[2.5rem] p-12 border border-border-main text-center space-y-6">
                     <div className="size-24 rounded-full bg-primary/10 flex items-center justify-center text-primary mx-auto mb-8">
                       <Lock size={40} />
                     </div>
-                    <h2 className="text-3xl font-black text-white">
+                    <h2 className="text-3xl font-black text-text-main">
                       Đây là nhóm Riêng tư
                     </h2>
                     <p className="text-text-secondary max-w-md mx-auto leading-relaxed">
@@ -619,7 +593,7 @@ const GroupDetailPage = () => {
                     <button
                       onClick={handleJoinGroup}
                       disabled={userMembership?.status === "REQUESTED"}
-                      className="px-10 py-4 bg-primary hover:bg-orange-600 text-[#231810] font-black rounded-2xl transition-all shadow-xl shadow-primary/20 uppercase tracking-widest disabled:opacity-50"
+                      className="px-10 py-4 bg-primary hover:bg-orange-600 text-text-main font-black rounded-2xl transition-all shadow-xl shadow-primary/20 uppercase tracking-widest disabled:opacity-50"
                     >
                       {userMembership?.status === "REQUESTED"
                         ? "Đang chờ duyệt..."
@@ -658,7 +632,7 @@ const GroupDetailPage = () => {
                           />
                         ))
                       ) : (
-                        <div className="bg-card-dark rounded-3xl p-12 border border-[#3e2b1d] text-center">
+                        <div className="bg-surface-main rounded-3xl p-12 border border-border-main text-center">
                           <div className="size-16 rounded-full bg-white/5 flex items-center justify-center text-text-secondary mx-auto mb-4">
                             <PlusSquare size={30} />
                           </div>
@@ -672,8 +646,8 @@ const GroupDetailPage = () => {
                 )}
               </div>
               <div className="hidden lg:flex flex-col gap-6">
-                <div className="bg-card-dark rounded-2xl p-6 border border-[#3e2b1d]">
-                  <h3 className="text-white font-bold text-lg mb-3">
+                <div className="bg-surface-main rounded-2xl p-6 border border-border-main">
+                  <h3 className="text-text-main font-bold text-lg mb-3">
                     Giới thiệu về nhóm
                   </h3>
                   <p className="text-text-secondary text-sm leading-relaxed mb-4">
@@ -703,14 +677,14 @@ const GroupDetailPage = () => {
           {activeTab === "Thành viên" && (
             <div className="max-w-3xl mx-auto space-y-6">
               <div className="flex justify-between items-center px-2">
-                <h3 className="text-xl font-bold text-white">
+                <h3 className="text-xl font-bold text-text-main">
                   Thành viên nhóm
                 </h3>
                 <span className="text-sm text-text-secondary">
                   {group.memberCount || 0} thành viên
                 </span>
               </div>
-              <div className="bg-card-dark border border-[#3e2b1d] rounded-3xl overflow-hidden divide-y divide-[#3e2b1d]">
+              <div className="bg-surface-main border border-border-main rounded-3xl overflow-hidden divide-y divide-border-main">
                 {members.length > 0 ? (
                   members.map((member) => (
                     <div
@@ -720,12 +694,12 @@ const GroupDetailPage = () => {
                       <div className="flex items-center gap-4">
                         <img
                           src={member.avatarUrl}
-                          className="size-12 rounded-full border-2 border-[#3e2b1d]"
+                          className="size-12 rounded-full border-2 border-border-main"
                           alt=""
                         />
                         <div>
                           <div className="flex items-center gap-2">
-                            <p className="font-bold text-white">
+                            <p className="font-bold text-text-main">
                               {member.fullName}
                             </p>
                             <span
@@ -793,7 +767,7 @@ const GroupDetailPage = () => {
 
           {activeTab === "Kiểm duyệt" && isAdmin && (
             <div className="max-w-4xl mx-auto space-y-8">
-              <div className="flex gap-4 border-b border-[#3e2b1d]">
+              <div className="flex gap-4 border-b border-border-main">
                 <button
                   onClick={() => setModTab("Bài viết")}
                   className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${
@@ -837,7 +811,7 @@ const GroupDetailPage = () => {
                               alt=""
                             />
                             <div>
-                              <p className="font-black text-white">
+                              <p className="font-black text-text-main">
                                 {post.authorFullName}
                               </p>
                               <p className="text-[10px] text-text-secondary uppercase tracking-widest font-bold mt-0.5">
@@ -868,7 +842,7 @@ const GroupDetailPage = () => {
 
                         {/* Post Content */}
                         <div className="p-6 space-y-4">
-                          <div className="text-white leading-relaxed whitespace-pre-wrap">
+                          <div className="text-text-main leading-relaxed whitespace-pre-wrap">
                             {post.content}
                           </div>
 
@@ -914,7 +888,7 @@ const GroupDetailPage = () => {
                             alt=""
                           />
                           <div>
-                            <p className="font-black text-white text-lg">
+                            <p className="font-black text-text-main text-lg">
                               {request.fullName}
                             </p>
                             <p className="text-xs text-text-secondary mt-1 italic">
@@ -928,7 +902,7 @@ const GroupDetailPage = () => {
                             onClick={() =>
                               handleActionRequest(request.userId, "approve")
                             }
-                            className="px-6 py-2.5 bg-primary text-[#0f0a06] font-black rounded-xl text-sm transition-all hover:scale-105"
+                            className="px-6 py-2.5 bg-primary text-text-main font-black rounded-xl text-sm transition-all hover:scale-105"
                           >
                             Phê duyệt
                           </button>
@@ -986,17 +960,17 @@ const GroupDetailPage = () => {
       {/* Kick Member Confirmation Modal */}
       {showKickModal && memberToKick && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#1a120b] border border-[#3e2b1d] rounded-3xl p-8 max-w-sm w-full text-center space-y-6 shadow-2xl animate-in fade-in zoom-in duration-200">
+          <div className="bg-surface-main border border-border-main rounded-3xl p-8 max-w-sm w-full text-center space-y-6 shadow-2xl animate-in fade-in zoom-in duration-200">
             <div className="size-16 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 mx-auto">
               <UserMinus size={36} />
             </div>
             <div className="space-y-2">
-              <h2 className="text-xl font-black text-white">
+              <h2 className="text-xl font-black text-text-main">
                 Xác nhận xóa thành viên
               </h2>
               <p className="text-text-secondary text-sm">
                 Bạn có chắc chắn muốn mời{" "}
-                <span className="text-white font-bold">
+                <span className="text-text-main font-bold">
                   {memberToKick.fullName}
                 </span>{" "}
                 ra khỏi nhóm không?
@@ -1008,7 +982,7 @@ const GroupDetailPage = () => {
                   setShowKickModal(false);
                   setMemberToKick(null);
                 }}
-                className="flex-1 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-bold rounded-xl transition-all text-xs uppercase tracking-widest"
+                className="flex-1 py-3 bg-surface-main hover:bg-background-main text-text-main font-bold rounded-xl transition-all text-xs uppercase tracking-widest"
               >
                 Hủy
               </button>
@@ -1025,11 +999,9 @@ const GroupDetailPage = () => {
 
       {showTransferConfirmModal && memberToTransfer && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#1a120b] border border-[#3e2b1d] rounded-3xl p-8 max-w-sm w-full text-center space-y-6 shadow-2xl animate-in fade-in zoom-in duration-200">
+          <div className="bg-surface-main border border-border-main rounded-3xl p-8 max-w-sm w-full text-center space-y-6 shadow-2xl animate-in fade-in zoom-in duration-200">
             <div className="size-16 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500 mx-auto">
-              <span className="material-symbols-outlined text-4xl">
-                vpn_key
-              </span>
+              <Key size={40} />
             </div>
             <div className="space-y-2">
               <h2 className="text-xl font-black text-white">
@@ -1037,7 +1009,7 @@ const GroupDetailPage = () => {
               </h2>
               <p className="text-text-secondary text-sm leading-relaxed">
                 Bạn có chắc chắn muốn chuyển quyền chủ sở hữu cho{" "}
-                <span className="text-white font-bold">
+                <span className="text-text-main font-bold">
                   {memberToTransfer.fullName}
                 </span>
                 ?
@@ -1052,7 +1024,7 @@ const GroupDetailPage = () => {
                   setShowTransferConfirmModal(false);
                   setMemberToTransfer(null);
                 }}
-                className="flex-1 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-bold rounded-xl transition-all text-xs uppercase tracking-widest"
+                className="flex-1 py-3 bg-surface-main hover:bg-background-main text-text-main font-bold rounded-xl transition-all text-xs uppercase tracking-widest"
               >
                 Hủy
               </button>
@@ -1072,7 +1044,7 @@ const GroupDetailPage = () => {
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-[#1a120b] border border-[#3e2b1d] rounded-3xl p-8 max-w-sm w-full text-center space-y-6 shadow-2xl animate-in fade-in zoom-in duration-200">
             <div className="size-16 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 mx-auto">
-              <span className="material-symbols-outlined text-4xl">logout</span>
+              <LogOut size={40} />
             </div>
             <div className="space-y-2">
               <h2 className="text-xl font-black text-white">
@@ -1105,13 +1077,11 @@ const GroupDetailPage = () => {
       {/* Privacy Modal for Non-members visiting Private Groups */}
       {showPrivacyModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="bg-card-dark border border-[#3e2b1d] rounded-[2.5rem] p-10 max-w-md w-full text-center space-y-6 shadow-2xl animate-in fade-in zoom-in duration-300">
+          <div className="bg-surface-main border border-border-main rounded-[2.5rem] p-10 max-w-md w-full text-center space-y-6 shadow-2xl animate-in fade-in zoom-in duration-300">
             <div className="size-20 rounded-full bg-primary/10 flex items-center justify-center text-primary mx-auto mb-4">
-              <span className="material-symbols-outlined text-4xl">
-                visibility_off
-              </span>
+              <Lock size={48} />
             </div>
-            <h2 className="text-2xl font-black text-white">
+            <h2 className="text-2xl font-black text-text-main">
               Đây là Nhóm Riêng tư
             </h2>
             <p className="text-text-secondary leading-relaxed">
@@ -1124,7 +1094,7 @@ const GroupDetailPage = () => {
                   setShowPrivacyModal(false);
                   handleJoinGroup();
                 }}
-                className="w-full py-4 bg-primary hover:bg-orange-600 text-[#231810] font-black rounded-2xl transition-all shadow-lg shadow-primary/20 uppercase tracking-widest"
+                className="w-full py-4 bg-primary hover:bg-orange-600 text-text-main font-black rounded-2xl transition-all shadow-lg shadow-primary/20 uppercase tracking-widest"
               >
                 {userMembership?.status === "REQUESTED"
                   ? "Đang chờ duyệt..."
@@ -1132,7 +1102,7 @@ const GroupDetailPage = () => {
               </button>
               <button
                 onClick={() => setShowPrivacyModal(false)}
-                className="w-full py-4 bg-zinc-800 hover:bg-zinc-700 text-white font-bold rounded-2xl transition-all uppercase tracking-widest text-xs"
+                className="w-full py-4 bg-surface-main hover:bg-background-main text-text-main font-bold rounded-2xl transition-all uppercase tracking-widest text-xs"
               >
                 Đóng
               </button>

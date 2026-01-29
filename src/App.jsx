@@ -31,18 +31,19 @@ import ResetPassword from "./pages/auth/ResetPassword";
 import VerifyEmail from "./pages/auth/VerifyEmail";
 import OAuth2RedirectHandler from "./pages/auth/OAuth2RedirectHandler";
 import TermsOfService from "./pages/auth/TermsOfService";
+import { ThemeProvider } from "./context/ThemeContext";
 
 function App() {
   return (
-    <>
+    <ThemeProvider>
       <Toaster
         position="top-right"
         toastOptions={{
           duration: 3000,
           style: {
-            background: "#1a1a2e",
-            color: "#fff",
-            border: "1px solid rgba(255,255,255,0.1)",
+            background: "var(--surface)",
+            color: "var(--text-main)",
+            border: "1px solid var(--border)",
             borderRadius: "12px",
             padding: "12px 16px",
           },
@@ -137,7 +138,7 @@ function App() {
           />
         </Routes>
       </WebSocketProvider>
-    </>
+    </ThemeProvider>
   );
 }
 

@@ -116,17 +116,17 @@ export default function CreateGroupPage() {
               className="group-hover:-translate-x-1 transition-transform"
               size={20}
             />
-            <span className="text-xs font-black uppercase tracking-widest text-white/50 group-hover:text-primary">
+            <span className="text-xs font-black uppercase tracking-widest text-text-secondary group-hover:text-primary">
               Quay lại
             </span>
           </button>
 
           <div className="flex items-center gap-6">
             <div className="size-20 rounded-3xl bg-gradient-to-br from-primary to-orange-600 flex items-center justify-center shadow-2xl shadow-primary/20 transform -rotate-3">
-              <Users size={40} className="text-[#0f0a06]" />
+              <Users size={40} className="text-text-main" />
             </div>
             <div>
-              <h1 className="text-4xl font-black tracking-tight mb-1 text-white">
+              <h1 className="text-4xl font-black tracking-tight mb-1 text-text-main">
                 Thiết lập{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-400">
                   Cộng đồng
@@ -148,7 +148,7 @@ export default function CreateGroupPage() {
             <Form className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
               {/* Form Controls - Left Section */}
               <div className="lg:col-span-7 space-y-6">
-                <div className="bg-[#1a120b] border border-[#2d1f14] rounded-[2.5rem] p-10 shadow-2xl space-y-8">
+                <div className="bg-surface-main border border-border-main rounded-[2.5rem] p-10 shadow-2xl space-y-8">
                   {/* Group Name Input */}
                   <div className="space-y-3">
                     <div className="flex justify-between items-center ml-2">
@@ -163,11 +163,11 @@ export default function CreateGroupPage() {
                       <Field
                         name="group_name"
                         placeholder="Ví dụ: Hội yêu cây cảnh, Dev Hà Nội..."
-                        className={`w-full bg-[#120a05] border ${
+                        className={`w-full bg-background-main border ${
                           errors.group_name && touched.group_name
                             ? "border-red-500/50"
-                            : "border-[#2d1f14] group-focus-within:border-primary/50"
-                        } rounded-2xl py-5 px-6 text-white text-base focus:outline-none transition-all shadow-inner placeholder:text-text-muted/20`}
+                            : "border-border-main group-focus-within:border-primary/50"
+                        } rounded-2xl py-5 px-6 text-text-main text-base focus:outline-none transition-all shadow-inner placeholder:text-text-muted/20`}
                       />
                       <div className="absolute inset-0 rounded-2xl ring-1 ring-white/5 pointer-events-none group-focus-within:ring-primary/20 transition-all" />
                     </div>
@@ -181,10 +181,7 @@ export default function CreateGroupPage() {
                   {/* Privacy Selector */}
                   <div className="space-y-3">
                     <label className="text-[11px] font-black text-primary uppercase tracking-[0.2em] ml-2 flex items-center gap-2">
-                      <span className="material-symbols-outlined text-sm">
-                        lock_person
-                      </span>{" "}
-                      Quyền riêng tư
+                      <Lock size={14} /> Quyền riêng tư
                     </label>
                     <div className="grid grid-cols-2 gap-4">
                       <label className="relative cursor-pointer group">
@@ -194,12 +191,12 @@ export default function CreateGroupPage() {
                           value="public"
                           className="sr-only peer"
                         />
-                        <div className="p-5 rounded-2xl bg-[#120a05] border border-[#2d1f14] transition-all peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:shadow-[0_0_20px_rgba(255,107,0,0.1)] hover:bg-[#1a120b]">
+                        <div className="p-5 rounded-2xl bg-background-main border border-border-main transition-all peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:shadow-[0_0_20px_rgba(255,107,0,0.1)] hover:bg-surface-main">
                           <div className="flex items-center gap-3 mb-2">
                             <div className="size-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                               <Globe size={18} />
                             </div>
-                            <span className="text-xs font-black uppercase tracking-widest text-text-secondary peer-checked:text-white">
+                            <span className="text-xs font-black uppercase tracking-widest text-text-secondary peer-checked:text-text-main">
                               Công khai
                             </span>
                           </div>
@@ -207,7 +204,7 @@ export default function CreateGroupPage() {
                             Ai cũng có thể tìm thấy nhóm và xem bài viết.
                           </p>
                         </div>
-                        <div className="absolute top-4 right-4 size-4 rounded-full border-2 border-[#2d1f14] peer-checked:border-primary peer-checked:after:content-[''] peer-checked:after:absolute peer-checked:after:inset-1 peer-checked:after:bg-primary peer-checked:after:rounded-full" />
+                        <div className="absolute top-4 right-4 size-4 rounded-full border-2 border-border-main peer-checked:border-primary peer-checked:after:content-[''] peer-checked:after:absolute peer-checked:after:inset-1 peer-checked:after:bg-primary peer-checked:after:rounded-full" />
                       </label>
 
                       <label className="relative cursor-pointer group">
@@ -249,7 +246,7 @@ export default function CreateGroupPage() {
                       as="textarea"
                       name="description"
                       placeholder="Viết vài dòng giới thiệu về nét đặc trưng của nhóm..."
-                      className="w-full bg-[#120a05] border border-[#2d1f14] focus:border-primary/50 rounded-2xl py-5 px-6 text-white text-sm h-32 focus:outline-none transition-all shadow-inner resize-none placeholder:text-text-muted/20"
+                      className="w-full bg-background-main border border-border-main focus:border-primary/50 rounded-2xl py-5 px-6 text-text-main text-sm h-32 focus:outline-none transition-all shadow-inner resize-none placeholder:text-text-muted/20"
                     />
                     <div className="flex justify-end pr-2">
                       <span
@@ -268,14 +265,14 @@ export default function CreateGroupPage() {
 
               {/* Media Upload - Right Section */}
               <div className="lg:col-span-5 space-y-6">
-                <div className="bg-[#1a120b] border border-[#2d1f14] rounded-[2.5rem] p-8 shadow-2xl flex flex-col items-center">
+                <div className="bg-surface-main border border-border-main rounded-[2.5rem] p-8 shadow-2xl flex flex-col items-center">
                   <label className="text-[11px] font-black text-primary uppercase tracking-[0.2em] self-start mb-6 ml-2 flex items-center gap-2">
                     <Focus size={14} /> Ảnh bìa
                   </label>
 
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="relative w-full aspect-[4/3] rounded-3xl border-2 border-dashed border-[#2d1f14] hover:border-primary/50 transition-all cursor-pointer overflow-hidden group flex items-center justify-center bg-[#120a05] shadow-2xl"
+                    className="relative w-full aspect-[4/3] rounded-3xl border-2 border-dashed border-border-main hover:border-primary/50 transition-all cursor-pointer overflow-hidden group flex items-center justify-center bg-background-main shadow-2xl"
                   >
                     {previewUrl ? (
                       <>
@@ -291,7 +288,7 @@ export default function CreateGroupPage() {
                               size={24}
                             />
                           </div>
-                          <span className="text-[10px] font-black uppercase tracking-widest text-white">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-text-main">
                             Thay đổi ảnh
                           </span>
                         </div>
@@ -331,13 +328,13 @@ export default function CreateGroupPage() {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className={`w-full py-5 bg-gradient-to-r from-primary to-orange-600 text-[#0f0a06] font-black rounded-2xl shadow-xl shadow-primary/20 hover:shadow-primary/30 active:scale-[0.98] transition-all uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-3 ${
+                      className={`w-full py-5 bg-gradient-to-r from-primary to-orange-600 text-text-main font-black rounded-2xl shadow-xl shadow-primary/20 hover:shadow-primary/30 active:scale-[0.98] transition-all uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-3 ${
                         isSubmitting ? "opacity-70 cursor-wait" : ""
                       }`}
                     >
                       {isSubmitting ? (
                         <>
-                          <div className="size-4 border-2 border-[#0f0a06]/20 border-t-[#0f0a06] rounded-full animate-spin" />
+                          <div className="size-4 border-2 border-text-main/20 border-t-text-main rounded-full animate-spin" />
                           <span>Đang xử lý...</span>
                         </>
                       ) : (

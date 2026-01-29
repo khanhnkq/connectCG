@@ -33,12 +33,7 @@ export const SidebarProvider = ({
   );
 };
 
-export const Sidebar = ({
-  children,
-  open,
-  setOpen,
-  animate,
-}) => {
+export const Sidebar = ({ children, open, setOpen, animate }) => {
   return (
     <SidebarProvider open={open} setOpen={setOpen} animate={animate}>
       {children}
@@ -55,18 +50,14 @@ export const SidebarBody = (props) => {
   );
 };
 
-export const DesktopSidebar = ({
-  className,
-  children,
-  ...props
-}) => {
+export const DesktopSidebar = ({ className, children, ...props }) => {
   const { open, setOpen, animate } = useSidebar();
   return (
     <>
       <motion.div
         className={cn(
-          "h-full px-4 py-4 hidden  md:flex md:flex-col bg-neutral-100 dark:bg-background-dark w-[240px] shrink-0",
-          className
+          "h-full px-4 py-4 hidden md:flex md:flex-col bg-background-main w-[240px] shrink-0 border-r border-border-main",
+          className,
         )}
         animate={{
           width: animate ? (open ? "240px" : "60px") : "240px",
@@ -83,23 +74,19 @@ export const DesktopSidebar = ({
   );
 };
 
-export const MobileSidebar = ({
-  className,
-  children,
-  ...props
-}) => {
+export const MobileSidebar = ({ className, children, ...props }) => {
   const { open, setOpen } = useSidebar();
   return (
     <>
       <div
         className={cn(
-          "h-10 px-4 py-4 flex flex-row md:hidden  items-center justify-between bg-neutral-100 dark:bg-background-dark w-full"
+          "h-10 px-4 py-4 flex flex-row md:hidden items-center justify-between bg-background-main w-full border-b border-border-main",
         )}
         {...props}
       >
         <div className="flex justify-end z-20 w-full">
           <IconMenu2
-            className="text-neutral-800 dark:text-neutral-200"
+            className="text-text-main"
             onClick={() => setOpen(!open)}
           />
         </div>
@@ -122,12 +109,12 @@ export const MobileSidebar = ({
                   ease: "easeInOut",
                 }}
                 className={cn(
-                  "fixed h-full w-[280px] inset-y-0 left-0 bg-white dark:bg-background-dark p-6 z-[100] flex flex-col justify-between shadow-xl",
-                  className
+                  "fixed h-full w-[280px] inset-y-0 left-0 bg-background-main p-6 z-[100] flex flex-col justify-between shadow-xl border-r border-border-main",
+                  className,
                 )}
               >
                 <div
-                  className="absolute right-4 top-4 z-50 text-neutral-800 dark:text-neutral-200"
+                  className="absolute right-4 top-4 z-50 text-text-main"
                   onClick={() => setOpen(!open)}
                 >
                   <IconX />
@@ -142,22 +129,18 @@ export const MobileSidebar = ({
   );
 };
 
-export const SidebarLink = ({
-  link,
-  className,
-  ...props
-}) => {
+export const SidebarLink = ({ link, className, ...props }) => {
   const { open, animate } = useSidebar();
-  
+
   const content = (
-      <>
+    <>
       {link.icon}
       <motion.span
         animate={{
-            display: animate ? (open ? "inline-block" : "none") : "inline-block",
-            opacity: animate ? (open ? 1 : 0) : 1,
+          display: animate ? (open ? "inline-block" : "none") : "inline-block",
+          opacity: animate ? (open ? 1 : 0) : 1,
         }}
-        className="text-neutral-700 dark:text-neutral-200 text-sm group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !p-0 !m-0"
+        className="text-text-main text-sm group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !p-0 !m-0"
       >
         {link.label}
       </motion.span>
@@ -165,23 +148,26 @@ export const SidebarLink = ({
   );
 
   if (link.onClick) {
-      return (
-          <button
-              onClick={link.onClick}
-              className={cn("flex items-center justify-start gap-2 group/sidebar py-2 bg-transparent border-none cursor-pointer w-full hover:bg-neutral-200 dark:hover:bg-surface-dark rounded-md px-2", className)}
-              {...props}
-          >
-              {content}
-          </button>
-      )
+    return (
+      <button
+        onClick={link.onClick}
+        className={cn(
+          "flex items-center justify-start gap-2 group/sidebar py-2 bg-transparent border-none cursor-pointer w-full hover:bg-surface-main/80 rounded-md px-2",
+          className,
+        )}
+        {...props}
+      >
+        {content}
+      </button>
+    );
   }
 
   return (
     <Link
       to={link.href}
       className={cn(
-        "flex items-center justify-start gap-2  group/sidebar py-2 hover:bg-neutral-200 dark:hover:bg-surface-dark rounded-md px-2",
-        className
+        "flex items-center justify-start gap-2  group/sidebar py-2 hover:bg-surface-main/80 rounded-md px-2",
+        className,
       )}
       {...props}
     >

@@ -135,12 +135,12 @@ export default function NewsfeedDashboard1() {
                 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuC4UKPEvyLmJB2T_0cHwdqw-m6rRaeCijIyofpi2tDwAbXp7LCHbhxcxpYXmKGhk7S5X-znhu3DxgZbYXXJDgRlF-KCkS3Eb8j_VRTjkNj03tosJXVj4vrqlfQXE13u4scgadmpL_IcqFWg-P_jdepWlBXre7vyGiKNwfohBKWmUbXHIapGMciMuI81qrJPcCndZuV0UEbYBDhEdSocpCwfv4jdV3q5YDH6aIxKIKhKe4w_D1Yu_z0potLBShRqwr7rRsTI2D7pK7g")',
             }}
           >
-            <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/60 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background-main via-background-main/60 to-transparent" />
           </div>
           <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 flex flex-col md:flex-row md:items-end justify-between gap-6 max-w-7xl mx-auto">
             <div className="flex flex-col gap-3">
               <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight drop-shadow-lg">
+                <h1 className="text-3xl md:text-5xl font-extrabold text-text-main tracking-tight drop-shadow-lg">
                   Photography Lovers
                 </h1>
                 <div className="flex items-center gap-2">
@@ -153,7 +153,7 @@ export default function NewsfeedDashboard1() {
                   </span>
                 </div>
               </div>
-              <p className="text-white/90 font-medium text-sm md:text-base flex items-center gap-2 drop-shadow-sm">
+              <p className="text-text-main font-medium text-sm md:text-base flex items-center gap-2 drop-shadow-sm">
                 <Users size={18} className="text-primary" />
                 <span>12.5k Members</span>
                 <span className="size-1 bg-white/40 rounded-full"></span>
@@ -192,7 +192,7 @@ export default function NewsfeedDashboard1() {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="border-b border-[#342418] sticky top-0 bg-background-dark/95 backdrop-blur-xl z-30">
+        <div className="border-b border-border-main sticky top-0 bg-background-main/95 backdrop-blur-xl z-30 transition-colors duration-300">
           <div className="max-w-7xl mx-auto px-6">
             <nav className="flex gap-8 overflow-x-auto hide-scrollbar">
               {["Feed", "Members", "Photos", "Events"].map((tab) => (
@@ -202,7 +202,7 @@ export default function NewsfeedDashboard1() {
                   className={`py-4 font-bold text-sm tracking-wide whitespace-nowrap transition-all border-b-2 ${
                     activeTab === tab
                       ? "text-primary border-primary"
-                      : "text-text-secondary hover:text-white border-transparent"
+                      : "text-text-secondary hover:text-primary border-transparent"
                   }`}
                 >
                   {tab}
@@ -251,8 +251,8 @@ export default function NewsfeedDashboard1() {
                 />
               </div>
               <div className="hidden lg:flex flex-col gap-6">
-                <div className="bg-card-dark rounded-2xl p-6 border border-[#3e2b1d]">
-                  <h3 className="text-white font-bold text-lg mb-3">
+                <div className="bg-surface-main rounded-2xl p-6 border border-border-main">
+                  <h3 className="text-text-main font-bold text-lg mb-3">
                     About Group
                   </h3>
                   <p className="text-text-secondary text-sm leading-relaxed mb-4">
@@ -277,7 +277,9 @@ export default function NewsfeedDashboard1() {
           {activeTab === "Members" && (
             <div className="max-w-3xl mx-auto space-y-6">
               <div className="flex justify-between items-center px-2">
-                <h3 className="text-xl font-bold text-white">Group Members</h3>
+                <h3 className="text-xl font-bold text-text-main">
+                  Group Members
+                </h3>
                 <span className="text-sm text-text-secondary">
                   {members.length} members
                 </span>
@@ -296,7 +298,9 @@ export default function NewsfeedDashboard1() {
                       />
                       <div>
                         <div className="flex items-center gap-2">
-                          <p className="font-bold text-white">{member.name}</p>
+                          <p className="font-bold text-text-main">
+                            {member.name}
+                          </p>
                           <span
                             className={`px-2 py-0.5 text-[10px] font-black rounded uppercase ${
                               member.role === "Moderator"
@@ -418,7 +422,7 @@ export default function NewsfeedDashboard1() {
                           </div>
                         </div>
                         <div className="space-y-1">
-                          <h4 className="text-white font-black text-lg group-hover:text-primary transition-colors">
+                          <h4 className="text-text-main font-black text-lg group-hover:text-primary transition-colors">
                             {request.name}
                           </h4>
                           <p className="text-text-secondary text-sm line-clamp-1">
