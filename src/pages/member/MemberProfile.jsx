@@ -14,21 +14,6 @@ import {
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
-<<<<<<< HEAD
-import FriendService from '../../services/friend/FriendService';
-import FriendRequestService from '../../services/friend/FriendRequestService';
-import UserProfileService from '../../services/user/UserProfileService';
-import ChatService from '../../services/chat/ChatService';
-import ProfileAbout from '../../components/profile/ProfileAbout';
-import ProfilePhotos from '../../components/profile/ProfilePhotos';
-import ProfileHobbies from '../../components/profile/ProfileHobbies';
-import ProfileFriends from '../../components/profile/ProfileFriends';
-import ReportModal from '../../components/report/ReportModal';
-import ConfirmModal from '../../components/admin/ConfirmModal';
-import ProfileNavbar from '../../components/profile/ProfileNavbar';
-import reportService from '../../services/ReportService';
-import toast from 'react-hot-toast';
-=======
 import FriendService from "../../services/friend/FriendService";
 import FriendRequestService from "../../services/friend/FriendRequestService";
 import UserProfileService from "../../services/user/UserProfileService";
@@ -41,7 +26,6 @@ import ReportModal from "../../components/report/ReportModal";
 import ConfirmModal from "../../components/admin/ConfirmModal";
 import reportService from "../../services/ReportService";
 import toast from "react-hot-toast";
->>>>>>> 35158a8 (light ok)
 
 export default function MemberProfile() {
   const { id } = useParams();
@@ -55,172 +39,6 @@ export default function MemberProfile() {
     type: null,
   }); // type: 'UNFRIEND' | 'CANCEL_REQUEST'
 
-<<<<<<< HEAD
-    const handleStartChat = async () => {
-        const tid = toast.loading("Đang mở cuộc trò chuyện...");
-        try {
-            const response = await ChatService.getOrCreateDirectChat(profile.id);
-            const room = response.data;
-            toast.success("Đã kết nối!", { id: tid });
-            navigate('/chat', { state: { selectedRoomKey: room.firebaseRoomKey } });
-        } catch (error) {
-            console.error("Error starting chat:", error);
-            toast.error("Không thể tạo cuộc trò chuyện", { id: tid });
-        }
-    };
-
-    useEffect(() => {
-        const fetchMemberProfile = async () => {
-            try {
-                setLoading(true);
-                const response = await UserProfileService.getUserProfile(id);
-                let profileData = response.data;
-
-                // FIX: Check if we are the receiver of a pending request
-                // The API might not return isRequestReceiver, so we check our pending list
-                if (profileData.relationshipStatus !== 'FRIEND') {
-                    try {
-                        // Fetch first page of pending requests to see if this user sent one
-                        const requestsRes = await FriendRequestService.getPendingRequests(0, 100);
-                        const incomingReq = requestsRes.data.content.find(req => req.senderId == profileData.userId);
-
-                        if (incomingReq) {
-                            profileData = {
-                                ...profileData,
-                                relationshipStatus: 'PENDING',
-                                isRequestReceiver: true,
-                                requestId: incomingReq.requestId,
-                                requestSent: false // We didn't send it, we received it
-                            };
-                        }
-                    } catch (err) {
-                        console.error("Error checking pending requests", err);
-                    }
-                }
-
-                setProfile(profileData);
-            } catch (error) {
-                console.error("Lỗi khi tải hồ sơ thành viên:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (id) {
-            fetchMemberProfile();
-        }
-    }, [id]);
-    const confirmUnfriend = () => {
-        setConfirmModal({ isOpen: true, type: 'UNFRIEND' });
-    };
-
-    const confirmCancelRequest = () => {
-        setConfirmModal({ isOpen: true, type: 'CANCEL_REQUEST' });
-    };
-
-    const handleConfirmAction = async () => {
-        const type = confirmModal.type;
-        setConfirmModal({ isOpen: false, type: null });
-
-        if (type === 'UNFRIEND') {
-            try {
-                await FriendService.unfriend(profile.userId);
-                setProfile(prev => ({
-                    ...prev,
-                    relationshipStatus: 'NONE',
-                    friendsCount: prev.friendsCount - 1
-                }));
-                toast.success(`Đã hủy kết bạn với ${profile.fullName}`);
-            } catch (error) {
-                console.error("Lỗi khi hủy kết bạn:", error);
-                toast.error("Có lỗi xảy ra, vui lòng thử lại.");
-            }
-        } else if (type === 'CANCEL_REQUEST') {
-            const toastId = toast.loading("Đang hủy lời mời...");
-            try {
-                await FriendRequestService.cancelRequest(profile.userId);
-                setProfile(prev => ({
-                    ...prev,
-                    relationshipStatus: 'STRANGER'
-                }));
-                toast.success("Đã hủy lời mời kết bạn", { id: toastId });
-            } catch (error) {
-                toast.error("Không thể hủy lời mời", { id: toastId });
-            }
-        }
-    };
-
-    const handleSendFriendRequest = async () => {
-        try {
-            await FriendRequestService.sendRequest(profile.userId);
-            setProfile(prev => ({
-                ...prev,
-                relationshipStatus: 'PENDING', // Update local state immediately
-                requestSent: true,
-                isRequestReceiver: false
-            }));
-            toast.success("Đã gửi lời mời kết bạn!");
-        } catch (error) {
-            console.error("Lỗi khi gửi lời mời:", error);
-            toast.error(error.response?.data?.message || "Không thể gửi lời mời.");
-        }
-    };
-
-    const handleAcceptRequest = async () => {
-        try {
-            // Need requestId from profile. In AdvancedSearch it was member.requestId
-            // If profile doesn't have requestId, this might be tricky. 
-            // Usually UserProfile DTO should have requestId if relationshipStatus is PENDING.
-            // Assuming profile.requestId exists.
-            if (!profile.requestId) {
-                toast.error("Không tìm thấy thông tin lời mời.");
-                return;
-            }
-            await FriendRequestService.acceptRequest(profile.requestId);
-            setProfile(prev => ({
-                ...prev,
-                relationshipStatus: 'FRIEND',
-                friendsCount: (prev.friendsCount || 0) + 1,
-                isRequestReceiver: false,
-                requestId: null
-            }));
-            toast.success("Đã chấp nhận lời mời kết bạn!");
-        } catch (error) {
-            console.error("Lỗi khi chấp nhận:", error);
-            toast.error("Không thể chấp nhận lời mời.");
-        }
-    };
-
-    const handleRejectRequest = async () => {
-        try {
-            if (!profile.requestId) {
-                toast.error("Không tìm thấy thông tin lời mời.");
-                return;
-            }
-            await FriendRequestService.rejectRequest(profile.requestId);
-            setProfile(prev => ({
-                ...prev,
-                relationshipStatus: 'STRANGER', // or NONE
-                isRequestReceiver: false,
-                requestId: null
-            }));
-            toast.success("Đã từ chối lời mời.");
-        } catch (error) {
-            console.error("Lỗi khi từ chối:", error);
-            toast.error("Không thể từ chối lời mời.");
-        }
-    };
-
-    if (loading) {
-        return (
-            <div className="bg-background-dark min-h-screen flex items-center justify-center text-white">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                    <p className="text-text-secondary font-bold">Đang tải hồ sơ thành viên...</p>
-                </div>
-            </div>
-        );
-=======
   const handleStartChat = async () => {
     const tid = toast.loading("Đang mở cuộc trò chuyện...");
     try {
@@ -231,7 +49,6 @@ export default function MemberProfile() {
     } catch (error) {
       console.error("Error starting chat:", error);
       toast.error("Không thể tạo cuộc trò chuyện", { id: tid });
->>>>>>> 35158a8 (light ok)
     }
   };
 
@@ -240,7 +57,36 @@ export default function MemberProfile() {
       try {
         setLoading(true);
         const response = await UserProfileService.getUserProfile(id);
-        setProfile(response.data);
+        let profileData = response.data;
+
+        // FIX: Check if we are the receiver of a pending request
+        // The API might not return isRequestReceiver, so we check our pending list
+        if (profileData.relationshipStatus !== "FRIEND") {
+          try {
+            // Fetch first page of pending requests to see if this user sent one
+            const requestsRes = await FriendRequestService.getPendingRequests(
+              0,
+              100,
+            );
+            const incomingReq = requestsRes.data.content.find(
+              (req) => req.senderId == profileData.userId,
+            );
+
+            if (incomingReq) {
+              profileData = {
+                ...profileData,
+                relationshipStatus: "PENDING",
+                isRequestReceiver: true,
+                requestId: incomingReq.requestId,
+                requestSent: false, // We didn't send it, we received it
+              };
+            }
+          } catch (err) {
+            console.error("Error checking pending requests", err);
+          }
+        }
+
+        setProfile(profileData);
       } catch (error) {
         console.error("Lỗi khi tải hồ sơ thành viên:", error);
       } finally {
@@ -298,6 +144,8 @@ export default function MemberProfile() {
       setProfile((prev) => ({
         ...prev,
         relationshipStatus: "PENDING", // Update local state immediately
+        requestSent: true,
+        isRequestReceiver: false,
       }));
       toast.success("Đã gửi lời mời kết bạn!");
     } catch (error) {
@@ -306,244 +154,59 @@ export default function MemberProfile() {
     }
   };
 
+  const handleAcceptRequest = async () => {
+    try {
+      // Need requestId from profile. In AdvancedSearch it was member.requestId
+      // If profile doesn't have requestId, this might be tricky.
+      // Usually UserProfile DTO should have requestId if relationshipStatus is PENDING.
+      // Assuming profile.requestId exists.
+      if (!profile.requestId) {
+        toast.error("Không tìm thấy thông tin lời mời.");
+        return;
+      }
+      await FriendRequestService.acceptRequest(profile.requestId);
+      setProfile((prev) => ({
+        ...prev,
+        relationshipStatus: "FRIEND",
+        friendsCount: (prev.friendsCount || 0) + 1,
+        isRequestReceiver: false,
+        requestId: null,
+      }));
+      toast.success("Đã chấp nhận lời mời kết bạn!");
+    } catch (error) {
+      console.error("Lỗi khi chấp nhận:", error);
+      toast.error("Không thể chấp nhận lời mời.");
+    }
+  };
+
+  const handleRejectRequest = async () => {
+    try {
+      if (!profile.requestId) {
+        toast.error("Không tìm thấy thông tin lời mời.");
+        return;
+      }
+      await FriendRequestService.rejectRequest(profile.requestId);
+      setProfile((prev) => ({
+        ...prev,
+        relationshipStatus: "STRANGER", // or NONE
+        isRequestReceiver: false,
+        requestId: null,
+      }));
+      toast.success("Đã từ chối lời mời.");
+    } catch (error) {
+      console.error("Lỗi khi từ chối:", error);
+      toast.error("Không thể từ chối lời mời.");
+    }
+  };
+
   if (loading) {
     return (
-<<<<<<< HEAD
-        <div className="w-full mx-auto pb-20">
-            {/* Header/Cover */}
-            <div className="bg-[#342418] border-b border-[#3e2b1d]">
-                <div className="w-full max-w-6xl mx-auto">
-                    <div className="relative w-full h-64 md:h-80 lg:h-96 group overflow-hidden rounded-b-3xl">
-                        <div
-                            className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                            style={{ backgroundImage: `url("${profile?.currentCoverUrl || 'https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&q=80'}")` }}
-                        ></div>
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                    </div>
-                    <div className="px-4 md:px-8 pb-4 relative">
-                        <div className="flex flex-col md:flex-row items-start md:items-end -mt-16 md:-mt-12 gap-6 relative z-10 mb-6">
-                            <div className="relative shrink-0">
-                                <div className="size-32 md:size-44 rounded-full border-4 border-[#342418] bg-[#221710] p-1 shadow-2xl relative group">
-                                    <div
-                                        className="w-full h-full rounded-full bg-cover bg-center"
-                                        style={{ backgroundImage: `url("${profile?.currentAvatarUrl || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}")` }}
-                                    ></div>
-                                </div>
-                            </div>
-                            <div className="flex-1 w-full flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-                                <div className="mb-2 md:mb-4">
-                                    <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-1">
-                                        {profile?.fullName || profile?.username}
-                                    </h1>
-                                    <p className="text-text-secondary font-medium text-sm flex items-center gap-2">
-                                        <span className="text-text-secondary/80">{profile?.city?.name || 'Vị trí ẩn'}</span>
-                                    </p>
-                                    <div className="flex gap-4 mt-3 text-sm text-text-secondary">
-                                        <span><strong className="text-white">{profile?.friendsCount || 0}</strong> Bạn bè</span>
-                                        <span><strong className="text-white">{profile?.postsCount || 0}</strong> Bài viết</span>
-                                    </div>
-                                </div>
-                                <div className="flex gap-3 mb-4 w-full md:w-auto">
-                                    {profile.relationshipStatus === 'FRIEND' ? (
-                                        <button
-                                            onClick={confirmUnfriend}
-                                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#493222] text-primary border border-primary/30 font-bold px-6 py-3 rounded-xl transition-all hover:bg-red-900/30 hover:text-red-500 hover:border-red-500/50"
-                                            title="Click để hủy kết bạn"
-                                        >
-                                            <span className="material-symbols-outlined text-[20px]">person_remove</span>
-                                            Đã là bạn bè
-                                        </button>
-                                    ) : (profile.relationshipStatus === 'PENDING' && profile.isRequestReceiver) ? (
-                                        <div className="flex gap-3 w-full md:w-auto flex-1 md:flex-none">
-                                            <button
-                                                onClick={handleAcceptRequest}
-                                                className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-primary hover:bg-orange-600 text-[#231810] font-bold px-6 py-3 rounded-xl transition-all shadow-lg shadow-orange-500/20"
-                                            >
-                                                <span className="material-symbols-outlined text-[20px]">check</span>
-                                                Chấp nhận
-                                            </button>
-                                            <button
-                                                onClick={handleRejectRequest}
-                                                className="flex-1 flex items-center justify-center gap-2 bg-[#493222] hover:bg-red-500/20 text-white hover:text-red-500 font-bold px-6 py-3 rounded-xl transition-all"
-                                            >
-                                                <span className="material-symbols-outlined text-[20px]">close</span>
-                                                Từ chối
-                                            </button>
-                                        </div>
-                                    ) : profile.relationshipStatus === 'PENDING' ? (
-                                        <button
-                                            onClick={confirmCancelRequest}
-                                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#493222] text-text-secondary border border-primary/30 font-bold px-6 py-3 rounded-xl transition-all hover:bg-red-900/30 hover:text-red-500 hover:border-red-500/50"
-                                        >
-                                            <span className="material-symbols-outlined text-[20px]">mark_email_read</span>
-                                            Đã gửi lời mời
-                                        </button>
-                                    ) : (
-                                        <button
-                                            onClick={handleSendFriendRequest}
-                                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-primary hover:bg-orange-600 text-[#231810] font-bold px-6 py-3 rounded-xl transition-all shadow-lg shadow-orange-500/20"
-                                        >
-                                            <span className="material-symbols-outlined text-[20px]">person_add</span>
-                                            Kết bạn
-                                        </button>
-                                    )}
-                                    <button
-                                        onClick={handleStartChat}
-                                        className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#493222] hover:bg-primary/20 text-white hover:text-primary font-bold px-6 py-3 rounded-xl transition-all"
-                                    >
-                                        <span className="material-symbols-outlined text-[20px]">mail</span>
-                                        Nhắn tin
-                                    </button>
-                                    <button
-                                        onClick={() => setShowReportModal(true)}
-                                        className="flex items-center justify-center gap-2 bg-[#493222] hover:bg-red-500/10 text-text-secondary hover:text-red-500 font-bold size-12 rounded-xl transition-all shrink-0"
-                                        title="Báo cáo người dùng"
-                                    >
-                                        <span className="material-symbols-outlined text-[20px]">report</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <ProfileNavbar
-                            activeTab={activeTab}
-                            setActiveTab={setActiveTab}
-                            friendsCount={profile?.friendsCount}
-                        />
-                    </div>
-                </div>
-            </div>
-
-            <div className="w-full max-w-6xl mx-auto px-4 md:px-8 mt-8">
-                <div className={`grid grid-cols-1 ${activeTab === 'timeline' ? 'lg:grid-cols-12' : 'lg:grid-cols-1'} gap-6`}>
-                    {/* Left Column - Only show on timeline */}
-                    {activeTab === 'timeline' && (
-                        <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-6">
-                            <div className="bg-[#342418] rounded-2xl border border-[#3e2b1d] p-5 shadow-sm">
-                                <h3 className="text-white font-bold text-lg mb-4">Giới thiệu</h3>
-                                <p className="text-text-secondary text-sm leading-relaxed mb-4">
-                                    {profile?.bio || 'Người dùng này chưa cập nhật tiểu sử.'}
-                                </p>
-                                <div className="flex flex-col gap-3">
-                                    <div className="flex items-center gap-3 text-text-secondary text-sm">
-                                        <span className="material-symbols-outlined text-[20px]">work</span>
-                                        <span>Nghề nghiệp: <strong>{profile?.occupation || 'Chưa cập nhật'}</strong></span>
-                                    </div>
-                                    <div className="flex items-center gap-3 text-text-secondary text-sm">
-                                        <span className="material-symbols-outlined text-[20px]">favorite</span>
-                                        <span>Tình trạng: <strong>{profile?.maritalStatus || 'Chưa cập nhật'}</strong></span>
-                                    </div>
-                                    <div className="flex items-center gap-3 text-text-secondary text-sm">
-                                        <span className="material-symbols-outlined text-[20px]">location_on</span>
-                                        <span>Đến từ: <strong>{profile?.city?.name || 'Chưa cập nhật'}</strong></span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Hobbies Section */}
-                            {profile?.hobbies?.length > 0 && (
-                                <div className="bg-[#342418] rounded-2xl border border-[#3e2b1d] p-5 shadow-sm">
-                                    <h3 className="text-white font-bold text-lg mb-4">Sở thích</h3>
-                                    <div className="flex flex-wrap gap-2">
-                                        {profile.hobbies.map((hobby, index) => (
-                                            <span key={index} className="bg-[#493222] text-primary text-xs font-bold px-3 py-1.5 rounded-full border border-primary/20">
-                                                {hobby.name}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {/* Right Column */}
-                    <div className={`${activeTab === 'timeline' ? 'lg:col-span-7 xl:col-span-8' : 'lg:col-span-1'} flex flex-col gap-6`}>
-                        {activeTab === 'timeline' && (
-                            <div className="flex flex-col gap-6 text-center py-20 bg-[#342418] rounded-2xl border border-[#3e2b1d]">
-                                <span className="material-symbols-outlined text-5xl text-text-secondary/30 mb-4">lock</span>
-                                <p className="text-text-secondary italic">Bài viết của người này đang được ẩn.</p>
-                            </div>
-                        )}
-
-                        {activeTab === 'about' && (
-                            <ProfileAbout profile={profile} isOwner={false} />
-                        )}
-
-                        {activeTab === 'photos' && (
-                            <ProfilePhotos profile={profile} isOwner={false} />
-                        )}
-
-                        {activeTab === 'hobbies' && (
-                            <ProfileHobbies profile={profile} isOwner={false} />
-                        )}
-
-                        {activeTab === 'friends' && (
-                            <ProfileFriends profile={profile} isOwner={false} />
-                        )}
-                    </div>
-                </div>
-            </div>
-            <ReportModal
-                isOpen={showReportModal}
-                onClose={() => setShowReportModal(false)}
-                onSubmit={async (payload) => {
-                    const toastId = toast.loading("Đang gửi báo cáo...", {
-                        style: { background: "#1A120B", color: "#FFD8B0" }
-                    });
-                    try {
-                        await reportService.createReport(payload);
-                        toast.success("Đã gửi báo cáo thành công!", {
-                            id: toastId,
-                            style: { background: "#1A120B", color: "#FF8A2A", border: "1px solid #FF8A2A" }
-                        });
-                        setShowReportModal(false);
-                    } catch (error) {
-                        console.error(error);
-                        toast.error("Gửi báo cáo thất bại!", {
-                            id: toastId,
-                            style: { background: "#1A120B", color: "#FF6A00" }
-                        });
-                    }
-                }}
-                title="Báo cáo người dùng"
-                subtitle={`Báo cáo ${profile?.fullName || 'người dùng'}`}
-                question="Tại sao bạn muốn báo cáo người dùng này?"
-                reasons={[
-                    "Giả mạo người khác",
-                    "Tên giả hoặc không phù hợp",
-                    "Đăng nội dung quấy rối/bắt nạt",
-                    "Spam hoặc lừa đảo",
-                    "Ngôn từ thù ghét",
-                    "Khác"
-                ]}
-                targetPayload={{
-                    targetType: "USER",
-                    targetId: parseInt(id)
-                }}
-                user={{
-                    avatar: profile?.currentAvatarUrl,
-                    name: profile?.fullName
-                }}
-            />
-            <ConfirmModal
-                isOpen={confirmModal.isOpen}
-                onClose={() => setConfirmModal({ isOpen: false, type: null })}
-                onConfirm={handleConfirmAction}
-                title={confirmModal.type === 'UNFRIEND' ? "Hủy kết bạn" : "Hủy lời mời kết bạn"}
-                message={confirmModal.type === 'UNFRIEND'
-                    ? `Bạn có chắc muốn hủy kết bạn với ${profile?.fullName}?`
-                    : "Bạn có chắc chắn muốn hủy lời mời kết bạn này?"}
-                type="danger"
-                confirmText={confirmModal.type === 'UNFRIEND' ? "Hủy kết bạn" : "Hủy lời mời"}
-                cancelText="Đóng"
-            />
-=======
       <div className="bg-background-main min-h-screen flex items-center justify-center text-text-main">
         <div className="flex flex-col items-center gap-4">
           <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
           <p className="text-text-secondary font-bold">
             Đang tải hồ sơ thành viên...
           </p>
->>>>>>> 35158a8 (light ok)
         </div>
       </div>
     );
@@ -637,6 +300,24 @@ export default function MemberProfile() {
                       <UserMinus size={20} />
                       Đã là bạn bè
                     </button>
+                  ) : profile.relationshipStatus === "PENDING" &&
+                    profile.isRequestReceiver ? (
+                    <div className="flex gap-3 w-full md:w-auto flex-1 md:flex-none">
+                      <button
+                        onClick={handleAcceptRequest}
+                        className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-primary hover:bg-orange-600 text-[#231810] font-bold px-6 py-3 rounded-xl transition-all shadow-lg shadow-orange-500/20"
+                      >
+                        <MailCheck size={20} />
+                        Chấp nhận
+                      </button>
+                      <button
+                        onClick={handleRejectRequest}
+                        className="flex-1 flex items-center justify-center gap-2 bg-surface-main hover:bg-red-500/20 text-text-main hover:text-red-500 font-bold px-6 py-3 rounded-xl transition-all border border-border-main hover:border-red-500/50"
+                      >
+                        <UserX size={20} />
+                        Từ chối
+                      </button>
+                    </div>
                   ) : profile.relationshipStatus === "PENDING" ? (
                     <button
                       onClick={confirmCancelRequest}
