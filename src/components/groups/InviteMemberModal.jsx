@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import FriendService from '../../services/friend/FriendService';
 import toast from 'react-hot-toast';
 
-export default function InviteMemberModal({ isOpen, onClose, onInvite }) {
+export default function InviteMemberModal({ isOpen, onClose, onInvite, currentMembers = [] }) {
     const [friends, setFriends] = useState([]);
     const [selectedFriends, setSelectedFriends] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -19,15 +19,17 @@ export default function InviteMemberModal({ isOpen, onClose, onInvite }) {
     const fetchFriends = async () => {
         setLoading(true);
         try {
-            // Fetch friends of current user
-            // Assuming getFriends supports pagination or returns a list. 
-            // Here we ask for a reasonable page size or all if possible.
             const userStr = localStorage.getItem('user');
             if (userStr) {
-                const user = JSON.parse(userStr);
                 const response = await FriendService.getMyFriends({ size: 100 });
                 const data = response.data;
-                setFriends(data.content || data || []);
+                const allFriends = data.content || data || [];
+                const currentMemberIds = currentMembers ? currentMembers.map(m => m.userId || m.id) : [];
+                const availableFriends = allFriends.filter(friend =>
+                    !currentMemberIds.includes(friend.id)
+                );
+
+                setFriends(availableFriends);
             }
         } catch (error) {
             console.error("Failed to fetch friends:", error);

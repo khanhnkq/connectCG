@@ -3,8 +3,6 @@ import React, { useState } from 'react';
 export default function TransferOwnershipModal({ isOpen, onClose, members, currentUserId, onTransfer }) {
     const [selectedMember, setSelectedMember] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
-
-    // Lọc bỏ Owner hiện tại và lọc theo từ khóa tìm kiếm (fullName)
     const filteredMembers = members.filter(m =>
         m.userId !== currentUserId &&
         (m.fullName || '').toLowerCase().includes(searchTerm.toLowerCase())

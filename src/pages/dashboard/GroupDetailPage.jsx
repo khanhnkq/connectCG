@@ -763,6 +763,7 @@ const GroupDetailPage = () => {
                 isOpen={showInviteModal}
                 onClose={() => setShowInviteModal(false)}
                 onInvite={handleInviteMembers}
+                currentMembers={members}
             />
 
             {/* Kick Member Confirmation Modal */}
