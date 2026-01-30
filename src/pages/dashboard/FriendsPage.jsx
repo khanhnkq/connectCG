@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import toast from 'react-hot-toast';
 import ChatService from "../../services/chat/ChatService";
 import UserProfileService from "../../services/user/UserProfileService";
+import FriendSuggestionService from "../../services/FriendSuggestionService";
+import FriendRequestService from "../../services/friend/FriendRequestService";
 
 import { useFriends, useFriendRequests } from "../../hooks/useFriends";
 import FriendsSidebar from "../../components/friends/FriendsSidebar";
@@ -24,6 +26,11 @@ export default function FriendsPage() {
     const [fullProfile, setFullProfile] = useState(null);
     const [isProfileLoading, setIsProfileLoading] = useState(false);
 
+    // Suggestions State
+    const [suggestions, setSuggestions] = useState([]);
+    const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+    const [processingSuggestions, setProcessingSuggestions] = useState({});
+
     // Custom Hooks
     const { friends, isLoading: friendsLoading, handleUnfriend, fetchFriends } = useFriends();
     const {
@@ -35,48 +42,24 @@ export default function FriendsPage() {
         fetchRequests
     } = useFriendRequests();
 
-    // Mock suggestions data
-    const [suggestions] = useState([
-        {
-            id: 101,
-            userId: 101,
-            fullName: 'Hồng Nhung',
-            username: 'hongnhung',
-            age: 24,
-            city: 'Hà Nội',
-            avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA61rF2qJA_61d08hoKQD1vgLttk99SWH-2mhQvPCoH57mhr0UjI8L7ybrsEWnI2oLFtMUesiVK-j9CGmOjLqaDBSP4VGvvtSiwItxsARYkGe8mEsW7qwBkWXGsCjQLKe10vZ7AQv05zjKn0dsPLE5BUEJCjrwzv9TUcPhyKj43H7MuKHeGmqxrZrq5_s7ODalnsrwBejsIxD4NsrZetKdfuu5WRkwVCT304dnvOmT15inm4rJUGChESlWiT5jnp5f3NqPpm8kKCv0',
-            mutualFriends: 12,
-            reason: 'Có cùng sở thích: Du lịch',
-            isOnline: true,
-            type: 'SUGGESTION'
-        },
-        {
-            id: 102,
-            userId: 102,
-            fullName: 'Tuấn Anh',
-            username: 'tuananh',
-            age: 29,
-            city: 'TP. HCM',
-            avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBdoLrCwAT83JCL6U8m7TnDC0oM8kn4OVr5XeeYADi_UYRinmq2C0fIwzychqDESZvGWD0nS5EqD_0hTACwjoHHIUqj1bI5Ic1EQZ75Oef8FoxX0B7g4dp_lmTjf44WtIpjrF_Ygs2b0iQ90dlQzFyapA7Oh2Pm1-peCNesZBogBZhUpUCXOnp5_KqLP9H-cm69o1uTTt-sGGAzw11HFpXZ7pvgNJkIjC9OPnhWLCMXWKlgZz2nKU2pguarVqXSrrVwTiSrRLt4h5g',
-            mutualFriends: 8,
-            reason: 'Thành viên mới gần bạn',
-            isOnline: false,
-            type: 'SUGGESTION'
-        },
-        {
-            id: 103,
-            userId: 103,
-            fullName: 'Minh Thư',
-            username: 'minhthu',
-            age: 26,
-            city: 'Đà Nẵng',
-            avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCA2lYtnTFCA75HFG_52JszPx-az718WMOboPAn-G1i24N852_c8WMA84zaSIjPhM2bLmVoY8itXvafnzxb5VjPbzRUZp6AXCKTfAEXa9jysG_6eND1TYZ0D1OFOXHtOKIWA2x0OJxEozgg2vR_FVWQLKzKDMrEuV3ZX9MEa8yOLevyaZjSYY0z7uQTwuSXWp4HBjjqAcBcZLqU4iAoqv71JyHkK1TW8TD9Rt3KVz3qa5jC8Xq-idWXHr3qpktV4H962cWYDM__P1Y',
-            mutualFriends: 5,
-            reason: 'Có cùng sở thích: Nghệ thuật',
-            isOnline: true,
-            type: 'SUGGESTION'
-        },
-    ]);
+    // Fetch Suggestions
+    const fetchSuggestions = async () => {
+        setSuggestionsLoading(true);
+        try {
+            const response = await FriendSuggestionService.getSuggestions(0, 50);
+            const formattedSuggestions = response.data.content.map(item => ({
+                ...item,
+                id: item.userId, // Map userId to id for consistent usage
+                type: 'SUGGESTION'
+            }));
+            setSuggestions(formattedSuggestions);
+        } catch (error) {
+            console.error("Error fetching suggestions:", error);
+            toast.error("Không thể tải danh sách gợi ý");
+        } finally {
+            setSuggestionsLoading(false);
+        }
+    };
 
     // Fetch data based on view mode
     useEffect(() => {
@@ -84,6 +67,8 @@ export default function FriendsPage() {
             fetchFriends();
         } else if (viewMode === 'REQUESTS') {
             fetchRequests();
+        } else if (viewMode === 'SUGGESTIONS') {
+            fetchSuggestions();
         }
     }, [viewMode]);
 
@@ -99,15 +84,19 @@ export default function FriendsPage() {
             setIsProfileLoading(true);
 
             try {
-                if (activeItem.type === 'SUGGESTION' && activeItem.id > 100) {
-                    setFullProfile(activeItem);
-                } else {
-                    const response = await UserProfileService.getUserProfile(targetId);
-                    setFullProfile(response.data);
+                // Always fetch fresh profile data to ensure accuracy
+                const response = await UserProfileService.getUserProfile(targetId);
+                setFullProfile(response.data);
+
+                // If displaying suggestion, merge extra info from suggestion item
+                if (activeItem.type === 'SUGGESTION') {
+                    // Keep suggestion specific data if needed
                 }
+
                 setActiveProfileTab('about');
             } catch (error) {
                 console.error("Error fetching profile:", error);
+                // Fallback to activeItem data if fetch fails
                 setFullProfile(activeItem);
             } finally {
                 setIsProfileLoading(false);
@@ -138,8 +127,51 @@ export default function FriendsPage() {
         }
     };
 
-    const handleAddFriend = (id) => {
-        toast.success("Đã gửi lời mời kết bạn!");
+    const handleAddFriend = async (id) => {
+        setProcessingSuggestions(prev => ({ ...prev, [id]: 'adding' }));
+        const tid = toast.loading("Đang gửi lời mời...");
+        try {
+            await FriendRequestService.sendFriendRequest(id);
+            toast.success("Đã gửi lời mời kết bạn!", { id: tid });
+
+            // Remove from suggestions list visually
+            setSuggestions(prev => prev.filter(s => s.userId !== id));
+
+            if (activeItem?.userId === id) {
+                setActiveItem(null);
+            }
+        } catch (error) {
+            console.error("Error sending friend request:", error);
+            toast.error(error.response?.data?.message || "Lỗi khi gửi lời mời", { id: tid });
+        } finally {
+            setProcessingSuggestions(prev => {
+                const newState = { ...prev };
+                delete newState[id];
+                return newState;
+            });
+        }
+    };
+
+    const handleDismissSuggestion = async (id) => {
+        setProcessingSuggestions(prev => ({ ...prev, [id]: 'dismissing' }));
+        try {
+            await FriendSuggestionService.dismissSuggestion(id);
+            toast.success("Đã ẩn gợi ý");
+            setSuggestions(prev => prev.filter(s => s.userId !== id));
+
+            if (activeItem?.userId === id) {
+                setActiveItem(null);
+            }
+        } catch (error) {
+            console.error("Error dismissing suggestion:", error);
+            toast.error("Lỗi khi ẩn gợi ý");
+        } finally {
+            setProcessingSuggestions(prev => {
+                const newState = { ...prev };
+                delete newState[id];
+                return newState;
+            });
+        }
     };
 
     const handleAcceptRequestWrapper = async (request) => {
@@ -163,6 +195,8 @@ export default function FriendsPage() {
         else if (viewMode === 'SUGGESTIONS') list = suggestions;
         else if (viewMode === 'REQUESTS') list = requests;
 
+        if (!list) return [];
+
         return list.filter(item => {
             if (viewMode === 'REQUESTS') {
                 const name = item.senderFullName || item.senderUsername || '';
@@ -170,24 +204,31 @@ export default function FriendsPage() {
                 return name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                     username.toLowerCase().includes(searchTerm.toLowerCase());
             }
-            return (item.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                item.username?.toLowerCase().includes(searchTerm.toLowerCase()));
+            const name = item.fullName || item.username || '';
+            const username = item.username || '';
+            return name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                username.toLowerCase().includes(searchTerm.toLowerCase());
         });
     };
 
     const displayedList = getDisplayedList();
-    const isLoading = viewMode === 'ALL' ? friendsLoading : requestsLoading;
 
-    if (isLoading && viewMode === 'ALL' && friends.length === 0) {
+    // Determine loading state based on view mode
+    let isLoading = false;
+    if (viewMode === 'ALL') isLoading = friendsLoading;
+    else if (viewMode === 'REQUESTS') isLoading = requestsLoading;
+    else if (viewMode === 'SUGGESTIONS') isLoading = suggestionsLoading;
+
+    if (isLoading && displayedList.length === 0) {
         return (
-            <div className="h-full w-full flex items-center justify-center bg-background-dark">
+            <div className="h-full w-full flex items-center justify-center bg-background-main">
                 <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
             </div>
         );
     }
 
     return (
-        <div className="h-full w-full flex overflow-hidden bg-chat-bg relative">
+        <div className="h-full w-full flex overflow-hidden bg-background-main relative">
             <FriendsSidebar
                 viewMode={viewMode}
                 setViewMode={setViewMode}
@@ -204,12 +245,14 @@ export default function FriendsPage() {
                 setActiveItem={setActiveItem}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
-                processingRequests={processingRequests}
+                processingRequests={viewMode === 'SUGGESTIONS' ? processingSuggestions : processingRequests}
                 onAcceptRequest={handleAcceptRequestWrapper}
                 onRejectRequest={handleRejectRequestWrapper}
+                onAddFriend={handleAddFriend}
+                onDismissSuggestion={handleDismissSuggestion}
             />
 
-            <div className={`${activeItem ? 'flex' : 'hidden'} xl:flex flex-1 flex-col bg-chat-bg relative`}>
+            <div className={`${activeItem ? 'flex' : 'hidden'} xl:flex flex-1 flex-col bg-background-secondary relative border-l border-border-main`}>
                 <FriendProfileDetail
                     activeItem={activeItem}
                     fullProfile={fullProfile}
@@ -221,6 +264,7 @@ export default function FriendsPage() {
                     onStartChat={handleStartChat}
                     onUnfriend={handleUnfriendWrapper}
                     onAddFriend={handleAddFriend}
+                    onDismissSuggestion={handleDismissSuggestion}
                     onAcceptRequest={handleAcceptRequestWrapper}
                     onRejectRequest={handleRejectRequestWrapper}
                 />

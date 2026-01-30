@@ -17,7 +17,8 @@ export default function FriendProfileDetail({
     onUnfriend,
     onAddFriend,
     onAcceptRequest,
-    onRejectRequest
+    onRejectRequest,
+    onDismissSuggestion
 }) {
     const navigate = useNavigate();
 
@@ -157,13 +158,25 @@ export default function FriendProfileDetail({
                             </button>
                         </>
                     ) : (
-                        <button
-                            onClick={() => onAddFriend(fullProfile.userId || fullProfile.id)}
-                            className="px-10 py-3 bg-primary hover:bg-orange-600 text-[#231810] font-bold rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center gap-2 hover:scale-105"
-                        >
-                            <span className="material-symbols-outlined">person_add</span>
-                            Kết bạn
-                        </button>
+                        <>
+                            <button
+                                onClick={() => onAddFriend(fullProfile.userId || fullProfile.id)}
+                                className="px-8 py-3 bg-primary hover:bg-orange-600 text-[#231810] font-bold rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center gap-2 hover:scale-105"
+                            >
+                                <span className="material-symbols-outlined">person_add</span>
+                                Kết bạn
+                            </button>
+                            {viewMode === 'SUGGESTIONS' && onDismissSuggestion && (
+                                <button
+                                    onClick={() => onDismissSuggestion(fullProfile.userId || fullProfile.id)}
+                                    className="px-6 py-3 bg-[#2A1D15] hover:bg-neutral-700 text-text-secondary hover:text-white font-bold rounded-xl border border-[#3A2A20] transition-all flex items-center gap-2"
+                                    title="Ẩn gợi ý này"
+                                >
+                                    <span className="material-symbols-outlined">visibility_off</span>
+                                    Ẩn
+                                </button>
+                            )}
+                        </>
                     )}
                 </div>
 
