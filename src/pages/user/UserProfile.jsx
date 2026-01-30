@@ -8,6 +8,7 @@ import {
   MapPin,
   SlidersHorizontal,
   PlusSquare,
+  UserX
 } from "lucide-react";
 
 import PostComposer from "../../components/feed/PostComposer";
@@ -23,6 +24,8 @@ import ProfileFriends from "../../components/profile/ProfileFriends";
 import { uploadAvatar, uploadCover } from "../../utils/uploadImage";
 import { toast } from "react-toastify";
 import EditProfileModal from "../../components/profile/EditProfileModal";
+import PostService from "../../services/PostService";
+import PostCard from "../../components/feed/PostCard";
 
 export default function UserProfile() {
   const dispatch = useDispatch();
@@ -37,11 +40,33 @@ export default function UserProfile() {
   const avatarInputRef = useRef(null);
   const coverInputRef = useRef(null);
 
+    const [posts, setPosts] = useState([]);
+    const [loadingPosts, setLoadingPosts] = useState(false);
+
+    const fetchPosts = async (userId) => {
+      
+        setLoadingPosts(true);
+        try {
+          const response = await PostService.getPostsByUserId(userId);
+          // Assuming response.data is the array of posts
+          const sortedPosts = (response.data || []).sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+          );
+          setPosts(sortedPosts);
+        } catch (error) {
+          console.error("Error fetching user posts:", error);
+        } finally {
+          setLoadingPosts(false);
+        }
+      
+    };
+
   useEffect(() => {
     const userId = user?.id || user?.userId || user?.sub;
     if (userId && !profile) {
       dispatch(fetchUserProfile(userId));
     }
+    fetchPosts(userId);
   }, [user, profile, dispatch]);
 
   const handleAvatarChange = async (e) => {
@@ -368,37 +393,29 @@ export default function UserProfile() {
                   ? "lg:col-span-7 xl:col-span-8"
                   : "lg:col-span-1"
               } flex flex-col gap-6`}
-            >
-              {activeTab === "timeline" && (
-                <>
-                  <PostComposer userAvatar={profile?.currentAvatarUrl} />
-
-                  <div className="flex items-center justify-between bg-surface-main p-3 px-5 rounded-2xl border border-border-main">
-                    <h2 className="text-text-main font-bold text-lg">
-                      Bài viết của bạn
-                    </h2>
-                    <div className="flex gap-2">
-                      <button className="flex items-center gap-1 bg-background-main text-text-main text-xs font-bold px-3 py-2 rounded-lg hover:bg-surface-main transition-colors border border-border-main">
-                        <SlidersHorizontal size={16} />
-                        Bộ lọc
-                      </button>
-                    </div>
+            >{activeTab === "timeline" && (
+              <div className="flex flex-col gap-6">
+                {loadingPosts ? (
+                  // Hiệu ứng loading quay quay
+                  <div className="flex justify-center p-8 bg-surface-main rounded-2xl border border-border-main">
+                    <div className="size-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
                   </div>
-
-                  <div className="text-center py-20 bg-surface-main rounded-2xl border border-border-main flex flex-col items-center justify-center">
-                    <PlusSquare
-                      size={48}
-                      className="text-text-secondary/30 mb-4"
-                    />
+                ) : posts.length > 0 ? (
+                  // Duyệt mảng posts và hiển thị PostCard
+                  posts.map((post) => (
+                    <PostCard key={post.id} post={post} />
+                  ))
+                ) : (
+                  // Trạng thái trống nếu không có bài nào
+                  <div className="flex flex-col gap-6 text-center py-20 bg-surface-main rounded-2xl border border-border-main">
+                    <UserX className="size-12 text-text-secondary/30 mb-4 mx-auto" />
                     <p className="text-text-secondary italic">
-                      Bạn chưa đăng bài viết nào.
+                      Người dùng này chưa có bài viết nào.
                     </p>
-                    <button className="text-primary font-bold mt-2 hover:underline">
-                      Đăng bài ngay
-                    </button>
                   </div>
-                </>
-              )}
+                )}
+              </div>
+            )}
 
               {activeTab === "about" && (
                 <ProfileAbout profile={profile} isOwner={true} />
