@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Search, UserPlus } from "lucide-react";
 import { Link } from "react-router-dom";
 import FriendService from "../../services/friend/FriendService";
@@ -7,21 +7,27 @@ export default function RightSidebar() {
   const [friends, setFriends] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
+  const loadingRef = useRef(false);
 
   const fetchFriends = useCallback(
-    async (currentPage, isSearching = false) => {
-      if (loading) return;
+    async (currentPage, currentSearchTerm) => {
+      // Allow re-fetch if searching (debounce handles frequency), 
+      // but block immediate duplicate calls if needed. 
+      // Actually checking loadingRef prevents parallel calls.
+      if (loadingRef.current) return;
+
+      loadingRef.current = true;
       setLoading(true);
       try {
         const params = { page: currentPage, size: 20 };
-        if (searchTerm.trim()) {
-          params.name = searchTerm;
+        if (currentSearchTerm && currentSearchTerm.trim()) {
+          params.name = currentSearchTerm;
         }
         const response = await FriendService.getMyFriends(params);
         const newFriends = response.data.content || [];
 
         setFriends((prev) =>
-          isSearching || currentPage === 0
+          currentPage === 0
             ? newFriends
             : [...prev, ...newFriends],
         );
@@ -29,15 +35,16 @@ export default function RightSidebar() {
         console.error("Failed to fetch friends", error);
       } finally {
         setLoading(false);
+        loadingRef.current = false;
       }
     },
-    [loading, searchTerm],
+    [],
   );
 
   // Debounce search
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      fetchFriends(0, true);
+      fetchFriends(0, searchTerm);
     }, 500);
     return () => clearTimeout(timeoutId);
   }, [searchTerm, fetchFriends]);
@@ -151,10 +158,9 @@ export default function RightSidebar() {
                 <div
                   className="size-10 rounded-full bg-cover bg-center ring-2 ring-transparent group-hover:ring-primary/50 transition-all"
                   style={{
-                    backgroundImage: `url("${
-                      friend.avatarUrl ||
+                    backgroundImage: `url("${friend.avatarUrl ||
                       "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                    }")`,
+                      }")`,
                   }}
                 ></div>
                 <div className="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full border-2 border-background-main"></div>

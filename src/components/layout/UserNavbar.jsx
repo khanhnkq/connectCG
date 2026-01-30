@@ -3,9 +3,11 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { IconHome, IconBell, IconUsers, IconUser, IconSettings, IconLogout, IconChevronDown } from '@tabler/icons-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchNotifications, markAsRead } from '../../redux/slices/notificationSlice';
+import { fetchNotifications, markAsRead, deleteNotification, markAllAsRead } from '../../redux/slices/notificationSlice';
 import { logout } from '../../redux/slices/authSlice';
 import NotificationList from '../notification/NotificationList';
+import NotificationService from '../../services/NotificationService';
+import toast from 'react-hot-toast';
 
 const UserNavbar = () => {
     const navigate = useNavigate();
@@ -43,8 +45,51 @@ const UserNavbar = () => {
 
     const isActive = (path) => location.pathname === path;
 
-    const handleMarkAsRead = (id) => {
-        dispatch(markAsRead(id));
+    const handleMarkAsRead = async (id) => {
+        try {
+            await NotificationService.markAsRead(id);
+            dispatch(markAsRead(id));
+        } catch (error) {
+            console.error('Error marking notification as read:', error);
+        }
+    };
+
+    const handleDelete = async (id) => {
+        try {
+            await NotificationService.deleteNotification(id);
+            dispatch(deleteNotification(id));
+            toast.success('Đã xóa thông báo');
+        } catch (error) {
+            console.error('Error deleting notification:', error);
+            toast.error('Không thể xóa thông báo');
+        }
+    };
+
+    const handleMarkAllAsRead = async () => {
+        const unreadNotifications = notifications.filter(n => !n.isRead);
+
+        if (unreadNotifications.length === 0) {
+            toast.info('Tất cả thông báo đã được đọc');
+            return;
+        }
+
+        const tid = toast.loading(`Đang đánh dấu ${unreadNotifications.length} thông báo...`);
+
+        try {
+            // Mark each notification as read individually
+            await Promise.all(
+                unreadNotifications.map(notification =>
+                    NotificationService.markAsRead(notification.id)
+                )
+            );
+
+            // Update Redux state
+            dispatch(markAllAsRead());
+            toast.success('Đã đánh dấu tất cả đã đọc', { id: tid });
+        } catch (error) {
+            console.error('Error marking all as read:', error);
+            toast.error('Không thể đánh dấu tất cả đã đọc', { id: tid });
+        }
     };
 
     const handleLogout = () => {
@@ -117,6 +162,8 @@ const UserNavbar = () => {
                                 <NotificationList
                                     notifications={notifications}
                                     onMarkAsRead={handleMarkAsRead}
+                                    onDelete={handleDelete}
+                                    onMarkAllAsRead={handleMarkAllAsRead}
                                 />
                             </motion.div>
                         )}
