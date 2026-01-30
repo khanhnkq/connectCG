@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Sidebar, SidebarBody, SidebarLink } from "../ui/sidebar";
 import {
   Home,
@@ -23,7 +23,18 @@ export default function SidebarComponent() {
   const { profile: userProfile } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const [open, setOpen] = useState(false);
+
+  // Track location in a ref so the listener can access it without re-subscribing
+  const locationRef = React.useRef(location.pathname);
+  useEffect(() => {
+    locationRef.current = location.pathname;
+    // Reset unread count when entering chat page
+    if (location.pathname === "/dashboard/chat") {
+      setUnreadChatCount(0);
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     const userId = user?.id || user?.userId || user?.sub;
@@ -33,6 +44,55 @@ export default function SidebarComponent() {
   }, [user, userProfile, dispatch]);
 
   const [isAdmin, setIsAdmin] = useState(false);
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
+
+  // Global Chat Listener for unread messages
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const listeners = [];
+    const startTime = Date.now();
+    const roomsKey = `last_read_${user.id}`;
+
+    // Helper to get my chat rooms and subscribe
+    const setupChatListener = async () => {
+      try {
+        const ChatService = (await import("../../services/chat/ChatService")).default;
+        const FirebaseChatService = (await import("../../services/chat/FirebaseChatService")).default;
+
+        const response = await ChatService.getMyChatRooms();
+        const rooms = response.data || [];
+
+        rooms.forEach((room) => {
+          const unsub = FirebaseChatService.subscribeToMessages(
+            room.firebaseRoomKey,
+            (newMsg) => {
+              // Only count as unread if it's NEW and NOT from me
+              const isNew = newMsg.timestamp && newMsg.timestamp > startTime - 1000;
+              const isNotMe = newMsg.senderId !== user.id;
+
+              if (isNew && isNotMe) {
+                // If we are NOT on the chat page, show indicator
+                if (locationRef.current !== "/dashboard/chat") {
+                  setUnreadChatCount(prev => prev + 1);
+                }
+              }
+            }
+          );
+          listeners.push(unsub);
+        });
+      } catch (err) {
+        console.error("Global chat listener failed:", err);
+      }
+    };
+
+    setupChatListener();
+
+    return () => {
+      listeners.forEach(u => u());
+    };
+  }, [user?.id]);
+
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
@@ -64,7 +124,15 @@ export default function SidebarComponent() {
       label: "Tin nhắn",
       href: "/dashboard/chat",
       icon: (
-        <MessageCircle className="text-text-secondary h-5 w-5 flex-shrink-0" />
+        <div className="relative">
+          <MessageCircle className="text-text-secondary h-5 w-5 flex-shrink-0" />
+          {unreadChatCount > 0 && (
+            <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+            </span>
+          )}
+        </div>
       ),
     },
     {

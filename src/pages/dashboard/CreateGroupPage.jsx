@@ -165,10 +165,11 @@ export default function CreateGroupPage() {
                       <Field
                         name="group_name"
                         placeholder="Ví dụ: Hội yêu cây cảnh, Dev Hà Nội..."
+                        disabled={isSubmitting}
                         className={`w-full bg-background-main border ${errors.group_name && touched.group_name
                           ? "border-red-500/50"
                           : "border-border-main group-focus-within:border-primary/50"
-                          } rounded-2xl py-5 px-6 text-text-main text-base focus:outline-none transition-all shadow-inner placeholder:text-text-muted/20`}
+                          } rounded-2xl py-5 px-6 text-text-main text-base focus:outline-none transition-all shadow-inner placeholder:text-text-muted/20 disabled:opacity-50 disabled:cursor-not-allowed`}
                       />
                       <div className="absolute inset-0 rounded-2xl ring-1 ring-white/5 pointer-events-none group-focus-within:ring-primary/20 transition-all" />
                     </div>
@@ -190,9 +191,10 @@ export default function CreateGroupPage() {
                           type="radio"
                           name="privacy"
                           value="public"
+                          disabled={isSubmitting}
                           className="sr-only peer"
                         />
-                        <div className="p-5 rounded-2xl bg-background-main border border-border-main transition-all peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:shadow-[0_0_20px_rgba(255,107,0,0.1)] hover:bg-surface-main">
+                        <div className={`p-5 rounded-2xl bg-background-main border border-border-main transition-all peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:shadow-[0_0_20px_rgba(255,107,0,0.1)] hover:bg-surface-main ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}>
                           <div className="flex items-center gap-3 mb-2">
                             <div className="size-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                               <Globe size={18} />
@@ -213,9 +215,10 @@ export default function CreateGroupPage() {
                           type="radio"
                           name="privacy"
                           value="private"
+                          disabled={isSubmitting}
                           className="sr-only peer"
                         />
-                        <div className="p-5 rounded-2xl bg-background-main border border-border-main transition-all peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:shadow-[0_0_20px_rgba(255,107,0,0.1)] hover:bg-surface-main">
+                        <div className={`p-5 rounded-2xl bg-background-main border border-border-main transition-all peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:shadow-[0_0_20px_rgba(255,107,0,0.1)] hover:bg-surface-main ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}>
                           <div className="flex items-center gap-3 mb-2">
                             <div className="size-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                               <ShieldCheck size={18} />
@@ -247,7 +250,8 @@ export default function CreateGroupPage() {
                       as="textarea"
                       name="description"
                       placeholder="Viết vài dòng giới thiệu về nét đặc trưng của nhóm..."
-                      className="w-full bg-background-main border border-border-main focus:border-primary/50 rounded-2xl py-5 px-6 text-text-main text-sm h-32 focus:outline-none transition-all shadow-inner resize-none placeholder:text-text-muted/20"
+                      disabled={isSubmitting}
+                      className="w-full bg-background-main border border-border-main focus:border-primary/50 rounded-2xl py-5 px-6 text-text-main text-sm h-32 focus:outline-none transition-all shadow-inner resize-none placeholder:text-text-muted/20 disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                     <div className="flex justify-end pr-2">
                       <span
@@ -271,8 +275,8 @@ export default function CreateGroupPage() {
                   </label>
 
                   <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="relative w-full aspect-[4/3] rounded-3xl border-2 border-dashed border-border-main hover:border-primary/50 transition-all cursor-pointer overflow-hidden group flex items-center justify-center bg-background-main shadow-2xl"
+                    onClick={() => !isSubmitting && fileInputRef.current?.click()}
+                    className={`relative w-full aspect-[4/3] rounded-3xl border-2 border-dashed border-border-main hover:border-primary/50 transition-all cursor-pointer overflow-hidden group flex items-center justify-center bg-background-main shadow-2xl ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
                     {previewUrl ? (
                       <>

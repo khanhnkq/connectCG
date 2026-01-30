@@ -20,6 +20,7 @@ import {
   acceptInvitation,
   declineInvitation,
   joinGroup,
+  leaveGroup,
 } from "../../services/groups/GroupService";
 import toast from "react-hot-toast";
 
@@ -32,25 +33,81 @@ export default function GroupsManagement() {
   const [activeTab, setActiveTab] = useState("my"); // 'my', 'discover', 'invites'
   const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        const [myGroupsData, discoverData, invitationsData] = await Promise.all(
-          [findMyGroups(), findDiscoverGroups(), findPendingInvitations()],
-        );
-        setYourGroups(myGroupsData);
-        setDiscoverGroups(discoverData);
-        setPendingInvitations(invitationsData);
-      } catch {
-        console.error("Failed to fetch groups:");
-        toast.error("Không thể tải danh sách nhóm.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Pagination states
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const loaderRef = React.useRef(null);
 
-    fetchInitialData();
-  }, []);
+  const fetchGroups = async (pageToFetch, isNewTab = false) => {
+    try {
+      if (pageToFetch === 0) setLoading(true);
+      else setIsFetchingMore(true);
+
+      let response;
+      if (searchQuery.trim()) {
+        response = await searchGroups(searchQuery, pageToFetch);
+      } else {
+        switch (activeTab) {
+          case "my":
+            response = await findMyGroups(pageToFetch);
+            break;
+          case "discover":
+            response = await findDiscoverGroups(pageToFetch);
+            break;
+          case "invites":
+            response = await findPendingInvitations(); // Invites might not be paginated yet, but let's assume it returns a list or adapt
+            break;
+        }
+      }
+
+      // Handle paginated response (Spring Page object has 'content', 'last', 'totalPages')
+      const newData = response.content || response;
+      const isLast = response.last !== undefined ? response.last : true;
+
+      if (activeTab === "my") {
+        setYourGroups(prev => pageToFetch === 0 ? newData : [...prev, ...newData]);
+      } else if (activeTab === "discover") {
+        setDiscoverGroups(prev => pageToFetch === 0 ? newData : [...prev, ...newData]);
+      } else {
+        setPendingInvitations(newData);
+      }
+
+      setHasMore(!isLast);
+    } catch (error) {
+      console.error("Failed to fetch groups:", error);
+      toast.error("Không thể tải danh sách nhóm.");
+    } finally {
+      setLoading(false);
+      setIsFetchingMore(false);
+    }
+  };
+
+  useEffect(() => {
+    setPage(0);
+    fetchGroups(0, true);
+  }, [activeTab, searchQuery]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading && !isFetchingMore) {
+          setPage((prev) => {
+            const nextPage = prev + 1;
+            fetchGroups(nextPage);
+            return nextPage;
+          });
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loaderRef.current) {
+      observer.observe(loaderRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasMore, loading, isFetchingMore, activeTab, searchQuery]);
 
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
@@ -117,8 +174,24 @@ export default function GroupsManagement() {
         typeof error.response?.data === "string"
           ? error.response.data
           : error.response?.data?.message ||
-            "Không thể thực hiện yêu cầu gia nhập.";
+          "Không thể thực hiện yêu cầu gia nhập.";
       toast.error(errorMsg);
+    }
+  };
+
+  const handleCancelJoinRequest = async (groupId) => {
+    try {
+      await leaveGroup(groupId);
+      toast.success("Đã hủy yêu cầu gia nhập nhóm!");
+      // Update local state instead of full refresh
+      setDiscoverGroups((prev) =>
+        prev.map((g) =>
+          g.id === groupId ? { ...g, currentUserStatus: null } : g,
+        ),
+      );
+    } catch (error) {
+      console.error("Cancel join request failed:", error);
+      toast.error("Không thể hủy yêu cầu gia nhập.");
     }
   };
 
@@ -146,20 +219,17 @@ export default function GroupsManagement() {
     return (
       <div
         key={group.id}
-        className={`bg-card-dark rounded-3xl border overflow-hidden flex flex-col hover:border-primary/30 transition-all group h-full shadow-2xl relative ${
-          isAdmin
-            ? "border-orange-500/50 shadow-orange-500/10"
-            : "border-[#3e2b1d]"
-        }`}
+        className={`bg-card-dark rounded-3xl border overflow-hidden flex flex-col hover:border-primary/30 transition-all group h-full shadow-2xl relative ${isAdmin
+          ? "border-orange-500/50 shadow-orange-500/10"
+          : "border-[#3e2b1d]"
+          }`}
       >
-        {/* Clickable Area: Image & Header - Only if member or admin */}
+        {/* Clickable Area: Image & Header - Everyone can now see basic info */}
         <div className="relative h-44 overflow-hidden">
-          {isMember || isAdmin ? (
-            <Link
-              to={`/dashboard/groups/${group.id}`}
-              className="absolute inset-0 z-10 block cursor-pointer"
-            />
-          ) : null}
+          <Link
+            to={`/dashboard/groups/${group.id}`}
+            className="absolute inset-0 z-10 block cursor-pointer"
+          />
 
           <div
             className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
@@ -248,9 +318,16 @@ export default function GroupsManagement() {
                   Từ chối
                 </button>
               </>
-            ) : isPending ? (
+            ) : group.currentUserStatus === "REQUESTED" ? (
+              <button
+                onClick={() => handleCancelJoinRequest(group.id)}
+                className="flex-1 py-3 rounded-2xl bg-orange-500/10 text-orange-400 border border-orange-500/20 font-black text-xs transition-all uppercase tracking-widest text-center flex items-center justify-center hover:bg-orange-500 hover:text-white"
+              >
+                Hủy yêu cầu
+              </button>
+            ) : group.currentUserStatus === "PENDING" ? (
               <div className="flex-1 py-3 rounded-2xl bg-orange-500/10 text-orange-500 border border-orange-500/20 font-black text-xs transition-all uppercase tracking-widest text-center flex items-center justify-center italic">
-                Đang chờ duyệt
+                Mời tham gia
               </div>
             ) : isMember || isAdmin ? (
               <button
@@ -308,10 +385,10 @@ export default function GroupsManagement() {
 
   const displayedGroups =
     activeTab === "my"
-      ? filteredGroups(yourGroups)
+      ? yourGroups
       : activeTab === "discover"
-      ? filteredGroups(discoverGroups)
-      : filteredGroups(pendingInvitations);
+        ? discoverGroups
+        : pendingInvitations;
 
   return (
     <div className="max-w-7xl mx-auto w-full pb-20 bg-background-main transition-colors duration-300">
@@ -331,17 +408,16 @@ export default function GroupsManagement() {
                   setActiveTab(tab);
                   setSearchQuery("");
                 }}
-                className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all relative ${
-                  activeTab === tab
-                    ? "bg-primary text-text-main shadow-lg"
-                    : "text-text-secondary hover:text-primary"
-                }`}
+                className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all relative ${activeTab === tab
+                  ? "bg-primary text-text-main shadow-lg"
+                  : "text-text-secondary hover:text-primary"
+                  }`}
               >
                 {tab === "my"
                   ? "Của tôi"
                   : tab === "discover"
-                  ? "Khám phá"
-                  : "Lời mời"}
+                    ? "Khám phá"
+                    : "Lời mời"}
                 {tab === "invites" && pendingInvitations.length > 0 && (
                   <span className="absolute -top-1 -right-1 flex h-4 w-4">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
@@ -369,8 +445,8 @@ export default function GroupsManagement() {
                 activeTab === "my"
                   ? "Tìm kiếm nhóm của bạn..."
                   : activeTab === "discover"
-                  ? "Khám phá nhóm mới..."
-                  : "Tìm lời mời..."
+                    ? "Khám phá nhóm mới..."
+                    : "Tìm lời mời..."
               }
             />
           </div>
@@ -419,6 +495,26 @@ export default function GroupsManagement() {
             )}
           </div>
         )}
+
+        {/* Loading / End of List Indicator */}
+        <div ref={loaderRef} className="py-10 flex justify-center w-full">
+          {isFetchingMore ? (
+            <div className="flex flex-col items-center gap-3">
+              <div className="size-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary animate-pulse">
+                Đang tải thêm...
+              </span>
+            </div>
+          ) : !hasMore && displayedGroups.length > 0 ? (
+            <div className="flex flex-col items-center gap-2 opacity-30">
+              <div className="h-px w-20 bg-border-main" />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">
+                Bạn đã xem hết tất cả
+              </span>
+              <div className="h-px w-20 bg-border-main" />
+            </div>
+          ) : null}
+        </div>
       </div>
     </div>
   );
