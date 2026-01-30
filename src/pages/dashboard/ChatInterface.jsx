@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, Fragment } from "react";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -72,6 +72,10 @@ export default function ChatInterface() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState("");
   const chatAvatarInputRef = useRef(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const emojiPickerRef = useRef(null);
+
+  const emojis = ["😊", "😂", "🥰", "😍", "😒", "😭", "😘", "😩", "😔", "👍", "❤️", "🔥", "✨", "🎉", "🙏", "✅", "❌", "💯"];
 
   const handleCreateGroup = async () => {
     if (selectedMembers.length < 1) {
@@ -209,26 +213,106 @@ export default function ChatInterface() {
     fetchRooms();
   }, [fetchRooms]);
 
-  // Subscribe to messages when activeRoom changes
+  // Track activeRoom in a ref for the background listeners
+  const activeRoomRef = useRef(activeRoom);
   useEffect(() => {
-    if (!activeRoom) return;
+    activeRoomRef.current = activeRoom;
+  }, [activeRoom]);
 
-    setMessages([]); // Clear old messages
-    const unsubscribe = FirebaseChatService.subscribeToMessages(
-      activeRoom.firebaseRoomKey,
-      (newMsg) => {
-        setMessages((prev) => [...prev, newMsg]);
-      },
-    );
+  // Global subscription for ALL rooms (Sidebar updates only)
+  useEffect(() => {
+    if (conversations.length === 0) return;
+
+    const listeners = [];
+    const startTime = Date.now();
+
+    conversations.forEach((room) => {
+      const unsub = FirebaseChatService.subscribeToMessages(
+        room.firebaseRoomKey,
+        (newMsg) => {
+          // UPDATE ROOM LIST ONLY (for sorting and unread badges)
+          setConversations((prev) => {
+            const index = prev.findIndex(
+              (c) => c.firebaseRoomKey === room.firebaseRoomKey,
+            );
+            if (index === -1) return prev;
+
+            const updatedList = [...prev];
+            const oldRoom = updatedList[index];
+
+            // Real-time logic: increment unread if it's a NEW message and NOT the active room
+            const isNewMessage = newMsg.timestamp && newMsg.timestamp > startTime - 3000;
+            const isActiveRoom = activeRoomRef.current?.firebaseRoomKey === room.firebaseRoomKey;
+
+            let newUnreadCount = oldRoom.unreadCount || 0;
+            if (isNewMessage && !isActiveRoom) {
+              newUnreadCount += 1;
+            }
+
+            const matched = {
+              ...oldRoom,
+              lastMessageVisible: newMsg.text,
+              lastMessageTimestamp: newMsg.timestamp,
+              unreadCount: isActiveRoom ? 0 : newUnreadCount
+            };
+
+            if (isNewMessage) {
+              // Move to top
+              updatedList.splice(index, 1);
+              return [matched, ...updatedList];
+            } else {
+              updatedList[index] = matched;
+              return updatedList;
+            }
+          });
+        },
+      );
+      listeners.push(unsub);
+    });
 
     return () => {
-      if (unsubscribe) unsubscribe();
+      listeners.forEach((unsub) => unsub());
     };
-  }, [activeRoom]);
+  }, [conversations.length]); // Only re-run if rooms are added/removed
+
+  // Active Room Message Listener (History + New for CURRENT room)
+  useEffect(() => {
+    if (!activeRoom?.firebaseRoomKey) {
+      setMessages([]);
+      return;
+    }
+
+    setMessages([]); // Clear previous chat
+
+    // Subscribe specifically to THIS room
+    const unsub = FirebaseChatService.subscribeToMessages(
+      activeRoom.firebaseRoomKey,
+      (newMsg) => {
+        setMessages((prev) => {
+          // Prevent duplicates
+          if (prev.some((m) => m.id === newMsg.id)) return prev;
+          return [...prev, newMsg];
+        });
+      }
+    );
+
+    return () => unsub();
+  }, [activeRoom?.firebaseRoomKey]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Click outside to close emoji picker
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
+        setShowEmojiPicker(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Fetch friends for new chat
   useEffect(() => {
@@ -288,6 +372,11 @@ export default function ChatInterface() {
       await FirebaseChatService.sendMessage(
         activeRoom.firebaseRoomKey,
         msgData,
+      );
+
+      // Update lastMessageAt on Backend
+      ChatService.updateLastMessageAt(activeRoom.firebaseRoomKey).catch(err =>
+        console.error("Error updating last message time:", err)
       );
     } catch (error) {
       console.error("Error sending message:", error);
@@ -431,7 +520,13 @@ export default function ChatInterface() {
               .map((conv) => (
                 <div
                   key={conv.id}
-                  onClick={() => setActiveRoom(conv)}
+                  onClick={() => {
+                    setActiveRoom(conv);
+                    // Clear unread count when clicking
+                    setConversations(prev => prev.map(c =>
+                      c.id === conv.id ? { ...c, unreadCount: 0 } : c
+                    ));
+                  }}
                   className={`p-3 rounded-xl cursor-pointer relative group flex gap-3 items-center shadow-lg transition-colors ${activeRoom?.id === conv.id
                     ? "bg-surface-main border border-primary/20 shadow-black/5"
                     : "hover:bg-surface-main/50 border border-transparent"
@@ -446,6 +541,12 @@ export default function ChatInterface() {
                           }")`,
                       }}
                     ></div>
+                    {/* Unread Indicator - Top right of avatar or standalone */}
+                    {conv.unreadCount > 0 && activeRoom?.id !== conv.id && (
+                      <div className="absolute -top-1 -right-1 size-5 bg-red-600 rounded-full flex items-center justify-center border-2 border-background-main animate-bounce shadow-lg">
+                        <span className="text-[10px] font-black text-white">{conv.unreadCount}</span>
+                      </div>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-baseline mb-0.5">
@@ -457,9 +558,17 @@ export default function ChatInterface() {
                       >
                         {conv.name || "Hội thoại"}
                       </h3>
+                      {conv.lastMessageTimestamp && (
+                        <span className="text-[10px] text-text-muted shrink-0 ml-2">
+                          {new Date(conv.lastMessageTimestamp).toLocaleTimeString("vi-VN", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      )}
                     </div>
-                    <p className={`text-text-secondary text-xs truncate`}>
-                      Bấm để xem tin nhắn
+                    <p className={`text-text-secondary text-xs truncate max-w-full italic ${conv.unreadCount > 0 ? "font-bold text-primary" : ""}`}>
+                      {conv.lastMessageVisible || "Bấm để xem tin nhắn"}
                     </p>
                   </div>
                   {activeRoom?.id === conv.id && (
@@ -520,69 +629,104 @@ export default function ChatInterface() {
                 {messages.map((msg, index) => {
                   const isSentByMe = msg.senderId === currentUser.id;
 
-                  // Logic xác định avatar của người gửi
-                  let msgAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+                  // Logic ngăn cách ngày
+                  const msgDate = msg.timestamp ? new Date(msg.timestamp) : new Date();
+                  const prevMsg = index > 0 ? messages[index - 1] : null;
+                  const prevMsgDate = prevMsg && prevMsg.timestamp ? new Date(prevMsg.timestamp) : null;
 
-                  if (msg.senderAvatarUrl) {
-                    msgAvatar = msg.senderAvatarUrl;
-                  } else if (activeRoom.members) {
-                    // Fallback: tìm trong members của activeRoom
+                  const isNewDay = !prevMsgDate || msgDate.toDateString() !== prevMsgDate.toDateString();
+
+                  const formatDaySeparator = (date) => {
+                    const now = new Date();
+                    const diffDays = Math.floor((now.setHours(0, 0, 0, 0) - date.setHours(0, 0, 0, 0)) / (1000 * 60 * 60 * 24));
+
+                    if (diffDays === 0) return "Hôm nay";
+                    if (diffDays === 1) return "Hôm qua";
+                    return date.toLocaleDateString("vi-VN", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric"
+                    });
+                  };
+
+                  // Dynamic Avatar & Name Lookup
+                  let msgAvatar = msg.senderAvatarUrl || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+                  let msgSenderName = msg.senderName || "Unknown";
+
+                  if (isSentByMe) {
+                    msgAvatar = currentUser.avatarUrl || msgAvatar;
+                    msgSenderName = currentUser.fullName || currentUser.username || msgSenderName;
+                  } else if (activeRoom?.type === "DIRECT") {
+                    msgAvatar = activeRoom.avatarUrl || msgAvatar;
+                    msgSenderName = activeRoom.name || msgSenderName;
+                  } else if (activeRoom?.members) {
                     const sender = activeRoom.members.find(
                       (m) => m.id === msg.senderId,
                     );
-                    if (sender?.avatarUrl) {
-                      msgAvatar = sender.avatarUrl;
+                    if (sender) {
+                      if (sender.avatarUrl) msgAvatar = sender.avatarUrl;
+                      if (sender.fullName) msgSenderName = sender.fullName;
                     }
-                  } else if (
-                    !isSentByMe &&
-                    activeRoom.type !== "GROUP" &&
-                    activeRoom.avatarUrl
-                  ) {
-                    // Fallback 1-1
-                    msgAvatar = activeRoom.avatarUrl;
                   }
 
                   return (
-                    <div
-                      key={index}
-                      className={`flex gap-3 max-w-[80%] ${isSentByMe ? "self-end justify-end" : ""
-                        }`}
-                    >
-                      {!isSentByMe && (
-                        <div
-                          className="size-8 rounded-full bg-cover bg-center shrink-0 self-end mb-1 border border-border-main"
-                          style={{
-                            backgroundImage: `url("${msgAvatar}")`,
-                          }}
-                        ></div>
+                    <Fragment key={index}>
+                      {isNewDay && (
+                        <div className="flex items-center justify-center my-6">
+                          <div className="h-px bg-border-main flex-1 opacity-20" />
+                          <span className="px-4 text-[10px] font-black uppercase tracking-[0.2em] text-text-muted bg-surface-main/30 py-1 rounded-full border border-border-main/20">
+                            {formatDaySeparator(new Date(msg.timestamp || Date.now()))}
+                          </span>
+                          <div className="h-px bg-border-main flex-1 opacity-20" />
+                        </div>
                       )}
                       <div
-                        className={`flex flex-col gap-1 ${isSentByMe ? "items-end" : ""
+                        className={`flex gap-3 max-w-[80%] ${isSentByMe ? "self-end justify-end" : ""
                           }`}
                       >
+                        {!isSentByMe && (
+                          <div
+                            className="size-8 rounded-full bg-cover bg-center shrink-0 self-end mb-1 border border-border-main"
+                            style={{
+                              backgroundImage: `url("${msgAvatar}")`,
+                            }}
+                          ></div>
+                        )}
                         <div
-                          className={`p-4 rounded-2xl text-sm leading-relaxed shadow-sm ${isSentByMe
-                            ? "bg-bubble-sent rounded-br-none text-white font-semibold"
-                            : "bg-bubble-received rounded-bl-none text-text-main"
+                          className={`flex flex-col gap-1 ${isSentByMe ? "items-end" : ""
                             }`}
                         >
-                          <p>{msg.text}</p>
-                        </div>
-                        <div
-                          className={`flex items-center gap-1 text-text-secondary text-[10px] ${!isSentByMe ? "ml-1" : "mr-1"
-                            }`}
-                        >
-                          <span>
-                            {msg.timestamp
-                              ? new Date(msg.timestamp).toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })
-                              : "Vừa xong"}
-                          </span>
+                          {/* Display name in groups for others */}
+                          {!isSentByMe && activeRoom?.type === "GROUP" && (
+                            <span className="text-[10px] font-bold text-primary ml-1 mb-0.5">
+                              {msgSenderName}
+                            </span>
+                          )}
+                          <div
+                            className={`p-4 rounded-2xl text-sm leading-relaxed shadow-sm ${isSentByMe
+                              ? "bg-bubble-sent rounded-br-none text-white font-semibold"
+                              : "bg-bubble-received rounded-bl-none text-text-main"
+                              }`}
+                          >
+                            <p>{msg.text}</p>
+                          </div>
+                          <div
+                            className={`flex items-center gap-1 text-text-secondary text-[10px] ${!isSentByMe ? "ml-1" : "mr-1"
+                              }`}
+                          >
+                            <span>
+                              {msg.timestamp
+                                ? new Date(msg.timestamp).toLocaleTimeString("vi-VN", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  hour12: false
+                                })
+                                : "Vừa xong"}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    </Fragment>
                   );
                 })}
                 <div ref={messagesEndRef} />
@@ -596,12 +740,33 @@ export default function ChatInterface() {
                   }}
                   className="flex gap-3 items-end"
                 >
-                  <button
-                    type="button"
-                    className="p-3 text-text-secondary hover:text-text-main hover:bg-surface-main rounded-full transition-colors flex-shrink-0"
-                  >
-                    <CirclePlus size={24} />
-                  </button>
+                  <div className="relative" ref={emojiPickerRef}>
+                    <button
+                      type="button"
+                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                      className={`p-3 text-text-secondary hover:text-text-main hover:bg-surface-main rounded-full transition-colors flex-shrink-0 ${showEmojiPicker ? "bg-surface-main text-primary" : ""}`}
+                    >
+                      <CirclePlus size={24} />
+                    </button>
+
+                    {showEmojiPicker && (
+                      <div className="absolute bottom-full left-0 mb-4 p-3 bg-surface-main border border-border-main rounded-2xl shadow-2xl grid grid-cols-6 gap-2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200 w-64 backdrop-blur-xl bg-opacity-95">
+                        {emojis.map((emoji) => (
+                          <button
+                            key={emoji}
+                            type="button"
+                            onClick={() => {
+                              setInputText(prev => prev + emoji);
+                              setShowEmojiPicker(false);
+                            }}
+                            className="text-2xl hover:scale-125 transition-transform p-1"
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   <div className="flex-1 bg-surface-main border border-border-main rounded-3xl flex items-center px-4 py-1.5 focus-within:ring-1 focus-within:ring-primary focus-within:border-primary transition-all">
                     <input
                       value={inputText}
@@ -998,11 +1163,10 @@ export default function ChatInterface() {
                           setSelectedMembers((prev) => [...prev, friend]);
                         }
                       }}
-                      className={`flex items-center gap-3 p-3 rounded-2xl hover:bg-background-main cursor-pointer group transition-all ${
-                        selectedMembers.some((m) => m.id === friend.id)
-                          ? "bg-background-main ring-1 ring-primary/30"
-                          : ""
-                      }`}
+                      className={`flex items-center gap-3 p-3 rounded-2xl hover:bg-background-main cursor-pointer group transition-all ${selectedMembers.some((m) => m.id === friend.id)
+                        ? "bg-background-main ring-1 ring-primary/30"
+                        : ""
+                        }`}
                     >
                       <div className="relative">
                         <div

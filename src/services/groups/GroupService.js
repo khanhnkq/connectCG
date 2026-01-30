@@ -2,14 +2,16 @@ import axiosClient from "../../config/axiosConfig";
 
 const URL_GROUP = "/groups";
 
-export const findAllGroup = async () => {
-    const res = await axiosClient.get(URL_GROUP);
+export const findAllGroup = async (page = 0, size = 9) => {
+    const res = await axiosClient.get(URL_GROUP, {
+        params: { page, size }
+    });
     return res.data;
 };
 
-export const searchGroups = async (query) => {
+export const searchGroups = async (query, page = 0, size = 9) => {
     const res = await axiosClient.get(`${URL_GROUP}/search`, {
-        params: { name: query }
+        params: { name: query, page, size }
     });
     return res.data;
 };
@@ -49,13 +51,17 @@ export const addGroup = async (group) => {
     return res.data;
 };
 
-export const findMyGroups = async () => {
-    const res = await axiosClient.get(`${URL_GROUP}/my-groups`);
+export const findMyGroups = async (page = 0, size = 9) => {
+    const res = await axiosClient.get(`${URL_GROUP}/my-groups`, {
+        params: { page, size }
+    });
     return res.data;
 };
 
-export const findDiscoverGroups = async () => {
-    const res = await axiosClient.get(`${URL_GROUP}/discover`);
+export const findDiscoverGroups = async (page = 0, size = 9) => {
+    const res = await axiosClient.get(`${URL_GROUP}/discover`, {
+        params: { page, size }
+    });
     return res.data;
 };
 

@@ -23,6 +23,10 @@ const ChatService = {
         return axiosClient.put(`/chat/${roomId}/avatar`, { url });
     },
 
+    updateLastMessageAt: async (firebaseRoomKey) => {
+        return axiosClient.post(`/chat/last-message`, { firebaseRoomKey });
+    },
+
     inviteMembers: async (roomId, userIds) => {
         return axiosClient.post(`/chat/${roomId}/invite`, { userIds });
     },

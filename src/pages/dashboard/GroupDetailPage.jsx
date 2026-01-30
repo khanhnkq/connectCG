@@ -17,6 +17,7 @@ import {
   History,
   Key,
   UserMinus,
+  MessageSquare,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import PostComposer from "../../components/feed/PostComposer";
@@ -39,6 +40,8 @@ import {
   approvePost,
   rejectPost,
   getGroupPosts,
+  acceptInvitation,
+  declineInvitation,
 } from "../../services/groups/GroupService";
 import InviteMemberModal from "../../components/groups/InviteMemberModal";
 import TransferOwnershipModal from "../../components/groups/TransferOwnershipModal";
@@ -167,13 +170,6 @@ const GroupDetailPage = () => {
         setMembers(membersData);
       } catch (memberError) {
         console.error("Failed to fetch members:", memberError);
-        // If private group AND not a member
-        if (
-          groupData.privacy === "PRIVATE" &&
-          groupData.currentUserStatus !== "ACCEPTED"
-        ) {
-          setShowPrivacyModal(true);
-        }
         setMembers([]);
       }
     } catch (error) {
@@ -203,10 +199,17 @@ const GroupDetailPage = () => {
 
   const confirmLeaveGroup = async () => {
     try {
-      await leaveGroup(group.id);
-      toast.success("Đã rời nhóm thành công");
+      const isRequest = userMembership?.status === "REQUESTED";
+      await leaveGroup(id || group.id);
+      toast.success(isRequest ? "Đã hủy yêu cầu tham gia!" : "Đã rời nhóm thành công");
       setShowLeaveModal(false);
-      navigate("/dashboard/groups");
+
+      if (isRequest) {
+        // If it was just a request, we can just refresh data instead of navigating away
+        fetchGroupData();
+      } else {
+        navigate("/dashboard/groups");
+      }
     } catch (error) {
       console.error("Failed to leave group:", error);
       const errorMsg =
@@ -266,6 +269,28 @@ const GroupDetailPage = () => {
           : null) ||
         "Không thể thực hiện yêu cầu";
       toast.error(errorMsg);
+    }
+  };
+
+  const handleAcceptInvite = async () => {
+    try {
+      await acceptInvitation(group.id);
+      toast.success("Chào mừng bạn gia nhập nhóm!");
+      fetchGroupData();
+    } catch (error) {
+      console.error("Failed to accept invite:", error);
+      toast.error("Không thể chấp nhận lời mời");
+    }
+  };
+
+  const handleDeclineInvite = async () => {
+    try {
+      await declineInvitation(group.id);
+      toast.success("Đã từ chối lời mời");
+      fetchGroupData();
+    } catch (error) {
+      console.error("Failed to decline invite:", error);
+      toast.error("Không thể từ chối lời mời");
     }
   };
 
@@ -465,20 +490,30 @@ const GroupDetailPage = () => {
                 </>
               ) : userMembership?.status === "REQUESTED" ? (
                 <button
-                  disabled
-                  className="flex-1 sm:flex-none h-10 px-6 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/20 backdrop-blur-md font-bold text-sm transition-all flex items-center justify-center gap-2"
+                  onClick={handleLeaveGroup}
+                  className="flex-1 sm:flex-none h-10 px-6 rounded-full bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 border border-orange-500/20 backdrop-blur-md font-bold text-sm transition-all flex items-center justify-center gap-2 group/cancel"
+                  title="Nhấn để hủy yêu cầu tham gia"
                 >
-                  <Hourglass size={20} />
-                  Đang chờ duyệt
+                  <Hourglass size={20} className="group-hover/cancel:rotate-12 transition-transform" />
+                  Hủy yêu cầu
                 </button>
               ) : userMembership?.status === "PENDING" ? (
-                <button
-                  onClick={handleJoinGroup}
-                  className="flex-1 sm:flex-none h-10 px-6 rounded-full bg-primary hover:bg-orange-600 text-[#231810] font-black text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
-                >
-                  <CheckCircle2 size={20} />
-                  Chấp nhận lời mời
-                </button>
+                <div className="flex gap-2 flex-1 sm:flex-none">
+                  <button
+                    onClick={handleAcceptInvite}
+                    className="flex-1 sm:flex-none h-10 px-6 rounded-full bg-primary hover:bg-orange-600 text-[#231810] font-black text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
+                  >
+                    <CheckCircle2 size={20} />
+                    Chấp nhận
+                  </button>
+                  <button
+                    onClick={handleDeclineInvite}
+                    className="flex-1 sm:flex-none h-10 px-6 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 backdrop-blur-md font-bold text-sm transition-all flex items-center justify-center gap-2"
+                  >
+                    <UserMinus size={20} />
+                    Từ chối
+                  </button>
+                </div>
               ) : (
                 <button
                   onClick={handleJoinGroup}
@@ -523,8 +558,8 @@ const GroupDetailPage = () => {
                     key={tab.en}
                     onClick={() => setActiveTab(tab.vi)}
                     className={`py-4 font-bold text-sm tracking-wide whitespace-nowrap transition-all border-b-2 ${activeTab === tab.vi
-                        ? "text-primary border-primary"
-                        : "text-text-secondary hover:text-text-main border-transparent"
+                      ? "text-primary border-primary"
+                      : "text-text-secondary hover:text-text-main border-transparent"
                       }`}
                   >
                     {tab.vi}
@@ -534,8 +569,8 @@ const GroupDetailPage = () => {
                 <button
                   onClick={() => setActiveTab("Kiểm duyệt")}
                   className={`py-4 font-black text-sm tracking-widest whitespace-nowrap transition-all border-b-2 flex items-center gap-2 ${activeTab === "Kiểm duyệt"
-                      ? "text-orange-400 border-orange-400"
-                      : "text-text-secondary hover:text-orange-400 border-transparent"
+                    ? "text-orange-400 border-orange-400"
+                    : "text-text-secondary hover:text-orange-400 border-transparent"
                     }`}
                 >
                   <Gavel size={18} />
@@ -567,37 +602,59 @@ const GroupDetailPage = () => {
                       Đây là nhóm Riêng tư
                     </h2>
                     <p className="text-text-secondary max-w-md mx-auto leading-relaxed">
-                      Nội dung và danh sách thành viên của nhóm này đã được ẩn.
-                      Vui lòng gia nhập nhóm để tham gia cộng đồng.
+                      {userMembership?.status === "PENDING"
+                        ? "Bạn đã nhận được lời mời tham gia nhóm này. Vui lòng phản hồi lời mời ở phía trên để xem nội dung."
+                        : userMembership?.status === "REQUESTED"
+                          ? "Yêu cầu gia nhập của bạn đang chờ quản trị viên phê duyệt. Nội dung sẽ hiển thị sau khi yêu cầu được chấp nhận."
+                          : "Nội dung và danh sách thành viên của nhóm này đã được ẩn. Vui lòng gia nhập nhóm để tham gia cộng đồng."}
                     </p>
-                    <button
-                      onClick={handleJoinGroup}
-                      disabled={userMembership?.status === "REQUESTED"}
-                      className="px-10 py-4 bg-primary hover:bg-orange-600 text-text-main font-black rounded-2xl transition-all shadow-xl shadow-primary/20 uppercase tracking-widest disabled:opacity-50"
-                    >
-                      {userMembership?.status === "REQUESTED"
-                        ? "Đang chờ duyệt..."
-                        : "Gửi yêu cầu gia nhập"}
-                    </button>
+                    {!userMembership?.status && (
+                      <button
+                        onClick={handleJoinGroup}
+                        className="px-10 py-4 bg-primary hover:bg-orange-600 text-[#231810] font-black rounded-2xl transition-all shadow-xl shadow-primary/20 uppercase tracking-widest"
+                      >
+                        Gửi yêu cầu gia nhập
+                      </button>
+                    )}
                   </div>
                 ) : (
                   <>
-                    {userMembership?.status === "ACCEPTED" && (
+                    {userMembership?.status === "ACCEPTED" ? (
                       <PostComposer
                         userAvatar={
                           JSON.parse(localStorage.getItem("user"))?.avatar ||
                           "https://cdn-icons-png.flaticon.com/512/149/149071.png"
                         }
                       />
+                    ) : (
+                      <div className="bg-surface-main rounded-[2rem] p-8 border border-border-main text-center mb-6">
+                        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                          <div className="flex items-center gap-4 text-left">
+                            <div className="size-12 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                              <MessageSquare size={24} />
+                            </div>
+                            <div>
+                              <h4 className="text-text-main font-bold">Tham gia cộng đồng</h4>
+                              <p className="text-text-secondary text-sm">Hãy tham gia nhóm để bắt đầu chia sẻ và thảo luận cùng mọi người.</p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={handleJoinGroup}
+                            className="px-8 py-3 bg-primary hover:bg-orange-600 text-[#231810] font-black rounded-xl transition-all shadow-lg shadow-primary/20 uppercase tracking-widest text-xs"
+                          >
+                            Tham gia ngay
+                          </button>
+                        </div>
+                      </div>
                     )}
 
                     <div className="flex flex-col gap-6">
                       {approvedPosts.length > 0 ? (
                         approvedPosts.map((post) => (
                           <PostCard
-                                            key={post.id}
-                                            post={post} // <-- CHỈ CẦN TRUYỀN DÒNG NÀY LÀ ĐỦ
-                                          />
+                            key={post.id}
+                            post={post} // <-- CHỈ CẦN TRUYỀN DÒNG NÀY LÀ ĐỦ
+                          />
                         ))
                       ) : (
                         <div className="bg-surface-main rounded-3xl p-12 border border-border-main text-center">
@@ -672,8 +729,8 @@ const GroupDetailPage = () => {
                             </p>
                             <span
                               className={`px-2 py-0.5 text-[10px] font-black rounded uppercase ${member.role === "ADMIN"
-                                  ? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
-                                  : "bg-zinc-800 text-zinc-400"
+                                ? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
+                                : "bg-zinc-800 text-zinc-400"
                                 }`}
                             >
                               {member.role === "ADMIN"
@@ -738,8 +795,8 @@ const GroupDetailPage = () => {
                 <button
                   onClick={() => setModTab("Bài viết")}
                   className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${modTab === "Bài viết"
-                      ? "text-primary border-primary"
-                      : "text-text-secondary border-transparent"
+                    ? "text-primary border-primary"
+                    : "text-text-secondary border-transparent"
                     }`}
                 >
                   Bài viết chờ duyệt
@@ -747,8 +804,8 @@ const GroupDetailPage = () => {
                 <button
                   onClick={() => setModTab("Yêu cầu")}
                   className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${modTab === "Yêu cầu"
-                      ? "text-primary border-primary"
-                      : "text-text-secondary border-transparent"
+                    ? "text-primary border-primary"
+                    : "text-text-secondary border-transparent"
                     }`}
                 >
                   Yêu cầu tham gia ({memberRequests.length})
@@ -814,8 +871,8 @@ const GroupDetailPage = () => {
                           {post.images && post.images.length > 0 && (
                             <div
                               className={`grid gap-2 ${post.images.length === 1
-                                  ? "grid-cols-1"
-                                  : "grid-cols-2"
+                                ? "grid-cols-1"
+                                : "grid-cols-2"
                                 }`}
                             >
                               {post.images.map((img, idx) => (
@@ -1039,42 +1096,6 @@ const GroupDetailPage = () => {
         </div>
       )}
 
-      {/* Privacy Modal for Non-members visiting Private Groups */}
-      {showPrivacyModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="bg-surface-main border border-border-main rounded-[2.5rem] p-10 max-w-md w-full text-center space-y-6 shadow-2xl animate-in fade-in zoom-in duration-300">
-            <div className="size-20 rounded-full bg-primary/10 flex items-center justify-center text-primary mx-auto mb-4">
-              <Lock size={48} />
-            </div>
-            <h2 className="text-2xl font-black text-text-main">
-              Đây là Nhóm Riêng tư
-            </h2>
-            <p className="text-text-secondary leading-relaxed">
-              Bạn cần tham gia nhóm để xem danh sách thành viên và các nội dung
-              thảo luận bên trong.
-            </p>
-            <div className="flex flex-col gap-3 pt-4">
-              <button
-                onClick={() => {
-                  setShowPrivacyModal(false);
-                  handleJoinGroup();
-                }}
-                className="w-full py-4 bg-primary hover:bg-orange-600 text-text-main font-black rounded-2xl transition-all shadow-lg shadow-primary/20 uppercase tracking-widest"
-              >
-                {userMembership?.status === "REQUESTED"
-                  ? "Đang chờ duyệt..."
-                  : "Gửi yêu cầu gia nhập"}
-              </button>
-              <button
-                onClick={() => setShowPrivacyModal(false)}
-                className="w-full py-4 bg-surface-main hover:bg-background-main text-text-main font-bold rounded-2xl transition-all uppercase tracking-widest text-xs"
-              >
-                Đóng
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       {/* Transfer Ownership Modal */}
       <TransferOwnershipModal
         isOpen={showTransferOwnershipModal}
