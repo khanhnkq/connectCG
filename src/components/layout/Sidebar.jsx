@@ -5,10 +5,8 @@ import {
   Home,
   MessageCircle,
   Users,
-  UserPlus,
-  Heart,
+  UserCheck,
   Search,
-  UserSearch,
   Settings,
   LogOut,
   Sun,
@@ -64,7 +62,6 @@ export default function SidebarComponent() {
     {
       label: "Trang chủ",
       href: "/dashboard/feed",
-
       icon: <Home className="text-text-secondary h-5 w-5 flex-shrink-0" />,
     },
     {
@@ -75,33 +72,19 @@ export default function SidebarComponent() {
       ),
     },
     {
+      label: "Bạn bè",
+      href: "/dashboard/friends",
+      icon: <UserCheck className="text-text-secondary h-5 w-5 flex-shrink-0" />,
+    },
+    {
       label: "Nhóm",
       href: "/dashboard/groups",
       icon: <Users className="text-text-secondary h-5 w-5 flex-shrink-0" />,
     },
     {
-      label: "Lời mời kết bạn",
-      href: "/dashboard/requests",
-      icon: <UserPlus className="text-text-secondary h-5 w-5 flex-shrink-0" />,
-    },
-    {
-      label: "Gợi ý kết bạn",
-      href: "/dashboard/suggestions",
-      icon: <Heart className="text-text-secondary h-5 w-5 flex-shrink-0" />,
-    },
-    {
-      label: "Tìm bạn mới",
+      label: "Tìm kiếm",
       href: "/search/members",
-
       icon: <Search className="text-text-secondary h-5 w-5 flex-shrink-0" />,
-    },
-    {
-      label: "Tìm kiếm bạn bè",
-      href: "/dashboard/friends-search",
-
-      icon: (
-        <UserSearch className="text-text-secondary h-5 w-5 flex-shrink-0" />
-      ),
     },
   ];
 

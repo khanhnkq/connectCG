@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { IconHome, IconBell, IconUsers, IconUser, IconSettings, IconLogout, IconChevronDown } from '@tabler/icons-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchNotifications, markAsRead } from '../../redux/slices/notificationSlice';
+import { fetchNotifications, markAsRead, deleteNotification, markAllAsRead } from '../../redux/slices/notificationSlice';
 import { logout } from '../../redux/slices/authSlice';
 import NotificationList from '../notification/NotificationList';
 
@@ -45,6 +45,26 @@ const UserNavbar = () => {
 
     const handleMarkAsRead = (id) => {
         dispatch(markAsRead(id));
+    };
+
+    const handleDelete = async (id) => {
+        try {
+            const NotificationService = await import('../../services/NotificationService');
+            await NotificationService.deleteNotification(id);
+            dispatch(deleteNotification(id));
+        } catch (error) {
+            console.error('Error deleting notification:', error);
+        }
+    };
+
+    const handleMarkAllAsRead = async () => {
+        try {
+            const NotificationService = await import('../../services/NotificationService');
+            await NotificationService.markAllAsRead();
+            dispatch(markAllAsRead());
+        } catch (error) {
+            console.error('Error marking all as read:', error);
+        }
     };
 
     const handleLogout = () => {
@@ -117,6 +137,8 @@ const UserNavbar = () => {
                                 <NotificationList
                                     notifications={notifications}
                                     onMarkAsRead={handleMarkAsRead}
+                                    onDelete={handleDelete}
+                                    onMarkAllAsRead={handleMarkAllAsRead}
                                 />
                             </motion.div>
                         )}

@@ -1,6 +1,7 @@
 import React from "react";
-import { IconTrash, IconCheck } from "@tabler/icons-react";
+import { Trash2, Check, CheckCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const timeAgo = (dateString) => {
   const date = new Date(dateString);
@@ -20,7 +21,7 @@ const timeAgo = (dateString) => {
   return "Vừa xong";
 };
 
-const NotificationList = ({ notifications, onMarkAsRead }) => {
+const NotificationList = ({ notifications, onMarkAsRead, onDelete, onMarkAllAsRead }) => {
   const navigate = useNavigate();
 
   const handleClick = (notification) => {
@@ -39,7 +40,7 @@ const NotificationList = ({ notifications, onMarkAsRead }) => {
         navigate(`/dashboard/member/${notification.targetId}`);
         break;
       case "FRIEND_REQUEST":
-        navigate(`/dashboard/requests`);
+        navigate(`/dashboard/friends`);
         break;
       case "ROLE_CHANGE":
         navigate(`/dashboard/my-profile`);
@@ -49,49 +50,125 @@ const NotificationList = ({ notifications, onMarkAsRead }) => {
     }
   };
 
+  const handleDelete = (e, id) => {
+    e.stopPropagation();
+    if (window.confirm("Bạn có chắc muốn xóa thông báo này?")) {
+      onDelete(id);
+    }
+  };
+
+  const handleMarkAsRead = (e, id) => {
+    e.stopPropagation();
+    onMarkAsRead(id);
+  };
+
+  const handleMarkAllAsRead = () => {
+    const unreadCount = notifications.filter(n => !n.isRead).length;
+    if (unreadCount === 0) {
+      toast.info("Tất cả thông báo đã được đọc");
+      return;
+    }
+    onMarkAllAsRead();
+  };
+
   if (!notifications || notifications.length === 0) {
     return (
-      <div className="p-4 text-center text-neutral-500 text-sm">
-        Không có thông báo nào
+      <div className="w-full bg-surface-main border border-border-main rounded-xl shadow-lg mt-2">
+        <div className="p-4 border-b border-border-main font-bold text-base text-text-main">
+          Thông báo
+        </div>
+        <div className="p-8 text-center">
+          <div className="size-16 rounded-full bg-background-main border-2 border-border-main flex items-center justify-center mx-auto mb-3">
+            <span className="material-symbols-outlined text-3xl text-text-secondary/30">notifications_off</span>
+          </div>
+          <p className="text-text-secondary text-sm">Không có thông báo nào</p>
+        </div>
       </div>
     );
   }
 
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+
   return (
-    <div className="flex flex-col max-h-96 overflow-y-auto w-full bg-surface-main border border-border-main rounded-md shadow-lg mt-2">
-      <div className="p-2 border-b border-border-main font-semibold text-sm">
-        Thông báo
-      </div>
-      {notifications.map((notification) => (
-        <div
-          key={notification.id}
-          className={`flex items-start gap-3 p-3 border-b border-border-main cursor-pointer hover:bg-background-main transition-colors ${
-            !notification.isRead ? "bg-primary/5" : ""
-          }`}
-          onClick={() => handleClick(notification)}
-        >
-          <img
-            src={
-              notification.actorAvatar ||
-              "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-            }
-            alt="Avatar"
-            className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-          />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm text-text-main line-clamp-2">
-              <span className="font-semibold">{notification.actorName}</span>{" "}
-              {notification.content.replace(notification.actorName, "")}
-            </p>
-            <p className="text-xs text-neutral-500 mt-1">
-              {timeAgo(notification.createdAt)}
-            </p>
-          </div>
-          {!notification.isRead && (
-            <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0" />
+    <div className="w-full bg-surface-main border border-border-main rounded-xl shadow-lg mt-2 overflow-hidden">
+      {/* Header */}
+      <div className="p-4 border-b border-border-main flex items-center justify-between bg-gradient-to-r from-surface-main to-background-main">
+        <div>
+          <h3 className="font-bold text-base text-text-main">Thông báo</h3>
+          {unreadCount > 0 && (
+            <p className="text-xs text-text-secondary mt-0.5">{unreadCount} chưa đọc</p>
           )}
         </div>
-      ))}
+        {unreadCount > 0 && (
+          <button
+            onClick={handleMarkAllAsRead}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 hover:bg-primary text-primary hover:text-text-main rounded-lg transition-all text-xs font-bold"
+            title="Đánh dấu tất cả đã đọc"
+          >
+            <CheckCheck size={16} />
+            <span className="hidden sm:inline">Đọc tất cả</span>
+          </button>
+        )}
+      </div>
+
+      {/* Notifications List */}
+      <div className="max-h-96 overflow-y-auto custom-scrollbar">
+        {notifications.map((notification) => (
+          <div
+            key={notification.id}
+            className={`flex items-start gap-3 p-4 border-b border-border-main cursor-pointer hover:bg-background-main transition-all group ${!notification.isRead ? "bg-primary/5" : ""
+              }`}
+            onClick={() => handleClick(notification)}
+          >
+            {/* Avatar */}
+            <img
+              src={
+                notification.actorAvatar ||
+                "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+              }
+              alt="Avatar"
+              className="w-11 h-11 rounded-full object-cover flex-shrink-0 ring-2 ring-border-main"
+            />
+
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-text-main line-clamp-2 leading-relaxed">
+                <span className="font-bold">{notification.actorName}</span>{" "}
+                {notification.content.replace(notification.actorName, "")}
+              </p>
+              <p className="text-xs text-text-secondary mt-1.5 flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">schedule</span>
+                {timeAgo(notification.createdAt)}
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              {!notification.isRead && (
+                <button
+                  onClick={(e) => handleMarkAsRead(e, notification.id)}
+                  className="p-1.5 hover:bg-primary/20 text-primary rounded-lg transition-all"
+                  title="Đánh dấu đã đọc"
+                >
+                  <Check size={16} />
+                </button>
+              )}
+              <button
+                onClick={(e) => handleDelete(e, notification.id)}
+                className="p-1.5 hover:bg-red-500/20 text-text-secondary hover:text-red-500 rounded-lg transition-all"
+                title="Xóa thông báo"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+
+            {/* Unread Indicator */}
+            {!notification.isRead && (
+              <div className="size-2.5 rounded-full bg-primary mt-2 flex-shrink-0 shadow-lg shadow-primary/50" />
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

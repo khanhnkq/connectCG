@@ -12,7 +12,19 @@ export const markAsRead = async (id) => {
     return res.data;
 };
 
+export const markAllAsRead = async () => {
+    const res = await axiosClient.put(`${URL_NOTIFICATION}/read-all`);
+    return res.data;
+};
+
 export const deleteNotification = async (id) => {
     const res = await axiosClient.delete(`${URL_NOTIFICATION}/${id}`);
     return res.data;
+};
+
+export default {
+    getMyNotifications,
+    markAsRead,
+    markAllAsRead,
+    deleteNotification
 };
