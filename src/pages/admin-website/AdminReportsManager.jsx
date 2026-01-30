@@ -11,6 +11,8 @@ import {
   Flag,
   MoreVertical,
   Info,
+  ArrowDownWideNarrow,
+  ArrowUpNarrowWide,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -62,6 +64,7 @@ const AdminReportsManagement = () => {
   const [filterStatus, setFilterStatus] = useState("PENDING"); // PENDING | RESOLVED | ALL
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [sortOrder, setSortOrder] = useState("desc"); // desc (newest) | asc (oldest)
   const [currentUserId, setCurrentUserId] = useState(null);
 
   // Cache for all groups to allow fallback lookup for deleted groups
@@ -126,8 +129,8 @@ const AdminReportsManagement = () => {
       filterStatus === "ALL"
         ? true
         : filterStatus === "RESOLVED"
-        ? r.status === "RESOLVED"
-        : r.status !== "RESOLVED";
+          ? r.status === "RESOLVED"
+          : r.status !== "RESOLVED";
     return typeMatch && statusMatch;
   });
 
@@ -176,9 +179,11 @@ const AdminReportsManagement = () => {
     }, {}),
   );
 
-  const displayReports = [...groupedReports].sort(
-    (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-  );
+  const displayReports = [...groupedReports].sort((a, b) => {
+    const timeA = new Date(a.createdAt).getTime();
+    const timeB = new Date(b.createdAt).getTime();
+    return sortOrder === "desc" ? timeB - timeA : timeA - timeB;
+  });
 
   const activeCount = displayReports.length;
 
@@ -190,6 +195,11 @@ const AdminReportsManagement = () => {
         String(r.targetId || r.target_id) === String(targetId) &&
         (r.targetType || r.target_type) === type,
     );
+  };
+
+  // Helper: Get reporter stats (Global)
+  const getReporterStats = (reporterId) => {
+    return reports.filter(r => r.reporterId === reporterId).length;
   };
 
   // METADATA FETCHING (Names & Avatars)
@@ -235,7 +245,7 @@ const AdminReportsManagement = () => {
                   avatar:
                     res.image ||
                     "https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=1000",
-                  subtext: `Owner ID: ${res.ownerId}`,
+                  subtext: "",
                   status: res.status,
                   deleted: res.deleted,
                 };
@@ -391,7 +401,7 @@ const AdminReportsManagement = () => {
                 subtext: res.data.email,
               };
             })
-            .catch(() => {}),
+            .catch(() => { }),
         );
       }
     });
@@ -421,22 +431,17 @@ const AdminReportsManagement = () => {
         return;
       } else if (groupItem.targetType === "POST") {
         try {
+          // Attempt 1: Direct Fetch
           const res = await postService.getPostById(groupItem.targetId);
           data = res.data;
         } catch (error) {
-          console.warn(
-            "Direct post fetch failed, attempting fallback via GroupService",
-            error,
-          );
+          console.warn("Direct post fetch failed, attempting fallback via GroupService", error);
           if (groupItem.groupId) {
             const groupPosts = await getGroupPosts(groupItem.groupId);
-            const foundPost = groupPosts.find(
-              (p) => p.id === groupItem.targetId,
-            );
+            const foundPost = groupPosts.find(p => p.id === groupItem.targetId);
             if (foundPost) {
               data = foundPost;
-              if (!data.userId && foundPost.authorId)
-                data.userId = foundPost.authorId;
+              if (!data.userId && foundPost.authorId) data.userId = foundPost.authorId;
             } else {
               throw new Error("Post not found in group");
             }
@@ -598,25 +603,42 @@ const AdminReportsManagement = () => {
           <div className="flex bg-surface-dark border border-border-dark/50 p-1 rounded-xl">
             <button
               onClick={() => setFilterStatus("PENDING")}
-              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                filterStatus === "PENDING"
-                  ? "bg-primary text-black"
-                  : "text-text-muted hover:text-white"
-              }`}
+              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${filterStatus === "PENDING"
+                ? "bg-primary text-black"
+                : "text-text-muted hover:text-white"
+                }`}
             >
               Chờ xử lý
             </button>
             <button
               onClick={() => setFilterStatus("RESOLVED")}
-              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                filterStatus === "RESOLVED"
-                  ? "bg-green-500 text-white"
-                  : "text-text-muted hover:text-white"
-              }`}
+              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${filterStatus === "RESOLVED"
+                ? "bg-green-500 text-white"
+                : "text-text-muted hover:text-white"
+                }`}
             >
               Đã giải quyết
             </button>
           </div>
+
+          {/* SORT BUTTON */}
+          <button
+            onClick={() => setSortOrder(sortOrder === "desc" ? "asc" : "desc")}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-surface-dark border border-border-dark/50 text-text-muted hover:text-white transition-all ml-3"
+            title={sortOrder === "desc" ? "Cũ nhất" : "Mới nhất"}
+          >
+            {sortOrder === "desc" ? (
+              <>
+                <ArrowDownWideNarrow size={16} />
+                <span className="text-xs font-bold">Mới nhất</span>
+              </>
+            ) : (
+              <>
+                <ArrowUpNarrowWide size={16} />
+                <span className="text-xs font-bold">Cũ nhất</span>
+              </>
+            )}
+          </button>
         </div>
 
         {/* TABS */}
@@ -625,11 +647,10 @@ const AdminReportsManagement = () => {
             <button
               key={key}
               onClick={() => setActiveTab(key)}
-              className={`pb-3 text-sm font-bold transition-all ${
-                activeTab === key
-                  ? "text-primary border-b-2 border-primary"
-                  : "text-text-muted hover:text-white"
-              }`}
+              className={`pb-3 text-sm font-bold transition-all ${activeTab === key
+                ? "text-primary border-b-2 border-primary"
+                : "text-text-muted hover:text-white"
+                }`}
             >
               {label}
             </button>
@@ -698,17 +719,16 @@ const AdminReportsManagement = () => {
                             />
                           ) : (
                             <div
-                              className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs ${
-                                r.targetType === "USER"
-                                  ? "bg-blue-500/20 text-blue-500"
-                                  : "bg-purple-500/20 text-purple-500"
-                              }`}
+                              className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs ${r.targetType === "USER"
+                                ? "bg-blue-500/20 text-blue-500"
+                                : "bg-purple-500/20 text-purple-500"
+                                }`}
                             >
                               {r.targetType === "USER"
                                 ? "U"
                                 : r.targetType === "GROUP"
-                                ? "G"
-                                : "P"}
+                                  ? "G"
+                                  : "P"}
                             </div>
                           )}
 
@@ -717,27 +737,17 @@ const AdminReportsManagement = () => {
                               <p className="font-bold text-white">
                                 {meta?.name || `${r.targetType} #${r.targetId}`}
                               </p>
-                              {getViolationHistory(r.targetId, r.targetType)
-                                .length > 0 && (
-                                <div
-                                  className="group relative"
-                                  title="Đối tượng này đã có vi phạm trước đó"
-                                >
+                              {getViolationHistory(r.targetId, r.targetType).length > 0 && (
+                                <div className="group relative" title="Đối tượng này đã có vi phạm trước đó">
                                   <History className="text-orange-500 size-4 cursor-help" />
                                   <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black/90 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                    {
-                                      getViolationHistory(
-                                        r.targetId,
-                                        r.targetType,
-                                      ).length
-                                    }{" "}
-                                    vi phạm trước đó
+                                    {getViolationHistory(r.targetId, r.targetType).length} vi phạm trước đó
                                   </span>
                                 </div>
                               )}
                             </div>
                             <span className="text-[10px] text-text-muted uppercase tracking-wide">
-                              {meta?.subtext || `ID: ${r.targetId}`}
+                              {meta?.subtext ?? `ID: ${r.targetId}`}
                             </span>
                             {r.reports.length > 1 && (
                               <span className="ml-2 px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full animate-pulse">
@@ -790,24 +800,20 @@ const AdminReportsManagement = () => {
                       {/* STATUS */}
                       <td className="px-6 py-4">
                         <div
-                          className={`inline-flex items-center justify-center gap-2 px-3 py-1.5 rounded-full border ${
-                            statusMap[r.status]?.bg || "bg-gray-500/10"
-                          } ${
-                            statusMap[r.status]?.border || "border-gray-500/20"
-                          }`}
+                          className={`inline-flex items-center justify-center gap-2 px-3 py-1.5 rounded-full border ${statusMap[r.status]?.bg || "bg-gray-500/10"
+                            } ${statusMap[r.status]?.border || "border-gray-500/20"
+                            }`}
                         >
                           <div
-                            className={`w-1.5 h-1.5 rounded-full ${
-                              statusMap[r.status]?.color?.replace(
-                                "text-",
-                                "bg-",
-                              ) || "bg-gray-500"
-                            }`}
+                            className={`w-1.5 h-1.5 rounded-full ${statusMap[r.status]?.color?.replace(
+                              "text-",
+                              "bg-",
+                            ) || "bg-gray-500"
+                              }`}
                           ></div>
                           <span
-                            className={`text-xs font-bold ${
-                              statusMap[r.status]?.color || "text-gray-400"
-                            }`}
+                            className={`text-xs font-bold ${statusMap[r.status]?.color || "text-gray-400"
+                              }`}
                           >
                             {statusMap[r.status]?.label || r.status}
                           </span>
@@ -819,11 +825,10 @@ const AdminReportsManagement = () => {
                         {r.status === "RESOLVED" ? (
                           <div className="flex flex-col items-end gap-1">
                             <span
-                              className={`text-xs font-bold px-2 py-0.5 rounded border ${
-                                isDeleted
-                                  ? "bg-red-500/10 text-red-500 border-red-500/20"
-                                  : "bg-green-500/10 text-green-500 border-green-500/20"
-                              }`}
+                              className={`text-xs font-bold px-2 py-0.5 rounded border ${isDeleted
+                                ? "bg-red-500/10 text-red-500 border-red-500/20"
+                                : "bg-green-500/10 text-green-500 border-green-500/20"
+                                }`}
                             >
                               {isDeleted ? "Vô hiệu hóa" : "Đang hoạt động"}
                             </span>
@@ -954,11 +959,10 @@ const AdminReportsManagement = () => {
                       <div className="bg-white/5 rounded-2xl p-6 border border-white/5 space-y-4">
                         {/* Dynamic Render based on type */}
                         <div
-                          className={`flex items-center gap-4 ${
-                            detailModal.report.targetType === "USER"
-                              ? "cursor-pointer hover:bg-white/5 p-2 -m-2 rounded-lg transition-colors"
-                              : ""
-                          }`}
+                          className={`flex items-center gap-4 ${detailModal.report.targetType === "USER"
+                            ? "cursor-pointer hover:bg-white/5 p-2 -m-2 rounded-lg transition-colors"
+                            : ""
+                            }`}
                           onClick={() =>
                             detailModal.report.targetType === "USER" &&
                             setViewingReporterId(detailModal.report.targetId)
@@ -1012,11 +1016,9 @@ const AdminReportsManagement = () => {
                     )}
 
                     {/* HISTORY SECTION */}
+                    {/* HISTORY SECTION */}
                     {(() => {
-                      const history = getViolationHistory(
-                        detailModal.report.targetId,
-                        detailModal.report.targetType,
-                      );
+                      const history = getViolationHistory(detailModal.report.targetId, detailModal.report.targetType);
                       return (
                         <div className="mt-6 bg-orange-500/5 border border-orange-500/10 rounded-lg p-5">
                           <h4 className="text-sm font-black text-orange-400 uppercase tracking-wider mb-3 flex items-center gap-2">
@@ -1026,19 +1028,10 @@ const AdminReportsManagement = () => {
                           {history.length > 0 ? (
                             <div className="space-y-2 max-h-40 overflow-y-auto custom-scrollbar pr-2">
                               {history.map((h, i) => (
-                                <div
-                                  key={i}
-                                  className="text-xs text-text-muted border-l-2 border-orange-500/20 pl-3 py-1"
-                                >
-                                  <span className="font-bold text-gray-300">
-                                    {h.reason}
-                                  </span>
+                                <div key={i} className="text-xs text-text-muted border-l-2 border-orange-500/20 pl-3 py-1">
+                                  <span className="font-bold text-gray-300">{h.reason}</span>
                                   <span className="mx-2 text-[10px]">•</span>
-                                  <span className="text-[10px]">
-                                    {new Date(
-                                      h.createdAt || h.created_at,
-                                    ).toLocaleDateString()}
-                                  </span>
+                                  <span className="text-[10px]">{new Date(h.createdAt || h.created_at).toLocaleDateString()}</span>
                                 </div>
                               ))}
                             </div>
@@ -1058,58 +1051,55 @@ const AdminReportsManagement = () => {
                       Danh sách báo cáo ({detailModal.report.reports.length})
                     </h4>
                     <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                      {detailModal.report.reports.map((r, idx) => (
-                        <div
-                          key={idx}
-                          className="bg-white/5 p-4 rounded-xl border border-white/5 flex gap-3 hover:bg-white/10 transition-colors"
-                        >
-                          <div className="shrink-0">
-                            {targetMetadata[`USER_${r.reporterId}`]?.avatar ? (
-                              <img
-                                src={
-                                  targetMetadata[`USER_${r.reporterId}`].avatar
-                                }
-                                className="w-8 h-8 rounded-full object-cover border border-white/10"
-                                alt=""
-                              />
-                            ) : (
-                              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs shrink-0 border border-white/10">
-                                {(
-                                  targetMetadata[`USER_${r.reporterId}`]
-                                    ?.name ||
-                                  r.reporterUsername ||
-                                  "?"
-                                )
-                                  .charAt(0)
-                                  .toUpperCase()}
-                              </div>
-                            )}
-                          </div>
+                      {detailModal.report.reports.map((r, idx) => {
+                        const parts = (r.reason || '').split('|');
+                        const mainReason = parts[0].trim();
+                        const detailReason = parts.length > 1 ? parts.slice(1).join('|').trim() : null;
 
-                          <div className="flex-1 min-w-0">
-                            <div className="flex justify-between items-start">
-                              <p
-                                className="text-white font-bold text-sm hover:underline cursor-pointer truncate"
-                                onClick={() =>
-                                  r.reporterId &&
-                                  setViewingReporterId(r.reporterId)
-                                }
-                              >
-                                {targetMetadata[`USER_${r.reporterId}`]?.name ||
-                                  r.reporterUsername ||
-                                  "Ẩn danh"}
-                              </p>
-                              <span className="text-[10px] text-text-muted shrink-0 ml-2">
-                                {new Date(r.createdAt).toLocaleString("vi-VN")}
-                              </span>
+                        const reporterStats = reports.filter(rep => rep.reporterId === r.reporterId).length;
+                        const isHighRisk = reporterStats > 10;
+                        const isMediumRisk = reporterStats > 5;
+
+                        return (
+                          <div key={idx} className="bg-white/5 p-4 rounded-xl border border-white/5 flex gap-3 hover:bg-white/10 transition-colors">
+                            <div className="shrink-0">
+                              {targetMetadata[`USER_${r.reporterId}`]?.avatar ? (
+                                <img src={targetMetadata[`USER_${r.reporterId}`].avatar} className="w-8 h-8 rounded-full object-cover border border-white/10" alt="" />
+                              ) : (
+                                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs shrink-0 border border-white/10">
+                                  {(targetMetadata[`USER_${r.reporterId}`]?.name || r.reporterUsername || '?').charAt(0).toUpperCase()}
+                                </div>
+                              )}
                             </div>
 
-                            <p className="text-xs text-primary mt-0.5 break-words font-medium bg-primary/5 inline-block px-1.5 py-0.5 rounded">
-                              {r.reason}
-                            </p>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex justify-between items-start">
+                                <p
+                                  className="text-white font-bold text-sm hover:underline cursor-pointer truncate"
+                                  onClick={() => r.reporterId && setViewingReporterId(r.reporterId)}
+                                >
+                                  {targetMetadata[`USER_${r.reporterId}`]?.name || r.reporterUsername || 'Ẩn danh'}
+                                </p>
+                                <span className="text-[10px] text-text-muted shrink-0 ml-2">
+                                  {new Date(r.createdAt).toLocaleString('vi-VN')}
+                                </span>
+                              </div>
+
+                              <div className="mt-1.5 flex flex-wrap gap-2 items-center">
+                                <span className="text-[11px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
+                                  {mainReason}
+                                </span>
+                              </div>
+
+                              {detailReason && (
+                                <p className="text-xs text-text-muted mt-1.5 leading-relaxed bg-black/20 p-2 rounded-lg italic">
+                                  "{detailReason}"
+                                </p>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
@@ -1259,7 +1249,7 @@ const AdminReportsManagement = () => {
           groupId={inspectingGroupId}
           reports={inspectingReports}
           reporterMetadata={targetMetadata}
-          violationHistory={getViolationHistory(inspectingGroupId, "GROUP")}
+          violationHistory={getViolationHistory(inspectingGroupId, 'GROUP')}
           initialTab={inspectorInitialTab}
           onReporterClick={(userId) => setViewingReporterId(userId)}
           onClose={() => {
