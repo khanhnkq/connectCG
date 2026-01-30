@@ -68,14 +68,13 @@ export default function SidebarComponent() {
             room.firebaseRoomKey,
             (newMsg) => {
               // Only count as unread if it's NEW and NOT from me
-              const isNew = newMsg.timestamp && newMsg.timestamp > startTime - 1000;
+              // Increase buffer to 10s to account for slight clock drifts
+              const isNew = newMsg.timestamp && newMsg.timestamp > startTime - 10000;
               const isNotMe = newMsg.senderId !== user.id;
 
               if (isNew && isNotMe) {
-                // If we are NOT on the chat page, show indicator
-                if (locationRef.current !== "/dashboard/chat") {
-                  setUnreadChatCount(prev => prev + 1);
-                }
+                // Show indicator regardless of page (User can clear it by going to Chat)
+                setUnreadChatCount((prev) => prev + 1);
               }
             }
           );

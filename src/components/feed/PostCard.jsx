@@ -33,29 +33,29 @@ const MediaGallery = ({ mediaItems, onMediaClick }) => {
   // Hàm render 1 media item
   const renderItem = (item, index, className, showOverlay = false, overlayCount = 0) => {
     const isVideo = item.type === 'VIDEO' || (item.url && item.url.match(/\.(mp4|webm|mov)$/i));
-    
+
     return (
-      <div 
+      <div
         key={index} // Quan trọng: phải có key
         className={`relative overflow-hidden bg-black cursor-pointer group w-full h-full ${className}`}
         onClick={() => onMediaClick(index)}
       >
         {isVideo ? (
-          <video 
-             src={item.url} 
-             className="w-full h-full object-cover pointer-events-none" 
+          <video
+            src={item.url}
+            className="w-full h-full object-cover pointer-events-none"
           />
         ) : (
-          <img 
-            src={item.url} 
-            alt="Content" 
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+          <img
+            src={item.url}
+            alt="Content"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         )}
-        
+
         {/* Overlay hover */}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
-        
+
         {/* Overlay số lượng ảnh thừa (+2, +3...) */}
         {showOverlay && (
           <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10">
@@ -65,26 +65,25 @@ const MediaGallery = ({ mediaItems, onMediaClick }) => {
 
         {/* Nút Play nếu là video */}
         {isVideo && !showOverlay && (
-             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                 <div className="bg-black/40 backdrop-blur-sm p-3 rounded-full border border-white/20 shadow-lg">
-                    <svg className="w-6 h-6 text-white fill-white" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                 </div>
-             </div>
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="bg-black/40 backdrop-blur-sm p-3 rounded-full border border-white/20 shadow-lg">
+              <svg className="w-6 h-6 text-white fill-white" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+            </div>
+          </div>
         )}
       </div>
     );
   };
 
   const count = mediaItems.length;
-  console.log( "Media Count:", count, mediaItems);
 
   return (
     <div className="w-full overflow-hidden">
-      
+
       {/* TRƯỜNG HỢP 1 ẢNH */}
       {count === 1 && (
         <div className="w-full flex justify-center max-h-[600px]">
-           {renderItem(mediaItems[0], 0, "")}
+          {renderItem(mediaItems[0], 0, "")}
         </div>
       )}
 
@@ -99,31 +98,31 @@ const MediaGallery = ({ mediaItems, onMediaClick }) => {
       {/* TRƯỜNG HỢP 3 ẢNH */}
       {count === 3 && (
         <div className="grid grid-cols-2 grid-rows-2 gap-1 h-[300px] sm:h-[400px]">
-           <div className="row-span-2 relative">
-              {renderItem(mediaItems[0], 0, "absolute inset-0 w-full h-full")}
-           </div>
-           <div className="relative">
-              {renderItem(mediaItems[1], 1, "absolute inset-0 w-full h-full")}
-           </div>
-           <div className="relative">
-              {renderItem(mediaItems[2], 2, "absolute inset-0 w-full h-full")}
-           </div>
+          <div className="row-span-2 relative">
+            {renderItem(mediaItems[0], 0, "absolute inset-0 w-full h-full")}
+          </div>
+          <div className="relative">
+            {renderItem(mediaItems[1], 1, "absolute inset-0 w-full h-full")}
+          </div>
+          <div className="relative">
+            {renderItem(mediaItems[2], 2, "absolute inset-0 w-full h-full")}
+          </div>
         </div>
       )}
 
       {/* TRƯỜNG HỢP 4+ ẢNH */}
       {count >= 4 && (
         <div className="grid grid-cols-2 grid-rows-2 gap-1 h-[300px] sm:h-[400px]">
-           <div className="relative">{renderItem(mediaItems[0], 0, "absolute inset-0 w-full h-full")}</div>
-           <div className="relative">{renderItem(mediaItems[1], 1, "absolute inset-0 w-full h-full")}</div>
-           <div className="relative">{renderItem(mediaItems[2], 2, "absolute inset-0 w-full h-full")}</div>
-           <div className="relative">
-              {renderItem(
-                mediaItems[3], 3, "absolute inset-0 w-full h-full", 
-                count > 4, 
-                count - 4 
-              )}
-           </div>
+          <div className="relative">{renderItem(mediaItems[0], 0, "absolute inset-0 w-full h-full")}</div>
+          <div className="relative">{renderItem(mediaItems[1], 1, "absolute inset-0 w-full h-full")}</div>
+          <div className="relative">{renderItem(mediaItems[2], 2, "absolute inset-0 w-full h-full")}</div>
+          <div className="relative">
+            {renderItem(
+              mediaItems[3], 3, "absolute inset-0 w-full h-full",
+              count > 4,
+              count - 4
+            )}
+          </div>
         </div>
       )}
 
@@ -143,35 +142,35 @@ export default function PostCard({
   // Chuẩn hóa dữ liệu logic
   let data = {};
   if (post) {
-      // Ưu tiên dùng media (có type), fallback sang images (list string) nếu media rỗng
-      let mediaList = [];
-      if (post.media && post.media.length > 0) {
-          mediaList = post.media;
-      } else if (post.images && post.images.length > 0) {
-          mediaList = post.images.map(url => ({ url, type: 'IMAGE' }));
-      }
-      
-      data = {
-          id: post.id,
-          content: post.content,
-          author: {
-              name: post.authorFullName || post.authorName,
-              avatar: post.authorAvatar,
-              id: post.authorId,
-              isSystem: post.isSystem
-          },
-          timeDisplay: formatTime(post.createdAt),
-          mediaItems: mediaList,
-          visibility: post.visibility,
-          aiStatus: post.aiStatus,
-          approvedBy: post.approvedByFullName,
-      };
+    // Ưu tiên dùng media (có type), fallback sang images (list string) nếu media rỗng
+    let mediaList = [];
+    if (post.media && post.media.length > 0) {
+      mediaList = post.media;
+    } else if (post.images && post.images.length > 0) {
+      mediaList = post.images.map(url => ({ url, type: 'IMAGE' }));
+    }
+
+    data = {
+      id: post.id,
+      content: post.content,
+      author: {
+        name: post.authorFullName || post.authorName,
+        avatar: post.authorAvatar,
+        id: post.authorId,
+        isSystem: post.isSystem
+      },
+      timeDisplay: formatTime(post.createdAt),
+      mediaItems: mediaList,
+      visibility: post.visibility,
+      aiStatus: post.aiStatus,
+      approvedBy: post.approvedByFullName,
+    };
   } else {
-      data = {
-          id, content, author, 
-          timeDisplay: time, 
-          mediaItems: image ? [{ url: image, type: 'IMAGE' }] : [], 
-      };
+    data = {
+      id, content, author,
+      timeDisplay: time,
+      mediaItems: image ? [{ url: image, type: 'IMAGE' }] : [],
+    };
   }
 
   useEffect(() => {
@@ -186,9 +185,8 @@ export default function PostCard({
 
   return (
     <article
-      className={`bg-surface-main rounded-2xl border border-border-main overflow-hidden shadow-sm transition-colors duration-300 mb-4 ${
-        type === "dashboard" ? "shadow-lg" : ""
-      }`}
+      className={`bg-surface-main rounded-2xl border border-border-main overflow-hidden shadow-sm transition-colors duration-300 mb-4 ${type === "dashboard" ? "shadow-lg" : ""
+        }`}
     >
       {/* HEADER */}
       <div className="p-4 flex justify-between items-start">
@@ -212,19 +210,19 @@ export default function PostCard({
             <div className="flex items-center gap-1.5 text-text-secondary text-xs">
               <span>{data.timeDisplay}</span>
               <span>•</span>
-              {data.visibility === 'FRIENDS' ? <Users size={12}/> : 
-               data.visibility === 'PRIVATE' ? <div className="flex items-center gap-1"><i className="lucide-lock w-3 h-3"/>Private</div> : 
-               <Globe size={12} />}
-               
-               {data.aiStatus && data.aiStatus !== 'Clean' && (
-                   <span className="ml-2 px-2 py-0.5 bg-yellow-500/10 text-yellow-600 rounded-full text-[10px] font-bold border border-yellow-500/20 flex items-center gap-1">
-                       <AlertTriangle size={10} /> AI Flagged
-                   </span>
-               )}
+              {data.visibility === 'FRIENDS' ? <Users size={12} /> :
+                data.visibility === 'PRIVATE' ? <div className="flex items-center gap-1"><i className="lucide-lock w-3 h-3" />Private</div> :
+                  <Globe size={12} />}
+
+              {data.aiStatus && data.aiStatus !== 'Clean' && (
+                <span className="ml-2 px-2 py-0.5 bg-yellow-500/10 text-yellow-600 rounded-full text-[10px] font-bold border border-yellow-500/20 flex items-center gap-1">
+                  <AlertTriangle size={10} /> AI Flagged
+                </span>
+              )}
             </div>
           </div>
         </div>
-        
+
         {/* ACTION MENU */}
         <div className="relative" ref={menuRef}>
           <button
@@ -233,15 +231,15 @@ export default function PostCard({
           >
             <MoreHorizontal size={20} />
           </button>
-          
+
           {showMenu && (
             <div className="absolute right-0 top-full mt-1 w-48 bg-surface-main rounded-lg shadow-xl border border-border-main z-10 overflow-hidden py-1">
-               <button className="w-full text-left px-4 py-2.5 text-sm text-text-main hover:bg-background-main flex items-center gap-2">
-                  <Share2 size={16}/> Share
-               </button>
-               <button className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 hover:text-red-600 flex items-center gap-2">
-                  <AlertTriangle size={16}/> Report
-               </button>
+              <button className="w-full text-left px-4 py-2.5 text-sm text-text-main hover:bg-background-main flex items-center gap-2">
+                <Share2 size={16} /> Share
+              </button>
+              <button className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 hover:text-red-600 flex items-center gap-2">
+                <AlertTriangle size={16} /> Report
+              </button>
             </div>
           )}
         </div>
@@ -249,58 +247,58 @@ export default function PostCard({
 
       {/* CONTENT TEXT */}
       {data.content && (
-         <div className="px-4 pb-3">
-             <p className="text-text-main whitespace-pre-wrap text-[15px] leading-relaxed break-words">
-                 {data.content}
-             </p>
-         </div>
+        <div className="px-4 pb-3">
+          <p className="text-text-main whitespace-pre-wrap text-[15px] leading-relaxed break-words">
+            {data.content}
+          </p>
+        </div>
       )}
 
       {/* MEDIA GALLERY */}
       {data.mediaItems.length > 0 && (
-         <div className="w-full border-t border-b border-border-main/50">
-            <MediaGallery 
-                mediaItems={data.mediaItems} 
-                onMediaClick={(index) => setLightboxIndex(index)}
-            />
-         </div>
+        <div className="w-full border-t border-b border-border-main/50">
+          <MediaGallery
+            mediaItems={data.mediaItems}
+            onMediaClick={(index) => setLightboxIndex(index)}
+          />
+        </div>
       )}
-      
+
       {/* NẾU CÓ APPROVED BY */}
       {data.approvedBy && (
-          <div className="px-4 py-2 bg-green-500/5 border-b border-green-500/10 text-xs text-green-700 flex items-center gap-2">
-              <CheckCircle size={12} />
-              Approved by: <span className="font-semibold">{data.approvedBy}</span>
-          </div>
+        <div className="px-4 py-2 bg-green-500/5 border-b border-green-500/10 text-xs text-green-700 flex items-center gap-2">
+          <CheckCircle size={12} />
+          Approved by: <span className="font-semibold">{data.approvedBy}</span>
+        </div>
       )}
 
       {/* FOOTER ACTIONS */}
       <div className="px-2 py-1">
         <div className="flex items-center justify-between border-t border-border-main mx-2 pt-1">
-           <button className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg hover:bg-background-main text-text-secondary hover:text-red-500 transition-colors group">
-              <Heart size={20} className="group-hover:stroke-red-500" />
-              <span className="text-sm font-medium">Like</span>
-           </button>
-           
-           <button className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg hover:bg-background-main text-text-secondary hover:text-blue-500 transition-colors">
-              <MessageSquare size={20} />
-              <span className="text-sm font-medium">Comment</span>
-           </button>
-           
-           <button className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg hover:bg-background-main text-text-secondary hover:text-green-500 transition-colors">
-              <Share2 size={20} />
-              <span className="text-sm font-medium">Share</span>
-           </button>
+          <button className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg hover:bg-background-main text-text-secondary hover:text-red-500 transition-colors group">
+            <Heart size={20} className="group-hover:stroke-red-500" />
+            <span className="text-sm font-medium">Like</span>
+          </button>
+
+          <button className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg hover:bg-background-main text-text-secondary hover:text-blue-500 transition-colors">
+            <MessageSquare size={20} />
+            <span className="text-sm font-medium">Comment</span>
+          </button>
+
+          <button className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg hover:bg-background-main text-text-secondary hover:text-green-500 transition-colors">
+            <Share2 size={20} />
+            <span className="text-sm font-medium">Share</span>
+          </button>
         </div>
       </div>
 
       {/* LIGHTBOX COMPONENT */}
       {lightboxIndex >= 0 && (
-         <ImageLightbox 
-            mediaItems={data.mediaItems}
-            initialIndex={lightboxIndex}
-            onClose={() => setLightboxIndex(-1)}
-         />
+        <ImageLightbox
+          mediaItems={data.mediaItems}
+          initialIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(-1)}
+        />
       )}
     </article>
   );
