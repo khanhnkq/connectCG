@@ -73,7 +73,7 @@ const NotificationList = ({ notifications, onMarkAsRead, onDelete, onMarkAllAsRe
 
   if (!notifications || notifications.length === 0) {
     return (
-      <div className="w-full bg-surface-main border border-border-main rounded-xl shadow-lg mt-2">
+      <div className="w-full bg-surface-main border border-border-main shadow-lg mt-2">
         <div className="p-4 border-b border-border-main font-bold text-base text-text-main">
           Thông báo
         </div>
@@ -90,7 +90,7 @@ const NotificationList = ({ notifications, onMarkAsRead, onDelete, onMarkAllAsRe
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
-    <div className="w-full bg-surface-main border border-border-main rounded-xl shadow-lg mt-2 overflow-hidden">
+    <div className="w-full bg-surface-main border border-border-main shadow-lg mt-2 overflow-hidden">
       {/* Header */}
       <div className="p-4 border-b border-border-main flex items-center justify-between bg-gradient-to-r from-surface-main to-background-main">
         <div>
@@ -133,8 +133,7 @@ const NotificationList = ({ notifications, onMarkAsRead, onDelete, onMarkAllAsRe
             {/* Content */}
             <div className="flex-1 min-w-0">
               <p className="text-sm text-text-main line-clamp-2 leading-relaxed">
-                <span className="font-bold">{notification.actorName}</span>{" "}
-                {notification.content.replace(notification.actorName, "")}
+                {notification.content}
               </p>
               <p className="text-xs text-text-secondary mt-1.5 flex items-center gap-1">
                 <span className="material-symbols-outlined text-[14px]">schedule</span>

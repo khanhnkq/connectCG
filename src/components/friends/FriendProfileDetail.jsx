@@ -23,12 +23,12 @@ export default function FriendProfileDetail({
 
     if (!activeItem) {
         return (
-            <div className="flex-1 flex flex-col items-center justify-center text-text-secondary gap-6 p-8 text-center bg-gradient-to-br from-background-main to-[#1A120B]">
-                <div className="size-32 rounded-full bg-gradient-to-br from-[#2A1D15] to-[#1A120B] border-4 border-[#3A2A20] flex items-center justify-center mb-2 shadow-2xl">
+            <div className="flex-1 flex flex-col items-center justify-center text-text-secondary gap-6 p-8 text-center bg-gradient-to-br from-background-main to-surface-main">
+                <div className="size-32 rounded-full bg-gradient-to-br from-surface-main to-background-main border-4 border-border-main flex items-center justify-center mb-2 shadow-2xl">
                     <span className="material-symbols-outlined text-6xl opacity-20 text-primary">contacts</span>
                 </div>
                 <div>
-                    <h2 className="text-2xl font-bold text-white mb-3">Thông tin chi tiết</h2>
+                    <h2 className="text-2xl font-bold text-text-main mb-3">Thông tin chi tiết</h2>
                     <p className="text-sm max-w-md mx-auto text-text-secondary/80 leading-relaxed">
                         Chọn một người từ danh sách bên trái để xem hồ sơ chi tiết và thực hiện các hành động.
                     </p>
@@ -39,10 +39,10 @@ export default function FriendProfileDetail({
 
     if (isProfileLoading) {
         return (
-            <div className="h-full flex flex-col items-center justify-center gap-5 bg-gradient-to-br from-background-main to-[#1A120B]">
+            <div className="h-full flex flex-col items-center justify-center gap-5 bg-gradient-to-br from-background-main to-surface-main">
                 <div className="size-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
                 <div className="text-center">
-                    <p className="text-white font-medium text-lg animate-pulse">Đang tải hồ sơ...</p>
+                    <p className="text-text-main font-medium text-lg animate-pulse">Đang tải hồ sơ...</p>
                     <p className="text-text-secondary text-sm mt-1">Vui lòng đợi</p>
                 </div>
             </div>
@@ -51,7 +51,7 @@ export default function FriendProfileDetail({
 
     if (!fullProfile) {
         return (
-            <div className="h-full flex items-center justify-center bg-gradient-to-br from-background-main to-[#1A120B]">
+            <div className="h-full flex items-center justify-center bg-gradient-to-br from-background-main to-surface-main">
                 <div className="text-center">
                     <span className="material-symbols-outlined text-6xl text-text-secondary/20 mb-3">error</span>
                     <p className="text-text-secondary">Không có dữ liệu</p>
@@ -83,7 +83,7 @@ export default function FriendProfileDetail({
             <div className="px-6 md:px-8 pb-8 -mt-20 relative">
                 {/* Avatar & Name */}
                 <div className="flex flex-col items-center">
-                    <div className="size-32 md:size-36 rounded-2xl bg-gradient-to-br from-[#2A1D15] to-[#1A120B] p-1.5 border-4 border-background-main shadow-2xl mb-4 relative z-10 group">
+                    <div className="size-32 md:size-36 rounded-2xl bg-gradient-to-br from-surface-main to-background-main p-1.5 border-4 border-background-main shadow-2xl mb-4 relative z-10 group">
                         <div
                             className="w-full h-full rounded-xl bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
                             style={{ backgroundImage: `url("${fullProfile.currentAvatarUrl || fullProfile.image || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}")` }}

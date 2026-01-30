@@ -20,25 +20,25 @@ export default function FriendRequestItem({
         <div
             onClick={onClick}
             className={`p-4 rounded-xl cursor-pointer relative group flex flex-col gap-3 transition-all duration-200 ${isActive
-                    ? 'bg-[#3A2A20] border-2 border-primary shadow-lg shadow-primary/10'
-                    : 'bg-[#2A1D15]/50 hover:bg-[#2A1D15] border-2 border-transparent hover:border-[#3A2A20]'
+                ? 'bg-primary/10 border-2 border-primary shadow-lg shadow-primary/10'
+                : 'bg-surface-main/50 hover:bg-surface-main border-2 border-transparent hover:border-border-main'
                 }`}
         >
             {/* Header */}
             <div className="flex gap-3 items-center">
                 <div className="relative shrink-0">
                     <div
-                        className="size-14 rounded-xl bg-cover bg-center border-2 border-[#3A2A20] group-hover:border-primary/50 transition-all"
+                        className="size-14 rounded-xl bg-cover bg-center border-2 border-border-main group-hover:border-primary/50 transition-all"
                         style={{ backgroundImage: `url("${request.senderAvatarUrl || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}")` }}
                     ></div>
                     {/* Badge */}
-                    <div className="absolute -bottom-1 -right-1 size-6 bg-primary rounded-full flex items-center justify-center border-2 border-[#2A1D15] shadow-lg">
+                    <div className="absolute -bottom-1 -right-1 size-6 bg-primary rounded-full flex items-center justify-center border-2 border-surface-main shadow-lg">
                         <span className="material-symbols-outlined text-[12px] text-white font-bold">person_add</span>
                     </div>
                 </div>
 
                 <div className="flex-1 min-w-0">
-                    <h3 className={`font-bold text-base truncate transition-colors ${isActive ? 'text-white' : 'text-gray-200 group-hover:text-white'
+                    <h3 className={`font-bold text-base truncate transition-colors ${isActive ? 'text-text-main' : 'text-text-main group-hover:text-primary'
                         }`}>
                         {request.senderFullName || request.senderUsername}
                     </h3>
@@ -54,7 +54,7 @@ export default function FriendRequestItem({
                 <button
                     onClick={handleAccept}
                     disabled={isProcessing}
-                    className="flex-1 py-2 px-3 bg-primary hover:bg-orange-600 text-[#231810] text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+                    className="flex-1 py-2 px-3 bg-primary hover:bg-orange-600 text-white text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
                 >
                     {isProcessing === 'accepting' ? (
                         <>
@@ -71,7 +71,7 @@ export default function FriendRequestItem({
                 <button
                     onClick={handleReject}
                     disabled={isProcessing}
-                    className="flex-1 py-2 px-3 bg-[#1A120B] hover:bg-red-500/20 hover:text-red-500 text-text-secondary text-sm font-bold rounded-lg transition-all border border-[#3A2A20] hover:border-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+                    className="flex-1 py-2 px-3 bg-background-main hover:bg-red-500/20 hover:text-red-500 text-text-secondary text-sm font-bold rounded-lg transition-all border border-border-main hover:border-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
                 >
                     {isProcessing === 'rejecting' ? (
                         <>

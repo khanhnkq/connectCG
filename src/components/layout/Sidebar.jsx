@@ -13,7 +13,6 @@ import {
   Moon,
 } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
-import { motion } from "framer-motion";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../redux/slices/authSlice";
 import { fetchUserProfile } from "../../redux/slices/userSlice";
@@ -22,9 +21,6 @@ export default function SidebarComponent() {
   const { theme, toggleTheme } = useTheme();
   const { user } = useSelector((state) => state.auth);
   const { profile: userProfile } = useSelector((state) => state.user);
-  const { items: notifications, unreadCount } = useSelector(
-    (state) => state.notifications,
-  );
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);

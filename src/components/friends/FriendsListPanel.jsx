@@ -26,11 +26,11 @@ export default function FriendsListPanel({
     };
 
     return (
-        <div className={`${activeItem ? 'hidden xl:flex' : 'flex'} w-full md:w-80 lg:w-96 flex-col border-r border-[#3A2A20] bg-[#1E140F] shrink-0`}>
+        <div className={`${activeItem ? 'hidden xl:flex' : 'flex'} w-full md:w-80 lg:w-96 flex-col border-r border-border-main bg-surface-main shrink-0`}>
             {/* Header */}
-            <div className="p-5 border-b border-[#3A2A20] bg-gradient-to-b from-[#1E140F] to-[#1A120B] sticky top-0 z-10 backdrop-blur-md">
+            <div className="p-5 border-b border-border-main bg-gradient-to-b from-surface-main to-background-main sticky top-0 z-10 backdrop-blur-md">
                 <div className="mb-4">
-                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    <h2 className="text-xl font-bold text-text-main flex items-center gap-2">
                         <span className="material-symbols-outlined text-primary">
                             {viewMode === 'ALL' ? 'group' : viewMode === 'REQUESTS' ? 'person_add' : 'person_search'}
                         </span>
@@ -45,7 +45,7 @@ export default function FriendsListPanel({
                         <span className="material-symbols-outlined text-text-secondary text-[20px] group-focus-within:text-primary transition-colors">search</span>
                     </div>
                     <input
-                        className="block w-full pl-10 pr-4 py-3 border border-[#3A2A20] rounded-xl bg-[#2A1D15] text-white placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"
+                        className="block w-full pl-10 pr-4 py-3 border border-border-main rounded-xl bg-background-main text-text-main placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"
                         placeholder="Tìm kiếm..."
                         type="text"
                         value={searchTerm}
@@ -62,8 +62,8 @@ export default function FriendsListPanel({
                 </div>
             </div>
 
-            {/* List */}
-            <div className="flex-1 overflow-y-auto px-3 py-4 space-y-2 custom-scrollbar">
+            {/* Scrollable List */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar bg-background-main px-3 py-4 space-y-2">
                 {displayedList.length > 0 ? (
                     displayedList.map((item) => (
                         viewMode === 'REQUESTS' ? (

@@ -3,24 +3,24 @@ export default function FriendListItem({ item, isActive, onClick, viewMode }) {
         <div
             onClick={onClick}
             className={`p-4 rounded-xl cursor-pointer relative group flex gap-3 items-center transition-all duration-200 ${isActive
-                    ? 'bg-[#3A2A20] border-2 border-primary shadow-lg shadow-primary/10'
-                    : 'bg-[#2A1D15]/30 hover:bg-[#2A1D15] border-2 border-transparent hover:border-[#3A2A20]'
+                ? 'bg-primary/10 border-2 border-primary shadow-lg shadow-primary/10'
+                : 'bg-surface-main/50 hover:bg-surface-main border-2 border-transparent hover:border-border-main'
                 }`}
         >
             {/* Avatar */}
             <div className="relative shrink-0">
                 <div
-                    className="size-14 rounded-xl bg-cover bg-center border-2 border-[#3A2A20] group-hover:border-primary/50 transition-all"
+                    className="size-14 rounded-xl bg-cover bg-center border-2 border-border-main group-hover:border-primary/50 transition-all"
                     style={{ backgroundImage: `url("${item.avatarUrl || item.image || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}")` }}
                 ></div>
                 {item.isOnline && (
-                    <div className="absolute -bottom-1 -right-1 size-4 bg-green-500 rounded-full border-2 border-[#1E140F] shadow-lg"></div>
+                    <div className="absolute -bottom-1 -right-1 size-4 bg-green-500 rounded-full border-2 border-surface-main shadow-lg"></div>
                 )}
             </div>
 
             {/* Info */}
             <div className="flex-1 min-w-0">
-                <h3 className={`font-bold text-base truncate transition-colors ${isActive ? 'text-white' : 'text-gray-200 group-hover:text-white'
+                <h3 className={`font-bold text-base truncate transition-colors ${isActive ? 'text-text-main' : 'text-text-main group-hover:text-primary'
                     }`}>
                     {item.fullName || item.name || item.username}
                 </h3>
