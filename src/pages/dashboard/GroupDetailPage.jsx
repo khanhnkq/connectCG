@@ -522,11 +522,10 @@ const GroupDetailPage = () => {
                   <button
                     key={tab.en}
                     onClick={() => setActiveTab(tab.vi)}
-                    className={`py-4 font-bold text-sm tracking-wide whitespace-nowrap transition-all border-b-2 ${
-                      activeTab === tab.vi
+                    className={`py-4 font-bold text-sm tracking-wide whitespace-nowrap transition-all border-b-2 ${activeTab === tab.vi
                         ? "text-primary border-primary"
                         : "text-text-secondary hover:text-text-main border-transparent"
-                    }`}
+                      }`}
                   >
                     {tab.vi}
                   </button>
@@ -534,11 +533,10 @@ const GroupDetailPage = () => {
               {isAdmin && (
                 <button
                   onClick={() => setActiveTab("Kiểm duyệt")}
-                  className={`py-4 font-black text-sm tracking-widest whitespace-nowrap transition-all border-b-2 flex items-center gap-2 ${
-                    activeTab === "Kiểm duyệt"
+                  className={`py-4 font-black text-sm tracking-widest whitespace-nowrap transition-all border-b-2 flex items-center gap-2 ${activeTab === "Kiểm duyệt"
                       ? "text-orange-400 border-orange-400"
                       : "text-text-secondary hover:text-orange-400 border-transparent"
-                  }`}
+                    }`}
                 >
                   <Gavel size={18} />
                   KIỂM DUYỆT
@@ -559,8 +557,8 @@ const GroupDetailPage = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 flex flex-col gap-6">
                 {group.privacy === "PRIVATE" &&
-                userMembership?.status !== "ACCEPTED" &&
-                !isAdmin ? (
+                  userMembership?.status !== "ACCEPTED" &&
+                  !isAdmin ? (
                   <div className="bg-surface-main rounded-[2.5rem] p-12 border border-border-main text-center space-y-6">
                     <div className="size-24 rounded-full bg-primary/10 flex items-center justify-center text-primary mx-auto mb-8">
                       <Lock size={40} />
@@ -673,17 +671,16 @@ const GroupDetailPage = () => {
                               {member.fullName}
                             </p>
                             <span
-                              className={`px-2 py-0.5 text-[10px] font-black rounded uppercase ${
-                                member.role === "ADMIN"
+                              className={`px-2 py-0.5 text-[10px] font-black rounded uppercase ${member.role === "ADMIN"
                                   ? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
                                   : "bg-zinc-800 text-zinc-400"
-                              }`}
+                                }`}
                             >
                               {member.role === "ADMIN"
                                 ? "Quản trị viên"
                                 : member.role === "OWNER"
-                                ? "Chủ nhóm"
-                                : "Thành viên"}
+                                  ? "Chủ nhóm"
+                                  : "Thành viên"}
                             </span>
                           </div>
                           <p className="text-xs text-text-secondary mt-0.5 italic">
@@ -740,21 +737,19 @@ const GroupDetailPage = () => {
               <div className="flex gap-4 border-b border-border-main">
                 <button
                   onClick={() => setModTab("Bài viết")}
-                  className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${
-                    modTab === "Bài viết"
+                  className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${modTab === "Bài viết"
                       ? "text-primary border-primary"
                       : "text-text-secondary border-transparent"
-                  }`}
+                    }`}
                 >
                   Bài viết chờ duyệt
                 </button>
                 <button
                   onClick={() => setModTab("Yêu cầu")}
-                  className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${
-                    modTab === "Yêu cầu"
+                  className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${modTab === "Yêu cầu"
                       ? "text-primary border-primary"
                       : "text-text-secondary border-transparent"
-                  }`}
+                    }`}
                 >
                   Yêu cầu tham gia ({memberRequests.length})
                 </button>
@@ -818,11 +813,10 @@ const GroupDetailPage = () => {
 
                           {post.images && post.images.length > 0 && (
                             <div
-                              className={`grid gap-2 ${
-                                post.images.length === 1
+                              className={`grid gap-2 ${post.images.length === 1
                                   ? "grid-cols-1"
                                   : "grid-cols-2"
-                              }`}
+                                }`}
                             >
                               {post.images.map((img, idx) => (
                                 <img
@@ -925,6 +919,7 @@ const GroupDetailPage = () => {
         isOpen={showInviteModal}
         onClose={() => setShowInviteModal(false)}
         onInvite={handleInviteMembers}
+        existingMemberIds={members.map((m) => m.userId)}
       />
 
       {/* Kick Member Confirmation Modal */}

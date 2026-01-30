@@ -10,7 +10,7 @@ import React, { useState, useEffect } from "react";
 import AdminLayout from "../../components/layout-admin/AdminLayout";
 import postService from "../../services/PostService";
 import toast from "react-hot-toast";
-import ConfirmModal from "../../components/admin/ConfirmModal";
+import ConfirmModal from "../../components/common/ConfirmModal";
 
 const MainFeedManager = () => {
   const [posts, setPosts] = useState([]);
@@ -97,22 +97,20 @@ const MainFeedManager = () => {
           <div className="flex bg-background-dark/50 p-1.5 rounded-2xl border border-border-dark/30">
             <button
               onClick={() => setActiveTab("pending")}
-              className={`px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${
-                activeTab === "pending"
+              className={`px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${activeTab === "pending"
                   ? "bg-red-500 text-white shadow-lg"
                   : "text-text-muted hover:text-white"
-              }`}
+                }`}
             >
               <Shield size={14} />
               Chờ Duyệt
             </button>
             <button
               onClick={() => setActiveTab("audit")}
-              className={`px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${
-                activeTab === "audit"
+              className={`px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${activeTab === "audit"
                   ? "bg-orange-500 text-white shadow-lg"
                   : "text-text-muted hover:text-white"
-              }`}
+                }`}
             >
               <AlertTriangle size={14} />
               Kiểm Tra Lại
@@ -188,11 +186,10 @@ const MainFeedManager = () => {
                     </td>
                     <td className="px-6 py-5">
                       <span
-                        className={`px-2 py-0.5 text-[9px] font-black uppercase rounded border ${
-                          post.aiStatus === "TOXIC"
+                        className={`px-2 py-0.5 text-[9px] font-black uppercase rounded border ${post.aiStatus === "TOXIC"
                             ? "bg-red-500/20 text-red-500 border-red-500/40"
                             : "bg-orange-500/10 text-orange-400 border-orange-500/20"
-                        }`}
+                          }`}
                       >
                         {post.aiStatus}
                       </span>

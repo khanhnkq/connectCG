@@ -30,15 +30,17 @@ const createGroupSchema = Yup.object().shape({
     .oneOf(["public", "private"])
     .required("Vui lòng chọn quyền riêng tư"),
   description: Yup.string().max(500, "Mô tả quá dài"),
-  cover_image: Yup.mixed().test(
-    "fileType",
-    "Chỉ nhận định dạng jpg/png",
-    (value) => {
-      if (!value) return true;
-      if (typeof value === "string") return true;
-      return ["image/jpeg", "image/png", "image/jpg"].includes(value.type);
-    },
-  ),
+  cover_image: Yup.mixed()
+    .required("Vui lòng chọn ảnh bìa cho nhóm")
+    .test(
+      "fileType",
+      "Chỉ nhận định dạng jpg/png",
+      (value) => {
+        if (!value || typeof value === "string") return true;
+        return ["image/jpeg", "image/png", "image/jpg"].includes(value.type);
+      }
+    )
+
 });
 
 export default function CreateGroupPage() {
@@ -116,7 +118,7 @@ export default function CreateGroupPage() {
               className="group-hover:-translate-x-1 transition-transform"
               size={20}
             />
-            <span className="text-xs font-black uppercase tracking-widest text-text-secondary group-hover:text-primary">
+            <span className="text-xs font-black uppercase tracking-widest text-text-main group-hover:text-primary">
               Quay lại
             </span>
           </button>
@@ -126,13 +128,13 @@ export default function CreateGroupPage() {
               <Users size={40} className="text-text-main" />
             </div>
             <div>
-              <h1 className="text-4xl font-black tracking-tight mb-1 text-text-main">
+              <h1 className="text-3xl font-black tracking-tight mb-1 text-text-main">
                 Thiết lập{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-400">
                   Cộng đồng
                 </span>
               </h1>
-              <p className="text-text-secondary text-sm font-medium">
+              <p className="text-text-main/80 text-sm font-medium">
                 Khởi tạo không gian riêng của bạn chỉ trong vài giây.
               </p>
             </div>
@@ -163,11 +165,10 @@ export default function CreateGroupPage() {
                       <Field
                         name="group_name"
                         placeholder="Ví dụ: Hội yêu cây cảnh, Dev Hà Nội..."
-                        className={`w-full bg-background-main border ${
-                          errors.group_name && touched.group_name
-                            ? "border-red-500/50"
-                            : "border-border-main group-focus-within:border-primary/50"
-                        } rounded-2xl py-5 px-6 text-text-main text-base focus:outline-none transition-all shadow-inner placeholder:text-text-muted/20`}
+                        className={`w-full bg-background-main border ${errors.group_name && touched.group_name
+                          ? "border-red-500/50"
+                          : "border-border-main group-focus-within:border-primary/50"
+                          } rounded-2xl py-5 px-6 text-text-main text-base focus:outline-none transition-all shadow-inner placeholder:text-text-muted/20`}
                       />
                       <div className="absolute inset-0 rounded-2xl ring-1 ring-white/5 pointer-events-none group-focus-within:ring-primary/20 transition-all" />
                     </div>
@@ -196,11 +197,11 @@ export default function CreateGroupPage() {
                             <div className="size-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                               <Globe size={18} />
                             </div>
-                            <span className="text-xs font-black uppercase tracking-widest text-text-secondary peer-checked:text-text-main">
+                            <span className="text-xs font-black uppercase tracking-widest text-text-main peer-checked:text-text-main">
                               Công khai
                             </span>
                           </div>
-                          <p className="text-[10px] text-text-muted leading-relaxed">
+                          <p className="text-[10px] text-text-main leading-relaxed">
                             Ai cũng có thể tìm thấy nhóm và xem bài viết.
                           </p>
                         </div>
@@ -214,20 +215,20 @@ export default function CreateGroupPage() {
                           value="private"
                           className="sr-only peer"
                         />
-                        <div className="p-5 rounded-2xl bg-[#120a05] border border-[#2d1f14] transition-all peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:shadow-[0_0_20px_rgba(255,107,0,0.1)] hover:bg-[#1a120b]">
+                        <div className="p-5 rounded-2xl bg-background-main border border-border-main transition-all peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:shadow-[0_0_20px_rgba(255,107,0,0.1)] hover:bg-surface-main">
                           <div className="flex items-center gap-3 mb-2">
                             <div className="size-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                               <ShieldCheck size={18} />
                             </div>
-                            <span className="text-xs font-black uppercase tracking-widest text-text-secondary peer-checked:text-white">
+                            <span className="text-xs font-black uppercase tracking-widest text-text-secondary peer-checked:text-text-main">
                               Riêng tư
                             </span>
                           </div>
-                          <p className="text-[10px] text-text-muted leading-relaxed">
+                          <p className="text-[10px] text-text-main leading-relaxed">
                             Chỉ thành viên mới có thể xem nội dung bên trong.
                           </p>
                         </div>
-                        <div className="absolute top-4 right-4 size-4 rounded-full border-2 border-[#2d1f14] peer-checked:border-primary peer-checked:after:content-[''] peer-checked:after:absolute peer-checked:after:inset-1 peer-checked:after:bg-primary peer-checked:after:rounded-full" />
+                        <div className="absolute top-4 right-4 size-4 rounded-full border-2 border-border-main peer-checked:border-primary peer-checked:after:content-[''] peer-checked:after:absolute peer-checked:after:inset-1 peer-checked:after:bg-primary peer-checked:after:rounded-full" />
                       </label>
                     </div>
                   </div>
@@ -250,11 +251,10 @@ export default function CreateGroupPage() {
                     />
                     <div className="flex justify-end pr-2">
                       <span
-                        className={`text-[9px] font-bold tracking-widest uppercase ${
-                          values.description.length > 450
-                            ? "text-orange-500"
-                            : "text-text-muted"
-                        }`}
+                        className={`text-[9px] font-bold tracking-widest uppercase ${values.description.length > 450
+                          ? "text-orange-500"
+                          : "text-text-muted"
+                          }`}
                       >
                         {values.description.length} / 500
                       </span>
@@ -298,12 +298,17 @@ export default function CreateGroupPage() {
                         <div className="size-20 rounded-[2rem] bg-gradient-to-br from-primary/10 to-transparent flex items-center justify-center text-primary/40 mb-6 group-hover:scale-110 transition-transform duration-500 ring-1 ring-primary/5 shadow-inner">
                           <Image size={48} />
                         </div>
-                        <p className="text-sm font-bold text-text-secondary mb-2 uppercase tracking-wide">
+                        <p className="text-sm font-bold text-text-main mb-2 uppercase tracking-wide">
                           Tải ảnh bìa chuyên nghiệp
                         </p>
-                        <p className="text-[10px] text-text-muted font-bold tracking-tighter italic">
+                        <p className="text-[10px] text-text-main/60 font-bold tracking-tighter italic">
                           Kích thước khuyên dùng 1200x600px
                         </p>
+                      </div>
+                    )}
+                    {errors.cover_image && touched.cover_image && (
+                      <div className="absolute top-2 right-2 bg-red-500/90 text-white text-[9px] font-bold px-2 py-1 rounded-lg flex items-center gap-1 animate-bounce">
+                        <AlertCircle size={10} /> {errors.cover_image}
                       </div>
                     )}
                     <input
@@ -319,7 +324,7 @@ export default function CreateGroupPage() {
                   <div className="w-full mt-10 space-y-4">
                     <div className="p-5 rounded-2xl bg-orange-500/5 border border-primary/10 flex items-start gap-3">
                       <ShieldCheck className="text-primary mt-0.5" size={20} />
-                      <p className="text-[10px] font-medium leading-[1.6] text-text-secondary">
+                      <p className="text-[10px] font-medium leading-[1.6] text-text-main">
                         Bạn sẽ trở thành <b>Quản trị viên</b> của nhóm này. Hãy
                         đảm bảo nội dung tuân thủ chính sách của ConnectCG.
                       </p>
@@ -328,9 +333,8 @@ export default function CreateGroupPage() {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className={`w-full py-5 bg-gradient-to-r from-primary to-orange-600 text-text-main font-black rounded-2xl shadow-xl shadow-primary/20 hover:shadow-primary/30 active:scale-[0.98] transition-all uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-3 ${
-                        isSubmitting ? "opacity-70 cursor-wait" : ""
-                      }`}
+                      className={`w-full py-5 bg-gradient-to-r from-primary to-orange-600 text-text-main font-black rounded-2xl shadow-xl shadow-primary/20 hover:shadow-primary/30 active:scale-[0.98] transition-all uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-3 ${isSubmitting ? "opacity-70 cursor-wait" : ""
+                        }`}
                     >
                       {isSubmitting ? (
                         <>

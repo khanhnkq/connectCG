@@ -23,7 +23,7 @@ import ProfilePhotos from "../../components/profile/ProfilePhotos";
 import ProfileHobbies from "../../components/profile/ProfileHobbies";
 import ProfileFriends from "../../components/profile/ProfileFriends";
 import ReportModal from "../../components/report/ReportModal";
-import ConfirmModal from "../../components/admin/ConfirmModal";
+import ConfirmModal from "../../components/common/ConfirmModal";
 import reportService from "../../services/ReportService";
 import PostService from "../../services/PostService";
 import PostCard from "../../components/feed/PostCard";

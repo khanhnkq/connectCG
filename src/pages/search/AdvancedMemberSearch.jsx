@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import UserSearchService from "../../services/user/UserSearchService";
 import CityService from "../../services/CityService";
 import FriendRequestService from "../../services/friend/FriendRequestService";
-import ConfirmModal from "../../components/admin/ConfirmModal";
+import ConfirmModal from "../../components/common/ConfirmModal";
 import toast from "react-hot-toast";
 
 import CitySelect from "../../components/common/CitySelect";
@@ -123,12 +123,12 @@ export default function AdvancedMemberSearch() {
         prevMembers.map((member) =>
           member.userId === memberId
             ? {
-                ...member,
-                isFriend: true,
-                requestSent: false,
-                requestId: null,
-                isRequestReceiver: false,
-              }
+              ...member,
+              isFriend: true,
+              requestSent: false,
+              requestId: null,
+              isRequestReceiver: false,
+            }
             : member,
         ),
       );
@@ -150,11 +150,11 @@ export default function AdvancedMemberSearch() {
         prevMembers.map((member) =>
           member.userId === memberId
             ? {
-                ...member,
-                requestSent: false,
-                requestId: null,
-                isRequestReceiver: false,
-              }
+              ...member,
+              requestSent: false,
+              requestId: null,
+              isRequestReceiver: false,
+            }
             : member,
         ),
       );

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import AdminLayout from "../../components/layout-admin/AdminLayout";
 import * as Yup from "yup";
 import toast from "react-hot-toast";
-import ConfirmModal from "../../components/admin/ConfirmModal";
+import ConfirmModal from "../../components/common/ConfirmModal";
 import { findAllGroup } from "../../services/groups/GroupService";
 import GroupInspectorModal from "../../components/admin/GroupInspectorModal";
 

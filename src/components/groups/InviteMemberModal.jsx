@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import FriendService from "../../services/friend/FriendService";
 import toast from "react-hot-toast";
 
-export default function InviteMemberModal({ isOpen, onClose, onInvite }) {
+export default function InviteMemberModal({ isOpen, onClose, onInvite, existingMemberIds = [] }) {
   const [friends, setFriends] = useState([]);
   const [selectedFriends, setSelectedFriends] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -20,16 +20,9 @@ export default function InviteMemberModal({ isOpen, onClose, onInvite }) {
   const fetchFriends = async () => {
     setLoading(true);
     try {
-      // Fetch friends of current user
-      // Assuming getFriends supports pagination or returns a list.
-      // Here we ask for a reasonable page size or all if possible.
-      const userStr = localStorage.getItem("user");
-      if (userStr) {
-        const user = JSON.parse(userStr);
-        const response = await FriendService.getMyFriends({ size: 100 });
-        const data = response.data;
-        setFriends(data.content || data || []);
-      }
+      const response = await FriendService.getMyFriends({ size: 100 });
+      const data = response.data;
+      setFriends(data.content || data || []);
     } catch (error) {
       console.error("Failed to fetch friends:", error);
       toast.error("Không thể tải danh sách bạn bè");
@@ -51,9 +44,11 @@ export default function InviteMemberModal({ isOpen, onClose, onInvite }) {
     onInvite(selectedFriends);
   };
 
-  const filteredFriends = friends.filter((friend) =>
-    (friend.fullName || "").toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const filteredFriends = friends.filter((friend) => {
+    const nameMatch = (friend.fullName || "").toLowerCase().includes(searchTerm.toLowerCase());
+    const isAlreadyMember = existingMemberIds.includes(friend.id);
+    return nameMatch && !isAlreadyMember;
+  });
 
   if (!isOpen) return null;
 
@@ -99,11 +94,10 @@ export default function InviteMemberModal({ isOpen, onClose, onInvite }) {
               <div
                 key={friend.id}
                 onClick={() => toggleSelection(friend.id)}
-                className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all border ${
-                  selectedFriends.includes(friend.id)
+                className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all border ${selectedFriends.includes(friend.id)
                     ? "bg-primary/10 border-primary/50"
                     : "hover:bg-background-main border-transparent"
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <img
@@ -116,22 +110,20 @@ export default function InviteMemberModal({ isOpen, onClose, onInvite }) {
                   />
                   <div>
                     <p
-                      className={`font-bold text-sm ${
-                        selectedFriends.includes(friend.id)
+                      className={`font-bold text-sm ${selectedFriends.includes(friend.id)
                           ? "text-primary"
                           : "text-text-main"
-                      }`}
+                        }`}
                     >
                       {friend.fullName}
                     </p>
                   </div>
                 </div>
                 <div
-                  className={`size-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                    selectedFriends.includes(friend.id)
+                  className={`size-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedFriends.includes(friend.id)
                       ? "bg-primary border-primary"
                       : "border-text-secondary"
-                  }`}
+                    }`}
                 >
                   {selectedFriends.includes(friend.id) && (
                     <Check size={14} className="text-text-main font-bold" />

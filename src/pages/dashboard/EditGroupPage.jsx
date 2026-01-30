@@ -138,13 +138,13 @@ export default function EditGroupPage() {
         <header className="mb-12">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-text-muted hover:text-primary transition-all mb-6 group"
+            className="flex items-center gap-2 text-text-main hover:text-primary transition-all mb-6 group"
           >
             <ArrowLeft
               className="group-hover:-translate-x-1 transition-transform"
               size={20}
             />
-            <span className="text-xs font-black uppercase tracking-widest text-text-secondary group-hover:text-primary">
+            <span className="text-xs font-black uppercase tracking-widest text-text-main group-hover:text-primary">
               Hủy & Quay lại
             </span>
           </button>
@@ -160,7 +160,7 @@ export default function EditGroupPage() {
                   Cộng đồng
                 </span>
               </h1>
-              <p className="text-text-secondary text-sm font-medium">
+              <p className="text-text-main text-sm font-medium">
                 Thay đổi thông tin nhóm để phù hợp hơn với định hướng mới.
               </p>
             </div>
@@ -224,11 +224,11 @@ export default function EditGroupPage() {
                             <div className="size-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                               <Globe size={18} />
                             </div>
-                            <span className="text-xs font-black uppercase tracking-widest text-text-secondary peer-checked:text-text-main">
+                            <span className="text-xs font-black uppercase tracking-widest text-text-main peer-checked:text-text-main">
                               Công khai
                             </span>
                           </div>
-                          <p className="text-[10px] text-text-muted leading-relaxed">
+                          <p className="text-[10px] text-text-main leading-relaxed">
                             Ai cũng có thể tìm thấy nhóm.
                           </p>
                         </div>
@@ -246,11 +246,11 @@ export default function EditGroupPage() {
                             <div className="size-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                               <ShieldCheck size={18} />
                             </div>
-                            <span className="text-xs font-black uppercase tracking-widest text-text-secondary peer-checked:text-white">
+                            <span className="text-xs font-black uppercase tracking-widest text-text-main peer-checked:text-white">
                               Riêng tư
                             </span>
                           </div>
-                          <p className="text-[10px] text-text-muted leading-relaxed">
+                          <p className="text-[10px] text-text-main leading-relaxed">
                             Chỉ thành viên mới xem được.
                           </p>
                         </div>
@@ -326,7 +326,7 @@ export default function EditGroupPage() {
                         <div className="size-20 rounded-[2rem] bg-gradient-to-br from-primary/10 to-transparent flex items-center justify-center text-primary/40 mb-6 group-hover:scale-110 transition-transform duration-500 ring-1 ring-primary/5 shadow-inner">
                           <Image size={48} />
                         </div>
-                        <p className="text-sm font-bold text-text-secondary mb-2 uppercase tracking-wide">
+                        <p className="text-sm font-bold text-text-main mb-2 uppercase tracking-wide">
                           Tải ảnh bìa mới
                         </p>
                       </div>
@@ -356,7 +356,7 @@ export default function EditGroupPage() {
                           Chú ý khu vực nguy hiểm
                         </span>
                       </div>
-                      <p className="text-sm text-text-muted text-center leading-relaxed px-2">
+                      <p className="text-sm text-text-main text-center leading-relaxed px-2">
                         Khi xóa nhóm, toàn bộ dữ liệu bài viết và thành viên sẽ
                         bị mất vĩnh viễn và không thể khôi phục.
                       </p>
