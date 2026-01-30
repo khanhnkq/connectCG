@@ -9,6 +9,8 @@ import {
   UserSearch,
   Loader2,
   MoreVertical,
+  Check,
+  X,
 } from "lucide-react";
 import FriendRequestService from "../../services/friend/FriendRequestService";
 import ConfirmModal from "../common/ConfirmModal";
@@ -33,6 +35,14 @@ const ProfileFriends = ({ profile, isOwner }) => {
     setConfirmModal({ isOpen: true, type: "CANCEL_REQUEST", friend });
   };
 
+  const confirmAcceptRequest = (friend) => {
+    setConfirmModal({ isOpen: true, type: "ACCEPT_REQUEST", friend });
+  };
+
+  const confirmRejectRequest = (friend) => {
+    setConfirmModal({ isOpen: true, type: "REJECT_REQUEST", friend });
+  };
+
   const handleConfirmAction = async () => {
     const { type, friend } = confirmModal;
     setConfirmModal({ isOpen: false, type: null, friend: null });
@@ -48,9 +58,33 @@ const ProfileFriends = ({ profile, isOwner }) => {
       try {
         await FriendRequestService.cancelRequest(friend.id);
         updateFriendStatus(friend.id, "stranger");
-        toast.success("Đã hủy lời mời kết bạn");
+        toast.success("Đã thu hồi lời mời kết bạn");
       } catch {
-        toast.error("Không thể hủy lời mời");
+        toast.error("Không thể thu hồi lời mời");
+      }
+    } else if (type === "ACCEPT_REQUEST") {
+      try {
+        if (!friend.requestId) {
+          toast.error("Không tìm thấy thông tin lời mời.");
+          return;
+        }
+        await FriendRequestService.acceptRequest(friend.requestId);
+        updateFriendStatus(friend.id, "FRIEND");
+        toast.success("Đã chấp nhận lời mời kết bạn!");
+      } catch {
+        toast.error("Không thể chấp nhận lời mời.");
+      }
+    } else if (type === "REJECT_REQUEST") {
+      try {
+        if (!friend.requestId) {
+          toast.error("Không tìm thấy thông tin lời mời.");
+          return;
+        }
+        await FriendRequestService.rejectRequest(friend.requestId);
+        updateFriendStatus(friend.id, "STRANGER");
+        toast.success("Đã từ chối lời mời.");
+      } catch {
+        toast.error("Không thể từ chối lời mời.");
       }
     }
   };
@@ -136,9 +170,9 @@ const ProfileFriends = ({ profile, isOwner }) => {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="mt-4 flex gap-2">
+                  <div className="mt-4 flex gap-2 min-h-[44px]">
                     {friend.relationshipStatus === "SELF" ? (
-                      <div className="w-full text-center py-2 bg-primary/10 text-primary text-sm font-bold rounded-lg">
+                      <div className="w-full text-center py-2 bg-primary/20 text-primary text-sm font-bold rounded-lg border border-primary/30">
                         Bạn
                       </div>
                     ) : friend.relationshipStatus === "FRIEND" ? (
@@ -159,14 +193,35 @@ const ProfileFriends = ({ profile, isOwner }) => {
                           <UserMinus size={18} />
                         </button>
                       </>
+                    ) : friend.relationshipStatus === "WAITING" ? (
+                      // WAITING = Họ gửi lời mời cho tôi → Hiển thị Accept/Reject
+                      <div className="flex gap-2 w-full">
+                        <button
+                          onClick={() => confirmAcceptRequest(friend)}
+                          className="flex-1 py-2 px-3 bg-primary hover:bg-orange-600 text-text-main font-bold text-sm rounded-lg transition-all flex items-center justify-center gap-1.5"
+                          title="Chấp nhận"
+                        >
+                          <Check size={16} />
+                          Đồng ý
+                        </button>
+                        <button
+                          onClick={() => confirmRejectRequest(friend)}
+                          className="flex-1 py-2 px-3 bg-surface-main hover:bg-red-500/20 text-text-secondary hover:text-red-500 font-medium text-sm rounded-lg transition-all flex items-center justify-center gap-1.5"
+                          title="Từ chối"
+                        >
+                          <X size={16} />
+                          Từ chối
+                        </button>
+                      </div>
                     ) : friend.relationshipStatus === "PENDING" ? (
+                      // PENDING = Tôi gửi lời mời cho họ → Hiển thị Cancel
                       <button
                         onClick={() => confirmCancelRequest(friend)}
                         className="w-full py-2 px-3 bg-surface-main hover:bg-red-500/20 text-text-secondary hover:text-red-500 font-medium text-sm rounded-lg transition-all flex items-center justify-center gap-2"
-                        title="Hủy lời mời"
+                        title="Thu hồi lời mời"
                       >
                         <UserX size={16} />
-                        Hủy lời mời
+                        Thu hồi lời mời
                       </button>
                     ) : (
                       <button
@@ -217,18 +272,38 @@ const ProfileFriends = ({ profile, isOwner }) => {
         title={
           confirmModal.type === "UNFRIEND"
             ? "Hủy kết bạn"
-            : "Hủy lời mời kết bạn"
+            : confirmModal.type === "CANCEL_REQUEST"
+              ? "Thu hồi lời mời"
+              : confirmModal.type === "ACCEPT_REQUEST"
+                ? "Chấp nhận lời mời?"
+                : "Từ chối lời mời?"
         }
         message={
           confirmModal.type === "UNFRIEND"
             ? `Bạn có chắc muốn hủy kết bạn với ${confirmModal.friend?.fullName}?`
-            : "Bạn có chắc chắn muốn hủy lời mời kết bạn này?"
+            : confirmModal.type === "CANCEL_REQUEST"
+              ? `Bạn có chắc muốn thu hồi lời mời kết bạn gửi đến ${confirmModal.friend?.fullName}?`
+              : confirmModal.type === "ACCEPT_REQUEST"
+                ? `Bạn muốn chấp nhận lời mời kết bạn từ ${confirmModal.friend?.fullName}?`
+                : `Bạn có chắc muốn từ chối lời mời kết bạn từ ${confirmModal.friend?.fullName}?`
         }
-        type="danger"
+        type={
+          confirmModal.type === "ACCEPT_REQUEST"
+            ? "info"
+            : confirmModal.type === "REJECT_REQUEST"
+              ? "warning"
+              : "danger"
+        }
         confirmText={
-          confirmModal.type === "UNFRIEND" ? "Hủy kết bạn" : "Hủy lời mời"
+          confirmModal.type === "UNFRIEND"
+            ? "Hủy kết bạn"
+            : confirmModal.type === "CANCEL_REQUEST"
+              ? "Thu hồi"
+              : confirmModal.type === "ACCEPT_REQUEST"
+                ? "Chấp nhận"
+                : "Từ chối"
         }
-        cancelText="Đóng"
+        cancelText="Hủy"
       />
     </div>
   );

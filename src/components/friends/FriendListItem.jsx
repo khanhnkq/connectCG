@@ -14,7 +14,7 @@ export default function FriendListItem({ item, isActive, onClick, viewMode }) {
                     style={{ backgroundImage: `url("${item.avatarUrl || item.image || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}")` }}
                 ></div>
                 {item.isOnline && (
-                    <div className="absolute -bottom-1 -right-1 size-4 bg-green-500 rounded-full border-2 border-surface-main shadow-lg"></div>
+                    <div className="absolute -bottom-1 -right- size-4 bg-green-500 rounded-full border-2 border-surface-main shadow-lg"></div>
                 )}
             </div>
 

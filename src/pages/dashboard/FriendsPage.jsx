@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import toast from 'react-hot-toast';
 import ChatService from "../../services/chat/ChatService";
 import UserProfileService from "../../services/user/UserProfileService";
@@ -15,6 +15,7 @@ import FriendProfileDetail from "../../components/friends/FriendProfileDetail";
 export default function FriendsPage() {
     const { user: currentUser } = useSelector((state) => state.auth);
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
 
     // UI State
     const [viewMode, setViewMode] = useState('ALL');
@@ -60,6 +61,29 @@ export default function FriendsPage() {
             setSuggestionsLoading(false);
         }
     };
+
+    // Fetch suggestions when switching to SUGGESTIONS view
+    useEffect(() => {
+        if (viewMode === 'SUGGESTIONS' && suggestions.length === 0) {
+            fetchSuggestions();
+        }
+    }, [viewMode, suggestions.length]);
+
+    // Handle URL query parameter for tab
+    useEffect(() => {
+        const tab = searchParams.get('tab');
+        if (tab === 'suggestions') {
+            setViewMode('SUGGESTIONS');
+            // Remove query param after setting viewMode
+            setSearchParams({});
+        } else if (tab === 'requests') {
+            setViewMode('REQUESTS');
+            setSearchParams({});
+        } else if (tab === 'all') {
+            setViewMode('ALL');
+            setSearchParams({});
+        }
+    }, [searchParams, setSearchParams]);
 
     // Fetch data based on view mode
     useEffect(() => {

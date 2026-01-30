@@ -1,12 +1,17 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Search, UserPlus } from "lucide-react";
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
 import FriendService from "../../services/friend/FriendService";
+import FriendSuggestionService from "../../services/FriendSuggestionService";
+import FriendRequestService from "../../services/friend/FriendRequestService";
 
 export default function RightSidebar() {
   const [friends, setFriends] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const loadingRef = useRef(false);
 
   const fetchFriends = useCallback(
@@ -41,40 +46,50 @@ export default function RightSidebar() {
     [],
   );
 
+  // Fetch suggestions
+  const fetchSuggestions = useCallback(async () => {
+    setSuggestionsLoading(true);
+    try {
+      const response = await FriendSuggestionService.getSuggestions(0, 3);
+      setSuggestions(response.data.content || []);
+    } catch (error) {
+      console.error("Failed to fetch suggestions", error);
+    } finally {
+      setSuggestionsLoading(false);
+    }
+  }, []);
+
   // Debounce search
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-
-      fetchFriends(0, true);
-    }, 10000000);
+      fetchFriends(0, searchTerm);
+    }, 300);
     return () => clearTimeout(timeoutId);
   }, [searchTerm, fetchFriends]);
+
+  // Fetch suggestions on mount
+  useEffect(() => {
+    fetchSuggestions();
+  }, [fetchSuggestions]);
 
   // Handle scroll to load more
   const handleScroll = () => {
     // Logic cuộn nếu cần, hiện tại bỏ qua page/hasMore chưa dùng đúng
   };
 
-  const suggestedMatches = [
-    {
-      name: "Hồng Nhung",
-      relation: "12 bạn chung",
-      avatar:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuA61rF2qJA_61d08hoKQD1vgLttk99SWH-2mhQvPCoH57mhr0UjI8L7ybrsEWnI2oLFtMUesiVK-j9CGmOjLqaDBSP4VGvvtSiwItxsARYkGe8mEsW7qwBkWXGsCjQLKe10vZ7AQv05zjKn0dsPLE5BUEJCjrwzv9TUcPhyKj43H7MuKHeGmqxrZrq5_s7ODalnsrwBejsIxD4NsrZetKdfuu5WRkwVCT304dnvOmT15inm4rJUGChESlWiT5jnp5f3NqPpm8kKCv0",
-    },
-    {
-      name: "Tuấn Anh",
-      relation: "Thành viên mới",
-      avatar:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuBdoLrCwAT83JCL6U8m7TnDC0oM8kn4OVr5XeeYADi_UYRinmq2C0fIwzychqDESZvGWD0nS5EqD_0hTACwjoHHIUqj1bI5Ic1EQZ75Oef8FoxX0B7g4dp_lmTjf44WtIpjrF_Ygs2b0iQ90dlQzFyapA7Oh2Pm1-peCNesZBogBZhUpUCXOnp5_KqLP9H-cm69o1uTTt-sGGAzw11HFpXZ7pvgNJkIjC9OPnhWLCMwXKlgZz2nKU2pguarVqXSrrVwTiSrRLt4h5g",
-    },
-    {
-      name: "Minh Thư",
-      relation: "Ở gần bạn",
-      avatar:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuCA2lYtnTFCA75HFG_52JszPx-az718WMOboPAn-G1i24N852_c8WMA84zaSIjPhM2bLmVoY8itXvafnzxb5VjPbzRUZp6AXCKTfAEXa9jysG_6eND1TYZ0D1OFOXHtOKIWA2x0OJxEozgg2vR_FVWQLKzKDMrEuV3ZX9MEa8yOLevyaZjSYY0z7uQTwuSXWp4HBjjqAcBcZLqU4iAoqv71JyHkK1TW8TD9Rt3KVz3qa5jC8Xq-idWXHr3qpktV4H962cWYDM__P1Y",
-    },
-  ];
+  // Handle add friend
+  const handleAddFriend = async (userId) => {
+    const tid = toast.loading("Đang gửi lời mời...");
+    try {
+      await FriendRequestService.sendRequest(userId);
+      toast.success("Đã gửi lời mời kết bạn!", { id: tid });
+      // Remove from suggestions
+      setSuggestions(prev => prev.filter(s => s.userId !== userId));
+    } catch (error) {
+      console.error("Error sending friend request:", error);
+      toast.error(error.response?.data?.message || "Lỗi khi gửi lời mời", { id: tid });
+    }
+  };
 
   return (
     <aside
@@ -105,37 +120,54 @@ export default function RightSidebar() {
             Gợi ý bạn bè
           </h3>
           <Link
-            to="/search/members"
+            to="/dashboard/friends?tab=suggestions"
             className="text-primary text-xs font-bold hover:underline tracking-wide"
           >
             Xem tất cả
           </Link>
         </div>
         <div className="flex flex-col gap-5">
-          {suggestedMatches.map((match, index) => (
-            <div
-              key={index}
-              className="flex items-center justify-between group"
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className="size-11 rounded-full bg-cover bg-center border border-transparent group-hover:border-primary transition-all"
-                  style={{ backgroundImage: `url("${match.avatar}")` }}
-                ></div>
-                <div className="flex flex-col">
-                  <span className="text-text-main text-sm font-bold group-hover:text-primary transition-colors cursor-pointer">
-                    {match.name}
-                  </span>
-                  <span className="text-text-secondary text-xs">
-                    {match.relation}
-                  </span>
-                </div>
-              </div>
-              <button className="size-9 rounded-full bg-surface-main border border-border-main hover:bg-primary hover:text-white flex items-center justify-center text-primary transition-all shadow-md">
-                <UserPlus size={20} />
-              </button>
+          {suggestionsLoading ? (
+            <div className="flex justify-center py-4">
+              <div className="size-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
             </div>
-          ))}
+          ) : suggestions.length > 0 ? (
+            suggestions.map((suggestion) => (
+              <div
+                key={suggestion.userId}
+                className="flex items-center justify-between group"
+              >
+                <Link
+                  to={`/dashboard/member/${suggestion.userId}`}
+                  className="flex items-center gap-3 flex-1"
+                >
+                  <div
+                    className="size-11 rounded-full bg-cover bg-center border border-transparent group-hover:border-primary transition-all"
+                    style={{ backgroundImage: `url("${suggestion.avatarUrl || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}")` }}
+                  ></div>
+                  <div className="flex flex-col">
+                    <span className="text-text-main text-sm font-bold group-hover:text-primary transition-colors cursor-pointer">
+                      {suggestion.fullName || suggestion.username}
+                    </span>
+                    <span className="text-text-secondary text-xs truncate max-w-[120px]">
+                      {suggestion.description || 'Gợi ý'}
+                    </span>
+                  </div>
+                </Link>
+                <button
+                  onClick={() => handleAddFriend(suggestion.userId)}
+                  className="size-9 rounded-full bg-surface-main border border-border-main hover:bg-primary hover:text-white flex items-center justify-center text-primary transition-all shadow-md"
+                  title="Kết bạn"
+                >
+                  <UserPlus size={20} />
+                </button>
+              </div>
+            ))
+          ) : (
+            <p className="text-text-secondary text-xs text-center py-4">
+              Không có gợi ý nào
+            </p>
+          )}
         </div>
       </div>
 
