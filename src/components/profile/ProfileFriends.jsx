@@ -11,7 +11,7 @@ import {
   MoreVertical,
 } from "lucide-react";
 import FriendRequestService from "../../services/friend/FriendRequestService";
-import ConfirmModal from "../admin/ConfirmModal";
+import ConfirmModal from "../common/ConfirmModal";
 import toast from "react-hot-toast";
 import { useFriends } from "../../hooks/useFriends";
 

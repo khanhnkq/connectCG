@@ -39,6 +39,7 @@ import {
   Pencil,
   BellOff,
   UserX,
+  Info,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import ChatService from "../../services/chat/ChatService";
@@ -46,6 +47,7 @@ import FirebaseChatService from "../../services/chat/FirebaseChatService";
 import reportService from "../../services/ReportService";
 import FriendService from "../../services/friend/FriendService";
 import ReportModal from "../../components/report/ReportModal";
+import ConfirmModal from "../../components/common/ConfirmModal";
 import { uploadImage } from "../../utils/uploadImage";
 
 export default function ChatInterface() {
@@ -64,6 +66,12 @@ export default function ChatInterface() {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteFriends, setInviteFriends] = useState([]);
   const [selectedInvitees, setSelectedInvitees] = useState([]);
+  const [showReportUser, setShowReportUser] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [tempName, setTempName] = useState("");
+  const chatAvatarInputRef = useRef(null);
 
   const handleCreateGroup = async () => {
     if (selectedMembers.length < 1) {
@@ -86,7 +94,7 @@ export default function ChatInterface() {
         room = response.data;
       } else {
         // Nếu > 1 người, tạo nhóm
-        const name = groupName.trim() || `Nhóm của ${currentUser.username}`;
+        const name = groupName.trim() || `Nhóm của ${currentUser.fullName || currentUser.username}`;
         const response = await ChatService.createGroupChat(
           name,
           selectedMembers.map((f) => f.id),
@@ -186,8 +194,7 @@ export default function ChatInterface() {
       if (selectedKey) {
         const match = rooms.find((r) => r.firebaseRoomKey === selectedKey);
         if (match) setActiveRoom(match);
-        else if (rooms.length > 0 && !activeRoom) setActiveRoom(rooms[0]);
-      } else if (rooms.length > 0 && !activeRoom) {
+      } else if (rooms.length > 0 && !activeRoom && !location.state?.noAutoSelect) {
         setActiveRoom(rooms[0]);
       }
     } catch (error) {
@@ -272,7 +279,8 @@ export default function ChatInterface() {
     try {
       const msgData = {
         senderId: currentUser.id,
-        senderName: currentUser.username || "Anonymous",
+        senderName: currentUser.fullName || currentUser.username || "Anonymous",
+        senderAvatarUrl: currentUser.avatarUrl || "",
         text: text,
         type: "text",
         timestamp: Date.now(),
@@ -287,11 +295,6 @@ export default function ChatInterface() {
       toast.error("Gửi tin nhắn thất bại");
     }
   };
-
-  const [showReportUser, setShowReportUser] = useState(false);
-  const [isEditingName, setIsEditingName] = useState(false);
-  const [tempName, setTempName] = useState("");
-  const chatAvatarInputRef = useRef(null);
 
   const handleUpdateAvatar = async (file) => {
     if (!activeRoom || !file) return;
@@ -338,6 +341,41 @@ export default function ChatInterface() {
     } catch (error) {
       console.error("Error renaming room:", error);
       toast.error("Lỗi khi đổi tên nhóm", { id: tid });
+    }
+  };
+
+  const handleDeleteRoom = async () => {
+    if (!activeRoom) return;
+
+    const isGroup = activeRoom.type === "GROUP";
+    const confirmMsg = isGroup
+      ? "Bạn có chắc muốn XÓA VĨNH VIỄN nhóm này và toàn bộ tin nhắn không? Thao tác này không thể hoàn tác."
+      : "Bạn có chắc muốn XÓA VĨNH VIỄN cuộc trò chuyện này không? Toàn bộ tin nhắn sẽ bị mất ở cả 2 phía.";
+
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDeleteRoom = async () => {
+    setShowDeleteConfirm(false);
+    const tid = toast.loading("Đang xóa...");
+    try {
+      // 1. Xóa trên MySQL
+      await ChatService.deleteChatRoom(activeRoom.id);
+
+      // 2. Xóa trên Firebase
+      await FirebaseChatService.deleteMessages(activeRoom.firebaseRoomKey);
+
+      toast.success("Đã xóa cuộc trò chuyện", { id: tid });
+
+      // 3. Cập nhật UI: Quay về danh sách tin nhắn và không tự động chọn phòng mới
+      setActiveRoom(null);
+      navigate("/dashboard/chat", { state: { noAutoSelect: true }, replace: true });
+      await fetchRooms();
+    } catch (error) {
+      console.error("Delete room error:", error);
+      toast.error(error.response?.data?.message || "Lỗi khi xóa cuộc trò chuyện", {
+        id: tid,
+      });
     }
   };
 
@@ -395,8 +433,8 @@ export default function ChatInterface() {
                   key={conv.id}
                   onClick={() => setActiveRoom(conv)}
                   className={`p-3 rounded-xl cursor-pointer relative group flex gap-3 items-center shadow-lg transition-colors ${activeRoom?.id === conv.id
-                      ? "bg-surface-main border border-primary/20 shadow-black/5"
-                      : "hover:bg-surface-main/50 border border-transparent"
+                    ? "bg-surface-main border border-primary/20 shadow-black/5"
+                    : "hover:bg-surface-main/50 border border-transparent"
                     }`}
                 >
                   <div className="relative shrink-0">
@@ -413,8 +451,8 @@ export default function ChatInterface() {
                     <div className="flex justify-between items-baseline mb-0.5">
                       <h3
                         className={`font-bold text-sm truncate ${activeRoom?.id === conv.id
-                            ? "text-text-main"
-                            : "text-text-secondary group-hover:text-text-main"
+                          ? "text-text-main"
+                          : "text-text-secondary group-hover:text-text-main"
                           }`}
                       >
                         {conv.name || "Hội thoại"}
@@ -481,6 +519,29 @@ export default function ChatInterface() {
               <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6 scroll-smooth">
                 {messages.map((msg, index) => {
                   const isSentByMe = msg.senderId === currentUser.id;
+
+                  // Logic xác định avatar của người gửi
+                  let msgAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+
+                  if (msg.senderAvatarUrl) {
+                    msgAvatar = msg.senderAvatarUrl;
+                  } else if (activeRoom.members) {
+                    // Fallback: tìm trong members của activeRoom
+                    const sender = activeRoom.members.find(
+                      (m) => m.id === msg.senderId,
+                    );
+                    if (sender?.avatarUrl) {
+                      msgAvatar = sender.avatarUrl;
+                    }
+                  } else if (
+                    !isSentByMe &&
+                    activeRoom.type !== "GROUP" &&
+                    activeRoom.avatarUrl
+                  ) {
+                    // Fallback 1-1
+                    msgAvatar = activeRoom.avatarUrl;
+                  }
+
                   return (
                     <div
                       key={index}
@@ -488,9 +549,12 @@ export default function ChatInterface() {
                         }`}
                     >
                       {!isSentByMe && (
-                        <div className="size-8 rounded-full bg-gray-600 flex items-center justify-center shrink-0 self-end mb-1 ring-1 ring-border-main text-[10px] text-white font-bold">
-                          {msg.senderName?.charAt(0)}
-                        </div>
+                        <div
+                          className="size-8 rounded-full bg-cover bg-center shrink-0 self-end mb-1 border border-border-main"
+                          style={{
+                            backgroundImage: `url("${msgAvatar}")`,
+                          }}
+                        ></div>
                       )}
                       <div
                         className={`flex flex-col gap-1 ${isSentByMe ? "items-end" : ""
@@ -498,8 +562,8 @@ export default function ChatInterface() {
                       >
                         <div
                           className={`p-4 rounded-2xl text-sm leading-relaxed shadow-sm ${isSentByMe
-                              ? "bg-bubble-sent rounded-br-none text-white font-semibold"
-                              : "bg-bubble-received rounded-bl-none text-text-main"
+                            ? "bg-bubble-sent rounded-br-none text-white font-semibold"
+                            : "bg-bubble-received rounded-bl-none text-text-main"
                             }`}
                         >
                           <p>{msg.text}</p>
@@ -686,6 +750,22 @@ export default function ChatInterface() {
                       Block
                     </span>
                   </button>
+                  {/* Delete Button */}
+                  {(activeRoom.type === "DIRECT" ||
+                    activeRoom.members?.find((m) => m.id === currentUser.id)
+                      ?.role === "ADMIN") && (
+                      <button
+                        onClick={handleDeleteRoom}
+                        className="flex flex-col items-center gap-1 group"
+                      >
+                        <div className="size-10 rounded-full bg-red-500/10 group-hover:bg-red-600 group-hover:text-white flex items-center justify-center text-red-500 transition-all border border-red-500/20">
+                          <Trash2 size={24} />
+                        </div>
+                        <span className="text-[10px] text-text-secondary font-bold uppercase tracking-wide group-hover:text-red-500 transition-colors">
+                          Delete
+                        </span>
+                      </button>
+                    )}
                 </div>
               </div>
               <div className="p-5">
@@ -719,8 +799,8 @@ export default function ChatInterface() {
                             </p>
                             <span
                               className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${member.role === "ADMIN"
-                                  ? "bg-orange-500/20 text-orange-400"
-                                  : "bg-surface-main text-text-secondary"
+                                ? "bg-orange-500/20 text-orange-400"
+                                : "bg-surface-main text-text-secondary"
                                 }`}
                             >
                               {member.role}
@@ -782,7 +862,7 @@ export default function ChatInterface() {
                     className="w-full flex items-center justify-between p-3 rounded-xl bg-surface-main hover:bg-background-main border border-border-main group transition-colors text-left"
                   >
                     <div className="flex items-center gap-3 text-text-secondary group-hover:text-white">
-                      <AlertTriangle size={20} />
+                      <Flag size={20} />
                       <span className="text-sm font-medium">Báo cáo</span>
                     </div>
                     <ChevronRight size={16} className="text-text-secondary" />
@@ -799,6 +879,21 @@ export default function ChatInterface() {
             </div>
           )}
         </aside>
+
+        <ConfirmModal
+          isOpen={showDeleteConfirm}
+          title="Xác nhận xóa"
+          message={
+            activeRoom?.type === "GROUP"
+              ? "Bạn có chắc muốn XÓA VĨNH VIỄN nhóm này và toàn bộ tin nhắn không? Thao tác này không thể hoàn tác."
+              : "Bạn có chắc muốn XÓA VĨNH VIỄN cuộc trò chuyện này không? Toàn bộ tin nhắn sẽ bị mất ở cả 2 phía."
+          }
+          type="danger"
+          confirmText="Xác nhận Xóa"
+          cancelText="Hủy"
+          onConfirm={confirmDeleteRoom}
+          onClose={() => setShowDeleteConfirm(false)}
+        />
       </div>
       <ReportModal
         isOpen={showReportUser}
@@ -903,10 +998,11 @@ export default function ChatInterface() {
                           setSelectedMembers((prev) => [...prev, friend]);
                         }
                       }}
-                      className={`flex items-center gap-3 p-3 rounded-2xl hover:bg-background-main cursor-pointer group transition-all ${selectedMembers.some((m) => m.id === friend.id)
+                      className={`flex items-center gap-3 p-3 rounded-2xl hover:bg-background-main cursor-pointer group transition-all ${
+                        selectedMembers.some((m) => m.id === friend.id)
                           ? "bg-background-main ring-1 ring-primary/30"
                           : ""
-                        }`}
+                      }`}
                     >
                       <div className="relative">
                         <div
@@ -1054,8 +1150,8 @@ export default function ChatInterface() {
                         key={friend.id}
                         onClick={() => toggleInvitee(friend)}
                         className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${isSelected
-                            ? "bg-primary/10 border-primary/50"
-                            : "bg-surface-main border-border-main hover:bg-background-main"
+                          ? "bg-primary/10 border-primary/50"
+                          : "bg-surface-main border-border-main hover:bg-background-main"
                           }`}
                       >
                         <div
@@ -1073,8 +1169,8 @@ export default function ChatInterface() {
                         </div>
                         <div
                           className={`size-5 rounded border-2 flex items-center justify-center transition-all ${isSelected
-                              ? "bg-primary border-primary"
-                              : "border-border-main"
+                            ? "bg-primary border-primary"
+                            : "border-border-main"
                             }`}
                         >
                           {isSelected && (

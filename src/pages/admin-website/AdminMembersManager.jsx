@@ -16,7 +16,7 @@ import {
 import React, { useState, useEffect } from "react";
 import AdminLayout from "../../components/layout-admin/AdminLayout";
 import toast from "react-hot-toast";
-import ConfirmModal from "../../components/admin/ConfirmModal";
+import ConfirmModal from "../../components/common/ConfirmModal";
 import {
   getAllUsers,
   updateUserRole,
@@ -239,57 +239,35 @@ const AdminMembersManager = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-border-dark/30 text-sm">
-              {loading && (
-                <tr>
-                  <td
-                    colSpan="5"
-                    className="text-center py-12 text-text-muted animate-pulse"
-                  >
-                    Đang tải dữ liệu...
+              {members.map((member, index) => (
+                <tr
+                  key={member.id}
+                  className="hover:bg-surface-dark/40 transition-colors text-white/90 group"
+                >
+                  <td className="px-6 py-5 font-mono text-[10px] text-text-muted">
+                    {index + 1}
                   </td>
-                </tr>
-              )}
-
-              {!loading && members.length === 0 && (
-                <tr>
-                  <td
-                    colSpan="5"
-                    className="text-center py-12 text-text-muted italic"
-                  >
-                    Không tìm thấy người dùng nào
-                  </td>
-                </tr>
-              )}
-
-              {!loading &&
-                members.map((member, index) => (
-                  <tr
-                    key={member.id}
-                    className="hover:bg-surface-dark/40 transition-colors text-white/90 group"
-                  >
-                    <td className="px-6 py-5 font-mono text-[10px] text-text-muted">
-                      {index + 1}
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="flex items-center gap-4">
-                        <div className="size-10 rounded-xl overflow-hidden border border-border-dark/50 shrink-0 group-hover:border-primary/50 transition-all">
-                          <img
-                            src={member.avatar}
-                            className="w-full h-full object-cover"
-                            alt=""
-                          />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-bold truncate">{member.name}</p>
-                          <p className="text-[10px] text-text-muted uppercase font-bold tracking-tighter">
-                            {member.username}
-                          </p>
-                        </div>
+                  <td className="px-6 py-5">
+                    <div className="flex items-center gap-4">
+                      <div className="size-10 rounded-xl overflow-hidden border border-border-dark/50 shrink-0 group-hover:border-primary/50 transition-all">
+                        <img
+                          src={member.avatar}
+                          className="w-full h-full object-cover"
+                          alt=""
+                        />
                       </div>
-                    </td>
-                    <td className="px-6 py-5">
-                      <span
-                        className={`px-2.5 py-1 text-[9px] font-black uppercase rounded-lg border flex items-center gap-1.5 w-fit ${member.role === "ADMIN"
+                      <div className="min-w-0">
+                        <p className="font-bold truncate">{member.name}</p>
+                        <p className="text-[10px] text-text-muted uppercase font-bold tracking-tighter">
+                          {member.username}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-5">
+                    <span
+                      className={`px-2.5 py-1 text-[9px] font-black uppercase rounded-lg border flex items-center gap-1.5 w-fit ${
+                        member.role === "ADMIN"
                           ? "bg-primary/10 text-primary border-primary/30"
                           : "bg-zinc-800 text-zinc-400 border-zinc-700"
                           }`}

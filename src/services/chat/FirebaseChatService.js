@@ -29,6 +29,16 @@ const FirebaseChatService = {
                 ...data
             });
         });
+    },
+
+    /**
+     * Xóa toàn bộ tin nhắn trong phòng trên Firebase
+     * @param {string} roomKey 
+     */
+    deleteMessages: async (roomKey) => {
+        const { ref, remove } = await import("firebase/database");
+        const messagesRef = ref(db, `messages/${roomKey}`);
+        return remove(messagesRef);
     }
 };
 

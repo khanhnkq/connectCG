@@ -9,17 +9,20 @@ import { CLOUDINARY_URL, UPLOAD_PRESET } from '../config/cloundinaryConfig';
  */
 export const uploadImage = async (file, folder = 'user/avatar') => {
     if (!file) return null;
+    // --- CẤU HÌNH VALIDATE ---
+    const isVideo = file.type.startsWith('video/');
 
     // Validate file
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    const maxSize = isVideo ? 50 * 1024 * 1024 : 5 * 1024 * 1024;
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 
+        'video/mp4', 'video/webm']; // Thêm video ;
 
     if (file.size > maxSize) {
-        throw new Error('Kích thước ảnh không được vượt quá 5MB');
+        throw new Error(`Kích thước file quá lớn (Video tối đa 50MB, Ảnh 5MB). File hiện tại: ${(file.size/1024/1024).toFixed(2)}MB`);
     }
 
     if (!allowedTypes.includes(file.type)) {
-        throw new Error('Chỉ hỗ trợ định dạng JPG, PNG, WebP, GIF');
+        throw new Error('Định dạng không hỗ trợ (chỉ chấp nhận JPG, PNG, GIF, MP4, WEBM)');
     }
 
     // Prepare form data
@@ -28,14 +31,19 @@ export const uploadImage = async (file, folder = 'user/avatar') => {
     formData.append('upload_preset', UPLOAD_PRESET);
     formData.append('folder', folder);
 
+    // --- XỬ LÝ ENDPOINT CHO VIDEO ---
+    // Mặc định config là .../image/upload. Nếu upload video phải đổi sang .../video/upload
+    let uploadEndpoint = CLOUDINARY_URL;
+    if (isVideo) {
+        uploadEndpoint = CLOUDINARY_URL.replace("/image/upload", "/video/upload");
+    }
+
     try {
-        const response = await axios.post(CLOUDINARY_URL, formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
+        const response = await axios.post(uploadEndpoint, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
         });
 
-        return response.data.secure_url; // URL HTTPS của ảnh
+        return response.data.secure_url;
     } catch (error) {
         console.error('Cloudinary upload error:', error);
         throw new Error(error.response?.data?.message || 'Upload thất bại');
@@ -75,4 +83,8 @@ export const uploadPostImage = async (file) => {
  */
 export const uploadGroupCover = async (file) => {
     return uploadImage(file, 'group/img');
+};
+
+export const uploadPostMedia = async (file) => {
+    return uploadImage(file, 'posts'); // Lưu vào folder 'posts'
 };

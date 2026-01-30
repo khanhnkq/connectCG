@@ -25,6 +25,9 @@ const ChatService = {
 
     inviteMembers: async (roomId, userIds) => {
         return axiosClient.post(`/chat/${roomId}/invite`, { userIds });
+    },
+    deleteChatRoom: async (roomId) => {
+        return axiosClient.delete(`/chat/${roomId}`);
     }
 };
 
