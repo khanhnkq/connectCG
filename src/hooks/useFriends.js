@@ -23,7 +23,51 @@ export function useFriends(userId = null) {
                 // Fetch friends of current user
                 response = await FriendService.getMyFriends({ size: 100 });
             }
-            const mappedFriends = (response.data.content || response.data || []).map(f => ({ ...f, type: 'FRIEND' }));
+
+            let mappedFriends = (response.data.content || response.data || []).map(f => ({ ...f, type: 'FRIEND' }));
+
+            // If viewing someone else's friends, enrich with pending request data
+            if (userId && user) {
+                try {
+                    // Fetch current user's pending requests (both sent and received)
+                    const pendingResponse = await FriendRequestService.getPendingRequests(0, 100);
+                    const pendingRequests = pendingResponse.data.content || [];
+
+                    // Create a map of userId -> request info
+                    const requestMap = new Map();
+                    pendingRequests.forEach(req => {
+                        requestMap.set(req.senderId, {
+                            isRequestReceiver: true,  // Current user received this request
+                            requestId: req.requestId
+                        });
+                    });
+
+                    // Also fetch sent requests
+                    const currentUserId = user?.id || user?.userId || user?.sub;
+
+                    // Enrich friends data with request info
+                    mappedFriends = mappedFriends.map(friend => {
+                        if (friend.relationshipStatus === 'PENDING') {
+                            const requestInfo = requestMap.get(friend.id);
+                            if (requestInfo) {
+                                // Current user received request from this friend
+                                return { ...friend, ...requestInfo };
+                            } else {
+                                // Current user sent request to this friend
+                                return {
+                                    ...friend,
+                                    isRequestReceiver: false,
+                                    // requestId might not be available for sent requests
+                                };
+                            }
+                        }
+                        return friend;
+                    });
+                } catch (error) {
+                    console.error("Error enriching friend data with requests:", error);
+                }
+            }
+
             setFriends(mappedFriends);
         } catch (error) {
             console.error("Error fetching friends:", error);

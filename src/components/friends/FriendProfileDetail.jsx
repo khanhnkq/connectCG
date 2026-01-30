@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ProfileNavbar from "../profile/ProfileNavbar";
 import ProfileAbout from "../profile/ProfileAbout";
 import ProfilePhotos from "../profile/ProfilePhotos";
 import ProfileHobbies from "../profile/ProfileHobbies";
 import ProfileFriends from "../profile/ProfileFriends";
+import ConfirmModal from "../common/ConfirmModal";
 
 export default function FriendProfileDetail({
     activeItem,
@@ -17,9 +19,88 @@ export default function FriendProfileDetail({
     onUnfriend,
     onAddFriend,
     onAcceptRequest,
-    onRejectRequest
+    onRejectRequest,
+    onDismissSuggestion
 }) {
     const navigate = useNavigate();
+
+    // Confirmation modal state
+    const [confirmModal, setConfirmModal] = useState({
+        isOpen: false,
+        type: 'danger',
+        title: '',
+        message: '',
+        onConfirm: null
+    });
+
+    const closeModal = () => {
+        setConfirmModal({ ...confirmModal, isOpen: false });
+    };
+
+    const handleUnfriendClick = () => {
+        setConfirmModal({
+            isOpen: true,
+            type: 'warning',
+            title: 'Hủy kết bạn?',
+            message: `Bạn có chắc muốn hủy kết bạn với ${fullProfile.fullName || fullProfile.name}? Bạn sẽ cần gửi lời mời lại nếu muốn kết bạn.`,
+            onConfirm: () => {
+                onUnfriend(fullProfile.userId || fullProfile.id);
+                closeModal();
+            }
+        });
+    };
+
+    const handleRejectClick = () => {
+        setConfirmModal({
+            isOpen: true,
+            type: 'warning',
+            title: 'Từ chối lời mời?',
+            message: `Bạn có chắc muốn từ chối lời mời kết bạn từ ${activeItem.senderFullName || activeItem.senderUsername}?`,
+            onConfirm: () => {
+                onRejectRequest(activeItem);
+                closeModal();
+            }
+        });
+    };
+
+    const handleDismissClick = () => {
+        setConfirmModal({
+            isOpen: true,
+            type: 'info',
+            title: 'Ẩn gợi ý?',
+            message: `Bạn sẽ không thấy ${fullProfile.fullName || fullProfile.name} trong danh sách gợi ý nữa.`,
+            onConfirm: () => {
+                onDismissSuggestion(fullProfile.userId || fullProfile.id);
+                closeModal();
+            }
+        });
+    };
+
+    const handleAddFriendClick = () => {
+        setConfirmModal({
+            isOpen: true,
+            type: 'info',
+            title: 'Gửi lời mời kết bạn?',
+            message: `Bạn muốn gửi lời mời kết bạn đến ${fullProfile.fullName || fullProfile.name}?`,
+            onConfirm: () => {
+                onAddFriend(fullProfile.userId || fullProfile.id);
+                closeModal();
+            }
+        });
+    };
+
+    const handleAcceptClick = () => {
+        setConfirmModal({
+            isOpen: true,
+            type: 'info',
+            title: 'Chấp nhận lời mời?',
+            message: `Bạn muốn chấp nhận lời mời kết bạn từ ${activeItem.senderFullName || activeItem.senderUsername}?`,
+            onConfirm: () => {
+                onAcceptRequest(activeItem);
+                closeModal();
+            }
+        });
+    };
 
     if (!activeItem) {
         return (
@@ -132,7 +213,7 @@ export default function FriendProfileDetail({
                                 Xem hồ sơ
                             </button>
                             <button
-                                onClick={() => onUnfriend(fullProfile.userId || fullProfile.id)}
+                                onClick={handleUnfriendClick}
                                 className="px-4 py-3 bg-[#2A1D15] hover:bg-red-500/20 hover:text-red-500 hover:border-red-500/30 text-white font-bold rounded-xl border border-[#3A2A20] transition-all"
                                 title="Hủy kết bạn"
                             >
@@ -142,14 +223,14 @@ export default function FriendProfileDetail({
                     ) : viewMode === 'REQUESTS' ? (
                         <>
                             <button
-                                onClick={() => onAcceptRequest(activeItem)}
+                                onClick={handleAcceptClick}
                                 className="px-8 py-3 bg-primary hover:bg-orange-600 text-[#231810] font-bold rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center gap-2 hover:scale-105"
                             >
                                 <span className="material-symbols-outlined">check_circle</span>
                                 Chấp nhận
                             </button>
                             <button
-                                onClick={() => onRejectRequest(activeItem)}
+                                onClick={handleRejectClick}
                                 className="px-8 py-3 bg-[#2A1D15] hover:bg-red-500/20 hover:text-red-500 text-white font-bold rounded-xl border border-[#3A2A20] hover:border-red-500/30 transition-all flex items-center gap-2"
                             >
                                 <span className="material-symbols-outlined">cancel</span>
@@ -157,13 +238,25 @@ export default function FriendProfileDetail({
                             </button>
                         </>
                     ) : (
-                        <button
-                            onClick={() => onAddFriend(fullProfile.userId || fullProfile.id)}
-                            className="px-10 py-3 bg-primary hover:bg-orange-600 text-[#231810] font-bold rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center gap-2 hover:scale-105"
-                        >
-                            <span className="material-symbols-outlined">person_add</span>
-                            Kết bạn
-                        </button>
+                        <>
+                            <button
+                                onClick={handleAddFriendClick}
+                                className="px-8 py-3 bg-primary hover:bg-orange-600 text-[#231810] font-bold rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center gap-2 hover:scale-105"
+                            >
+                                <span className="material-symbols-outlined">person_add</span>
+                                Kết bạn
+                            </button>
+                            {viewMode === 'SUGGESTIONS' && onDismissSuggestion && (
+                                <button
+                                    onClick={handleDismissClick}
+                                    className="px-6 py-3 bg-[#2A1D15] hover:bg-neutral-700 text-text-secondary hover:text-white font-bold rounded-xl border border-[#3A2A20] transition-all flex items-center gap-2"
+                                    title="Ẩn gợi ý này"
+                                >
+                                    <span className="material-symbols-outlined">visibility_off</span>
+                                    Ẩn
+                                </button>
+                            )}
+                        </>
                     )}
                 </div>
 
@@ -197,6 +290,18 @@ export default function FriendProfileDetail({
                     </div>
                 </div>
             </div>
+
+            {/* Confirmation Modal */}
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                type={confirmModal.type}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                onConfirm={confirmModal.onConfirm}
+                onClose={closeModal}
+                confirmText="Xác nhận"
+                cancelText="Hủy"
+            />
         </div>
     );
 }

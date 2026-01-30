@@ -40,7 +40,7 @@ const NotificationList = ({ notifications, onMarkAsRead, onDelete, onMarkAllAsRe
         navigate(`/dashboard/member/${notification.targetId}`);
         break;
       case "FRIEND_REQUEST":
-        navigate(`/dashboard/friends`);
+        navigate(`/dashboard/friends?tab=requests`);
         break;
       case "ROLE_CHANGE":
         navigate(`/dashboard/my-profile`);

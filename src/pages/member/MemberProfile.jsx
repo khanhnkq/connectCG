@@ -39,7 +39,7 @@ export default function MemberProfile() {
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     type: null,
-  }); // type: 'UNFRIEND' | 'CANCEL_REQUEST'
+  }); // type: 'UNFRIEND' | 'CANCEL_REQUEST' | 'ACCEPT_REQUEST' | 'REJECT_REQUEST'
 
   const [posts, setPosts] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
@@ -61,11 +61,11 @@ export default function MemberProfile() {
           setLoadingPosts(false);
         }
       }
-      
+
     };
 
     fetchPosts();
-  }, [id,activeTab]);
+  }, [id, activeTab]);
 
 
   const handleStartChat = async () => {
@@ -135,6 +135,14 @@ export default function MemberProfile() {
     setConfirmModal({ isOpen: true, type: "CANCEL_REQUEST" });
   };
 
+  const confirmAcceptRequest = () => {
+    setConfirmModal({ isOpen: true, type: "ACCEPT_REQUEST" });
+  };
+
+  const confirmRejectRequest = () => {
+    setConfirmModal({ isOpen: true, type: "REJECT_REQUEST" });
+  };
+
   const handleConfirmAction = async () => {
     const type = confirmModal.type;
     setConfirmModal({ isOpen: false, type: null });
@@ -163,6 +171,43 @@ export default function MemberProfile() {
         toast.success("Đã hủy lời mời kết bạn", { id: toastId });
       } catch {
         toast.error("Không thể hủy lời mời", { id: toastId });
+      }
+    } else if (type === "ACCEPT_REQUEST") {
+      try {
+        if (!profile.requestId) {
+          toast.error("Không tìm thấy thông tin lời mời.");
+          return;
+        }
+        await FriendRequestService.acceptRequest(profile.requestId);
+        setProfile((prev) => ({
+          ...prev,
+          relationshipStatus: "FRIEND",
+          friendsCount: (prev.friendsCount || 0) + 1,
+          isRequestReceiver: false,
+          requestId: null,
+        }));
+        toast.success("Đã chấp nhận lời mời kết bạn!");
+      } catch (error) {
+        console.error("Lỗi khi chấp nhận:", error);
+        toast.error("Không thể chấp nhận lời mời.");
+      }
+    } else if (type === "REJECT_REQUEST") {
+      try {
+        if (!profile.requestId) {
+          toast.error("Không tìm thấy thông tin lời mời.");
+          return;
+        }
+        await FriendRequestService.rejectRequest(profile.requestId);
+        setProfile((prev) => ({
+          ...prev,
+          relationshipStatus: "STRANGER",
+          isRequestReceiver: false,
+          requestId: null,
+        }));
+        toast.success("Đã từ chối lời mời.");
+      } catch (error) {
+        console.error("Lỗi khi từ chối:", error);
+        toast.error("Không thể từ chối lời mời.");
       }
     }
   };
@@ -331,14 +376,14 @@ export default function MemberProfile() {
                     profile.isRequestReceiver ? (
                     <div className="flex gap-3 w-full md:w-auto flex-1 md:flex-none">
                       <button
-                        onClick={handleAcceptRequest}
+                        onClick={confirmAcceptRequest}
                         className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-primary hover:bg-orange-600 text-[#231810] font-bold px-6 py-3 rounded-xl transition-all shadow-lg shadow-orange-500/20"
                       >
                         <MailCheck size={20} />
                         Chấp nhận
                       </button>
                       <button
-                        onClick={handleRejectRequest}
+                        onClick={confirmRejectRequest}
                         className="flex-1 flex items-center justify-center gap-2 bg-surface-main hover:bg-red-500/20 text-text-main hover:text-red-500 font-bold px-6 py-3 rounded-xl transition-all border border-border-main hover:border-red-500/50"
                       >
                         <UserX size={20} />
@@ -383,8 +428,8 @@ export default function MemberProfile() {
               <button
                 onClick={() => setActiveTab("timeline")}
                 className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${activeTab === "timeline"
-                    ? "text-primary border-b-2 border-primary"
-                    : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
+                  ? "text-primary border-b-2 border-primary"
+                  : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
                   }`}
               >
                 Dòng thời gian
@@ -392,8 +437,8 @@ export default function MemberProfile() {
               <button
                 onClick={() => setActiveTab("about")}
                 className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${activeTab === "about"
-                    ? "text-primary border-b-2 border-primary"
-                    : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
+                  ? "text-primary border-b-2 border-primary"
+                  : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
                   }`}
               >
                 Giới thiệu
@@ -401,8 +446,8 @@ export default function MemberProfile() {
               <button
                 onClick={() => setActiveTab("photos")}
                 className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${activeTab === "photos"
-                    ? "text-primary border-b-2 border-primary"
-                    : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
+                  ? "text-primary border-b-2 border-primary"
+                  : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
                   }`}
               >
                 Ảnh
@@ -410,8 +455,8 @@ export default function MemberProfile() {
               <button
                 onClick={() => setActiveTab("hobbies")}
                 className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${activeTab === "hobbies"
-                    ? "text-primary border-b-2 border-primary"
-                    : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
+                  ? "text-primary border-b-2 border-primary"
+                  : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
                   }`}
               >
                 Sở thích
@@ -419,8 +464,8 @@ export default function MemberProfile() {
               <button
                 onClick={() => setActiveTab("friends")}
                 className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${activeTab === "friends"
-                    ? "text-primary border-b-2 border-primary"
-                    : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
+                  ? "text-primary border-b-2 border-primary"
+                  : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
                   }`}
               >
                 Bạn bè ({profile?.friendsCount || 0})
@@ -500,8 +545,8 @@ export default function MemberProfile() {
           {/* Right Column */}
           <div
             className={`${activeTab === "timeline"
-                ? "lg:col-span-7 xl:col-span-8"
-                : "lg:col-span-1"
+              ? "lg:col-span-7 xl:col-span-8"
+              : "lg:col-span-1"
               } flex flex-col gap-6`}
           >
             {activeTab === "timeline" && (
@@ -594,18 +639,34 @@ export default function MemberProfile() {
         title={
           confirmModal.type === "UNFRIEND"
             ? "Hủy kết bạn"
-            : "Hủy lời mời kết bạn"
+            : confirmModal.type === "CANCEL_REQUEST"
+              ? "Hủy lời mời kết bạn"
+              : confirmModal.type === "ACCEPT_REQUEST"
+                ? "Chấp nhận lời mời?"
+                : "Từ chối lời mời?"
         }
         message={
           confirmModal.type === "UNFRIEND"
             ? `Bạn có chắc muốn hủy kết bạn với ${profile?.fullName}?`
-            : "Bạn có chắc chắn muốn hủy lời mời kết bạn này?"
+            : confirmModal.type === "CANCEL_REQUEST"
+              ? "Bạn có chắc chắn muốn hủy lời mời kết bạn này?"
+              : confirmModal.type === "ACCEPT_REQUEST"
+                ? `Bạn muốn chấp nhận lời mời kết bạn từ ${profile?.fullName}?`
+                : `Bạn có chắc muốn từ chối lời mời kết bạn từ ${profile?.fullName}?`
         }
-        type="danger"
+        type={
+          confirmModal.type === "ACCEPT_REQUEST" ? "info" : confirmModal.type === "REJECT_REQUEST" ? "warning" : "danger"
+        }
         confirmText={
-          confirmModal.type === "UNFRIEND" ? "Hủy kết bạn" : "Hủy lời mời"
+          confirmModal.type === "UNFRIEND"
+            ? "Hủy kết bạn"
+            : confirmModal.type === "CANCEL_REQUEST"
+              ? "Hủy lời mời"
+              : confirmModal.type === "ACCEPT_REQUEST"
+                ? "Chấp nhận"
+                : "Từ chối"
         }
-        cancelText="Đóng"
+        cancelText="Hủy"
       />
     </div>
   );

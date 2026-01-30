@@ -1,5 +1,6 @@
 import FriendListItem from './FriendListItem';
 import FriendRequestItem from './FriendRequestItem';
+import FriendSuggestionItem from './FriendSuggestionItem';
 
 export default function FriendsListPanel({
     viewMode,
@@ -10,7 +11,9 @@ export default function FriendsListPanel({
     setSearchTerm,
     processingRequests,
     onAcceptRequest,
-    onRejectRequest
+    onRejectRequest,
+    onAddFriend,
+    onDismissSuggestion
 }) {
     const getTitle = () => {
         if (viewMode === 'ALL') return 'Danh sách bạn bè';
@@ -65,27 +68,43 @@ export default function FriendsListPanel({
             {/* Scrollable List */}
             <div className="flex-1 overflow-y-auto custom-scrollbar bg-background-main px-3 py-4 space-y-2">
                 {displayedList.length > 0 ? (
-                    displayedList.map((item) => (
-                        viewMode === 'REQUESTS' ? (
-                            <FriendRequestItem
-                                key={item.requestId}
-                                request={item}
-                                isActive={activeItem?.requestId === item.requestId}
-                                onClick={() => setActiveItem(item)}
-                                onAccept={onAcceptRequest}
-                                onReject={onRejectRequest}
-                                isProcessing={processingRequests[item.requestId]}
-                            />
-                        ) : (
-                            <FriendListItem
-                                key={item.id}
-                                item={item}
-                                isActive={activeItem?.id === item.id}
-                                onClick={() => setActiveItem(item)}
-                                viewMode={viewMode}
-                            />
-                        )
-                    ))
+                    displayedList.map((item) => {
+                        if (viewMode === 'REQUESTS') {
+                            return (
+                                <FriendRequestItem
+                                    key={item.requestId}
+                                    request={item}
+                                    isActive={activeItem?.requestId === item.requestId}
+                                    onClick={() => setActiveItem(item)}
+                                    onAccept={onAcceptRequest}
+                                    onReject={onRejectRequest}
+                                    isProcessing={processingRequests[item.requestId]}
+                                />
+                            );
+                        } else if (viewMode === 'SUGGESTIONS') {
+                            return (
+                                <FriendSuggestionItem
+                                    key={item.userId}
+                                    suggestion={item}
+                                    isActive={activeItem?.userId === item.userId}
+                                    onClick={() => setActiveItem(item)}
+                                    onAddFriend={onAddFriend}
+                                    onDismiss={onDismissSuggestion}
+                                    isProcessing={processingRequests[item.userId]}
+                                />
+                            );
+                        } else {
+                            return (
+                                <FriendListItem
+                                    key={item.id}
+                                    item={item}
+                                    isActive={activeItem?.id === item.id}
+                                    onClick={() => setActiveItem(item)}
+                                    viewMode={viewMode}
+                                />
+                            );
+                        }
+                    })
                 ) : (
                     <div className="text-center text-text-secondary py-16 flex flex-col items-center">
                         <div className="size-16 rounded-full bg-[#2A1D15] border-2 border-[#3A2A20] flex items-center justify-center mb-4">
