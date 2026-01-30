@@ -44,25 +44,7 @@ import InviteMemberModal from "../../components/groups/InviteMemberModal";
 import TransferOwnershipModal from "../../components/groups/TransferOwnershipModal";
 import reportService from "../../services/ReportService";
 
-// Tiện ích định dạng thời gian đơn giản để thay thế date-fns
-const formatTime = (dateString) => {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffInSeconds = Math.floor((now - date) / 1000);
 
-  if (diffInSeconds < 60) return "Vừa xong";
-
-  const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) return `${diffInMinutes} phút trước`;
-
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) return `${diffInHours} giờ trước`;
-
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 30) return `${diffInDays} ngày trước`;
-
-  return date.toLocaleDateString("vi-VN");
-};
 const GroupDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -613,21 +595,9 @@ const GroupDetailPage = () => {
                       {approvedPosts.length > 0 ? (
                         approvedPosts.map((post) => (
                           <PostCard
-                            key={post.id}
-                            author={{
-                              name: post.authorFullName,
-                              avatar: post.authorAvatar,
-                              originGroup: group.name,
-                            }}
-                            time={formatTime(post.createdAt)}
-                            content={post.content}
-                            image={post.images?.[0]} // PostCard hiện hỗ trợ 1 image
-                            stats={{
-                              likes: Math.floor(Math.random() * 50),
-                              comments: Math.floor(Math.random() * 10),
-                              shares: 0,
-                            }}
-                          />
+                                            key={post.id}
+                                            post={post} // <-- CHỈ CẦN TRUYỀN DÒNG NÀY LÀ ĐỦ
+                                          />
                         ))
                       ) : (
                         <div className="bg-surface-main rounded-3xl p-12 border border-border-main text-center">

@@ -4,15 +4,39 @@ import RightSidebar from "../../components/layout/RightSidebar";
 import PostComposer from "../../components/feed/PostComposer";
 import PostCard from "../../components/feed/PostCard";
 import postService from "../../services/PostService";
+import UserProfileService from "../../services/user/UserProfileService"; // Import service lấy profile
 import toast from "react-hot-toast";
 
 export default function Newsfeed() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [userAvatar, setUserAvatar] = useState("");
 
   useEffect(() => {
     fetchPosts();
+    fetchCurrentUserAvatar(); // Gọi hàm lấy avatar
   }, []);
+
+  // Hàm lấy Avatar
+  const fetchCurrentUserAvatar = async () => {
+    try {
+      // 1. Lấy string JSON từ localStorage
+      const userProfileStr = localStorage.getItem("userProfile");
+      
+      if (userProfileStr) {
+        // 2. Parse từ String sang Object
+        const userProfile = JSON.parse(userProfileStr);
+        // 3. Lấy avatar (Fallback các trường hợp key có thể khác nhau)
+        const avatar = userProfile.currentAvatarUrl || userProfile.avatar || userProfile.avatarUrl;
+        
+        if (avatar) {
+          setUserAvatar(avatar);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch user avatar", error);
+    }
+  };
 
   const fetchPosts = async () => {
     try {
@@ -34,20 +58,13 @@ export default function Newsfeed() {
     }
   };
 
-  // Helper to format time (placeholder for now, can use date-fns/dayjs later)
-  const formatTime = (timestamp) => {
-    if (!timestamp) return "Just now";
-    const date = new Date(timestamp);
-    return date.toLocaleString();
-  };
-
   return (
     <div className="flex w-full relative items-start">
       <div className="flex-1 w-full">
         <div className="max-w-3xl mx-auto w-full px-6 py-8 pb-20">
           <div className="flex flex-col gap-6">
             <PostComposer
-              userAvatar="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+              userAvatar={userAvatar}
               onPostCreated={handlePostCreated}
             />
 
@@ -63,21 +80,7 @@ export default function Newsfeed() {
               posts.map((post) => (
                 <PostCard
                   key={post.id}
-                  id={post.id}
-                  author={{
-                    name: post.author?.username || "Anonymous",
-                    avatar:
-                      "https://cdn-icons-png.flaticon.com/512/149/149071.png",
-                  }}
-                  time={formatTime(post.createdAt)}
-                  content={post.content}
-                  image={null} // TODO: Implement media handling if needed
-                  stats={{
-                    likes: post.reactCount || 0,
-                    comments: post.commentCount || 0,
-                    shares: post.shareCount || 0,
-                  }}
-                  type="feed"
+                  post={post} // <-- CHỈ CẦN TRUYỀN DÒNG NÀY LÀ ĐỦ
                 />
               ))
             )}

@@ -44,8 +44,9 @@ export default function RightSidebar() {
   // Debounce search
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      fetchFriends(0, searchTerm);
-    }, 500);
+
+      fetchFriends(0, true);
+    }, 10000000);
     return () => clearTimeout(timeoutId);
   }, [searchTerm, fetchFriends]);
 
