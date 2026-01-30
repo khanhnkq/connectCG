@@ -355,9 +355,8 @@ export default function ChatInterface() {
         {/* Conversations List */}
         {/* Conversations List */}
         <div
-          className={`${
-            activeRoom ? "hidden md:flex" : "flex"
-          } w-full md:w-80 lg:w-96 flex-col border-r border-border-main bg-background-main z-10 shrink-0 transition-colors duration-300`}
+          className={`${activeRoom ? "hidden md:flex" : "flex"
+            } w-full md:w-80 lg:w-96 flex-col border-r border-border-main bg-background-main z-10 shrink-0 transition-colors duration-300`}
         >
           <div className="p-5 border-b border-border-main flex justify-between items-center bg-background-main/95 backdrop-blur-md sticky top-0 z-10">
             <h2 className="text-xl font-extrabold text-text-main tracking-tight">
@@ -395,31 +394,28 @@ export default function ChatInterface() {
                 <div
                   key={conv.id}
                   onClick={() => setActiveRoom(conv)}
-                  className={`p-3 rounded-xl cursor-pointer relative group flex gap-3 items-center shadow-lg transition-colors ${
-                    activeRoom?.id === conv.id
+                  className={`p-3 rounded-xl cursor-pointer relative group flex gap-3 items-center shadow-lg transition-colors ${activeRoom?.id === conv.id
                       ? "bg-surface-main border border-primary/20 shadow-black/5"
                       : "hover:bg-surface-main/50 border border-transparent"
-                  }`}
+                    }`}
                 >
                   <div className="relative shrink-0">
                     <div
                       className="size-12 rounded-full bg-cover bg-center group-hover:ring-2 ring-primary/30 transition-all"
                       style={{
-                        backgroundImage: `url("${
-                          conv.avatarUrl ||
+                        backgroundImage: `url("${conv.avatarUrl ||
                           "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                        }")`,
+                          }")`,
                       }}
                     ></div>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-baseline mb-0.5">
                       <h3
-                        className={`font-bold text-sm truncate ${
-                          activeRoom?.id === conv.id
+                        className={`font-bold text-sm truncate ${activeRoom?.id === conv.id
                             ? "text-text-main"
                             : "text-text-secondary group-hover:text-text-main"
-                        }`}
+                          }`}
                       >
                         {conv.name || "Hội thoại"}
                       </h3>
@@ -439,9 +435,8 @@ export default function ChatInterface() {
         {/* Chat Area */}
         {/* Chat Area */}
         <div
-          className={`${
-            activeRoom ? "flex" : "hidden"
-          } md:flex flex-1 flex-col bg-chat-bg relative transition-colors duration-300`}
+          className={`${activeRoom ? "flex" : "hidden"
+            } md:flex flex-1 flex-col bg-chat-bg relative transition-colors duration-300`}
         >
           {activeRoom ? (
             <>
@@ -457,10 +452,9 @@ export default function ChatInterface() {
                     <div
                       className="size-10 rounded-full bg-cover bg-center ring-2 ring-[#3A2A20]"
                       style={{
-                        backgroundImage: `url("${
-                          activeRoom.avatarUrl ||
+                        backgroundImage: `url("${activeRoom.avatarUrl ||
                           "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                        }")`,
+                          }")`,
                       }}
                     ></div>
                   </div>
@@ -490,9 +484,8 @@ export default function ChatInterface() {
                   return (
                     <div
                       key={index}
-                      className={`flex gap-3 max-w-[80%] ${
-                        isSentByMe ? "self-end justify-end" : ""
-                      }`}
+                      className={`flex gap-3 max-w-[80%] ${isSentByMe ? "self-end justify-end" : ""
+                        }`}
                     >
                       {!isSentByMe && (
                         <div className="size-8 rounded-full bg-gray-600 flex items-center justify-center shrink-0 self-end mb-1 ring-1 ring-border-main text-[10px] text-white font-bold">
@@ -500,30 +493,27 @@ export default function ChatInterface() {
                         </div>
                       )}
                       <div
-                        className={`flex flex-col gap-1 ${
-                          isSentByMe ? "items-end" : ""
-                        }`}
+                        className={`flex flex-col gap-1 ${isSentByMe ? "items-end" : ""
+                          }`}
                       >
                         <div
-                          className={`p-4 rounded-2xl text-sm leading-relaxed shadow-sm ${
-                            isSentByMe
+                          className={`p-4 rounded-2xl text-sm leading-relaxed shadow-sm ${isSentByMe
                               ? "bg-bubble-sent rounded-br-none text-white font-semibold"
                               : "bg-bubble-received rounded-bl-none text-text-main"
-                          }`}
+                            }`}
                         >
                           <p>{msg.text}</p>
                         </div>
                         <div
-                          className={`flex items-center gap-1 text-text-secondary text-[10px] ${
-                            !isSentByMe ? "ml-1" : "mr-1"
-                          }`}
+                          className={`flex items-center gap-1 text-text-secondary text-[10px] ${!isSentByMe ? "ml-1" : "mr-1"
+                            }`}
                         >
                           <span>
                             {msg.timestamp
                               ? new Date(msg.timestamp).toLocaleTimeString([], {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
                               : "Vừa xong"}
                           </span>
                         </div>
@@ -584,10 +574,9 @@ export default function ChatInterface() {
                   <div
                     className="size-24 rounded-full bg-cover bg-center ring-4 ring-surface-main mb-4 shadow-xl"
                     style={{
-                      backgroundImage: `url("${
-                        activeRoom?.avatarUrl ||
+                      backgroundImage: `url("${activeRoom?.avatarUrl ||
                         "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                      }")`,
+                        }")`,
                     }}
                   ></div>
                   {activeRoom?.type === "GROUP" && (
@@ -719,10 +708,9 @@ export default function ChatInterface() {
                           <div
                             className="size-8 rounded-full bg-cover bg-center border border-border-main"
                             style={{
-                              backgroundImage: `url("${
-                                member.avatarUrl ||
+                              backgroundImage: `url("${member.avatarUrl ||
                                 "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                              }")`,
+                                }")`,
                             }}
                           ></div>
                           <div className="flex-1 min-w-0">
@@ -730,11 +718,10 @@ export default function ChatInterface() {
                               {member.fullName}
                             </p>
                             <span
-                              className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${
-                                member.role === "ADMIN"
+                              className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${member.role === "ADMIN"
                                   ? "bg-orange-500/20 text-orange-400"
                                   : "bg-surface-main text-text-secondary"
-                              }`}
+                                }`}
                             >
                               {member.role}
                             </span>
@@ -795,7 +782,7 @@ export default function ChatInterface() {
                     className="w-full flex items-center justify-between p-3 rounded-xl bg-surface-main hover:bg-background-main border border-border-main group transition-colors text-left"
                   >
                     <div className="flex items-center gap-3 text-text-secondary group-hover:text-white">
-                      <Flag size={20} />
+                      <AlertTriangle size={20} />
                       <span className="text-sm font-medium">Báo cáo</span>
                     </div>
                     <ChevronRight size={16} className="text-text-secondary" />
@@ -856,7 +843,7 @@ export default function ChatInterface() {
           } catch (err) {
             toast.error(
               err?.response?.data?.message ||
-                "Gửi báo cáo thất bại. Vui lòng thử lại!",
+              "Gửi báo cáo thất bại. Vui lòng thử lại!",
               {
                 id: toastId,
                 style: {
@@ -916,20 +903,18 @@ export default function ChatInterface() {
                           setSelectedMembers((prev) => [...prev, friend]);
                         }
                       }}
-                      className={`flex items-center gap-3 p-3 rounded-2xl hover:bg-background-main cursor-pointer group transition-all ${
-                        selectedMembers.some((m) => m.id === friend.id)
+                      className={`flex items-center gap-3 p-3 rounded-2xl hover:bg-background-main cursor-pointer group transition-all ${selectedMembers.some((m) => m.id === friend.id)
                           ? "bg-background-main ring-1 ring-primary/30"
                           : ""
-                      }`}
+                        }`}
                     >
                       <div className="relative">
                         <div
                           className="size-10 rounded-full bg-cover bg-center ring-2 ring-transparent group-hover:ring-primary/50 transition-all shadow-lg"
                           style={{
-                            backgroundImage: `url("${
-                              friend.avatarUrl ||
+                            backgroundImage: `url("${friend.avatarUrl ||
                               "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                            }")`,
+                              }")`,
                           }}
                         ></div>
                         {selectedMembers.some((m) => m.id === friend.id) && (
@@ -981,10 +966,9 @@ export default function ChatInterface() {
                         <div
                           className="size-6 rounded-full bg-cover bg-center"
                           style={{
-                            backgroundImage: `url("${
-                              m.avatarUrl ||
+                            backgroundImage: `url("${m.avatarUrl ||
                               "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                            }")`,
+                              }")`,
                           }}
                         ></div>
                         <span className="text-[10px] text-text-main font-medium max-w-[80px] truncate">
@@ -1069,19 +1053,17 @@ export default function ChatInterface() {
                       <div
                         key={friend.id}
                         onClick={() => toggleInvitee(friend)}
-                        className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${
-                          isSelected
+                        className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${isSelected
                             ? "bg-primary/10 border-primary/50"
                             : "bg-surface-main border-border-main hover:bg-background-main"
-                        }`}
+                          }`}
                       >
                         <div
                           className="size-10 rounded-full bg-cover bg-center border border-border-main"
                           style={{
-                            backgroundImage: `url("${
-                              friend.avatarUrl ||
+                            backgroundImage: `url("${friend.avatarUrl ||
                               "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                            }")`,
+                              }")`,
                           }}
                         ></div>
                         <div className="flex-1 min-w-0">
@@ -1090,11 +1072,10 @@ export default function ChatInterface() {
                           </p>
                         </div>
                         <div
-                          className={`size-5 rounded border-2 flex items-center justify-center transition-all ${
-                            isSelected
+                          className={`size-5 rounded border-2 flex items-center justify-center transition-all ${isSelected
                               ? "bg-primary border-primary"
                               : "border-border-main"
-                          }`}
+                            }`}
                         >
                           {isSelected && (
                             <Check size={16} className="text-text-main" />

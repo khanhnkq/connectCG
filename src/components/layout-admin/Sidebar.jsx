@@ -9,6 +9,7 @@ import {
   Eye,
   Network,
 } from "lucide-react";
+import UserProfileService from "../../services/user/UserProfileService";
 
 const iconMap = {
   dashboard: LayoutDashboard,
@@ -20,6 +21,36 @@ const iconMap = {
 };
 
 const Sidebar = ({ brandName = "Quản trị MXH", activeTab = "Groups" }) => {
+  const [currentUser, setCurrentUser] = React.useState(null);
+
+  React.useEffect(() => {
+    const fetchProfile = async () => {
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          // Initial set from localStorage
+          setCurrentUser(user);
+
+          // Fetch full profile to get fullName and latest avatar
+          if (user.id) {
+            try {
+              const res = await UserProfileService.getUserProfile(user.id);
+              if (res.data) {
+                setCurrentUser((prev) => ({ ...prev, ...res.data }));
+              }
+            } catch (err) {
+              console.error("Failed to fetch admin profile", err);
+            }
+          }
+        } catch (error) {
+          console.error("Failed to parse user data", error);
+        }
+      }
+    };
+    fetchProfile();
+  }, []);
+
   const navItems = [
     // { name: "Dashboard", label: "Tổng quan", icon: "dashboard", path: "/admin-website" },
     {
@@ -73,17 +104,15 @@ const Sidebar = ({ brandName = "Quản trị MXH", activeTab = "Groups" }) => {
           <Link
             key={item.name}
             to={item.path}
-            className={`flex items-center gap-3 px-5 py-3.5 rounded-xl transition-all group ${
-              activeTab === item.name
-                ? "bg-primary text-white shadow-lg shadow-primary/20"
-                : "text-text-muted hover:bg-surface-dark hover:text-white"
-            }`}
+            className={`flex items-center gap-3 px-5 py-3.5 rounded-xl transition-all group ${activeTab === item.name
+              ? "bg-primary text-white shadow-lg shadow-primary/20"
+              : "text-text-muted hover:bg-surface-dark hover:text-white"
+              }`}
           >
             {React.createElement(iconMap[item.icon] || Settings, {
               size: 22,
-              className: `transition-transform ${
-                activeTab !== item.name ? "group-hover:scale-110" : ""
-              }`,
+              className: `transition-transform ${activeTab !== item.name ? "group-hover:scale-110" : ""
+                }`,
               fill: activeTab === item.name ? "currentColor" : "none",
             })}
             <span className="text-sm font-semibold">{item.label}</span>
@@ -100,17 +129,15 @@ const Sidebar = ({ brandName = "Quản trị MXH", activeTab = "Groups" }) => {
           <Link
             key={item.name}
             to={item.path}
-            className={`flex items-center gap-3 px-5 py-3.5 rounded-xl transition-all group ${
-              activeTab === item.name
-                ? "bg-primary text-white shadow-lg shadow-primary/20"
-                : "text-text-muted hover:bg-surface-dark hover:text-white"
-            }`}
+            className={`flex items-center gap-3 px-5 py-3.5 rounded-xl transition-all group ${activeTab === item.name
+              ? "bg-primary text-white shadow-lg shadow-primary/20"
+              : "text-text-muted hover:bg-surface-dark hover:text-white"
+              }`}
           >
             {React.createElement(iconMap[item.icon] || Settings, {
               size: 22,
-              className: `transition-transform ${
-                activeTab !== item.name ? "group-hover:scale-110" : ""
-              }`,
+              className: `transition-transform ${activeTab !== item.name ? "group-hover:scale-110" : ""
+                }`,
             })}
             <span className="text-sm font-semibold">{item.label}</span>
           </Link>
@@ -129,14 +156,17 @@ const Sidebar = ({ brandName = "Quản trị MXH", activeTab = "Groups" }) => {
           <div
             className="bg-center bg-no-repeat aspect-square bg-cover rounded-xl size-10 border-2 border-primary/20"
             style={{
-              backgroundImage:
-                'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAkk7o-V6MRkzcD_ohHAHXUpIzMzDnRKH10CGPitsuwRBpt70Riyy7LYdUw8BLx_hX4lOXOZtFeghgV_ezLof0gRFhhJU9uk0sLh4YrGxII1Vu3qDKhA-HpFZP2AicxO7HWGWsQFxBzFrBNvOBtAdQcUXUHLOleW6GZnmXWQoKp5WKDmRgqHCZVnUN5_8UlrMBbNwIUDL3apjXyC_b4MjW6OY58803uBwVD8sc_tIrkTm8EMfuPoObCHSnTTG7_eHvEB_wAl6SGwWg")',
+              backgroundImage: `url("${currentUser?.currentAvatarUrl ||
+                "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                }")`,
             }}
           ></div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold truncate">Alex Rivera</p>
+            <p className="text-sm font-bold truncate">
+              {currentUser?.fullName || currentUser?.username || "Admin"}
+            </p>
             <p className="text-text-muted text-[10px] uppercase font-bold tracking-wider">
-              Quản trị viên
+              {currentUser?.role || "Quản trị viên"}
             </p>
           </div>
         </div>

@@ -87,8 +87,8 @@ const AdminMembersManager = () => {
           user.isDeleted || user.is_deleted
             ? "Deleted"
             : user.isLocked
-            ? "Banned"
-            : "Active",
+              ? "Banned"
+              : "Active",
         role: user.role,
         joinedDate: "N/A",
       }));
@@ -140,11 +140,10 @@ const AdminMembersManager = () => {
     setConfirmConfig({
       isOpen: true,
       title: `${actionLabel} tài khoản?`,
-      message: `Bạn có chắc muốn ${actionLabel.toLowerCase()} người dùng này? Họ sẽ ${
-        currentStatus === "Active"
-          ? "không thể truy cập"
-          : "có thể truy cập lại"
-      } vào hệ thống.`,
+      message: `Bạn có chắc muốn ${actionLabel.toLowerCase()} người dùng này? Họ sẽ ${currentStatus === "Active"
+        ? "không thể truy cập"
+        : "có thể truy cập lại"
+        } vào hệ thống.`,
       type: currentStatus === "Active" ? "danger" : "info",
       onConfirm: async () => {
         try {
@@ -240,99 +239,120 @@ const AdminMembersManager = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-border-dark/30 text-sm">
-              {members.map((member, index) => (
-                <tr
-                  key={member.id}
-                  className="hover:bg-surface-dark/40 transition-colors text-white/90 group"
-                >
-                  <td className="px-6 py-5 font-mono text-[10px] text-text-muted">
-                    {index + 1}
-                  </td>
-                  <td className="px-6 py-5">
-                    <div className="flex items-center gap-4">
-                      <div className="size-10 rounded-xl overflow-hidden border border-border-dark/50 shrink-0 group-hover:border-primary/50 transition-all">
-                        <img
-                          src={member.avatar}
-                          className="w-full h-full object-cover"
-                          alt=""
-                        />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-bold truncate">{member.name}</p>
-                        <p className="text-[10px] text-text-muted uppercase font-bold tracking-tighter">
-                          {member.username}
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-5">
-                    <span
-                      className={`px-2.5 py-1 text-[9px] font-black uppercase rounded-lg border flex items-center gap-1.5 w-fit ${
-                        member.role === "ADMIN"
-                          ? "bg-primary/10 text-primary border-primary/30"
-                          : "bg-zinc-800 text-zinc-400 border-zinc-700"
-                      }`}
-                    >
-                      {member.role === "ADMIN" ? (
-                        <ShieldCheck size={14} />
-                      ) : (
-                        <User size={14} />
-                      )}
-                      {member.role}
-                    </span>
-                  </td>
-                  <td className="px-6 py-5">
-                    <span
-                      className={`px-3 py-1 text-[10px] font-black uppercase rounded-full border ${
-                        member.status === "Active"
-                          ? "bg-green-500/10 text-green-400 border-green-500/20"
-                          : "bg-red-500/10 text-red-500 border-red-500/20"
-                      }`}
-                    >
-                      {member.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-5 text-right space-x-2">
-                    {member.id !== currentUserId && (
-                      <button
-                        onClick={() =>
-                          handleRoleUpdate(member.id, member.name, member.role)
-                        }
-                        className="p-2 hover:bg-primary/10 rounded-xl text-text-muted hover:text-primary transition-all"
-                        title={
-                          member.role === "USER"
-                            ? "Nâng cấp lên ADMIN"
-                            : "Hạ cấp xuống USER"
-                        }
-                      >
-                        {member.role === "USER" ? (
-                          <UserPlus size={18} />
-                        ) : (
-                          <UserMinus size={18} />
-                        )}
-                      </button>
-                    )}
-                    <button
-                      onClick={() => toggleStatus(member.id, member.status)}
-                      className="p-2 hover:bg-background-dark rounded-xl text-text-muted hover:text-orange-400 transition-all"
-                      title="Toggle Access"
-                    >
-                      {member.status === "Banned" ? (
-                        <ShieldCheck size={18} />
-                      ) : (
-                        <Ban size={18} />
-                      )}
-                    </button>
-                    <button
-                      onClick={() => handleDelete(member.id, member.name)}
-                      className="p-2 hover:bg-red-500/10 rounded-xl text-text-muted hover:text-red-400 transition-all"
-                      title="Purge Identity"
-                    >
-                      <UserX size={18} />
-                    </button>
+              {loading && (
+                <tr>
+                  <td
+                    colSpan="5"
+                    className="text-center py-12 text-text-muted animate-pulse"
+                  >
+                    Đang tải dữ liệu...
                   </td>
                 </tr>
-              ))}
+              )}
+
+              {!loading && members.length === 0 && (
+                <tr>
+                  <td
+                    colSpan="5"
+                    className="text-center py-12 text-text-muted italic"
+                  >
+                    Không tìm thấy người dùng nào
+                  </td>
+                </tr>
+              )}
+
+              {!loading &&
+                members.map((member, index) => (
+                  <tr
+                    key={member.id}
+                    className="hover:bg-surface-dark/40 transition-colors text-white/90 group"
+                  >
+                    <td className="px-6 py-5 font-mono text-[10px] text-text-muted">
+                      {index + 1}
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="flex items-center gap-4">
+                        <div className="size-10 rounded-xl overflow-hidden border border-border-dark/50 shrink-0 group-hover:border-primary/50 transition-all">
+                          <img
+                            src={member.avatar}
+                            className="w-full h-full object-cover"
+                            alt=""
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-bold truncate">{member.name}</p>
+                          <p className="text-[10px] text-text-muted uppercase font-bold tracking-tighter">
+                            {member.username}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-5">
+                      <span
+                        className={`px-2.5 py-1 text-[9px] font-black uppercase rounded-lg border flex items-center gap-1.5 w-fit ${member.role === "ADMIN"
+                          ? "bg-primary/10 text-primary border-primary/30"
+                          : "bg-zinc-800 text-zinc-400 border-zinc-700"
+                          }`}
+                      >
+                        {member.role === "ADMIN" ? (
+                          <ShieldCheck size={14} />
+                        ) : (
+                          <User size={14} />
+                        )}
+                        {member.role}
+                      </span>
+                    </td>
+                    <td className="px-6 py-5">
+                      <span
+                        className={`px-3 py-1 text-[10px] font-black uppercase rounded-full border ${member.status === "Active"
+                          ? "bg-green-500/10 text-green-400 border-green-500/20"
+                          : "bg-red-500/10 text-red-500 border-red-500/20"
+                          }`}
+                      >
+                        {member.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-5 text-right space-x-2">
+                      {member.id !== currentUserId && (
+                        <button
+                          onClick={() =>
+                            handleRoleUpdate(member.id, member.name, member.role)
+                          }
+                          className="p-2 hover:bg-primary/10 rounded-xl text-text-muted hover:text-primary transition-all"
+                          title={
+                            member.role === "USER"
+                              ? "Nâng cấp lên ADMIN"
+                              : "Hạ cấp xuống USER"
+                          }
+                        >
+                          {member.role === "USER" ? (
+                            <UserPlus size={18} />
+                          ) : (
+                            <UserMinus size={18} />
+                          )}
+                        </button>
+                      )}
+                      <button
+                        onClick={() => toggleStatus(member.id, member.status)}
+                        className="p-2 hover:bg-background-dark rounded-xl text-text-muted hover:text-orange-400 transition-all"
+                        title="Toggle Access"
+                      >
+                        {member.status === "Banned" ? (
+                          <ShieldCheck size={18} />
+                        ) : (
+                          <Ban size={18} />
+                        )}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(member.id, member.name)}
+                        className="p-2 hover:bg-red-500/10 rounded-xl text-text-muted hover:text-red-400 transition-all"
+                        title="Purge Identity"
+                      >
+                        <UserX size={18} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>
