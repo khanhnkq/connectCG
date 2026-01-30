@@ -191,11 +191,11 @@ export default function EditGroupPage() {
                     <div className="relative group">
                       <Field
                         name="group_name"
-                        className={`w-full bg-background-main border ${
-                          errors.group_name && touched.group_name
+                        disabled={isSubmitting}
+                        className={`w-full bg-background-main border ${errors.group_name && touched.group_name
                             ? "border-red-500/50"
                             : "border-border-main group-focus-within:border-primary/50"
-                        } rounded-2xl py-5 px-6 text-text-main text-base focus:outline-none transition-all shadow-inner placeholder:text-text-muted/20`}
+                          } rounded-2xl py-5 px-6 text-text-main text-base focus:outline-none transition-all shadow-inner placeholder:text-text-muted/20 disabled:opacity-50 disabled:cursor-not-allowed`}
                       />
                       <div className="absolute inset-0 rounded-2xl ring-1 ring-white/5 pointer-events-none group-focus-within:ring-primary/20 transition-all" />
                     </div>
@@ -217,9 +217,10 @@ export default function EditGroupPage() {
                           type="radio"
                           name="privacy"
                           value="PUBLIC"
+                          disabled={isSubmitting}
                           className="sr-only peer"
                         />
-                        <div className="p-5 rounded-2xl bg-background-main border border-border-main transition-all peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:shadow-[0_0_20px_rgba(255,107,0,0.1)] hover:bg-surface-main">
+                        <div className={`p-5 rounded-2xl bg-background-main border border-border-main transition-all peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:shadow-[0_0_20px_rgba(255,107,0,0.1)] hover:bg-surface-main ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}>
                           <div className="flex items-center gap-3 mb-2">
                             <div className="size-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                               <Globe size={18} />
@@ -239,9 +240,10 @@ export default function EditGroupPage() {
                           type="radio"
                           name="privacy"
                           value="PRIVATE"
+                          disabled={isSubmitting}
                           className="sr-only peer"
                         />
-                        <div className="p-5 rounded-2xl bg-[#120a05] border border-[#2d1f14] transition-all peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:shadow-[0_0_20px_rgba(255,107,0,0.1)] hover:bg-[#1a120b]">
+                        <div className={`p-5 rounded-2xl bg-[#120a05] border border-[#2d1f14] transition-all peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:shadow-[0_0_20px_rgba(255,107,0,0.1)] hover:bg-[#1a120b] ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}>
                           <div className="flex items-center gap-3 mb-2">
                             <div className="size-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                               <ShieldCheck size={18} />
@@ -272,17 +274,17 @@ export default function EditGroupPage() {
                     <Field
                       as="textarea"
                       name="description"
-                      className="w-full bg-background-main border border-border-main focus:border-primary/50 rounded-2xl py-5 px-6 text-text-main text-sm h-32 focus:outline-none transition-all shadow-inner resize-none placeholder:text-text-muted/20"
+                      disabled={isSubmitting}
+                      className="w-full bg-background-main border border-border-main focus:border-primary/50 rounded-2xl py-5 px-6 text-text-main text-sm h-32 focus:outline-none transition-all shadow-inner resize-none placeholder:text-text-muted/20 disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                     <div className="flex justify-end pr-2">
                       <span
-                        className={`text-[9px] font-bold tracking-widest uppercase ${
-                          values.description
+                        className={`text-[9px] font-bold tracking-widest uppercase ${values.description
                             ? values.description.length > 450
                               ? "text-orange-500"
                               : "text-text-muted"
                             : "text-text-muted"
-                        }`}
+                          }`}
                       >
                         {values.description?.length || 0} / 500
                       </span>
@@ -299,8 +301,8 @@ export default function EditGroupPage() {
                   </label>
 
                   <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="relative w-full aspect-video rounded-3xl border-2 border-dashed border-border-main hover:border-primary/50 transition-all cursor-pointer overflow-hidden group flex items-center justify-center bg-background-main"
+                    onClick={() => !isSubmitting && fileInputRef.current?.click()}
+                    className={`relative w-full aspect-video rounded-3xl border-2 border-dashed border-border-main hover:border-primary/50 transition-all cursor-pointer overflow-hidden group flex items-center justify-center bg-background-main ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
                     {previewUrl ? (
                       <>
@@ -362,8 +364,9 @@ export default function EditGroupPage() {
                       </p>
                       <button
                         type="button"
-                        onClick={() => setShowDeleteModal(true)}
-                        className="w-full py-3 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 font-bold rounded-xl transition-all uppercase tracking-widest text-[9px] flex items-center justify-center gap-2"
+                        onClick={() => !isSubmitting && setShowDeleteModal(true)}
+                        disabled={isSubmitting}
+                        className="w-full py-3 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 font-bold rounded-xl transition-all uppercase tracking-widest text-[9px] flex items-center justify-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed"
                       >
                         <Trash2 size={16} />
                         Xóa Nhóm
