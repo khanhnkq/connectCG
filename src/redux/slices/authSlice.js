@@ -9,7 +9,7 @@ const getInitialUser = () => {
       user.id = parseInt(user.sub, 10);
     }
     return user;
-  } catch (e) {
+  } catch {
     return null;
   }
 };
@@ -20,7 +20,7 @@ const initialState = {
   isAuthenticated: !!localStorage.getItem('accessToken'),
   loading: false,
   error: null,
-  hasProfile: false,
+  hasProfile: localStorage.getItem('hasProfile') === 'true',
 };
 
 export const loginUser = createAsyncThunk('auth/loginUser', async ({ email, password }, { rejectWithValue }) => {
@@ -92,6 +92,7 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.loading = false;
       state.error = null;
+      state.hasProfile = false;
     },
     setCredentials: (state, action) => {
       const { accessToken, user } = action.payload;
@@ -111,6 +112,7 @@ const authSlice = createSlice({
       state.loading = false;
       state.error = null;
       state.hasProfile = action.payload.hasProfile || false;
+      localStorage.setItem('hasProfile', state.hasProfile);
       localStorage.setItem('accessToken', accessToken);
       if (state.user) {
         localStorage.setItem('user', JSON.stringify(state.user));
@@ -129,6 +131,7 @@ const authSlice = createSlice({
         state.token = action.payload.accessToken;
         state.error = null;
         state.hasProfile = action.payload.hasProfile || false;
+        localStorage.setItem('hasProfile', state.hasProfile);
         localStorage.setItem('accessToken', action.payload.accessToken);
         if (state.user) {
           localStorage.setItem('user', JSON.stringify(state.user));
@@ -143,7 +146,8 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(createProfile.fulfilled, (state) => {
-        state.hasProfile = true; // [IMPORTANT] Đã có hồ sơ
+    state.hasProfile = true;
+    localStorage.setItem('hasProfile', 'true');
       })
       .addCase(registerUser.fulfilled, (state) => {
         state.loading = false;

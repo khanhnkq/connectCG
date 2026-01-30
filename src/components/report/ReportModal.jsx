@@ -83,7 +83,7 @@ export default function ReportModal({
 
     // 2. VALIDATION
     if (reason === "Khác" && !detail.trim()) {
-      toast.error("Vui lòng mô tả chi tiết!")
+      toast.error("Vui lòng mô tả chi tiết!");
       return;
     }
 
@@ -194,5 +194,6 @@ export default function ReportModal({
         </div>
       </div>
     </div>
+
   );
 }

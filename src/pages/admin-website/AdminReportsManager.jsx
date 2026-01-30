@@ -1,3 +1,19 @@
+import {
+  History,
+  ShieldCheck,
+  X,
+  ChevronRight,
+  User,
+  ShieldAlert,
+  Search,
+  CheckCircle2,
+  Lock,
+  Flag,
+  MoreVertical,
+  Info,
+  ArrowDownWideNarrow,
+  ArrowUpNarrowWide,
+} from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/layout-admin/AdminLayout";
@@ -5,11 +21,15 @@ import reportService from "../../services/ReportService";
 import UserProfileService from "../../services/user/UserProfileService";
 import { lockUser } from "../../services/admin/AdminUserService";
 import postService from "../../services/PostService";
-import { findById as findGroupById, deleteGroup, getGroupPosts, findAllGroup } from "../../services/groups/GroupService";
+import {
+  findById as findGroupById,
+  deleteGroup,
+  getGroupPosts,
+  findAllGroup,
+} from "../../services/groups/GroupService";
 import toast from "react-hot-toast";
 import GroupInspectorModal from "../../components/admin/GroupInspectorModal";
 import ReporterDetailModal from "../../components/admin/ReporterDetailModal";
-
 
 const TABS = {
   USER: "Báo cáo người dùng",
@@ -22,19 +42,19 @@ const statusMap = {
     label: "Chờ xử lý",
     color: "text-orange-400",
     bg: "bg-orange-400/10",
-    border: "border-orange-400/20"
+    border: "border-orange-400/20",
   },
   UNDER_REVIEW: {
     label: "Đang xem xét",
     color: "text-yellow-400",
     bg: "bg-yellow-400/10",
-    border: "border-yellow-400/20"
+    border: "border-yellow-400/20",
   },
   RESOLVED: {
     label: "Đã giải quyết",
     color: "text-green-400",
     bg: "bg-green-400/10",
-    border: "border-green-400/20"
+    border: "border-green-400/20",
   },
 };
 
@@ -44,13 +64,14 @@ const AdminReportsManagement = () => {
   const [filterStatus, setFilterStatus] = useState("PENDING"); // PENDING | RESOLVED | ALL
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [sortOrder, setSortOrder] = useState("desc"); // desc (newest) | asc (oldest)
   const [currentUserId, setCurrentUserId] = useState(null);
 
   // Cache for all groups to allow fallback lookup for deleted groups
   const [allGroupsCache, setAllGroupsCache] = useState(null);
 
   useEffect(() => {
-    const userStr = localStorage.getItem('user');
+    const userStr = localStorage.getItem("user");
     if (userStr) {
       try {
         const user = JSON.parse(userStr);
@@ -73,17 +94,16 @@ const AdminReportsManagement = () => {
   // Inspector State
   const [inspectingGroupId, setInspectingGroupId] = useState(null);
   const [inspectingReports, setInspectingReports] = useState([]);
-  const [inspectorInitialTab, setInspectorInitialTab] = useState('overview');
+  const [inspectorInitialTab, setInspectorInitialTab] = useState("overview");
   const [viewingReporterId, setViewingReporterId] = useState(null); // For reporter modal
-
 
   // Confirm Dialog State
   const [confirmConfig, setConfirmConfig] = useState({
     isOpen: false,
-    title: '',
-    message: '',
+    title: "",
+    message: "",
     onConfirm: null,
-    type: 'danger'
+    type: "danger",
   });
 
   const fetchReports = async () => {
@@ -103,68 +123,77 @@ const AdminReportsManagement = () => {
     fetchReports();
   }, []);
 
-  const filteredReports = reports.filter(
-    (r) => {
-      const typeMatch = r.targetType === activeTab;
-      const statusMatch = filterStatus === 'ALL' ? true :
-        filterStatus === 'RESOLVED' ? r.status === 'RESOLVED' :
-          r.status !== 'RESOLVED';
-      return typeMatch && statusMatch;
-    }
-  );
+  const filteredReports = reports.filter((r) => {
+    const typeMatch = r.targetType === activeTab;
+    const statusMatch =
+      filterStatus === "ALL"
+        ? true
+        : filterStatus === "RESOLVED"
+          ? r.status === "RESOLVED"
+          : r.status !== "RESOLVED";
+    return typeMatch && statusMatch;
+  });
 
   // GROUP REPORTS BY TARGET ID
-  const groupedReports = Object.values(filteredReports.reduce((acc, report) => {
-    const tType = report.targetType || report.target_type;
-    const tId = report.targetId || report.target_id || report.targetID;
-    const key = `${tType}_${tId}`;
+  const groupedReports = Object.values(
+    filteredReports.reduce((acc, report) => {
+      const tType = report.targetType || report.target_type;
+      const tId = report.targetId || report.target_id || report.targetID;
+      const key = `${tType}_${tId}`;
 
-    if (!acc[key]) {
-      acc[key] = {
-        id: `group_${report.targetId || report.target_id || report.targetID}`, // Fake ID for key
-        targetType: report.targetType || report.target_type,
-        targetId: report.targetId || report.target_id || report.targetID, // Standardize to targetId
-        targetData: null, // Fetched later
-        reports: [],
-        reason: report.reason, // Show first reason as display
-        createdAt: report.createdAt || report.created_at,
-        updatedAt: report.updatedAt || report.updated_at,
-        reporterUsername: report.reporterUsername || report.reporter_username,
-        status: report.status,
-        groupId: report.groupId,
-        reviewerId: report.reviewerId || report.reviewer_id // Capture reviewer ID from DB
-      };
-    }
+      if (!acc[key]) {
+        acc[key] = {
+          id: `group_${report.targetId || report.target_id || report.targetID}`, // Fake ID for key
+          targetType: report.targetType || report.target_type,
+          targetId: report.targetId || report.target_id || report.targetID, // Standardize to targetId
+          targetData: null, // Fetched later
+          reports: [],
+          reason: report.reason, // Show first reason as display
+          createdAt: report.createdAt || report.created_at,
+          updatedAt: report.updatedAt || report.updated_at,
+          reporterUsername: report.reporterUsername || report.reporter_username,
+          status: report.status,
+          groupId: report.groupId,
+          reviewerId: report.reviewerId || report.reviewer_id, // Capture reviewer ID from DB
+        };
+      }
 
-    acc[key].reports.push(report);
-    // Keep latest date
-    const reportDate = new Date(report.createdAt || report.created_at);
-    const accDate = new Date(acc[key].createdAt);
-    if (reportDate > accDate) {
-      acc[key].createdAt = reportDate;
-    }
+      acc[key].reports.push(report);
+      // Keep latest date
+      const reportDate = new Date(report.createdAt || report.created_at);
+      const accDate = new Date(acc[key].createdAt);
+      if (reportDate > accDate) {
+        acc[key].createdAt = reportDate;
+      }
 
-    // Check for latest update time for resolution
-    if (report.updatedAt) {
-      const reportUpdate = new Date(report.updatedAt);
-      const accUpdate = acc[key].updatedAt ? new Date(acc[key].updatedAt) : new Date(0);
-      if (reportUpdate > accUpdate) acc[key].updatedAt = report.updatedAt;
-    }
+      // Check for latest update time for resolution
+      if (report.updatedAt) {
+        const reportUpdate = new Date(report.updatedAt);
+        const accUpdate = acc[key].updatedAt
+          ? new Date(acc[key].updatedAt)
+          : new Date(0);
+        if (reportUpdate > accUpdate) acc[key].updatedAt = report.updatedAt;
+      }
 
-    return acc;
-  }, {}));
+      return acc;
+    }, {}),
+  );
 
-
-  const displayReports = [...groupedReports].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  const displayReports = [...groupedReports].sort((a, b) => {
+    const timeA = new Date(a.createdAt).getTime();
+    const timeB = new Date(b.createdAt).getTime();
+    return sortOrder === "desc" ? timeB - timeA : timeA - timeB;
+  });
 
   const activeCount = displayReports.length;
 
   // HISTORY LOGIC
   const getViolationHistory = (targetId, type) => {
-    return reports.filter(r =>
-      r.status === 'RESOLVED' &&
-      String(r.targetId || r.target_id) === String(targetId) &&
-      (r.targetType || r.target_type) === type
+    return reports.filter(
+      (r) =>
+        r.status === "RESOLVED" &&
+        String(r.targetId || r.target_id) === String(targetId) &&
+        (r.targetType || r.target_type) === type,
     );
   };
 
@@ -185,38 +214,48 @@ const AdminReportsManagement = () => {
       for (const group of displayReports) {
         if (targetMetadata[`${group.targetType}_${group.targetId}`]) continue;
 
-        if (group.targetType === 'USER') {
+        if (group.targetType === "USER") {
           promises.push(
             UserProfileService.getUserProfile(group.targetId)
-              .then(res => {
+              .then((res) => {
                 newMetadata[`USER_${group.targetId}`] = {
                   name: res.data.fullName || res.data.username,
-                  avatar: res.data.currentAvatarUrl || "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+                  avatar:
+                    res.data.currentAvatarUrl ||
+                    "https://cdn-icons-png.flaticon.com/512/149/149071.png",
                   subtext: res.data.email,
                   status: res.data.status,
-                  deleted: res.data.deleted
+                  deleted: res.data.deleted,
                 };
               })
               .catch(() => {
-                newMetadata[`USER_${group.targetId}`] = { name: `Unknown User #${group.targetId}`, error: true };
-              })
+                newMetadata[`USER_${group.targetId}`] = {
+                  name: `Unknown User #${group.targetId}`,
+                  error: true,
+                };
+              }),
           );
-        } else if (group.targetType === 'GROUP') {
+        } else if (group.targetType === "GROUP") {
           groupsToFetch.push(group.targetId);
           promises.push(
             findGroupById(group.targetId)
-              .then(res => {
+              .then((res) => {
                 newMetadata[`GROUP_${group.targetId}`] = {
                   name: res.name,
-                  avatar: res.image || "https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=1000",
-                  subtext: `Owner ID: ${res.ownerId}`,
+                  avatar:
+                    res.image ||
+                    "https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=1000",
+                  subtext: "",
                   status: res.status,
-                  deleted: res.deleted
+                  deleted: res.deleted,
                 };
               })
               .catch(() => {
-                newMetadata[`GROUP_${group.targetId}`] = { name: `Unknown Group #${group.targetId}`, error: true };
-              })
+                newMetadata[`GROUP_${group.targetId}`] = {
+                  name: `Unknown Group #${group.targetId}`,
+                  error: true,
+                };
+              }),
           );
         }
 
@@ -224,19 +263,28 @@ const AdminReportsManagement = () => {
         if (group.reports.length === 1) {
           const reporterId = group.reports[0].reporterId;
           const reporterKey = `USER_${reporterId}`;
-          if (reporterId && !targetMetadata[reporterKey] && !newMetadata[reporterKey]) {
+          if (
+            reporterId &&
+            !targetMetadata[reporterKey] &&
+            !newMetadata[reporterKey]
+          ) {
             promises.push(
               UserProfileService.getUserProfile(reporterId)
-                .then(res => {
+                .then((res) => {
                   newMetadata[reporterKey] = {
                     name: res.data.fullName || res.data.username,
-                    avatar: res.data.currentAvatarUrl || "https://cdn-icons-png.flaticon.com/512/149/149071.png",
-                    subtext: res.data.email
+                    avatar:
+                      res.data.currentAvatarUrl ||
+                      "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+                    subtext: res.data.email,
                   };
                 })
                 .catch(() => {
-                  newMetadata[reporterKey] = { name: `User #${reporterId}`, error: true };
-                })
+                  newMetadata[reporterKey] = {
+                    name: `User #${reporterId}`,
+                    error: true,
+                  };
+                }),
             );
           }
         }
@@ -247,15 +295,15 @@ const AdminReportsManagement = () => {
           if (!targetMetadata[resolverKey] && !newMetadata[resolverKey]) {
             promises.push(
               UserProfileService.getUserProfile(group.reviewerId)
-                .then(res => {
+                .then((res) => {
                   newMetadata[resolverKey] = {
                     name: res.data.fullName || res.data.username,
                     avatar: res.data.currentAvatarUrl,
                   };
                 })
                 .catch(() => {
-                  newMetadata[resolverKey] = { name: 'Admin', error: true };
-                })
+                  newMetadata[resolverKey] = { name: "Admin", error: true };
+                }),
             );
           }
         }
@@ -266,7 +314,7 @@ const AdminReportsManagement = () => {
 
         // REPAIR PHASE for Groups
         // Check for groups that failed to load (likely soft-deleted and returned 404/error by strict findById)
-        const failedGroupIds = groupsToFetch.filter(id => {
+        const failedGroupIds = groupsToFetch.filter((id) => {
           const meta = newMetadata[`GROUP_${id}`];
           return meta && meta.error;
         });
@@ -276,7 +324,10 @@ const AdminReportsManagement = () => {
           try {
             // Check if we have cache or need to fetch all groups list
             let currentCache = allGroupsCache;
-            if (!currentCache && displayReports.some(r => r.targetType === 'GROUP')) {
+            if (
+              !currentCache &&
+              displayReports.some((r) => r.targetType === "GROUP")
+            ) {
               // Only fetch if we really need to repair groups
               try {
                 currentCache = await findAllGroup();
@@ -287,17 +338,21 @@ const AdminReportsManagement = () => {
             }
 
             if (currentCache) {
-              failedGroupIds.forEach(id => {
-                const found = currentCache.find(g => String(g.id) === String(id));
+              failedGroupIds.forEach((id) => {
+                const found = currentCache.find(
+                  (g) => String(g.id) === String(id),
+                );
                 if (found) {
                   // Recovered from list!
                   newMetadata[`GROUP_${id}`] = {
                     name: found.name,
-                    avatar: found.image || "https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=1000",
+                    avatar:
+                      found.image ||
+                      "https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=1000",
                     subtext: `Owner ID: ${found.ownerId}`,
-                    status: 'DELETED', // Force status to deleted since it failed standard fetch
+                    status: "DELETED", // Force status to deleted since it failed standard fetch
                     deleted: true,
-                    error: false // Clear error flag
+                    error: false, // Clear error flag
                   };
                 } else {
                   // Truly unknown
@@ -310,7 +365,7 @@ const AdminReportsManagement = () => {
           }
         }
 
-        setTargetMetadata(prev => ({ ...prev, ...newMetadata }));
+        setTargetMetadata((prev) => ({ ...prev, ...newMetadata }));
       }
     };
 
@@ -318,7 +373,6 @@ const AdminReportsManagement = () => {
       fetchMetadata();
     }
   }, [displayReports, allGroupsCache]);
-
 
   const handleShowDetail = async (groupItem) => {
     if (!groupItem.targetId) {
@@ -328,31 +382,42 @@ const AdminReportsManagement = () => {
     }
 
     // Fetch Reporters for this group
-    const reporterIds = [...new Set(groupItem.reports.map(r => r.reporterId).filter(id => id))];
+    const reporterIds = [
+      ...new Set(groupItem.reports.map((r) => r.reporterId).filter((id) => id)),
+    ];
     const newMeta = {};
     const promises = [];
 
-    reporterIds.forEach(id => {
+    reporterIds.forEach((id) => {
       if (!targetMetadata[`USER_${id}`]) {
         promises.push(
-          UserProfileService.getUserProfile(id).then(res => {
-            newMeta[`USER_${id}`] = {
-              name: res.data.fullName || res.data.username,
-              avatar: res.data.currentAvatarUrl || "https://cdn-icons-png.flaticon.com/512/149/149071.png",
-              subtext: res.data.email
-            };
-          }).catch(() => { })
+          UserProfileService.getUserProfile(id)
+            .then((res) => {
+              newMeta[`USER_${id}`] = {
+                name: res.data.fullName || res.data.username,
+                avatar:
+                  res.data.currentAvatarUrl ||
+                  "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+                subtext: res.data.email,
+              };
+            })
+            .catch(() => { }),
         );
       }
     });
 
     if (promises.length > 0) {
       Promise.allSettled(promises).then(() => {
-        setTargetMetadata(prev => ({ ...prev, ...newMeta }));
+        setTargetMetadata((prev) => ({ ...prev, ...newMeta }));
       });
     }
 
-    setDetailModal({ isOpen: true, report: groupItem, targetData: null, loading: true });
+    setDetailModal({
+      isOpen: true,
+      report: groupItem,
+      targetData: null,
+      loading: true,
+    });
     try {
       let data = null;
       if (groupItem.targetType === "USER") {
@@ -361,8 +426,8 @@ const AdminReportsManagement = () => {
       } else if (groupItem.targetType === "GROUP") {
         setInspectingGroupId(groupItem.targetId);
         setInspectingReports(groupItem.reports);
-        setInspectorInitialTab('overview');
-        setDetailModal(prev => ({ ...prev, loading: false, isOpen: false }));
+        setInspectorInitialTab("overview");
+        setDetailModal((prev) => ({ ...prev, loading: false, isOpen: false }));
         return;
       } else if (groupItem.targetType === "POST") {
         try {
@@ -370,58 +435,46 @@ const AdminReportsManagement = () => {
           const res = await postService.getPostById(groupItem.targetId);
           data = res.data;
         } catch (error) {
-          console.warn("Direct post fetch failed, attempting fallback...", error);
-
-          // Attempt 2: Fetch via Group Posts (search in group context)
-          // Find groupId from the aggregated item OR any sub-report
-          const groupId = groupItem.groupId || groupItem.reports.find(r => r.groupId)?.groupId;
-
-          if (groupId) {
-            try {
-              const groupPosts = await getGroupPosts(groupId);
-              // Ensure loose comparison for ID (string vs number)
-              const foundPost = groupPosts.find(p => String(p.id) === String(groupItem.targetId));
-
-              if (foundPost) {
-                data = foundPost;
-                // Normalize userId if needed
-                if (!data.userId && foundPost.authorId) data.userId = foundPost.authorId;
-                if (!data.content && foundPost.description) data.content = foundPost.description; // Normalize content field
-              } else {
-                // Attempt 3: Pending Posts in Group
-                try {
-                  const pendingPosts = await getGroupPosts(groupId).then(() => [], () => []); // Mocking pending if API exists, logic here implies just failing if not found in active
-                  // If we had getPendingGroupPosts API, we'd use it here.
-                  throw new Error("Post not found in group active posts");
-                } catch (e) { throw e; }
-              }
-            } catch (groupError) {
-              console.error("Group fallback failed:", groupError);
+          console.warn("Direct post fetch failed, attempting fallback via GroupService", error);
+          if (groupItem.groupId) {
+            const groupPosts = await getGroupPosts(groupItem.groupId);
+            const foundPost = groupPosts.find(p => p.id === groupItem.targetId);
+            if (foundPost) {
+              data = foundPost;
+              if (!data.userId && foundPost.authorId) data.userId = foundPost.authorId;
+            } else {
+              throw new Error("Post not found in group");
             }
+          } else {
+            throw error;
           }
         }
-
-        if (!data) {
-          throw new Error("Could not retrieve post data from any source");
-        }
       }
-      setDetailModal(prev => ({ ...prev, targetData: data, loading: false }));
+      setDetailModal((prev) => ({ ...prev, targetData: data, loading: false }));
     } catch (error) {
       console.error(error);
       toast.error("Không thể tải thông tin chi tiết");
-      setDetailModal(prev => ({ ...prev, loading: false }));
+      setDetailModal((prev) => ({ ...prev, loading: false }));
     }
   };
 
   const closeDetailModal = () => {
-    setDetailModal({ isOpen: false, report: null, targetData: null, loading: false });
+    setDetailModal({
+      isOpen: false,
+      report: null,
+      targetData: null,
+      loading: false,
+    });
   };
-
 
   const handleResolveReport = async (reportsOrId) => {
     try {
       if (Array.isArray(reportsOrId)) {
-        await Promise.all(reportsOrId.map(r => reportService.updateReportStatus(r.id, "RESOLVED")));
+        await Promise.all(
+          reportsOrId.map((r) =>
+            reportService.updateReportStatus(r.id, "RESOLVED"),
+          ),
+        );
         toast.success(`Đã xử lý ${reportsOrId.length} báo cáo`);
       } else {
         await reportService.updateReportStatus(reportsOrId, "RESOLVED");
@@ -433,7 +486,6 @@ const AdminReportsManagement = () => {
       toast.error("Lỗi khi cập nhật trạng thái");
     }
   };
-
 
   const onBanUser = async (userId, reportsOrId) => {
     if (!userId) {
@@ -450,9 +502,14 @@ const AdminReportsManagement = () => {
       await lockUser(Number(userId));
       toast.success(`Đã khóa tài khoản người dùng #${userId}`);
 
-      setTargetMetadata(prev => ({
+      setTargetMetadata((prev) => ({
         ...prev,
-        [`USER_${userId}`]: { ...prev[`USER_${userId}`], error: true, status: 'LOCKED', deleted: true }
+        [`USER_${userId}`]: {
+          ...prev[`USER_${userId}`],
+          error: true,
+          status: "LOCKED",
+          deleted: true,
+        },
       }));
 
       if (reportsOrId) await handleResolveReport(reportsOrId);
@@ -468,9 +525,14 @@ const AdminReportsManagement = () => {
       await deleteGroup(groupId);
       toast.success(`Đã xóa/khóa nhóm #${groupId}`);
 
-      setTargetMetadata(prev => ({
+      setTargetMetadata((prev) => ({
         ...prev,
-        [`GROUP_${groupId}`]: { ...prev[`GROUP_${groupId}`], error: true, status: 'DELETED', deleted: true }
+        [`GROUP_${groupId}`]: {
+          ...prev[`GROUP_${groupId}`],
+          error: true,
+          status: "DELETED",
+          deleted: true,
+        },
       }));
 
       if (reportsOrId) await handleResolveReport(reportsOrId);
@@ -485,9 +547,14 @@ const AdminReportsManagement = () => {
       await postService.deletePost(postId);
       toast.success(`Đã xóa bài viết #${postId}`);
 
-      setTargetMetadata(prev => ({
+      setTargetMetadata((prev) => ({
         ...prev,
-        [`POST_${postId}`]: { ...prev[`POST_${postId}`], error: true, status: 'DELETED', deleted: true }
+        [`POST_${postId}`]: {
+          ...prev[`POST_${postId}`],
+          error: true,
+          status: "DELETED",
+          deleted: true,
+        },
       }));
 
       if (reportsOrId) await handleResolveReport(reportsOrId);
@@ -504,9 +571,9 @@ const AdminReportsManagement = () => {
       message,
       onConfirm: async () => {
         await action();
-        setConfirmConfig(prev => ({ ...prev, isOpen: false }));
+        setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
       },
-      type: 'danger'
+      type: "danger",
     });
   };
 
@@ -523,7 +590,8 @@ const AdminReportsManagement = () => {
             <h2 className="text-2xl font-black text-white tracking-tight flex items-center gap-3">
               Quản lý báo cáo
               <span className="px-3 py-1 text-xs rounded-full bg-primary/20 text-primary border border-primary/20">
-                {activeCount} {filterStatus === 'RESOLVED' ? 'đã giải quyết' : 'đang xử lý'}
+                {activeCount}{" "}
+                {filterStatus === "RESOLVED" ? "đã giải quyết" : "đang xử lý"}
               </span>
             </h2>
             <p className="text-text-muted text-sm mt-1">
@@ -534,18 +602,43 @@ const AdminReportsManagement = () => {
           {/* STATUS FILTER */}
           <div className="flex bg-surface-dark border border-border-dark/50 p-1 rounded-xl">
             <button
-              onClick={() => setFilterStatus('PENDING')}
-              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${filterStatus === 'PENDING' ? 'bg-primary text-black' : 'text-text-muted hover:text-white'}`}
+              onClick={() => setFilterStatus("PENDING")}
+              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${filterStatus === "PENDING"
+                ? "bg-primary text-black"
+                : "text-text-muted hover:text-white"
+                }`}
             >
               Chờ xử lý
             </button>
             <button
-              onClick={() => setFilterStatus('RESOLVED')}
-              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${filterStatus === 'RESOLVED' ? 'bg-green-500 text-white' : 'text-text-muted hover:text-white'}`}
+              onClick={() => setFilterStatus("RESOLVED")}
+              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${filterStatus === "RESOLVED"
+                ? "bg-green-500 text-white"
+                : "text-text-muted hover:text-white"
+                }`}
             >
               Đã giải quyết
             </button>
           </div>
+
+          {/* SORT BUTTON */}
+          <button
+            onClick={() => setSortOrder(sortOrder === "desc" ? "asc" : "desc")}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-surface-dark border border-border-dark/50 text-text-muted hover:text-white transition-all ml-3"
+            title={sortOrder === "desc" ? "Cũ nhất" : "Mới nhất"}
+          >
+            {sortOrder === "desc" ? (
+              <>
+                <ArrowDownWideNarrow size={16} />
+                <span className="text-xs font-bold">Mới nhất</span>
+              </>
+            ) : (
+              <>
+                <ArrowUpNarrowWide size={16} />
+                <span className="text-xs font-bold">Cũ nhất</span>
+              </>
+            )}
+          </button>
         </div>
 
         {/* TABS */}
@@ -581,7 +674,10 @@ const AdminReportsManagement = () => {
             <tbody className="divide-y divide-border-dark/30 text-sm">
               {loading && (
                 <tr>
-                  <td colSpan="6" className="text-center py-12 text-text-muted animate-pulse">
+                  <td
+                    colSpan="6"
+                    className="text-center py-12 text-text-muted animate-pulse"
+                  >
                     Đang tải dữ liệu...
                   </td>
                 </tr>
@@ -589,7 +685,10 @@ const AdminReportsManagement = () => {
 
               {!loading && filteredReports.length === 0 && (
                 <tr>
-                  <td colSpan="6" className="text-center py-12 text-text-muted italic">
+                  <td
+                    colSpan="6"
+                    className="text-center py-12 text-text-muted italic"
+                  >
                     Không có báo cáo nào
                   </td>
                 </tr>
@@ -598,18 +697,38 @@ const AdminReportsManagement = () => {
               {!loading &&
                 displayReports.map((r) => {
                   const meta = targetMetadata[`${r.targetType}_${r.targetId}`];
-                  const isDeleted = meta?.error || meta?.status === 'DELETED' || meta?.status === 'LOCKED' || meta?.deleted;
+                  const isDeleted =
+                    meta?.error ||
+                    meta?.status === "DELETED" ||
+                    meta?.status === "LOCKED" ||
+                    meta?.deleted;
 
                   return (
-                    <tr key={`${r.targetType}_${r.targetId}`} className="hover:bg-surface-dark/40 transition-colors">
+                    <tr
+                      key={`${r.targetType}_${r.targetId}`}
+                      className="hover:bg-surface-dark/40 transition-colors"
+                    >
                       {/* TARGET */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           {meta?.avatar ? (
-                            <img src={meta.avatar} className="w-10 h-10 rounded-full object-cover bg-black/20" alt="" />
+                            <img
+                              src={meta.avatar}
+                              className="w-10 h-10 rounded-full object-cover bg-black/20"
+                              alt=""
+                            />
                           ) : (
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs ${r.targetType === 'USER' ? 'bg-blue-500/20 text-blue-500' : 'bg-purple-500/20 text-purple-500'}`}>
-                              {r.targetType === 'USER' ? 'U' : r.targetType === 'GROUP' ? 'G' : 'P'}
+                            <div
+                              className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs ${r.targetType === "USER"
+                                ? "bg-blue-500/20 text-blue-500"
+                                : "bg-purple-500/20 text-purple-500"
+                                }`}
+                            >
+                              {r.targetType === "USER"
+                                ? "U"
+                                : r.targetType === "GROUP"
+                                  ? "G"
+                                  : "P"}
                             </div>
                           )}
 
@@ -619,16 +738,16 @@ const AdminReportsManagement = () => {
                                 {meta?.name || `${r.targetType} #${r.targetId}`}
                               </p>
                               {getViolationHistory(r.targetId, r.targetType).length > 0 && (
-                                <div className="group relative" title="Đối tượng này đã bị báo cáo trước đó">
-                                  <span className="material-symbols-outlined text-orange-500 text-sm cursor-help">history</span>
+                                <div className="group relative" title="Đối tượng này đã có vi phạm trước đó">
+                                  <History className="text-orange-500 size-4 cursor-help" />
                                   <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black/90 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                    {getViolationHistory(r.targetId, r.targetType).length} báo cáo trước đó
+                                    {getViolationHistory(r.targetId, r.targetType).length} vi phạm trước đó
                                   </span>
                                 </div>
                               )}
                             </div>
                             <span className="text-[10px] text-text-muted uppercase tracking-wide">
-                              {meta?.subtext || `ID: ${r.targetId}`}
+                              {meta?.subtext ?? `ID: ${r.targetId}`}
                             </span>
                             {r.reports.length > 1 && (
                               <span className="ml-2 px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full animate-pulse">
@@ -642,9 +761,14 @@ const AdminReportsManagement = () => {
                       {/* REPORTER */}
                       <td className="px-6 py-4 font-medium text-gray-300">
                         {r.reports.length > 1 ? (
-                          <span className="italic text-text-muted">Nhiều người báo cáo</span>
+                          <span className="italic text-text-muted">
+                            Nhiều người báo cáo
+                          </span>
                         ) : (
-                          targetMetadata[`USER_${r.reports[0].reporterId}`]?.name || r.reporterUsername || "Ẩn danh"
+                          targetMetadata[`USER_${r.reports[0].reporterId}`]
+                            ?.name ||
+                          r.reporterUsername ||
+                          "Ẩn danh"
                         )}
                       </td>
 
@@ -655,7 +779,9 @@ const AdminReportsManagement = () => {
                             <span className="px-3 py-1 text-[11px] font-bold rounded-lg bg-surface-dark text-white border border-border-dark/50 shadow-sm inline-block max-w-[200px] truncate">
                               {r.reason}
                             </span>
-                            <span className="text-[10px] text-text-muted">và {r.reports.length - 1} lý do khác...</span>
+                            <span className="text-[10px] text-text-muted">
+                              và {r.reports.length - 1} lý do khác...
+                            </span>
                           </div>
                         ) : (
                           <span className="px-3 py-1 text-[11px] font-bold rounded-lg bg-surface-dark text-white border border-border-dark/50 shadow-sm inline-block max-w-[200px] truncate">
@@ -667,15 +793,28 @@ const AdminReportsManagement = () => {
                       {/* DATE */}
                       <td className="px-6 py-4 text-text-muted font-mono text-xs">
                         {r.createdAt
-                          ? new Date(r.createdAt).toLocaleDateString('vi-VN')
+                          ? new Date(r.createdAt).toLocaleDateString("vi-VN")
                           : "-"}
                       </td>
 
                       {/* STATUS */}
                       <td className="px-6 py-4">
-                        <div className={`inline-flex items-center justify-center gap-2 px-3 py-1.5 rounded-full border ${statusMap[r.status]?.bg || 'bg-gray-500/10'} ${statusMap[r.status]?.border || 'border-gray-500/20'}`}>
-                          <div className={`w-1.5 h-1.5 rounded-full ${statusMap[r.status]?.color?.replace('text-', 'bg-') || 'bg-gray-500'}`}></div>
-                          <span className={`text-xs font-bold ${statusMap[r.status]?.color || 'text-gray-400'}`}>
+                        <div
+                          className={`inline-flex items-center justify-center gap-2 px-3 py-1.5 rounded-full border ${statusMap[r.status]?.bg || "bg-gray-500/10"
+                            } ${statusMap[r.status]?.border || "border-gray-500/20"
+                            }`}
+                        >
+                          <div
+                            className={`w-1.5 h-1.5 rounded-full ${statusMap[r.status]?.color?.replace(
+                              "text-",
+                              "bg-",
+                            ) || "bg-gray-500"
+                              }`}
+                          ></div>
+                          <span
+                            className={`text-xs font-bold ${statusMap[r.status]?.color || "text-gray-400"
+                              }`}
+                          >
                             {statusMap[r.status]?.label || r.status}
                           </span>
                         </div>
@@ -683,16 +822,28 @@ const AdminReportsManagement = () => {
 
                       {/* ACTIONS */}
                       <td className="px-6 py-4 text-right">
-                        {r.status === 'RESOLVED' ? (
+                        {r.status === "RESOLVED" ? (
                           <div className="flex flex-col items-end gap-1">
-                            <span className={`text-xs font-bold px-2 py-0.5 rounded border ${isDeleted ? 'bg-red-500/10 text-red-500 border-red-500/20' : 'bg-green-500/10 text-green-500 border-green-500/20'}`}>
-                              {isDeleted ? 'Vô hiệu hóa' : 'Đang hoạt động'}
+                            <span
+                              className={`text-xs font-bold px-2 py-0.5 rounded border ${isDeleted
+                                ? "bg-red-500/10 text-red-500 border-red-500/20"
+                                : "bg-green-500/10 text-green-500 border-green-500/20"
+                                }`}
+                            >
+                              {isDeleted ? "Vô hiệu hóa" : "Đang hoạt động"}
                             </span>
                             <div className="flex items-center gap-1.5 text-[10px] text-text-muted mt-1">
-                              <span className="material-symbols-outlined text-[12px]">person</span>
-                              <span className="font-bold">{targetMetadata[`USER_${r.reviewerId}`]?.name || 'Admin'}</span>
+                              <User size={12} />
+                              <span className="font-bold">
+                                {targetMetadata[`USER_${r.reviewerId}`]?.name ||
+                                  "Admin"}
+                              </span>
                               <span className="mx-1">•</span>
-                              <span>{new Date(r.updatedAt || r.createdAt).toLocaleDateString('vi-VN')}</span>
+                              <span>
+                                {new Date(
+                                  r.updatedAt || r.createdAt,
+                                ).toLocaleDateString("vi-VN")}
+                              </span>
                             </div>
                           </div>
                         ) : (
@@ -704,39 +855,57 @@ const AdminReportsManagement = () => {
                               Chi tiết
                             </button>
 
-                            {r.status !== 'RESOLVED' && (
+                            {r.status !== "RESOLVED" && (
                               <>
-                                {r.targetType === 'USER' && (
+                                {r.targetType === "USER" && (
                                   <button
-                                    onClick={() => confirmAction(
-                                      () => onBanUser(r.targetId, r.reports[0].id),
-                                      "Cấm người dùng?",
-                                      `Bạn có chắc chắn muốn khóa tài khoản người dùng #${r.targetId}? Hành động này sẽ vô hiệu hóa quyền truy cập của họ.`
-                                    )}
+                                    onClick={() =>
+                                      confirmAction(
+                                        () =>
+                                          onBanUser(
+                                            r.targetId,
+                                            r.reports[0].id,
+                                          ),
+                                        "Cấm người dùng?",
+                                        `Bạn có chắc chắn muốn khóa tài khoản người dùng #${r.targetId}? Hành động này sẽ vô hiệu hóa quyền truy cập của họ.`,
+                                      )
+                                    }
                                     className="px-4 py-1.5 text-xs font-bold rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all border border-red-500/20 hover:border-red-500/50"
                                   >
                                     Cấm
                                   </button>
                                 )}
-                                {r.targetType === 'GROUP' && (
+                                {r.targetType === "GROUP" && (
                                   <button
-                                    onClick={() => confirmAction(
-                                      () => onDeleteGroup(r.targetId, r.reports[0].id),
-                                      "Xóa nhóm?",
-                                      `Bạn có chắc chắn muốn xóa nhóm #${r.targetId}?`
-                                    )}
+                                    onClick={() =>
+                                      confirmAction(
+                                        () =>
+                                          onDeleteGroup(
+                                            r.targetId,
+                                            r.reports[0].id,
+                                          ),
+                                        "Xóa nhóm?",
+                                        `Bạn có chắc chắn muốn xóa nhóm #${r.targetId}?`,
+                                      )
+                                    }
                                     className="px-4 py-1.5 text-xs font-bold rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all border border-red-500/20 hover:border-red-500/50"
                                   >
                                     Xóa Nhóm
                                   </button>
                                 )}
-                                {r.targetType === 'POST' && (
+                                {r.targetType === "POST" && (
                                   <button
-                                    onClick={() => confirmAction(
-                                      () => onDeletePost(r.targetId, r.reports[0].id),
-                                      "Xóa bài viết?",
-                                      `Bạn có chắc chắn muốn xóa bài viết #${r.targetId}?`
-                                    )}
+                                    onClick={() =>
+                                      confirmAction(
+                                        () =>
+                                          onDeletePost(
+                                            r.targetId,
+                                            r.reports[0].id,
+                                          ),
+                                        "Xóa bài viết?",
+                                        `Bạn có chắc chắn muốn xóa bài viết #${r.targetId}?`,
+                                      )
+                                    }
                                     className="px-4 py-1.5 text-xs font-bold rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all border border-red-500/20 hover:border-red-500/50"
                                   >
                                     Xóa Bài Viết
@@ -749,8 +918,7 @@ const AdminReportsManagement = () => {
                       </td>
                     </tr>
                   );
-                })
-              }
+                })}
             </tbody>
           </table>
         </div>
@@ -762,11 +930,14 @@ const AdminReportsManagement = () => {
               {/* HEADER */}
               <div className="p-6 border-b border-white/5 flex items-center justify-between bg-black/20">
                 <h3 className="text-xl font-black text-white flex items-center gap-3">
-                  <span className="material-symbols-outlined text-primary">verified_user</span>
+                  <ShieldCheck className="text-primary size-6" />
                   Chi tiết báo cáo
                 </h3>
-                <button onClick={closeDetailModal} className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-text-muted hover:text-white transition-all">
-                  <span className="material-symbols-outlined text-sm">close</span>
+                <button
+                  onClick={closeDetailModal}
+                  className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-text-muted hover:text-white transition-all"
+                >
+                  <X size={14} />
                 </button>
               </div>
 
@@ -775,7 +946,9 @@ const AdminReportsManagement = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {/* LEFT: TARGET INFO */}
                   <div className="space-y-6">
-                    <h4 className="text-sm font-black text-text-muted uppercase tracking-wider mb-4">Thông tin đối tượng</h4>
+                    <h4 className="text-sm font-black text-text-muted uppercase tracking-wider mb-4">
+                      Thông tin đối tượng
+                    </h4>
 
                     {detailModal.loading ? (
                       <div className="flex items-center gap-3 text-text-muted">
@@ -786,29 +959,52 @@ const AdminReportsManagement = () => {
                       <div className="bg-white/5 rounded-2xl p-6 border border-white/5 space-y-4">
                         {/* Dynamic Render based on type */}
                         <div
-                          className={`flex items-center gap-4 ${detailModal.report.targetType === 'USER' ? 'cursor-pointer hover:bg-white/5 p-2 -m-2 rounded-lg transition-colors' : ''}`}
-                          onClick={() => detailModal.report.targetType === 'USER' && setViewingReporterId(detailModal.report.targetId)}
+                          className={`flex items-center gap-4 ${detailModal.report.targetType === "USER"
+                            ? "cursor-pointer hover:bg-white/5 p-2 -m-2 rounded-lg transition-colors"
+                            : ""
+                            }`}
+                          onClick={() =>
+                            detailModal.report.targetType === "USER" &&
+                            setViewingReporterId(detailModal.report.targetId)
+                          }
                         >
-                          {detailModal.report.targetType === 'USER' && (
-                            <img src={detailModal.targetData.avatarUrl || detailModal.targetData.currentAvatarUrl} className="w-16 h-16 rounded-full bg-black/30 object-cover" alt="" />
+                          {detailModal.report.targetType === "USER" && (
+                            <img
+                              src={
+                                detailModal.targetData.avatarUrl ||
+                                detailModal.targetData.currentAvatarUrl
+                              }
+                              className="w-16 h-16 rounded-full bg-black/30 object-cover"
+                              alt=""
+                            />
                           )}
                           <div>
                             <h3 className="text-xl font-bold text-white">
-                              {detailModal.targetData.fullName || detailModal.targetData.name || detailModal.targetData.username || `ID: ${detailModal.report.targetId}`}
+                              {detailModal.targetData.fullName ||
+                                detailModal.targetData.name ||
+                                detailModal.targetData.username ||
+                                `ID: ${detailModal.report.targetId}`}
                             </h3>
-                            <p className="text-text-muted text-sm">{detailModal.report.targetType} #{detailModal.report.targetId}</p>
+                            <p className="text-text-muted text-sm">
+                              {detailModal.report.targetType} #
+                              {detailModal.report.targetId}
+                            </p>
                           </div>
-                          {detailModal.report.targetType === 'USER' && (
-                            <span className="material-symbols-outlined text-text-muted ml-auto">chevron_right</span>
+                          {detailModal.report.targetType === "USER" && (
+                            <ChevronRight className="text-text-muted ml-auto size-5" />
                           )}
                         </div>
 
                         {/* Content Preview for Post */}
-                        {detailModal.report.targetType === 'POST' && (
+                        {detailModal.report.targetType === "POST" && (
                           <div className="bg-black/20 p-4 rounded-xl text-sm italic text-gray-300 border-l-2 border-primary">
                             "{detailModal.targetData.content}"
                             {detailModal.targetData.images?.length > 0 && (
-                              <img src={detailModal.targetData.images[0]} className="mt-2 rounded-lg max-h-40 object-cover" alt="" />
+                              <img
+                                src={detailModal.targetData.images[0]}
+                                className="mt-2 rounded-lg max-h-40 object-cover"
+                                alt=""
+                              />
                             )}
                           </div>
                         )}
@@ -823,37 +1019,26 @@ const AdminReportsManagement = () => {
                     {/* HISTORY SECTION */}
                     {(() => {
                       const history = getViolationHistory(detailModal.report.targetId, detailModal.report.targetType);
-
-                      // Helper to parse reason
-                      const parseReason = (fullReason) => {
-                        if (!fullReason) return { main: 'Không rõ', detail: null };
-                        const parts = fullReason.split('|');
-                        const main = parts[0].trim();
-                        const detail = parts.length > 1 ? parts.slice(1).join('|').trim() : null;
-                        return { main, detail };
-                      };
-
                       return (
                         <div className="mt-6 bg-orange-500/5 border border-orange-500/10 rounded-lg p-5">
                           <h4 className="text-sm font-black text-orange-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-lg">history</span>
-                            Lịch sử bị báo cáo ({history.length})
+                            <History className="size-5" />
+                            Lịch sử vi phạm ({history.length})
                           </h4>
                           {history.length > 0 ? (
-                            <div className="space-y-3 max-h-40 overflow-y-auto custom-scrollbar pr-2">
-                              {history.map((h, i) => {
-                                const { main, detail } = parseReason(h.reason);
-                                return (
-                                  <div key={i} className="text-xs text-text-muted border-l-2 border-orange-500/20 pl-3 py-1">
-                                    <div className="font-bold text-gray-300">{main}</div>
-                                    {detail && <div className="text-[11px] text-text-muted/80 mt-0.5 italic">"{detail}"</div>}
-                                    <div className="text-[10px] text-text-muted/60 mt-1">{new Date(h.createdAt || h.created_at).toLocaleDateString()}</div>
-                                  </div>
-                                );
-                              })}
+                            <div className="space-y-2 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                              {history.map((h, i) => (
+                                <div key={i} className="text-xs text-text-muted border-l-2 border-orange-500/20 pl-3 py-1">
+                                  <span className="font-bold text-gray-300">{h.reason}</span>
+                                  <span className="mx-2 text-[10px]">•</span>
+                                  <span className="text-[10px]">{new Date(h.createdAt || h.created_at).toLocaleDateString()}</span>
+                                </div>
+                              ))}
                             </div>
                           ) : (
-                            <p className="text-xs text-text-muted italic">Không có vi phạm nào trước đây.</p>
+                            <p className="text-xs text-text-muted italic">
+                              Không có vi phạm nào trước đây.
+                            </p>
                           )}
                         </div>
                       );
@@ -862,21 +1047,22 @@ const AdminReportsManagement = () => {
 
                   {/* RIGHT: REPORTS LIST */}
                   <div className="space-y-6">
-                    <h4 className="text-sm font-black text-text-muted uppercase tracking-wider mb-4">Danh sách báo cáo ({detailModal.report.reports.length})</h4>
+                    <h4 className="text-sm font-black text-text-muted uppercase tracking-wider mb-4">
+                      Danh sách báo cáo ({detailModal.report.reports.length})
+                    </h4>
                     <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                       {detailModal.report.reports.map((r, idx) => {
                         const parts = (r.reason || '').split('|');
                         const mainReason = parts[0].trim();
                         const detailReason = parts.length > 1 ? parts.slice(1).join('|').trim() : null;
 
-                        // Calculate reporter stats
                         const reporterStats = reports.filter(rep => rep.reporterId === r.reporterId).length;
                         const isHighRisk = reporterStats > 10;
                         const isMediumRisk = reporterStats > 5;
 
                         return (
-                          <div key={idx} className="bg-white/5 p-4 rounded-lg border border-white/5 flex gap-3 hover:bg-white/10 transition-colors">
-                            <div className="shrink-0 relative group">
+                          <div key={idx} className="bg-white/5 p-4 rounded-xl border border-white/5 flex gap-3 hover:bg-white/10 transition-colors">
+                            <div className="shrink-0">
                               {targetMetadata[`USER_${r.reporterId}`]?.avatar ? (
                                 <img src={targetMetadata[`USER_${r.reporterId}`].avatar} className="w-8 h-8 rounded-full object-cover border border-white/10" alt="" />
                               ) : (
@@ -884,32 +1070,16 @@ const AdminReportsManagement = () => {
                                   {(targetMetadata[`USER_${r.reporterId}`]?.name || r.reporterUsername || '?').charAt(0).toUpperCase()}
                                 </div>
                               )}
-
-                              {/* Validation Badge based on stats */}
-                              {isMediumRisk && (
-                                <div className={`absolute -top-1.5 -right-1.5 size-5 rounded-full flex items-center justify-center border-2 border-[#1a1614] ${isHighRisk ? 'bg-red-500' : 'bg-orange-500'}`} title={`Đã gửi ${reporterStats} báo cáo`}>
-                                  <span className="material-symbols-outlined text-[14px] text-white leading-none">
-                                    priority_high
-                                  </span>
-                                </div>
-                              )}
                             </div>
 
                             <div className="flex-1 min-w-0">
                               <div className="flex justify-between items-start">
-                                <div className="flex items-center gap-2 max-w-[80%]">
-                                  <p
-                                    className="text-white font-bold text-sm hover:underline cursor-pointer truncate"
-                                    onClick={() => r.reporterId && setViewingReporterId(r.reporterId)}
-                                  >
-                                    {targetMetadata[`USER_${r.reporterId}`]?.name || r.reporterUsername || 'Ẩn danh'}
-                                  </p>
-                                  {reporterStats > 1 && (
-                                    <span className={`text-[9px] px-1.5 py-0.5 rounded border ${isHighRisk ? 'bg-red-500/10 text-red-500 border-red-500/20' : 'bg-white/5 text-text-muted border-white/10'}`}>
-                                      {reporterStats} báo cáo
-                                    </span>
-                                  )}
-                                </div>
+                                <p
+                                  className="text-white font-bold text-sm hover:underline cursor-pointer truncate"
+                                  onClick={() => r.reporterId && setViewingReporterId(r.reporterId)}
+                                >
+                                  {targetMetadata[`USER_${r.reporterId}`]?.name || r.reporterUsername || 'Ẩn danh'}
+                                </p>
                                 <span className="text-[10px] text-text-muted shrink-0 ml-2">
                                   {new Date(r.createdAt).toLocaleString('vi-VN')}
                                 </span>
@@ -932,71 +1102,96 @@ const AdminReportsManagement = () => {
                       })}
                     </div>
                   </div>
-
                 </div>
 
                 {/* Quick Actions in Modal */}
-
               </div>
 
               {/* Quick Actions - Sticky Bottom */}
-              {!detailModal.loading && detailModal.targetData && detailModal.report.status !== 'RESOLVED' && (
-                <div className="p-6 border-t border-white/10 bg-black/20 backdrop-blur-sm">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-white font-bold text-sm">Hành động nhanh</p>
-                      <p className="text-xs text-text-muted">Xử lý {detailModal.report.reports?.length} báo cáo này ngay lập tức</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleResolveReport(detailModal.report.reports)}
-                        className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-xs font-bold rounded-lg border border-white/10 transition-all"
-                      >
-                        Bỏ qua (Đã xử lý)
-                      </button>
-
-                      {detailModal.report.targetType === 'USER' && (
+              {!detailModal.loading &&
+                detailModal.targetData &&
+                detailModal.report.status !== "RESOLVED" && (
+                  <div className="p-6 border-t border-white/10 bg-black/20 backdrop-blur-sm">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-white font-bold text-sm">
+                          Hành động nhanh
+                        </p>
+                        <p className="text-xs text-text-muted">
+                          Xử lý {detailModal.report.reports?.length} báo cáo này
+                          ngay lập tức
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
                         <button
-                          onClick={() => confirmAction(
-                            () => onBanUser(detailModal.report.targetId, detailModal.report.reports),
-                            "Khóa tài khoản",
-                            "Xác nhận khóa tài khoản người dùng này?"
-                          )}
-                          className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-lg shadow-lg shadow-red-500/20 transition-all"
+                          onClick={() =>
+                            handleResolveReport(detailModal.report.reports)
+                          }
+                          className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-xs font-bold rounded-lg border border-white/10 transition-all"
                         >
-                          Khóa Tài Khoản
+                          Bỏ qua (Đã xử lý)
                         </button>
-                      )}
 
-                      {detailModal.report.targetType === 'POST' && (
-                        <button
-                          onClick={() => confirmAction(
-                            () => onDeletePost(detailModal.report.targetId, detailModal.report.reports),
-                            "Xóa bài viết",
-                            "Xác nhận xóa bài viết này?"
-                          )}
-                          className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-lg shadow-lg shadow-red-500/20 transition-all"
-                        >
-                          Xóa Bài Viết
-                        </button>
-                      )}
+                        {detailModal.report.targetType === "USER" && (
+                          <button
+                            onClick={() =>
+                              confirmAction(
+                                () =>
+                                  onBanUser(
+                                    detailModal.report.targetId,
+                                    detailModal.report.reports,
+                                  ),
+                                "Khóa tài khoản",
+                                "Xác nhận khóa tài khoản người dùng này?",
+                              )
+                            }
+                            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-lg shadow-lg shadow-red-500/20 transition-all"
+                          >
+                            Khóa Tài Khoản
+                          </button>
+                        )}
 
-                      {detailModal.report.targetType === 'GROUP' && (
-                        <button
-                          onClick={() => confirmAction(
-                            () => onDeleteGroup(detailModal.report.targetId, detailModal.report.reports),
-                            "Xóa nhóm",
-                            "Xác nhận xóa nhóm này?"
-                          )}
-                          className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-lg shadow-lg shadow-red-500/20 transition-all"
-                        >
-                          Xóa Nhóm
-                        </button>
-                      )}
+                        {detailModal.report.targetType === "POST" && (
+                          <button
+                            onClick={() =>
+                              confirmAction(
+                                () =>
+                                  onDeletePost(
+                                    detailModal.report.targetId,
+                                    detailModal.report.reports,
+                                  ),
+                                "Xóa bài viết",
+                                "Xác nhận xóa bài viết này?",
+                              )
+                            }
+                            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-lg shadow-lg shadow-red-500/20 transition-all"
+                          >
+                            Xóa Bài Viết
+                          </button>
+                        )}
+
+                        {detailModal.report.targetType === "GROUP" && (
+                          <button
+                            onClick={() =>
+                              confirmAction(
+                                () =>
+                                  onDeleteGroup(
+                                    detailModal.report.targetId,
+                                    detailModal.report.reports,
+                                  ),
+                                "Xóa nhóm",
+                                "Xác nhận xóa nhóm này?",
+                              )
+                            }
+                            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-lg shadow-lg shadow-red-500/20 transition-all"
+                          >
+                            Xóa Nhóm
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
             </div>
           </div>
         )}
@@ -1008,11 +1203,17 @@ const AdminReportsManagement = () => {
               <div className="w-12 h-12 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center mx-auto mb-4 text-2xl">
                 !
               </div>
-              <h3 className="text-xl font-black text-white mb-2">{confirmConfig.title}</h3>
-              <p className="text-text-muted text-sm mb-6">{confirmConfig.message}</p>
+              <h3 className="text-xl font-black text-white mb-2">
+                {confirmConfig.title}
+              </h3>
+              <p className="text-text-muted text-sm mb-6">
+                {confirmConfig.message}
+              </p>
               <div className="flex gap-3 justify-center">
                 <button
-                  onClick={() => setConfirmConfig(prev => ({ ...prev, isOpen: false }))}
+                  onClick={() =>
+                    setConfirmConfig((prev) => ({ ...prev, isOpen: false }))
+                  }
                   className="px-6 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white text-sm font-bold transition-all"
                 >
                   Hủy bỏ
@@ -1030,13 +1231,16 @@ const AdminReportsManagement = () => {
 
         {/* PAGINATION UI (Mock) */}
         <div className="flex items-center justify-between mt-4">
-          <p className="text-sm text-text-muted">Hiển thị {filteredReports.length} kết quả</p>
+          <p className="text-sm text-text-muted">
+            Hiển thị {filteredReports.length} kết quả
+          </p>
           <div className="flex gap-2">
-            <button className="px-3 py-1 text-xs font-bold rounded bg-primary text-black">1</button>
+            <button className="px-3 py-1 text-xs font-bold rounded bg-primary text-black">
+              1
+            </button>
             {/* Add more pagination logic if needed */}
           </div>
         </div>
-
       </div>
 
       {/* --- GROUP INSPECTOR MODAL --- */}
@@ -1046,26 +1250,25 @@ const AdminReportsManagement = () => {
           reports={inspectingReports}
           reporterMetadata={targetMetadata}
           violationHistory={getViolationHistory(inspectingGroupId, 'GROUP')}
-          reporterStatsGetter={(reporterId) => getReporterStats(reporterId)}
           initialTab={inspectorInitialTab}
           onReporterClick={(userId) => setViewingReporterId(userId)}
           onClose={() => {
             setInspectingGroupId(null);
             setInspectingReports([]);
-            setInspectorInitialTab('overview');
+            setInspectorInitialTab("overview");
           }}
           onIgnore={() => {
             // Resolve reports and close
             handleResolveReport(inspectingReports);
             setInspectingGroupId(null);
             setInspectingReports([]);
-            setInspectorInitialTab('overview');
+            setInspectorInitialTab("overview");
           }}
           onAction={(group) => {
             confirmAction(
               () => onDeleteGroup(group.id, inspectingReports),
               "Delete Group?",
-              `Are you sure you want to delete ${group.name}?`
+              `Are you sure you want to delete ${group.name}?`,
             );
           }}
         />
