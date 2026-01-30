@@ -12,6 +12,8 @@ export default function RightSidebar() {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
   const loadingRef = useRef(false);
 
   const fetchFriends = useCallback(
@@ -30,12 +32,16 @@ export default function RightSidebar() {
         }
         const response = await FriendService.getMyFriends(params);
         const newFriends = response.data.content || [];
+        const totalPages = response.data.totalPages || 0;
 
         setFriends((prev) =>
           currentPage === 0
             ? newFriends
             : [...prev, ...newFriends],
         );
+
+        // Update hasMore based on pagination info
+        setHasMore(currentPage + 1 < totalPages);
       } catch (error) {
         console.error("Failed to fetch friends", error);
       } finally {
@@ -62,6 +68,8 @@ export default function RightSidebar() {
   // Debounce search
   useEffect(() => {
     const timeoutId = setTimeout(() => {
+      setPage(0); // Reset page when searching
+      setHasMore(true);
       fetchFriends(0, searchTerm);
     }, 300);
     return () => clearTimeout(timeoutId);
@@ -73,8 +81,17 @@ export default function RightSidebar() {
   }, [fetchSuggestions]);
 
   // Handle scroll to load more
-  const handleScroll = () => {
-    // Logic cuộn nếu cần, hiện tại bỏ qua page/hasMore chưa dùng đúng
+  const handleScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+
+    // Check if scrolled near bottom (within 100px)
+    if (scrollHeight - scrollTop <= clientHeight + 100) {
+      if (!loading && hasMore) {
+        const nextPage = page + 1;
+        setPage(nextPage);
+        fetchFriends(nextPage, searchTerm);
+      }
+    }
   };
 
   // Handle add friend
@@ -93,8 +110,7 @@ export default function RightSidebar() {
 
   return (
     <aside
-      className="w-80 hidden xl:flex flex-col border-l border-border-main bg-background-main p-6 h-screen sticky top-0 overflow-y-auto shrink-0 z-20 transition-colors duration-300"
-      onScroll={handleScroll}
+      className="w-80 hidden xl:flex flex-col border-l border-border-main bg-background-main p-6 h-screen sticky top-0 shrink-0 z-20 transition-colors duration-300"
     >
       <div className="mb-8 group">
         <div className="relative">
@@ -171,8 +187,8 @@ export default function RightSidebar() {
         </div>
       </div>
 
-      <div>
-        <div className="flex justify-between items-center mb-5">
+      <div className="flex-1 flex flex-col min-h-0">
+        <div className="flex justify-between items-center mb-5 shrink-0">
           <h3 className="text-text-main font-bold text-base tracking-wide">
             Bạn bè
           </h3>
@@ -180,39 +196,46 @@ export default function RightSidebar() {
             {friends.length}
           </span>
         </div>
-        <div className="flex flex-col gap-2">
-          {friends.map((friend) => (
-            <Link
-              to={`/dashboard/member/${friend.id}`}
-              key={friend.id}
-              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-surface-main cursor-pointer transition-colors group"
-            >
-              <div className="relative">
-                <div
-                  className="size-10 rounded-full bg-cover bg-center ring-2 ring-transparent group-hover:ring-primary/50 transition-all"
-                  style={{
-                    backgroundImage: `url("${friend.avatarUrl ||
-                      "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                      }")`,
-                  }}
-                ></div>
-                <div className="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full border-2 border-background-main"></div>
+
+        {/* Friends List - Scrollable Container */}
+        <div
+          className="flex-1 overflow-y-auto"
+          onScroll={handleScroll}
+        >
+          <div className="flex flex-col gap-2 pb-20">
+            {friends.map((friend) => (
+              <Link
+                to={`/dashboard/member/${friend.id}`}
+                key={friend.id}
+                className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-surface-main cursor-pointer transition-colors group"
+              >
+                <div className="relative">
+                  <div
+                    className="size-10 rounded-full bg-cover bg-center ring-2 ring-transparent group-hover:ring-primary/50 transition-all"
+                    style={{
+                      backgroundImage: `url("${friend.avatarUrl ||
+                        "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                        }")`,
+                    }}
+                  ></div>
+                  <div className="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full border-2 border-background-main"></div>
+                </div>
+                <span className="text-text-main text-sm font-medium group-hover:text-primary transition-colors">
+                  {friend.fullName}
+                </span>
+              </Link>
+            ))}
+            {loading && (
+              <div className="flex justify-center py-2">
+                <div className="size-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
               </div>
-              <span className="text-text-main text-sm font-medium group-hover:text-primary transition-colors">
-                {friend.fullName}
-              </span>
-            </Link>
-          ))}
-          {loading && (
-            <div className="flex justify-center py-2">
-              <div className="size-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-            </div>
-          )}
-          {!loading && friends.length === 0 && (
-            <p className="text-text-secondary text-xs pl-2">
-              Chưa có bạn bè nào đang online
-            </p>
-          )}
+            )}
+            {!loading && friends.length === 0 && (
+              <p className="text-text-secondary text-xs pl-2">
+                Chưa có bạn bè nào đang online
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </aside>
