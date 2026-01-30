@@ -1,432 +1,536 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import UserSearchService from '../../services/user/UserSearchService';
-import CityService from '../../services/CityService';
-import FriendRequestService from '../../services/friend/FriendRequestService';
-import ConfirmModal from '../../components/admin/ConfirmModal';
-import toast from 'react-hot-toast';
+import { Loader2, Check, X, UserPlus, Search, ChevronDown } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import UserSearchService from "../../services/user/UserSearchService";
+import CityService from "../../services/CityService";
+import FriendRequestService from "../../services/friend/FriendRequestService";
+import ConfirmModal from "../../components/common/ConfirmModal";
+import toast from "react-hot-toast";
+
+import CitySelect from "../../components/common/CitySelect";
+import ChatService from "../../services/chat/ChatService";
 
 export default function AdvancedMemberSearch() {
-    const [members, setMembers] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [sendingRequests, setSendingRequests] = useState({});
-    const [keyword, setKeyword] = useState('');
-    const [pagination, setPagination] = useState({ page: 0, size: 8, totalPages: 0 });
-    const [confirmModal, setConfirmModal] = useState({ isOpen: false, receiverId: null });
+  const navigate = useNavigate();
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [sendingRequests, setSendingRequests] = useState({});
+  const [keyword, setKeyword] = useState("");
+  const [pagination, setPagination] = useState({
+    page: 0,
+    size: 8,
+    totalPages: 0,
+  });
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    receiverId: null,
+  });
 
-    const [maritalStatus, setMaritalStatus] = useState('');
-    const [lookingFor, setLookingFor] = useState('');
-    const [cityCode, setCityCode] = useState('');
-    const [cities, setCities] = useState([]);
+  const [maritalStatus, setMaritalStatus] = useState("");
+  const [lookingFor, setLookingFor] = useState("");
+  const [cityCode, setCityCode] = useState("");
 
+  const fetchMembers = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = {
+        page: pagination.page,
+        size: pagination.size,
+        maritalStatus: maritalStatus || null,
+        lookingFor: lookingFor || null,
+        keyword: keyword || null,
+        cityCode: cityCode || null,
+      };
+      const response = await UserSearchService.searchMembers(params);
+      // Append new data if loading more pages, replace if it's the first page
+      setMembers((prev) =>
+        pagination.page === 0
+          ? response.data.content
+          : [...prev, ...response.data.content],
+      );
+      setPagination((prev) => ({
+        ...prev,
+        totalPages: response.data.totalPages,
+      }));
+    } catch (error) {
+      console.error("Search failed", error);
+      // toast.error('Lỗi khi tải danh sách thành viên');
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    pagination.page,
+    pagination.size,
+    maritalStatus,
+    lookingFor,
+    keyword,
+    cityCode,
+  ]);
 
+  // Reset to page 0 when filters change
+  useEffect(() => {
+    setPagination((prev) => ({ ...prev, page: 0 }));
+  }, [maritalStatus, lookingFor, keyword, cityCode]);
 
+  useEffect(() => {
+    fetchMembers();
+  }, [fetchMembers]);
 
-    useEffect(() => {
-        fetchCities();
-    }, []);
+  const handleReset = () => {
+    setKeyword("");
+    setMaritalStatus("");
+    setLookingFor("");
+    setCityCode("");
+    setPagination((prev) => ({ ...prev, page: 0 }));
+  };
 
-    // Reset to page 0 when filters change
-    useEffect(() => {
-        setPagination(prev => ({ ...prev, page: 0 }));
-    }, [maritalStatus, lookingFor, keyword, cityCode]);
+  const handleLoadMore = () => {
+    if (pagination.page < pagination.totalPages - 1) {
+      setPagination((prev) => ({ ...prev, page: prev.page + 1 }));
+    }
+  };
 
-    useEffect(() => {
-        fetchMembers();
-    }, [maritalStatus, lookingFor, keyword, cityCode, pagination.page]);
+  const handleSendFriendRequest = async (receiverId) => {
+    setSendingRequests((prev) => ({ ...prev, [receiverId]: true }));
+    try {
+      await FriendRequestService.sendRequest(receiverId);
+      toast.success("Đã gửi lời mời kết bạn!");
+      // Update local state to reflect request sent
+      setMembers((prevMembers) =>
+        prevMembers.map((member) =>
+          member.userId === receiverId
+            ? { ...member, requestSent: true }
+            : member,
+        ),
+      );
+    } catch (error) {
+      console.error("Failed to send friend request", error);
+      const errorMessage =
+        error.response?.data?.message || "Không thể gửi lời mời kết bạn";
+      toast.error(errorMessage);
+    } finally {
+      setSendingRequests((prev) => ({ ...prev, [receiverId]: false }));
+    }
+  };
 
-    const fetchCities = async () => {
-        try {
-            const data = await CityService.getAllCities();
-            setCities(data);
-        } catch (error) {
-            console.error('Failed to fetch cities', error);
-        }
-    };
+  const handleAcceptRequest = async (requestId, memberId) => {
+    setSendingRequests((prev) => ({ ...prev, [memberId]: true }));
+    try {
+      await FriendRequestService.acceptRequest(requestId);
+      toast.success("Đã chấp nhận lời mời kết bạn!");
+      // Update member to friend status
+      setMembers((prevMembers) =>
+        prevMembers.map((member) =>
+          member.userId === memberId
+            ? {
+              ...member,
+              isFriend: true,
+              requestSent: false,
+              requestId: null,
+              isRequestReceiver: false,
+            }
+            : member,
+        ),
+      );
+    } catch (error) {
+      console.error("Failed to accept request", error);
+      toast.error("Không thể chấp nhận lời mời");
+    } finally {
+      setSendingRequests((prev) => ({ ...prev, [memberId]: false }));
+    }
+  };
 
-    const fetchMembers = async () => {
-        setLoading(true);
-        try {
-            const params = {
-                page: pagination.page,
-                size: pagination.size,
-                maritalStatus: maritalStatus || null,
-                lookingFor: lookingFor || null,
-                keyword: keyword || null,
-                cityCode: cityCode || null,
-            };
-            const response = await UserSearchService.searchMembers(params);
-            // Append new data if loading more pages, replace if it's the first page
-            setMembers(prev => pagination.page === 0 ? response.data.content : [...prev, ...response.data.content]);
-            setPagination(prev => ({ ...prev, totalPages: response.data.totalPages }));
-        } catch (error) {
-            console.error('Search failed', error);
-            // toast.error('Lỗi khi tải danh sách thành viên');
-        } finally {
-            setLoading(false);
-        }
-    };
+  const handleRejectRequest = async (requestId, memberId) => {
+    setSendingRequests((prev) => ({ ...prev, [memberId]: true }));
+    try {
+      await FriendRequestService.rejectRequest(requestId);
+      toast.success("Đã từ chối lời mời");
+      // Remove request status
+      setMembers((prevMembers) =>
+        prevMembers.map((member) =>
+          member.userId === memberId
+            ? {
+              ...member,
+              requestSent: false,
+              requestId: null,
+              isRequestReceiver: false,
+            }
+            : member,
+        ),
+      );
+    } catch (error) {
+      console.error("Failed to reject request", error);
+      toast.error("Không thể từ chối lời mời");
+    } finally {
+      setSendingRequests((prev) => ({ ...prev, [memberId]: false }));
+    }
+  };
 
-    const handleReset = () => {
-        setKeyword('');
-        setMaritalStatus('');
-        setLookingFor('');
-        setCityCode('');
-        setPagination(prev => ({ ...prev, page: 0 }));
-    };
+  const confirmCancelRequest = (receiverId) => {
+    setConfirmModal({ isOpen: true, receiverId });
+  };
 
-    const handleLoadMore = () => {
-        if (pagination.page < pagination.totalPages - 1) {
-            setPagination(prev => ({ ...prev, page: prev.page + 1 }));
-        }
-    };
+  const handleCancelRequest = async () => {
+    const receiverId = confirmModal.receiverId;
+    setConfirmModal({ isOpen: false, receiverId: null });
 
-    const handleSendFriendRequest = async (receiverId) => {
-        setSendingRequests(prev => ({ ...prev, [receiverId]: true }));
-        try {
-            await FriendRequestService.sendRequest(receiverId);
-            toast.success('Đã gửi lời mời kết bạn!');
-            // Update local state to reflect request sent
-            setMembers(prevMembers =>
-                prevMembers.map(member =>
-                    member.userId === receiverId
-                        ? { ...member, requestSent: true }
-                        : member
-                )
-            );
-        } catch (error) {
-            console.error('Failed to send friend request', error);
-            const errorMessage = error.response?.data?.message || 'Không thể gửi lời mời kết bạn';
-            toast.error(errorMessage);
-        } finally {
-            setSendingRequests(prev => ({ ...prev, [receiverId]: false }));
-        }
-    };
+    const toastId = toast.loading("Đang hủy lời mời...");
+    setSendingRequests((prev) => ({ ...prev, [receiverId]: true }));
+    try {
+      await FriendRequestService.cancelRequest(receiverId);
+      toast.success("Đã hủy lời mời kết bạn", { id: toastId });
+      setMembers((prevMembers) =>
+        prevMembers.map((member) =>
+          member.userId === receiverId
+            ? { ...member, requestSent: false }
+            : member,
+        ),
+      );
+    } catch (error) {
+      console.error("Failed to cancel request", error);
+      toast.error("Không thể hủy lời mời", { id: toastId });
+    } finally {
+      setSendingRequests((prev) => ({ ...prev, [receiverId]: false }));
+    }
+  };
 
-    const handleAcceptRequest = async (requestId, memberId) => {
-        setSendingRequests(prev => ({ ...prev, [memberId]: true }));
-        try {
-            await FriendRequestService.acceptRequest(requestId);
-            toast.success('Đã chấp nhận lời mời kết bạn!');
-            // Update member to friend status
-            setMembers(prevMembers =>
-                prevMembers.map(member =>
-                    member.userId === memberId
-                        ? { ...member, isFriend: true, requestSent: false, requestId: null, isRequestReceiver: false }
-                        : member
-                )
-            );
-        } catch (error) {
-            console.error('Failed to accept request', error);
-            toast.error('Không thể chấp nhận lời mời');
-        } finally {
-            setSendingRequests(prev => ({ ...prev, [memberId]: false }));
-        }
-    };
+  const handleStartChat = async (userId) => {
+    const tid = toast.loading("Đang mở cuộc trò chuyện...");
+    try {
+      const response = await ChatService.getOrCreateDirectChat(userId);
+      const room = response.data;
+      toast.success("Đã kết nối!", { id: tid });
+      navigate("/chat", { state: { selectedRoomKey: room.firebaseRoomKey } });
+    } catch (error) {
+      console.error("Error starting chat:", error);
+      toast.error("Không thể tạo cuộc trò chuyện", { id: tid });
+    }
+  };
 
-    const handleRejectRequest = async (requestId, memberId) => {
-        setSendingRequests(prev => ({ ...prev, [memberId]: true }));
-        try {
-            await FriendRequestService.rejectRequest(requestId);
-            toast.success('Đã từ chối lời mời');
-            // Remove request status
-            setMembers(prevMembers =>
-                prevMembers.map(member =>
-                    member.userId === memberId
-                        ? { ...member, requestSent: false, requestId: null, isRequestReceiver: false }
-                        : member
-                )
-            );
-        } catch (error) {
-            console.error('Failed to reject request', error);
-            toast.error('Không thể từ chối lời mời');
-        } finally {
-            setSendingRequests(prev => ({ ...prev, [memberId]: false }));
-        }
-    };
+  const suggestions = []; // Data suggestion chưa có API, tạm thời để trống
 
-    const confirmCancelRequest = (receiverId) => {
-        setConfirmModal({ isOpen: true, receiverId });
-    };
-
-    const handleCancelRequest = async () => {
-        const receiverId = confirmModal.receiverId;
-        setConfirmModal({ isOpen: false, receiverId: null });
-
-        const toastId = toast.loading('Đang hủy lời mời...');
-        setSendingRequests(prev => ({ ...prev, [receiverId]: true }));
-        try {
-            await FriendRequestService.cancelRequest(receiverId);
-            toast.success('Đã hủy lời mời kết bạn', { id: toastId });
-            setMembers(prevMembers =>
-                prevMembers.map(member =>
-                    member.userId === receiverId
-                        ? { ...member, requestSent: false }
-                        : member
-                )
-            );
-        } catch (error) {
-            console.error('Failed to cancel request', error);
-            toast.error('Không thể hủy lời mời', { id: toastId });
-        } finally {
-            setSendingRequests(prev => ({ ...prev, [receiverId]: false }));
-        }
-    };
-
-    return (
-        <>
-            <div className="flex flex-1 overflow-hidden relative">
-                <main className="flex-1 overflow-y-auto bg-background-dark p-4 md:p-8 custom-scrollbar">
-                    <div className="max-w-[1600px] mx-auto">
-                        <div className="mb-6">
-                            <h1 className="text-2xl font-bold text-white">Tìm bạn mới</h1>
-                            <p className="text-text-secondary text-sm mt-1">Sử dụng bộ lọc thông minh để tìm những người phù hợp nhất với bạn.</p>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
-                            {members.map((member) => (
-                                <article
-                                    key={member.userId}
-                                    className="flex flex-col bg-[#2a1d15] rounded-xl overflow-hidden border border-[#3e2b1d] hover:border-primary/50 transition-colors shadow-lg"
-                                >
-                                    <div className="h-64 sm:h-[16rem] w-full overflow-hidden relative">
-                                        <Link to={`/dashboard/member/${member.userId}`} className="block w-full h-full">
-                                            <img
-                                                src={member.avatarUrl || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
-                                                alt={member.fullName}
-                                                className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                                            />
-                                        </Link>
-                                    </div>
-
-                                    <div className="p-4 flex flex-col flex-1">
-                                        <h3 className="text-white font-bold text-lg leading-tight mb-1">
-                                            <Link to={`/dashboard/member/${member.userId}`} className="hover:text-primary transition-colors">
-                                                {member.fullName}
-                                            </Link>
-                                        </h3>
-                                        <p className="text-text-secondary text-sm mb-2">{member.cityName || 'Chưa cập nhật'}</p>
-
-                                        <div className="flex items-center gap-2 mb-4">
-                                            <span className="text-text-secondary text-sm font-medium">
-                                                {member.mutualFriends ? `${member.mutualFriends} bạn chung` : 'Không có bạn chung'}
-                                            </span>
-                                        </div>
-
-                                        <div className="mt-auto flex flex-col gap-2">
-                                            {member.isFriend ? (
-                                                <button className="w-full py-2 rounded-lg bg-[#3a2b22] text-white font-bold text-sm cursor-default">
-                                                    Đã là bạn bè
-                                                </button>
-                                            ) : member.requestSent && member.isRequestReceiver ? (
-                                                <div className="flex flex-col gap-2 w-full">
-                                                    <button
-                                                        onClick={() => handleAcceptRequest(member.requestId, member.userId)}
-                                                        disabled={sendingRequests[member.userId]}
-                                                        className="w-full py-2 rounded-lg bg-primary hover:bg-orange-600 text-[#231810] font-bold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                    >
-                                                        <span className="material-symbols-outlined text-sm">
-                                                            {sendingRequests[member.userId] ? 'sync' : 'done'}
-                                                        </span>
-                                                        {sendingRequests[member.userId] ? 'Đang xử lý...' : 'Chấp nhận'}
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleRejectRequest(member.requestId, member.userId)}
-                                                        disabled={sendingRequests[member.userId]}
-                                                        className="w-full py-2 rounded-lg bg-[#342418] hover:bg-red-500/20 hover:text-red-500 text-white font-bold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                    >
-                                                        <span className="material-symbols-outlined text-sm">close</span>
-                                                        Từ chối
-                                                    </button>
-                                                </div>
-                                            ) : member.requestSent ? (
-                                                <button
-                                                    onClick={() => confirmCancelRequest(member.userId)}
-                                                    disabled={sendingRequests[member.userId]}
-                                                    className="w-full py-2 rounded-lg bg-[#3a2b22] text-white/50 hover:text-red-500 hover:bg-red-500/10 font-bold text-sm cursor-pointer transition-colors flex items-center justify-center gap-2"
-                                                >
-                                                    <span className="material-symbols-outlined text-sm">done</span>
-                                                    {sendingRequests[member.userId] ? 'Đang hủy...' : 'Đã gửi yêu cầu'}
-                                                </button>
-                                            ) : (
-                                                <button
-                                                    onClick={() => handleSendFriendRequest(member.userId)}
-                                                    disabled={sendingRequests[member.userId]}
-                                                    className="w-full py-2 rounded-lg bg-primary hover:bg-orange-600 text-[#231810] font-bold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                >
-                                                    <span className="material-symbols-outlined text-sm">
-                                                        {sendingRequests[member.userId] ? 'sync' : 'person_add'}
-                                                    </span>
-                                                    {sendingRequests[member.userId] ? 'Đang gửi...' : 'Kết bạn'}
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                </article>
-                            ))}
-                        </div>
-
-                        {pagination.page < pagination.totalPages - 1 && (
-                            <div className="mt-12 flex justify-center pb-8">
-                                <button
-                                    onClick={handleLoadMore}
-                                    disabled={loading}
-                                    className="px-8 py-3 rounded-full bg-[#342418] hover:bg-[#493222] text-white font-bold border border-[#493222] transition-all shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {loading ? 'Đang tải...' : 'Xem thêm kết quả'}
-                                </button>
-                            </div>
+  return (
+    <>
+      <div className="flex flex-1 overflow-hidden relative">
+        <main className="flex-1 overflow-y-auto bg-background-main p-4 md:p-8 custom-scrollbar">
+          <div className="max-w-[1600px] mx-auto">
+            <div className="mb-8">
+              {/* Suggestions Section */}
+              <div className="mb-12">
+                <h2 className="text-xl font-bold text-text-main mb-6 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary">
+                    recommend
+                  </span>
+                  Gợi ý kết bạn
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {suggestions.map((person) => (
+                    <article
+                      key={person.id}
+                      className="flex flex-col bg-surface-main rounded-2xl overflow-hidden border border-border-main hover:border-primary/50 transition-all shadow-xl group"
+                    >
+                      <div className="h-48 w-full overflow-hidden relative">
+                        <img
+                          src={person.image}
+                          alt={person.name}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+                        {person.online && (
+                          <div className="absolute top-4 right-4 size-3 bg-green-500 border-2 border-surface-main rounded-full shadow-lg"></div>
                         )}
-                    </div>
-                </main>
+                        <div className="absolute inset-0 bg-gradient-to-t from-surface-main via-transparent to-transparent opacity-60"></div>
+                        <div className="absolute bottom-3 left-3 bg-background-main/90 backdrop-blur-sm px-2 py-1 rounded-lg border border-border-main">
+                          <p className="text-primary text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[12px]">
+                              info
+                            </span>
+                            {person.reason}
+                          </p>
+                        </div>
+                      </div>
 
-                <aside className="w-full md:w-[320px] lg:w-[340px] flex flex-col border-l border-[#342418] bg-[#221710] z-10 overflow-y-auto custom-scrollbar flex-none hidden md:flex">
-                    <div className="p-5 pb-0">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-white text-xl font-bold leading-tight">Bộ lọc tìm kiếm</h2>
-                            <button onClick={handleReset} className="text-sm font-bold text-primary hover:text-orange-400">Đặt lại</button>
+                      <div className="p-4 flex flex-col flex-1">
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="text-text-main font-bold text-lg group-hover:text-primary transition-colors">
+                            {person.name}, {person.age}
+                          </h3>
+                          <span className="text-text-secondary text-xs flex items-center gap-1 font-medium bg-background-main px-2 py-1 rounded-full">
+                            <span className="material-symbols-outlined text-[12px]">
+                              location_on
+                            </span>
+                            {person.location}
+                          </span>
                         </div>
 
-                        <div className="mb-6">
-                            <label className="flex w-full items-center rounded-xl bg-[#342418] border border-[#493222] h-12 px-4 focus-within:ring-1 ring-primary/50 transition-all">
-                                <span className="material-symbols-outlined text-text-secondary">search</span>
-                                <input
-                                    className="w-full bg-transparent border-none text-white placeholder-text-secondary/60 focus:ring-0 text-sm ml-2 focus:outline-none"
-                                    placeholder="Tên, thành phố hoặc từ khóa..."
-                                    value={keyword}
-                                    onChange={(e) => setKeyword(e.target.value)}
-                                />
-                            </label>
+                        <p className="text-text-secondary text-xs mb-4 flex items-center gap-2">
+                          <span className="material-symbols-outlined text-[16px]">
+                            group
+                          </span>
+                          {person.mutualFriends} bạn chung
+                        </p>
+
+                        <div className="mt-auto flex gap-2">
+                          <button className="flex-1 py-2 rounded-xl bg-primary hover:bg-orange-600 text-[#231810] font-bold text-xs uppercase tracking-wider transition-all shadow-lg flex items-center justify-center gap-1">
+                            <span className="material-symbols-outlined text-[16px]">
+                              person_add
+                            </span>
+                            Kết bạn
+                          </button>
+                          <button
+                            onClick={() => handleStartChat(person.id)}
+                            className="size-9 rounded-xl bg-background-main hover:bg-surface-main text-text-main transition-colors border border-border-main flex items-center justify-center"
+                            title="Nhắn tin"
+                          >
+                            <span className="material-symbols-outlined text-[18px]">
+                              chat_bubble
+                            </span>
+                          </button>
                         </div>
-                    </div>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </div>
 
-                    <div className="flex flex-col px-5 pb-10 gap-4">
-                        <details className="group flex flex-col rounded-xl border border-[#342418] bg-[#2a1d15] overflow-hidden" open>
-                            <summary className="flex cursor-pointer items-center justify-between gap-6 p-4 bg-transparent hover:bg-white/5 transition-colors list-none">
-                                <p className="text-white text-sm font-bold">Tình trạng hôn nhân</p>
-                                <span className="material-symbols-outlined text-text-secondary text-[20px] transition-transform group-open:rotate-180">
-                                    expand_more
-                                </span>
-                            </summary>
-                            <div className="px-4 pb-5 pt-1">
-                                <div className="space-y-2">
-                                    {['', 'SINGLE', 'MARRIED', 'DIVORCED', 'WIDOWED'].map((status) => (
-                                        <label key={status} className="flex items-center gap-3 cursor-pointer group/label">
-                                            <div className={`size-4 rounded-full border flex items-center justify-center ${maritalStatus === status ? 'border-primary' : 'border-[#493222]'}`}>
-                                                {maritalStatus === status && <div className="size-2 rounded-full bg-primary" />}
-                                            </div>
-                                            <input
-                                                type="radio"
-                                                name="maritalStatus"
-                                                checked={maritalStatus === status}
-                                                onChange={() => setMaritalStatus(status)}
-                                                className="hidden"
-                                            />
-                                            <span className={`text-sm group-hover/label:text-white transition-colors ${maritalStatus === status ? 'text-white' : 'text-text-secondary'}`}>
-                                                {status === '' ? 'Tất cả' : status === 'SINGLE' ? 'Độc thân' : status === 'MARRIED' ? 'Đã kết hôn' : status === 'DIVORCED' ? 'Đã ly hôn' : 'Góa'}
-                                            </span>
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
-                        </details>
+              <div className="h-[1px] w-full bg-border-main mb-10"></div>
 
-                        <details className="group flex flex-col rounded-xl border border-[#342418] bg-[#2a1d15] overflow-hidden" open>
-                            <summary className="flex cursor-pointer items-center justify-between gap-6 p-4 bg-transparent hover:bg-white/5 transition-colors list-none">
-                                <p className="text-white text-sm font-bold">Mục đích kết bạn</p>
-                                <span className="material-symbols-outlined text-text-secondary text-[20px] transition-transform group-open:rotate-180">
-                                    expand_more
-                                </span>
-                            </summary>
-                            <div className="px-4 pb-5 pt-1">
-                                <div className="space-y-2">
-                                    {[
-                                        { value: '', label: 'Tất cả' },
-                                        { value: 'love', label: 'Tìm tình yêu' },
-                                        { value: 'friends', label: 'Kết bạn' },
-                                        { value: 'networking', label: 'Kết nối' }
-                                    ].map((option) => (
-                                        <label key={option.value} className="flex items-center gap-3 cursor-pointer group/label">
-                                            <div className={`size-4 rounded-full border flex items-center justify-center ${lookingFor === option.value ? 'border-primary' : 'border-[#493222]'}`}>
-                                                {lookingFor === option.value && <div className="size-2 rounded-full bg-primary" />}
-                                            </div>
-                                            <input
-                                                type="radio"
-                                                name="lookingFor"
-                                                checked={lookingFor === option.value}
-                                                onChange={() => setLookingFor(option.value)}
-                                                className="hidden"
-                                            />
-                                            <span className={`text-sm group-hover/label:text-white transition-colors ${lookingFor === option.value ? 'text-white' : 'text-text-secondary'}`}>
-                                                {option.label}
-                                            </span>
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
-                        </details>
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                <div>
+                  <h1 className="text-2xl font-bold text-text-main">
+                    Tìm bạn mới
+                  </h1>
+                  <p className="text-text-secondary text-sm mt-1">
+                    Kết nối với những người phù hợp nhất.
+                  </p>
+                </div>
+                <button
+                  onClick={handleReset}
+                  className="text-sm font-bold text-primary hover:text-orange-400 flex items-center gap-1 bg-surface-main px-4 py-2 rounded-lg border border-border-main hover:border-primary/50 transition-all"
+                >
+                  <span className="material-symbols-outlined text-sm">
+                    restart_alt
+                  </span>
+                  Đặt lại bộ lọc
+                </button>
+              </div>
 
-                        <details className="group flex flex-col rounded-xl border border-[#342418] bg-[#2a1d15] overflow-hidden" open>
-                            <summary className="flex cursor-pointer items-center justify-between gap-6 p-4 bg-transparent hover:bg-white/5 transition-colors list-none">
-                                <p className="text-white text-sm font-bold">Thành phố</p>
-                                <span className="material-symbols-outlined text-text-secondary text-[20px] transition-transform group-open:rotate-180">
-                                    expand_more
-                                </span>
-                            </summary>
-                            <div className="px-4 pb-5 pt-1">
-                                <div className="space-y-2">
-                                    <label className="flex items-center gap-3 cursor-pointer group/label">
-                                        <div className={`size-4 rounded-full border flex items-center justify-center ${!cityCode ? 'border-primary' : 'border-[#493222]'}`}>
-                                            {!cityCode && <div className="size-2 rounded-full bg-primary" />}
-                                        </div>
-                                        <input
-                                            type="radio"
-                                            name="cityCode"
-                                            checked={!cityCode}
-                                            onChange={() => setCityCode('')}
-                                            className="hidden"
-                                        />
-                                        <span className={`text-sm group-hover/label:text-white transition-colors ${!cityCode ? 'text-white' : 'text-text-secondary'}`}>
-                                            Tất cả thành phố
-                                        </span>
-                                    </label>
-                                    {cities.map((city) => (
-                                        <label key={city.code} className="flex items-center gap-3 cursor-pointer group/label">
-                                            <div className={`size-4 rounded-full border flex items-center justify-center ${cityCode === city.code ? 'border-primary' : 'border-[#493222]'}`}>
-                                                {cityCode === city.code && <div className="size-2 rounded-full bg-primary" />}
-                                            </div>
-                                            <input
-                                                type="radio"
-                                                name="cityCode"
-                                                checked={cityCode === city.code}
-                                                onChange={() => setCityCode(city.code)}
-                                                className="hidden"
-                                            />
-                                            <span className={`text-sm group-hover/label:text-white transition-colors ${cityCode === city.code ? 'text-white' : 'text-text-secondary'}`}>
-                                                {city.name}
-                                            </span>
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
-                        </details>
+              {/* Filter Bar */}
+              <div className="bg-surface-main p-5 rounded-2xl border border-border-main shadow-lg flex flex-col xl:flex-row gap-4">
+                {/* Keyword */}
+                <div className="relative flex-1">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary material-symbols-outlined">
+                    search
+                  </span>
+                  <input
+                    className="w-full h-12 bg-background-main border border-border-main rounded-xl pl-11 pr-4 text-text-main placeholder-text-secondary/40 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all font-medium"
+                    placeholder="Tìm theo tên..."
+                    value={keyword}
+                    onChange={(e) => setKeyword(e.target.value)}
+                  />
+                </div>
 
+                {/* City Select */}
+                <div className="flex-1">
+                  <CitySelect
+                    label=""
+                    value={cityCode ? { code: cityCode, name: "" } : null}
+                    onChange={(city) => {
+                      setCityCode(city.code);
+                      setPagination((prev) => ({ ...prev, page: 0 }));
+                    }}
+                    error={null}
+                  />
+                </div>
 
-                    </div>
-                </aside>
+                {/* Marital Status */}
+                <div className="relative group flex-1">
+                  <select
+                    value={maritalStatus}
+                    onChange={(e) => setMaritalStatus(e.target.value)}
+                    className="w-full h-12 bg-surface-main border border-border-main rounded-xl px-4 text-text-main focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer transition-all"
+                  >
+                    <option value="">Hôn nhân (Tất cả)</option>
+                    <option value="SINGLE">Độc thân</option>
+                    <option value="MARRIED">Đã kết hôn</option>
+                    <option value="DIVORCED">Đã ly hôn</option>
+                    <option value="WIDOWED">Góa</option>
+                  </select>
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none material-symbols-outlined transition-transform group-hover:text-primary">
+                    expand_more
+                  </span>
+                </div>
+
+                {/* Looking For */}
+                <div className="relative group flex-1">
+                  <select
+                    value={lookingFor}
+                    onChange={(e) => setLookingFor(e.target.value)}
+                    className="w-full h-12 bg-surface-main border border-border-main rounded-xl px-4 text-text-main focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer transition-all"
+                  >
+                    <option value="">Mục đích (Tất cả)</option>
+                    <option value="love">Tìm tình yêu</option>
+                    <option value="friends">Kết bạn</option>
+                    <option value="networking">Kết nối</option>
+                  </select>
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none material-symbols-outlined transition-transform group-hover:text-primary">
+                    expand_more
+                  </span>
+                </div>
+
+                {/* Reset Button */}
+                <button
+                  onClick={handleReset}
+                  className="h-12 px-6 rounded-xl bg-surface-main hover:bg-background-main text-text-main font-bold border border-border-main transition-all flex items-center justify-center gap-2 whitespace-nowrap min-w-fit hover:text-primary"
+                  title="Đặt lại bộ lọc"
+                >
+                  <span className="material-symbols-outlined">restart_alt</span>
+                  <span className="hidden xl:inline">Đặt lại</span>
+                </button>
+              </div>
             </div>
-            <ConfirmModal
-                isOpen={confirmModal.isOpen}
-                onClose={() => setConfirmModal({ isOpen: false, receiverId: null })}
-                onConfirm={handleCancelRequest}
-                title="Hủy lời mời kết bạn"
-                message="Bạn có chắc chắn muốn hủy lời mời kết bạn này? Hành động này không thể hoàn tác."
-                type="danger"
-                confirmText="Hủy kết bạn"
-                cancelText="Đóng"
-            />
-        </>
-    );
-}
 
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+              {members.map((member) => (
+                <article
+                  key={member.userId}
+                  className="flex flex-col bg-surface-main rounded-xl overflow-hidden border border-border-main hover:border-primary/50 transition-colors shadow-lg"
+                >
+                  <div className="h-64 sm:h-[16rem] w-full overflow-hidden relative">
+                    <Link
+                      to={`/dashboard/member/${member.userId}`}
+                      className="block w-full h-full"
+                    >
+                      <img
+                        src={
+                          member.avatarUrl ||
+                          "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                        }
+                        alt={member.fullName}
+                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                      />
+                    </Link>
+                  </div>
+
+                  <div className="p-4 flex flex-col flex-1">
+                    <h3 className="text-text-main font-bold text-lg leading-tight mb-1">
+                      <Link
+                        to={`/dashboard/member/${member.userId}`}
+                        className="hover:text-primary transition-colors"
+                      >
+                        {member.fullName}
+                      </Link>
+                    </h3>
+                    <p className="text-text-secondary text-sm mb-2">
+                      {member.cityName || "Chưa cập nhật"}
+                    </p>
+
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="text-text-secondary text-sm font-medium">
+                        {member.mutualFriends
+                          ? `${member.mutualFriends} bạn chung`
+                          : "Không có bạn chung"}
+                      </span>
+                    </div>
+
+                    <div className="mt-auto flex flex-col gap-2">
+                      {member.isFriend ? (
+                        <button className="w-full py-2 rounded-lg bg-background-main text-text-secondary font-bold text-sm cursor-default border border-border-main">
+                          Đã là bạn bè
+                        </button>
+                      ) : member.requestSent && member.isRequestReceiver ? (
+                        <div className="flex flex-col gap-2 w-full">
+                          <button
+                            onClick={() =>
+                              handleAcceptRequest(
+                                member.requestId,
+                                member.userId,
+                              )
+                            }
+                            disabled={sendingRequests[member.userId]}
+                            className="w-full py-2 rounded-lg bg-primary hover:bg-orange-600 text-[#231810] font-bold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <span className="material-symbols-outlined text-sm">
+                              {sendingRequests[member.userId] ? "sync" : "done"}
+                            </span>
+                            {sendingRequests[member.userId]
+                              ? "Đang xử lý..."
+                              : "Chấp nhận"}
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleRejectRequest(
+                                member.requestId,
+                                member.userId,
+                              )
+                            }
+                            disabled={sendingRequests[member.userId]}
+                            className="w-full py-2 rounded-lg bg-surface-main hover:bg-red-500/10 hover:text-red-500 text-text-main font-bold text-sm transition-all flex items-center justify-center gap-2 border border-border-main hover:border-red-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <span className="material-symbols-outlined text-sm">
+                              close
+                            </span>
+                            Từ chối
+                          </button>
+                        </div>
+                      ) : member.requestSent ? (
+                        <button
+                          onClick={() => confirmCancelRequest(member.userId)}
+                          disabled={sendingRequests[member.userId]}
+                          className="w-full py-2 rounded-lg bg-background-main text-text-secondary hover:text-red-500 hover:bg-red-500/10 font-bold text-sm cursor-pointer transition-all flex items-center justify-center gap-2 border border-border-main hover:border-red-500/50"
+                        >
+                          <span className="material-symbols-outlined text-sm">
+                            done
+                          </span>
+                          {sendingRequests[member.userId]
+                            ? "Đang hủy..."
+                            : "Đã gửi yêu cầu"}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleSendFriendRequest(member.userId)}
+                          disabled={sendingRequests[member.userId]}
+                          className="w-full py-2 rounded-lg bg-primary hover:bg-orange-600 text-[#231810] font-bold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <span className="material-symbols-outlined text-sm">
+                            {sendingRequests[member.userId]
+                              ? "sync"
+                              : "person_add"}
+                          </span>
+                          {sendingRequests[member.userId]
+                            ? "Đang gửi..."
+                            : "Kết bạn"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            {pagination.page < pagination.totalPages - 1 && (
+              <div className="mt-12 flex justify-center pb-8">
+                <button
+                  onClick={handleLoadMore}
+                  disabled={loading}
+                  className="px-8 py-3 rounded-full bg-surface-main hover:bg-background-main text-text-main font-bold border border-border-main transition-all shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? "Đang tải..." : "Xem thêm kết quả"}
+                </button>
+              </div>
+            )}
+          </div>
+        </main>
+      </div>
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ isOpen: false, receiverId: null })}
+        onConfirm={handleCancelRequest}
+        title="Hủy lời mời kết bạn"
+        message="Bạn có chắc chắn muốn hủy lời mời kết bạn này? Hành động này không thể hoàn tác."
+        type="danger"
+        confirmText="Hủy kết bạn"
+        cancelText="Đóng"
+      />
+    </>
+  );
+}
