@@ -998,10 +998,11 @@ export default function ChatInterface() {
                           setSelectedMembers((prev) => [...prev, friend]);
                         }
                       }}
-                      className={`flex items-center gap-3 p-3 rounded-2xl hover:bg-background-main cursor-pointer group transition-all ${selectedMembers.some((m) => m.id === friend.id)
-                        ? "bg-background-main ring-1 ring-primary/30"
-                        : ""
-                        }`}
+                      className={`flex items-center gap-3 p-3 rounded-2xl hover:bg-background-main cursor-pointer group transition-all ${
+                        selectedMembers.some((m) => m.id === friend.id)
+                          ? "bg-background-main ring-1 ring-primary/30"
+                          : ""
+                      }`}
                     >
                       <div className="relative">
                         <div

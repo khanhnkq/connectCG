@@ -5,17 +5,14 @@ import {
   Home,
   MessageCircle,
   Users,
-  UserPlus,
-  Heart,
+  UserCheck,
   Search,
-  UserSearch,
   Settings,
   LogOut,
   Sun,
   Moon,
 } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
-import { motion } from "framer-motion";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../redux/slices/authSlice";
 import { fetchUserProfile } from "../../redux/slices/userSlice";
@@ -24,9 +21,6 @@ export default function SidebarComponent() {
   const { theme, toggleTheme } = useTheme();
   const { user } = useSelector((state) => state.auth);
   const { profile: userProfile } = useSelector((state) => state.user);
-  const { items: notifications, unreadCount } = useSelector(
-    (state) => state.notifications,
-  );
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -64,7 +58,6 @@ export default function SidebarComponent() {
     {
       label: "Trang chủ",
       href: "/dashboard/feed",
-
       icon: <Home className="text-text-secondary h-5 w-5 flex-shrink-0" />,
     },
     {
@@ -75,33 +68,19 @@ export default function SidebarComponent() {
       ),
     },
     {
+      label: "Bạn bè",
+      href: "/dashboard/friends",
+      icon: <UserCheck className="text-text-secondary h-5 w-5 flex-shrink-0" />,
+    },
+    {
       label: "Nhóm",
       href: "/dashboard/groups",
       icon: <Users className="text-text-secondary h-5 w-5 flex-shrink-0" />,
     },
     {
-      label: "Lời mời kết bạn",
-      href: "/dashboard/requests",
-      icon: <UserPlus className="text-text-secondary h-5 w-5 flex-shrink-0" />,
-    },
-    {
-      label: "Gợi ý kết bạn",
-      href: "/dashboard/suggestions",
-      icon: <Heart className="text-text-secondary h-5 w-5 flex-shrink-0" />,
-    },
-    {
-      label: "Tìm bạn mới",
+      label: "Tìm kiếm",
       href: "/search/members",
-
       icon: <Search className="text-text-secondary h-5 w-5 flex-shrink-0" />,
-    },
-    {
-      label: "Tìm kiếm bạn bè",
-      href: "/dashboard/friends-search",
-
-      icon: (
-        <UserSearch className="text-text-secondary h-5 w-5 flex-shrink-0" />
-      ),
     },
   ];
 

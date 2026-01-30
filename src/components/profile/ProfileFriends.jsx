@@ -1,23 +1,24 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Users,
-  Eye,
+  MessageCircle,
   UserMinus,
   UserX,
   UserPlus,
   UserSearch,
   Loader2,
+  MoreVertical,
 } from "lucide-react";
-import FriendService from "../../services/friend/FriendService";
 import FriendRequestService from "../../services/friend/FriendRequestService";
 import ConfirmModal from "../common/ConfirmModal";
 import toast from "react-hot-toast";
+import { useFriends } from "../../hooks/useFriends";
 
 const ProfileFriends = ({ profile, isOwner }) => {
   const navigate = useNavigate();
-  const [friends, setFriends] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const { friends, isLoading, handleUnfriend, updateFriendStatus } = useFriends(profile?.userId);
+
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     type: null,
@@ -39,25 +40,14 @@ const ProfileFriends = ({ profile, isOwner }) => {
     if (!friend) return;
 
     if (type === "UNFRIEND") {
-      try {
-        await FriendService.unfriend(friend.id);
-        setFriends((prev) =>
-          prev.map((f) =>
-            f.id === friend.id ? { ...f, relationshipStatus: "stranger" } : f,
-          ),
-        );
-        toast.success(`Đã hủy kết bạn với ${friend.fullName}`);
-      } catch {
-        toast.error("Lỗi khi hủy kết bạn");
+      const success = await handleUnfriend(friend.id);
+      if (success) {
+        updateFriendStatus(friend.id, "stranger");
       }
     } else if (type === "CANCEL_REQUEST") {
       try {
         await FriendRequestService.cancelRequest(friend.id);
-        setFriends((prev) =>
-          prev.map((f) =>
-            f.id === friend.id ? { ...f, relationshipStatus: "stranger" } : f,
-          ),
-        );
+        updateFriendStatus(friend.id, "stranger");
         toast.success("Đã hủy lời mời kết bạn");
       } catch {
         toast.error("Không thể hủy lời mời");
@@ -68,144 +58,155 @@ const ProfileFriends = ({ profile, isOwner }) => {
   const handleSendFriendRequest = async (friendId) => {
     try {
       await FriendRequestService.sendRequest(friendId);
-      setFriends((prev) =>
-        prev.map((f) =>
-          f.id === friendId ? { ...f, relationshipStatus: "PENDING" } : f,
-        ),
-      );
+      updateFriendStatus(friendId, "PENDING");
       toast.success("Đã gửi lời mời kết bạn!");
     } catch {
       toast.error("Không thể gửi lời mời.");
     }
   };
 
-  useEffect(() => {
-    if (profile?.userId) {
-      const loadFriends = async () => {
-        try {
-          setLoading(true);
-          const response = await FriendService.getFriends(profile.userId, {
-            size: 50,
-          });
-          setFriends(response.data.content || response.data || []);
-        } catch (error) {
-          console.error("Lỗi khi tải danh sách bạn bè:", error);
-        } finally {
-          setLoading(false);
-        }
-      };
-      loadFriends();
-    }
-  }, [profile?.userId]);
-
   return (
-    <div className="bg-surface-main rounded-2xl border border-border-main p-6 shadow-sm">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-text-main font-bold text-xl flex items-center gap-2">
-          <Users className="text-primary" size={20} />
-          {isOwner ? "Danh sách bạn bè" : "Bạn bè"}
-        </h3>
-        <div className="flex items-center gap-2">
-          <span className="text-text-secondary text-sm">
-            {profile?.friendsCount || 0} người bạn
-          </span>
+    <div className="bg-surface-main rounded-2xl border border-border-main shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="p-6 border-b border-border-main bg-gradient-to-r from-surface-main to-background-main">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-xl">
+              <Users className="text-primary" size={24} />
+            </div>
+            <div>
+              <h3 className="text-text-main font-bold text-xl">
+                {isOwner ? "Danh sách bạn bè" : "Bạn bè"}
+              </h3>
+              <p className="text-text-secondary text-sm">
+                {profile?.friendsCount || 0} người bạn
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
-      {loading ? (
-        <div className="flex justify-center py-12">
-          <Loader2 className="text-primary animate-spin" size={32} />
-        </div>
-      ) : friends.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {friends.map((friend) => (
-            <div
-              key={friend.id}
-              className="bg-background-main hover:bg-surface-main p-3 rounded-2xl border border-white/5 flex items-center gap-4 transition-all group"
-            >
-              <div className="relative">
-                <div
-                  className="size-16 rounded-xl bg-cover bg-center shadow-inner"
-                  style={{
-                    backgroundImage: `url("${friend.avatarUrl ||
-                      "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                      }")`,
-                  }}
-                ></div>
-                <div className="absolute -bottom-1 -right-1 size-4 bg-green-500 border-2 border-[#493222] rounded-full"></div>
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="text-text-main font-bold text-lg truncate group-hover:text-primary transition-colors">
-                  {friend.fullName}
-                </h4>
-                <p className="text-text-secondary text-xs truncate">
-                  @{friend.username}
-                </p>
-                <p className="text-text-secondary/60 text-[10px] mt-1 italic">
-                  {friend.occupation || "Chưa cập nhật nghề nghiệp"}
-                </p>
-              </div>
-              <div className="flex flex-col gap-1 items-end">
-                <button
-                  onClick={() => navigate(`/dashboard/member/${friend.id}`)}
-                  className={`bg-primary/10 hover:bg-primary text-primary hover:text-text-main p-2 rounded-lg transition-all flex items-center justify-center ${friend.relationshipStatus === "SELF" ? "hidden" : ""
-                    }`}
-                  title="Xem hồ sơ"
-                >
-                  <Eye size={18} />
-                </button>
-                {friend.relationshipStatus === "SELF" && (
-                  <span className="text-primary font-bold text-sm bg-primary/10 px-3 py-2 rounded-lg pointer-events-none select-none">
-                    Bạn
-                  </span>
-                )}
-                {friend.relationshipStatus === "FRIEND" ? (
-                  <button
-                    onClick={() => confirmUnfriend(friend)}
-                    className="bg-surface-main hover:bg-red-500/20 text-text-secondary hover:text-red-500 p-2 rounded-lg transition-all flex items-center justify-center"
-                    title="Hủy kết bạn"
-                  >
-                    <UserMinus size={18} />
-                  </button>
-                ) : friend.relationshipStatus === "PENDING" ? (
-                  <button
-                    onClick={() => confirmCancelRequest(friend)}
-                    className="bg-surface-main hover:bg-red-500/20 text-text-secondary hover:text-red-500 p-2 rounded-lg transition-all flex items-center justify-center"
-                    title="Hủy lời mời"
-                  >
-                    <UserX size={18} />
-                  </button>
-                ) : friend.relationshipStatus === "SELF" ? null : (
-                  <button
-                    onClick={() => handleSendFriendRequest(friend.id)}
-                    className="bg-surface-main hover:bg-primary text-text-secondary hover:text-text-main p-2 rounded-lg transition-all flex items-center justify-center"
-                    title="Kết bạn"
-                  >
-                    <UserPlus size={18} />
-                  </button>
-                )}
-              </div>
+      {/* Content */}
+      <div className="p-6">
+        {isLoading ? (
+          <div className="flex justify-center py-16">
+            <div className="flex flex-col items-center gap-3">
+              <Loader2 className="text-primary animate-spin" size={40} />
+              <p className="text-text-secondary text-sm">Đang tải...</p>
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-16 flex flex-col items-center justify-center">
-          <UserSearch className="text-text-secondary/20 mb-3" size={48} />
-          <p className="text-text-secondary italic">
-            {isOwner
-              ? "Bạn chưa chọn người bạn nào."
-              : "Người dùng này chưa có bạn bè."}
-          </p>
-          {isOwner && (
-            <button
-              onClick={() => navigate("/dashboard/explore")}
-              className="text-primary font-bold mt-2 hover:underline"
-            >
-              Tìm kiếm bạn bè ngay
-            </button>
-          )}
-        </div>
-      )}
+          </div>
+        ) : friends.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {friends.map((friend) => (
+              <div
+                key={friend.id}
+                className="group relative bg-background-main hover:bg-surface-main rounded-2xl border border-border-main hover:border-primary/30 transition-all duration-300 overflow-hidden"
+              >
+                {/* Card Content */}
+                <div className="p-4">
+                  {/* Avatar & Info */}
+                  <div
+                    className="flex items-start gap-3 cursor-pointer"
+                    onClick={() => navigate(`/dashboard/member/${friend.id}`)}
+                  >
+                    <div className="relative shrink-0">
+                      <div
+                        className="size-14 rounded-xl bg-cover bg-center ring-2 ring-border-main group-hover:ring-primary/50 transition-all"
+                        style={{
+                          backgroundImage: `url("${friend.avatarUrl ||
+                            "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                            }")`,
+                        }}
+                      ></div>
+                      {friend.isOnline && (
+                        <div className="absolute -bottom-1 -right-1 size-4 bg-green-500 rounded-full border-2 border-background-main"></div>
+                      )}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-text-main font-bold text-base truncate group-hover:text-primary transition-colors">
+                        {friend.fullName}
+                      </h4>
+                      {friend.occupation && (
+                        <p className="text-text-secondary/70 text-xs mt-1 truncate">
+                          {friend.occupation}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="mt-4 flex gap-2">
+                    {friend.relationshipStatus === "SELF" ? (
+                      <div className="w-full text-center py-2 bg-primary/10 text-primary text-sm font-bold rounded-lg">
+                        Bạn
+                      </div>
+                    ) : friend.relationshipStatus === "FRIEND" ? (
+                      <>
+                        <button
+                          onClick={() => navigate(`/dashboard/chat`)}
+                          className="flex-1 py-2 px-3 bg-primary hover:bg-orange-600 text-text-main font-bold text-sm rounded-lg transition-all flex items-center justify-center gap-2"
+                          title="Nhắn tin"
+                        >
+                          <MessageCircle size={16} />
+                          <span className="hidden sm:inline">Nhắn tin</span>
+                        </button>
+                        <button
+                          onClick={() => confirmUnfriend(friend)}
+                          className="p-2 bg-surface-main hover:bg-red-500/20 text-text-secondary hover:text-red-500 rounded-lg transition-all"
+                          title="Hủy kết bạn"
+                        >
+                          <UserMinus size={18} />
+                        </button>
+                      </>
+                    ) : friend.relationshipStatus === "PENDING" ? (
+                      <button
+                        onClick={() => confirmCancelRequest(friend)}
+                        className="w-full py-2 px-3 bg-surface-main hover:bg-red-500/20 text-text-secondary hover:text-red-500 font-medium text-sm rounded-lg transition-all flex items-center justify-center gap-2"
+                        title="Hủy lời mời"
+                      >
+                        <UserX size={16} />
+                        Hủy lời mời
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleSendFriendRequest(friend.id)}
+                        className="w-full py-2 px-3 bg-primary hover:bg-orange-600 text-text-main font-bold text-sm rounded-lg transition-all flex items-center justify-center gap-2"
+                        title="Kết bạn"
+                      >
+                        <UserPlus size={16} />
+                        Kết bạn
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-20 flex flex-col items-center justify-center">
+            <div className="size-20 rounded-full bg-background-main border-2 border-border-main flex items-center justify-center mb-4">
+              <UserSearch className="text-text-secondary/30" size={40} />
+            </div>
+            <h4 className="text-text-main font-bold text-lg mb-2">
+              {isOwner ? "Chưa có bạn bè" : "Người dùng chưa có bạn bè"}
+            </h4>
+            <p className="text-text-secondary text-sm mb-4 max-w-xs">
+              {isOwner
+                ? "Hãy bắt đầu kết nối với những người bạn mới!"
+                : "Người dùng này chưa kết bạn với ai."}
+            </p>
+            {isOwner && (
+              <button
+                onClick={() => navigate("/dashboard/friends")}
+                className="px-6 py-2.5 bg-primary hover:bg-orange-600 text-text-main font-bold rounded-xl transition-all"
+              >
+                Tìm kiếm bạn bè
+              </button>
+            )}
+          </div>
+        )}
+      </div>
 
       <ConfirmModal
         isOpen={confirmModal.isOpen}

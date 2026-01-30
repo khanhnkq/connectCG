@@ -10,7 +10,6 @@ import Login from "./pages/auth/Login";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import Step1 from "./pages/registration/Step1";
 import OnboardingPage from "./pages/registration/OnboardingPage";
-import NewsfeedDashboard1 from "./pages/dashboard/NewsfeedDashboard1";
 import GroupsManagement from "./pages/dashboard/GroupsManagement";
 import AdvancedMemberSearch from "./pages/search/AdvancedMemberSearch";
 import ChatInterface from "./pages/dashboard/ChatInterface";
@@ -20,9 +19,7 @@ import CreateGroupPage from "./pages/dashboard/CreateGroupPage";
 import GroupDetailPage from "./pages/dashboard/GroupDetailPage";
 import EditGroupPage from "./pages/dashboard/EditGroupPage";
 import Newsfeed from "./pages/dashboard/Newsfeed";
-import FriendRequests from "./pages/dashboard/FriendRequests";
-import FriendSuggestions from "./pages/dashboard/FriendSuggestions";
-import FriendsSearch from "./pages/dashboard/FriendsSearch";
+import FriendsPage from "./pages/dashboard/FriendsPage";
 import AdminGroupsManager from "./pages/admin-website/AdminGroupsManager.jsx";
 import AdminMembersManager from "./pages/admin-website/AdminMembersManager.jsx";
 import MainFeedManager from "./pages/admin-website/MainFeedManager.jsx";
@@ -95,7 +92,6 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route path="newsfeed-1" element={<NewsfeedDashboard1 />} />
             <Route path="groups" element={<GroupsManagement />} />
             <Route path="groups/:id" element={<GroupDetailPage />} />
             <Route path="groups/create" element={<CreateGroupPage />} />
@@ -104,10 +100,8 @@ function App() {
             <Route path="my-profile" element={<UserProfile />} />
             <Route path="member/:id" element={<MemberProfile />} />
             <Route path="feed" element={<Newsfeed />} />
-            <Route path="requests" element={<FriendRequests />} />
-            <Route path="suggestions" element={<FriendSuggestions />} />
             <Route path="profile/view" element={<MemberProfile />} />
-            <Route path="friends-search" element={<FriendsSearch />} />
+            <Route path="friends" element={<FriendsPage />} />
           </Route>
 
           {/* Search Routes - Assuming they share Dashboard layout, if not, keep separate */}

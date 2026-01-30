@@ -4,7 +4,7 @@ import {
   MailCheck,
   UserPlus,
   Mail,
-  ShieldAlert,
+  AlertTriangle,
   Briefcase,
   Heart,
   MapPin,
@@ -345,7 +345,7 @@ export default function MemberProfile() {
                     className="flex items-center justify-center gap-2 bg-surface-main hover:bg-red-500/10 text-text-secondary hover:text-red-500 font-bold px-4 py-3 rounded-xl transition-all border border-border-main"
                     title="Báo cáo người dùng"
                   >
-                    <ShieldAlert size={20} />
+                    <AlertTriangle size={20} />
                   </button>
                 </div>
               </div>

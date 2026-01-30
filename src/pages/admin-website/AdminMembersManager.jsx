@@ -141,8 +141,8 @@ const AdminMembersManager = () => {
       isOpen: true,
       title: `${actionLabel} tài khoản?`,
       message: `Bạn có chắc muốn ${actionLabel.toLowerCase()} người dùng này? Họ sẽ ${currentStatus === "Active"
-          ? "không thể truy cập"
-          : "có thể truy cập lại"
+        ? "không thể truy cập"
+        : "có thể truy cập lại"
         } vào hệ thống.`,
       type: currentStatus === "Active" ? "danger" : "info",
       onConfirm: async () => {
@@ -266,70 +266,71 @@ const AdminMembersManager = () => {
                   </td>
                   <td className="px-6 py-5">
                     <span
-                      className={`px-2.5 py-1 text-[9px] font-black uppercase rounded-lg border flex items-center gap-1.5 w-fit ${member.role === "ADMIN"
+                      className={`px-2.5 py-1 text-[9px] font-black uppercase rounded-lg border flex items-center gap-1.5 w-fit ${
+                        member.role === "ADMIN"
                           ? "bg-primary/10 text-primary border-primary/30"
                           : "bg-zinc-800 text-zinc-400 border-zinc-700"
-                        }`}
-                    >
-                      {member.role === "ADMIN" ? (
-                        <ShieldCheck size={14} />
-                      ) : (
-                        <User size={14} />
-                      )}
-                      {member.role}
-                    </span>
-                  </td>
-                  <td className="px-6 py-5">
-                    <span
-                      className={`px-3 py-1 text-[10px] font-black uppercase rounded-full border ${member.status === "Active"
+                          }`}
+                      >
+                        {member.role === "ADMIN" ? (
+                          <ShieldCheck size={14} />
+                        ) : (
+                          <User size={14} />
+                        )}
+                        {member.role}
+                      </span>
+                    </td>
+                    <td className="px-6 py-5">
+                      <span
+                        className={`px-3 py-1 text-[10px] font-black uppercase rounded-full border ${member.status === "Active"
                           ? "bg-green-500/10 text-green-400 border-green-500/20"
                           : "bg-red-500/10 text-red-500 border-red-500/20"
-                        }`}
-                    >
-                      {member.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-5 text-right space-x-2">
-                    {member.id !== currentUserId && (
-                      <button
-                        onClick={() =>
-                          handleRoleUpdate(member.id, member.name, member.role)
-                        }
-                        className="p-2 hover:bg-primary/10 rounded-xl text-text-muted hover:text-primary transition-all"
-                        title={
-                          member.role === "USER"
-                            ? "Nâng cấp lên ADMIN"
-                            : "Hạ cấp xuống USER"
-                        }
+                          }`}
                       >
-                        {member.role === "USER" ? (
-                          <UserPlus size={18} />
+                        {member.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-5 text-right space-x-2">
+                      {member.id !== currentUserId && (
+                        <button
+                          onClick={() =>
+                            handleRoleUpdate(member.id, member.name, member.role)
+                          }
+                          className="p-2 hover:bg-primary/10 rounded-xl text-text-muted hover:text-primary transition-all"
+                          title={
+                            member.role === "USER"
+                              ? "Nâng cấp lên ADMIN"
+                              : "Hạ cấp xuống USER"
+                          }
+                        >
+                          {member.role === "USER" ? (
+                            <UserPlus size={18} />
+                          ) : (
+                            <UserMinus size={18} />
+                          )}
+                        </button>
+                      )}
+                      <button
+                        onClick={() => toggleStatus(member.id, member.status)}
+                        className="p-2 hover:bg-background-dark rounded-xl text-text-muted hover:text-orange-400 transition-all"
+                        title="Toggle Access"
+                      >
+                        {member.status === "Banned" ? (
+                          <ShieldCheck size={18} />
                         ) : (
-                          <UserMinus size={18} />
+                          <Ban size={18} />
                         )}
                       </button>
-                    )}
-                    <button
-                      onClick={() => toggleStatus(member.id, member.status)}
-                      className="p-2 hover:bg-background-dark rounded-xl text-text-muted hover:text-orange-400 transition-all"
-                      title="Toggle Access"
-                    >
-                      {member.status === "Banned" ? (
-                        <ShieldCheck size={18} />
-                      ) : (
-                        <Ban size={18} />
-                      )}
-                    </button>
-                    <button
-                      onClick={() => handleDelete(member.id, member.name)}
-                      className="p-2 hover:bg-red-500/10 rounded-xl text-text-muted hover:text-red-400 transition-all"
-                      title="Purge Identity"
-                    >
-                      <UserX size={18} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                      <button
+                        onClick={() => handleDelete(member.id, member.name)}
+                        className="p-2 hover:bg-red-500/10 rounded-xl text-text-muted hover:text-red-400 transition-all"
+                        title="Purge Identity"
+                      >
+                        <UserX size={18} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>
