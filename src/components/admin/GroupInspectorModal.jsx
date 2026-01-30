@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { findById as findGroupById, getGroupMembers, getGroupPosts } from "../../services/groups/GroupService";
 import toast from 'react-hot-toast';
 
-const GroupInspectorModal = ({ groupId, reports = [], reporterMetadata = {}, violationHistory = [], onClose, onIgnore, onAction, onReporterClick, actionLabel = "Delete Group" }) => {
+const GroupInspectorModal = ({ groupId, reports = [], reporterMetadata = {}, violationHistory = [], onClose, onIgnore, onAction, onReporterClick, reporterStatsGetter, actionLabel = "Xóa nhóm" }) => {
     const [inspectorData, setInspectorData] = useState({
         group: null,
         members: [],
@@ -200,12 +200,12 @@ const GroupInspectorModal = ({ groupId, reports = [], reporterMetadata = {}, vio
 
                     {/* SIDEBAR (Only rendered if reports exist) */}
                     {hasReports && (
-                        <div className="w-[350px] bg-[#1e120f] border-l border-white/5 flex flex-col shrink-0">
+                        <div className="w-[450px] bg-[#1e120f] border-l border-white/5 flex flex-col shrink-0">
                             {/* Sidebar Header */}
                             <div className="p-5 border-b border-white/5 flex items-center justify-between">
                                 <h3 className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-red-500 text-sm">error</span>
-                                    Report Details ({reports.length})
+                                    <span className="material-symbols-outlined text-primary text-sm">verified_user</span>
+                                    Chi tiết báo cáo ({reports.length})
                                 </h3>
                                 <button onClick={onClose} className="text-text-muted hover:text-white transition-colors">
                                     <span className="material-symbols-outlined text-sm">close</span>
@@ -213,7 +213,7 @@ const GroupInspectorModal = ({ groupId, reports = [], reporterMetadata = {}, vio
                             </div>
 
                             {/* History Block */}
-                            <div className="p-4 bg-orange-500/5 mx-4 mt-4 mb-0 rounded-lg border border-orange-500/10">
+                            <div className="p-4 bg-orange-500/5 mx-4 mt-4 mb-0 rounded-md border border-orange-500/10">
                                 <h4 className="text-[10px] font-black uppercase text-orange-400 tracking-wider mb-2 flex items-center gap-2">
                                     <span className="material-symbols-outlined text-sm">history</span>
                                     Tiền án ({violationHistory.length})
@@ -236,36 +236,77 @@ const GroupInspectorModal = ({ groupId, reports = [], reporterMetadata = {}, vio
                             <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
                                 {reports.map((report, idx) => {
                                     const reporterInfo = reporterMetadata[`USER_${report.reporterId}`];
+                                    const parts = (report.reason || '').split('|');
+                                    const mainReason = parts[0].trim();
+                                    const detailReason = parts.length > 1 ? parts.slice(1).join('|').trim() : null;
+
+                                    // Calculate reporter stats (Global if provided, else Local)
+                                    const reporterStats = reporterStatsGetter
+                                        ? reporterStatsGetter(report.reporterId)
+                                        : reports.filter(r => r.reporterId === report.reporterId).length;
+
+                                    const isHighRisk = reporterStats > 10;
+                                    const isMediumRisk = reporterStats > 5;
+
                                     return (
-                                        <div key={idx} className="bg-white/5 p-4 rounded-lg border border-white/5 space-y-3 hover:bg-white/10 transition-colors">
+                                        <div key={idx} className="bg-white/5 p-4 rounded-lg border border-white/5 flex gap-3 hover:bg-white/10 transition-colors">
                                             <div
-                                                className="flex items-center gap-3 cursor-pointer group"
+                                                className="shrink-0 relative group cursor-pointer"
                                                 onClick={() => onReporterClick && onReporterClick(report.reporterId)}
                                                 title="Xem thông tin người báo cáo"
                                             >
-                                                {reporterInfo?.avatar ? (
-                                                    <img src={reporterInfo.avatar} className="size-10 rounded-full object-cover border border-white/10 shadow-sm group-hover:border-primary/50 transition-colors" alt="" />
-                                                ) : (
-                                                    <div className="size-10 rounded-full bg-gradient-to-br from-primary/80 to-purple-600 flex items-center justify-center text-white font-bold text-xs shadow-lg shadow-purple-500/20 group-hover:scale-105 transition-transform">
-                                                        {(reporterInfo?.name || report.reporterUsername || 'R').charAt(0).toUpperCase()}
-                                                    </div>
-                                                )}
+                                                {/* Avatar Wrapper */}
+                                                <div className="relative shrink-0">
+                                                    {reporterInfo?.avatar ? (
+                                                        <img src={reporterInfo.avatar} className="size-8 rounded-full object-cover border border-white/10 shadow-sm group-hover:border-primary/50 transition-colors" alt="" />
+                                                    ) : (
+                                                        <div className="size-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs shrink-0 border border-white/10">
+                                                            {(reporterInfo?.name || report.reporterUsername || 'R').charAt(0).toUpperCase()}
+                                                        </div>
+                                                    )}
 
-                                                <div className="overflow-hidden flex-1">
-                                                    <p className="text-white font-bold text-sm truncate leading-tight group-hover:text-primary transition-colors">
-                                                        {reporterInfo?.name || report.reporterUsername || "Người Báo Cáo"}
-                                                    </p>
-                                                    <p className="text-[11px] text-text-muted font-medium mt-0.5">
-                                                        {new Date(report.createdAt).toLocaleString('vi-VN')}
-                                                    </p>
+                                                    {/* Spam Warning Badge */}
+                                                    {isMediumRisk && (
+                                                        <div className={`absolute -top-1.5 -right-1.5 size-5 rounded-full flex items-center justify-center border-2 border-[#1e120f] ${isHighRisk ? 'bg-red-500' : 'bg-orange-500'}`} title={`Đã gửi ${reporterStats} báo cáo`}>
+                                                            <span className="material-symbols-outlined text-[14px] text-white leading-none">
+                                                                priority_high
+                                                            </span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
 
-                                            <div className="bg-black/20 rounded-lg p-3 border border-white/5">
-                                                <p className="text-xs text-text-muted uppercase tracking-wider font-bold mb-1">Lý do báo cáo</p>
-                                                <p className="text-sm font-medium text-red-400 leading-snug">
-                                                    {report.reason}
-                                                </p>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex justify-between items-start">
+                                                    <div className="flex items-center gap-2 max-w-[80%]">
+                                                        <p
+                                                            className="text-white font-bold text-sm hover:underline cursor-pointer truncate"
+                                                            onClick={() => onReporterClick && onReporterClick(report.reporterId)}
+                                                        >
+                                                            {reporterInfo?.name || report.reporterUsername || "Người Báo Cáo"}
+                                                        </p>
+                                                        {reporterStats > 1 && (
+                                                            <span className={`text-[9px] px-1.5 py-0.5 rounded border ${isHighRisk ? 'bg-red-500/10 text-red-500 border-red-500/20' : 'bg-white/5 text-text-muted border-white/10'}`}>
+                                                                {reporterStats} báo cáo
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <span className="text-[10px] text-text-muted shrink-0 ml-2">
+                                                        {new Date(report.createdAt).toLocaleString('vi-VN')}
+                                                    </span>
+                                                </div>
+
+                                                <div className="mt-1.5 flex flex-wrap gap-2 items-center">
+                                                    <span className="text-[11px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
+                                                        {mainReason}
+                                                    </span>
+                                                </div>
+
+                                                {detailReason && (
+                                                    <p className="text-xs text-text-muted mt-1.5 leading-relaxed bg-black/20 p-2 rounded-lg italic">
+                                                        "{detailReason}"
+                                                    </p>
+                                                )}
                                             </div>
                                         </div>
                                     );

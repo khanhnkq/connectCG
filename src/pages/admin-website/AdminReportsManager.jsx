@@ -168,6 +168,11 @@ const AdminReportsManagement = () => {
     );
   };
 
+  // Helper: Get reporter stats (Global)
+  const getReporterStats = (reporterId) => {
+    return reports.filter(r => r.reporterId === reporterId).length;
+  };
+
   // METADATA FETCHING (Names & Avatars)
   const [targetMetadata, setTargetMetadata] = useState({});
 
@@ -361,22 +366,43 @@ const AdminReportsManagement = () => {
         return;
       } else if (groupItem.targetType === "POST") {
         try {
+          // Attempt 1: Direct Fetch
           const res = await postService.getPostById(groupItem.targetId);
           data = res.data;
         } catch (error) {
-          console.warn("Direct post fetch failed, attempting fallback via GroupService", error);
-          if (groupItem.groupId) {
-            const groupPosts = await getGroupPosts(groupItem.groupId);
-            const foundPost = groupPosts.find(p => p.id === groupItem.targetId);
-            if (foundPost) {
-              data = foundPost;
-              if (!data.userId && foundPost.authorId) data.userId = foundPost.authorId;
-            } else {
-              throw new Error("Post not found in group");
+          console.warn("Direct post fetch failed, attempting fallback...", error);
+
+          // Attempt 2: Fetch via Group Posts (search in group context)
+          // Find groupId from the aggregated item OR any sub-report
+          const groupId = groupItem.groupId || groupItem.reports.find(r => r.groupId)?.groupId;
+
+          if (groupId) {
+            try {
+              const groupPosts = await getGroupPosts(groupId);
+              // Ensure loose comparison for ID (string vs number)
+              const foundPost = groupPosts.find(p => String(p.id) === String(groupItem.targetId));
+
+              if (foundPost) {
+                data = foundPost;
+                // Normalize userId if needed
+                if (!data.userId && foundPost.authorId) data.userId = foundPost.authorId;
+                if (!data.content && foundPost.description) data.content = foundPost.description; // Normalize content field
+              } else {
+                // Attempt 3: Pending Posts in Group
+                try {
+                  const pendingPosts = await getGroupPosts(groupId).then(() => [], () => []); // Mocking pending if API exists, logic here implies just failing if not found in active
+                  // If we had getPendingGroupPosts API, we'd use it here.
+                  throw new Error("Post not found in group active posts");
+                } catch (e) { throw e; }
+              }
+            } catch (groupError) {
+              console.error("Group fallback failed:", groupError);
             }
-          } else {
-            throw error;
           }
+        }
+
+        if (!data) {
+          throw new Error("Could not retrieve post data from any source");
         }
       }
       setDetailModal(prev => ({ ...prev, targetData: data, loading: false }));
@@ -593,10 +619,10 @@ const AdminReportsManagement = () => {
                                 {meta?.name || `${r.targetType} #${r.targetId}`}
                               </p>
                               {getViolationHistory(r.targetId, r.targetType).length > 0 && (
-                                <div className="group relative" title="Đối tượng này đã có vi phạm trước đó">
+                                <div className="group relative" title="Đối tượng này đã bị báo cáo trước đó">
                                   <span className="material-symbols-outlined text-orange-500 text-sm cursor-help">history</span>
                                   <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black/90 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                    {getViolationHistory(r.targetId, r.targetType).length} vi phạm trước đó
+                                    {getViolationHistory(r.targetId, r.targetType).length} báo cáo trước đó
                                   </span>
                                 </div>
                               )}
@@ -794,23 +820,37 @@ const AdminReportsManagement = () => {
                     )}
 
                     {/* HISTORY SECTION */}
+                    {/* HISTORY SECTION */}
                     {(() => {
                       const history = getViolationHistory(detailModal.report.targetId, detailModal.report.targetType);
+
+                      // Helper to parse reason
+                      const parseReason = (fullReason) => {
+                        if (!fullReason) return { main: 'Không rõ', detail: null };
+                        const parts = fullReason.split('|');
+                        const main = parts[0].trim();
+                        const detail = parts.length > 1 ? parts.slice(1).join('|').trim() : null;
+                        return { main, detail };
+                      };
+
                       return (
                         <div className="mt-6 bg-orange-500/5 border border-orange-500/10 rounded-lg p-5">
                           <h4 className="text-sm font-black text-orange-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                             <span className="material-symbols-outlined text-lg">history</span>
-                            Lịch sử vi phạm ({history.length})
+                            Lịch sử bị báo cáo ({history.length})
                           </h4>
                           {history.length > 0 ? (
-                            <div className="space-y-2 max-h-40 overflow-y-auto custom-scrollbar pr-2">
-                              {history.map((h, i) => (
-                                <div key={i} className="text-xs text-text-muted border-l-2 border-orange-500/20 pl-3 py-1">
-                                  <span className="font-bold text-gray-300">{h.reason}</span>
-                                  <span className="mx-2 text-[10px]">•</span>
-                                  <span className="text-[10px]">{new Date(h.createdAt || h.created_at).toLocaleDateString()}</span>
-                                </div>
-                              ))}
+                            <div className="space-y-3 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                              {history.map((h, i) => {
+                                const { main, detail } = parseReason(h.reason);
+                                return (
+                                  <div key={i} className="text-xs text-text-muted border-l-2 border-orange-500/20 pl-3 py-1">
+                                    <div className="font-bold text-gray-300">{main}</div>
+                                    {detail && <div className="text-[11px] text-text-muted/80 mt-0.5 italic">"{detail}"</div>}
+                                    <div className="text-[10px] text-text-muted/60 mt-1">{new Date(h.createdAt || h.created_at).toLocaleDateString()}</div>
+                                  </div>
+                                );
+                              })}
                             </div>
                           ) : (
                             <p className="text-xs text-text-muted italic">Không có vi phạm nào trước đây.</p>
@@ -824,37 +864,72 @@ const AdminReportsManagement = () => {
                   <div className="space-y-6">
                     <h4 className="text-sm font-black text-text-muted uppercase tracking-wider mb-4">Danh sách báo cáo ({detailModal.report.reports.length})</h4>
                     <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                      {detailModal.report.reports.map((r, idx) => (
-                        <div key={idx} className="bg-white/5 p-4 rounded-xl border border-white/5 flex gap-3 hover:bg-white/10 transition-colors">
-                          <div className="shrink-0">
-                            {targetMetadata[`USER_${r.reporterId}`]?.avatar ? (
-                              <img src={targetMetadata[`USER_${r.reporterId}`].avatar} className="w-8 h-8 rounded-full object-cover border border-white/10" alt="" />
-                            ) : (
-                              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs shrink-0 border border-white/10">
-                                {(targetMetadata[`USER_${r.reporterId}`]?.name || r.reporterUsername || '?').charAt(0).toUpperCase()}
-                              </div>
-                            )}
-                          </div>
+                      {detailModal.report.reports.map((r, idx) => {
+                        const parts = (r.reason || '').split('|');
+                        const mainReason = parts[0].trim();
+                        const detailReason = parts.length > 1 ? parts.slice(1).join('|').trim() : null;
 
-                          <div className="flex-1 min-w-0">
-                            <div className="flex justify-between items-start">
-                              <p
-                                className="text-white font-bold text-sm hover:underline cursor-pointer truncate"
-                                onClick={() => r.reporterId && setViewingReporterId(r.reporterId)}
-                              >
-                                {targetMetadata[`USER_${r.reporterId}`]?.name || r.reporterUsername || 'Ẩn danh'}
-                              </p>
-                              <span className="text-[10px] text-text-muted shrink-0 ml-2">
-                                {new Date(r.createdAt).toLocaleString('vi-VN')}
-                              </span>
+                        // Calculate reporter stats
+                        const reporterStats = reports.filter(rep => rep.reporterId === r.reporterId).length;
+                        const isHighRisk = reporterStats > 10;
+                        const isMediumRisk = reporterStats > 5;
+
+                        return (
+                          <div key={idx} className="bg-white/5 p-4 rounded-lg border border-white/5 flex gap-3 hover:bg-white/10 transition-colors">
+                            <div className="shrink-0 relative group">
+                              {targetMetadata[`USER_${r.reporterId}`]?.avatar ? (
+                                <img src={targetMetadata[`USER_${r.reporterId}`].avatar} className="w-8 h-8 rounded-full object-cover border border-white/10" alt="" />
+                              ) : (
+                                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs shrink-0 border border-white/10">
+                                  {(targetMetadata[`USER_${r.reporterId}`]?.name || r.reporterUsername || '?').charAt(0).toUpperCase()}
+                                </div>
+                              )}
+
+                              {/* Validation Badge based on stats */}
+                              {isMediumRisk && (
+                                <div className={`absolute -top-1.5 -right-1.5 size-5 rounded-full flex items-center justify-center border-2 border-[#1a1614] ${isHighRisk ? 'bg-red-500' : 'bg-orange-500'}`} title={`Đã gửi ${reporterStats} báo cáo`}>
+                                  <span className="material-symbols-outlined text-[14px] text-white leading-none">
+                                    priority_high
+                                  </span>
+                                </div>
+                              )}
                             </div>
 
-                            <p className="text-xs text-primary mt-0.5 break-words font-medium bg-primary/5 inline-block px-1.5 py-0.5 rounded">
-                              {r.reason}
-                            </p>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex justify-between items-start">
+                                <div className="flex items-center gap-2 max-w-[80%]">
+                                  <p
+                                    className="text-white font-bold text-sm hover:underline cursor-pointer truncate"
+                                    onClick={() => r.reporterId && setViewingReporterId(r.reporterId)}
+                                  >
+                                    {targetMetadata[`USER_${r.reporterId}`]?.name || r.reporterUsername || 'Ẩn danh'}
+                                  </p>
+                                  {reporterStats > 1 && (
+                                    <span className={`text-[9px] px-1.5 py-0.5 rounded border ${isHighRisk ? 'bg-red-500/10 text-red-500 border-red-500/20' : 'bg-white/5 text-text-muted border-white/10'}`}>
+                                      {reporterStats} báo cáo
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="text-[10px] text-text-muted shrink-0 ml-2">
+                                  {new Date(r.createdAt).toLocaleString('vi-VN')}
+                                </span>
+                              </div>
+
+                              <div className="mt-1.5 flex flex-wrap gap-2 items-center">
+                                <span className="text-[11px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
+                                  {mainReason}
+                                </span>
+                              </div>
+
+                              {detailReason && (
+                                <p className="text-xs text-text-muted mt-1.5 leading-relaxed bg-black/20 p-2 rounded-lg italic">
+                                  "{detailReason}"
+                                </p>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -971,6 +1046,7 @@ const AdminReportsManagement = () => {
           reports={inspectingReports}
           reporterMetadata={targetMetadata}
           violationHistory={getViolationHistory(inspectingGroupId, 'GROUP')}
+          reporterStatsGetter={(reporterId) => getReporterStats(reporterId)}
           initialTab={inspectorInitialTab}
           onReporterClick={(userId) => setViewingReporterId(userId)}
           onClose={() => {
