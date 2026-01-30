@@ -25,6 +25,8 @@ import ProfileFriends from "../../components/profile/ProfileFriends";
 import ReportModal from "../../components/report/ReportModal";
 import ConfirmModal from "../../components/admin/ConfirmModal";
 import reportService from "../../services/ReportService";
+import PostService from "../../services/PostService";
+import PostCard from "../../components/feed/PostCard";
 import toast from "react-hot-toast";
 
 export default function MemberProfile() {
@@ -38,6 +40,33 @@ export default function MemberProfile() {
     isOpen: false,
     type: null,
   }); // type: 'UNFRIEND' | 'CANCEL_REQUEST'
+
+  const [posts, setPosts] = useState([]);
+  const [loadingPosts, setLoadingPosts] = useState(false);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      if (activeTab === "timeline" && id) {
+        setLoadingPosts(true);
+        try {
+          const response = await PostService.getPostsByUserId(id);
+          // Assuming response.data is the array of posts
+          const sortedPosts = (response.data || []).sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+          );
+          setPosts(sortedPosts);
+        } catch (error) {
+          console.error("Error fetching user posts:", error);
+        } finally {
+          setLoadingPosts(false);
+        }
+      }
+      
+    };
+
+    fetchPosts();
+  }, [id,activeTab]);
+
 
   const handleStartChat = async () => {
     const tid = toast.loading("Đang mở cuộc trò chuyện...");
@@ -476,11 +505,21 @@ export default function MemberProfile() {
               } flex flex-col gap-6`}
           >
             {activeTab === "timeline" && (
-              <div className="flex flex-col gap-6 text-center py-20 bg-surface-main rounded-2xl border border-border-main">
-                <Lock className="size-12 text-text-secondary/30 mb-4 mx-auto" />
-                <p className="text-text-secondary italic">
-                  Bài viết của người này đang được ẩn.
-                </p>
+              <div className="flex flex-col gap-6">
+                {loadingPosts ? (
+                  <div className="flex justify-center p-8">
+                    <div className="size-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                ) : posts.length > 0 ? (
+                  posts.map((post) => <PostCard key={post.id} post={post} />)
+                ) : (
+                  <div className="flex flex-col gap-6 text-center py-20 bg-surface-main rounded-2xl border border-border-main">
+                    <UserX className="size-12 text-text-secondary/30 mb-4 mx-auto" />
+                    <p className="text-text-secondary italic">
+                      Người dùng này chưa có bài viết nào.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
