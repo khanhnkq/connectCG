@@ -24,7 +24,11 @@ const postService = {
     },
     createPost(post){
         return axiosClient.post(`/posts`,post);
-    }
+    },
+    updatePost(id, data) {
+    // data có thể là { content: "...", visibility: "..." }
+    return axiosClient.put(`/posts/${id}`, data); 
+},
 };
 
 export default postService;

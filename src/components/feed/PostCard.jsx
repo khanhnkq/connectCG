@@ -9,8 +9,16 @@ import {
   MessageSquare,
   Share2,
   CheckCircle,
+  Trash,
+  Pencil,
+  Image as ImageIcon,
+  X,
+  Lock,
+  ChevronDown,
 } from "lucide-react";
+import { useSelector } from "react-redux";
 import ImageLightbox from "../common/ImageLightBox";
+import PostUpdate from "./PostUpdate";
 
 // --- HELPER 1: Format thời gian ---
 const formatTime = (dateString) => {
@@ -23,7 +31,7 @@ const formatTime = (dateString) => {
   if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
   if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
-  return date.toLocaleDateString("vi-VN", { day: 'numeric', month: 'short' });
+  return date.toLocaleDateString("vi-VN", { day: "numeric", month: "short" });
 };
 
 // --- HELPER MỚI CHUẨN ---
@@ -31,8 +39,16 @@ const MediaGallery = ({ mediaItems, onMediaClick }) => {
   if (!mediaItems || mediaItems.length === 0) return null;
 
   // Hàm render 1 media item
-  const renderItem = (item, index, className, showOverlay = false, overlayCount = 0) => {
-    const isVideo = item.type === 'VIDEO' || (item.url && item.url.match(/\.(mp4|webm|mov)$/i));
+  const renderItem = (
+    item,
+    index,
+    className,
+    showOverlay = false,
+    overlayCount = 0,
+  ) => {
+    const isVideo =
+      item.type === "VIDEO" ||
+      (item.url && item.url.match(/\.(mp4|webm|mov)$/i));
 
     return (
       <div
@@ -59,7 +75,9 @@ const MediaGallery = ({ mediaItems, onMediaClick }) => {
         {/* Overlay số lượng ảnh thừa (+2, +3...) */}
         {showOverlay && (
           <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10">
-            <span className="text-white text-3xl font-bold">+{overlayCount}</span>
+            <span className="text-white text-3xl font-bold">
+              +{overlayCount}
+            </span>
           </div>
         )}
 
@@ -67,7 +85,12 @@ const MediaGallery = ({ mediaItems, onMediaClick }) => {
         {isVideo && !showOverlay && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="bg-black/40 backdrop-blur-sm p-3 rounded-full border border-white/20 shadow-lg">
-              <svg className="w-6 h-6 text-white fill-white" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+              <svg
+                className="w-6 h-6 text-white fill-white"
+                viewBox="0 0 24 24"
+              >
+                <path d="M8 5v14l11-7z" />
+              </svg>
             </div>
           </div>
         )}
@@ -79,7 +102,6 @@ const MediaGallery = ({ mediaItems, onMediaClick }) => {
 
   return (
     <div className="w-full overflow-hidden">
-
       {/* TRƯỜNG HỢP 1 ẢNH */}
       {count === 1 && (
         <div className="w-full flex justify-center max-h-[600px]">
@@ -113,31 +135,50 @@ const MediaGallery = ({ mediaItems, onMediaClick }) => {
       {/* TRƯỜNG HỢP 4+ ẢNH */}
       {count >= 4 && (
         <div className="grid grid-cols-2 grid-rows-2 gap-1 h-[300px] sm:h-[400px]">
-          <div className="relative">{renderItem(mediaItems[0], 0, "absolute inset-0 w-full h-full")}</div>
-          <div className="relative">{renderItem(mediaItems[1], 1, "absolute inset-0 w-full h-full")}</div>
-          <div className="relative">{renderItem(mediaItems[2], 2, "absolute inset-0 w-full h-full")}</div>
+          <div className="relative">
+            {renderItem(mediaItems[0], 0, "absolute inset-0 w-full h-full")}
+          </div>
+          <div className="relative">
+            {renderItem(mediaItems[1], 1, "absolute inset-0 w-full h-full")}
+          </div>
+          <div className="relative">
+            {renderItem(mediaItems[2], 2, "absolute inset-0 w-full h-full")}
+          </div>
           <div className="relative">
             {renderItem(
-              mediaItems[3], 3, "absolute inset-0 w-full h-full",
+              mediaItems[3],
+              3,
+              "absolute inset-0 w-full h-full",
               count > 4,
-              count - 4
+              count - 4,
             )}
           </div>
         </div>
       )}
-
     </div>
   );
 };
+
 // --- COMPONENT CHÍNH ---
 export default function PostCard({
   post, // DTO prop
   // Fallback props
-  id, author, time, content, image, type = "feed"
+  id,
+  author,
+  time,
+  content,
+  image,
+  type = "feed",
+  onUpdate,
+  onDelete,
 }) {
+  const { user } = useSelector((state) => state.auth);
   const [showMenu, setShowMenu] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(-1); // Index ảnh đang xem (-1 là đóng)
   const menuRef = useRef(null);
+
+  // Edit mode state
+  const [isEditing, setIsEditing] = useState(false);
 
   // Chuẩn hóa dữ liệu logic
   let data = {};
@@ -147,7 +188,7 @@ export default function PostCard({
     if (post.media && post.media.length > 0) {
       mediaList = post.media;
     } else if (post.images && post.images.length > 0) {
-      mediaList = post.images.map(url => ({ url, type: 'IMAGE' }));
+      mediaList = post.images.map((url) => ({ url, type: "IMAGE" }));
     }
 
     data = {
@@ -157,7 +198,7 @@ export default function PostCard({
         name: post.authorFullName || post.authorName,
         avatar: post.authorAvatar,
         id: post.authorId,
-        isSystem: post.isSystem
+        isSystem: post.isSystem,
       },
       timeDisplay: formatTime(post.createdAt),
       mediaItems: mediaList,
@@ -167,9 +208,11 @@ export default function PostCard({
     };
   } else {
     data = {
-      id, content, author,
+      id,
+      content,
+      author,
       timeDisplay: time,
-      mediaItems: image ? [{ url: image, type: 'IMAGE' }] : [],
+      mediaItems: image ? [{ url: image, type: "IMAGE" }] : [],
     };
   }
 
@@ -183,10 +226,19 @@ export default function PostCard({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Handle saving edit from child component
+  const handleUpdateWrapper = async (postId, updatedData) => {
+    if (onUpdate) {
+      await onUpdate(postId, updatedData);
+    }
+    setIsEditing(false);
+  };
+
   return (
     <article
-      className={`bg-surface-main rounded-2xl border border-border-main overflow-hidden shadow-sm transition-colors duration-300 mb-4 ${type === "dashboard" ? "shadow-lg" : ""
-        }`}
+      className={`bg-surface-main rounded-2xl border border-border-main shadow-sm transition-colors duration-300 mb-4 ${
+        type === "dashboard" ? "shadow-lg" : ""
+      }`}
     >
       {/* HEADER */}
       <div className="p-4 flex justify-between items-start">
@@ -210,11 +262,18 @@ export default function PostCard({
             <div className="flex items-center gap-1.5 text-text-secondary text-xs">
               <span>{data.timeDisplay}</span>
               <span>•</span>
-              {data.visibility === 'FRIENDS' ? <Users size={12} /> :
-                data.visibility === 'PRIVATE' ? <div className="flex items-center gap-1"><i className="lucide-lock w-3 h-3" />Private</div> :
-                  <Globe size={12} />}
+              {data.visibility === "FRIENDS" ? (
+                <Users size={12} />
+              ) : data.visibility === "PRIVATE" ? (
+                <div className="flex items-center gap-1">
+                  <i className="lucide-lock w-3 h-3" />
+                  Private
+                </div>
+              ) : (
+                <Globe size={12} />
+              )}
 
-              {data.aiStatus && data.aiStatus !== 'Clean' && (
+              {data.aiStatus && data.aiStatus !== "Clean" && (
                 <span className="ml-2 px-2 py-0.5 bg-yellow-500/10 text-yellow-600 rounded-full text-[10px] font-bold border border-yellow-500/20 flex items-center gap-1">
                   <AlertTriangle size={10} /> AI Flagged
                 </span>
@@ -234,6 +293,28 @@ export default function PostCard({
 
           {showMenu && (
             <div className="absolute right-0 top-full mt-1 w-48 bg-surface-main rounded-lg shadow-xl border border-border-main z-10 overflow-hidden py-1">
+              {user.id === data.author.id && (
+                <>
+                  <button
+                    onClick={() => {
+                      setIsEditing(true); // Bật chế độ sửa
+                      setShowMenu(false); // Đóng menu
+                    }}
+                    className="w-full text-left px-4 py-2.5 text-sm text-text-main hover:bg-background-main flex items-center gap-2"
+                  >
+                    <Pencil size={16} /> Edit
+                  </button>
+                  <button
+                    onClick={() => {
+                      onDelete(data.id); // Gọi hàm xóa từ cha
+                      setShowMenu(false);
+                    }}
+                    className="w-full text-left px-4 py-2.5 text-sm text-text-main hover:bg-background-main flex items-center gap-2"
+                  >
+                    <Trash size={16} /> Delete
+                  </button>
+                </>
+              )}
               <button className="w-full text-left px-4 py-2.5 text-sm text-text-main hover:bg-background-main flex items-center gap-2">
                 <Share2 size={16} /> Share
               </button>
@@ -245,17 +326,26 @@ export default function PostCard({
         </div>
       </div>
 
-      {/* CONTENT TEXT */}
-      {data.content && (
-        <div className="px-4 pb-3">
-          <p className="text-text-main whitespace-pre-wrap text-[15px] leading-relaxed break-words">
-            {data.content}
-          </p>
-        </div>
-      )}
+      {/* CONTENT TEXT OR EDIT FORM */}
+      <div className="px-4 pb-3">
+        {isEditing ? (
+          <PostUpdate
+            post={data}
+            onUpdate={handleUpdateWrapper}
+            onCancel={() => setIsEditing(false)}
+          />
+        ) : (
+          data.content && (
+            <p className="text-text-main whitespace-pre-wrap text-[15px] leading-relaxed break-words">
+              {data.content}
+            </p>
+          )
+        )}
+      </div>
 
       {/* MEDIA GALLERY */}
-      {data.mediaItems.length > 0 && (
+      {/* Hide media when editing because PostUpdate handles preview */}
+      {!isEditing && data.mediaItems.length > 0 && (
         <div className="w-full border-t border-b border-border-main/50">
           <MediaGallery
             mediaItems={data.mediaItems}

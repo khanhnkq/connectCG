@@ -1,4 +1,12 @@
-import { AlertTriangle, Eye, Pencil, Trash2, Search, Users, ChevronDown } from "lucide-react";
+import {
+  AlertTriangle,
+  Eye,
+  Pencil,
+  Trash2,
+  Search,
+  Users,
+  ChevronDown,
+} from "lucide-react";
 import React, { useState, useEffect } from "react";
 import AdminLayout from "../../components/layout-admin/AdminLayout";
 import * as Yup from "yup";
@@ -18,7 +26,7 @@ const AdminGroupsManager = () => {
     isOpen: false,
     title: "",
     message: "",
-    onConfirm: () => { },
+    onConfirm: () => {},
   });
 
   const handleInspect = (group) => {
@@ -34,11 +42,16 @@ const AdminGroupsManager = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const list = await findAllGroup();
+        const response = await findAllGroup(0, 1000); // Fetch all for admin
+        // Handle paginated response (Spring Boot Page<T>) or direct array
+        const list = Array.isArray(response)
+          ? response
+          : response.content || [];
         setGroups(list);
       } catch (error) {
         console.error("Failed to fetch groups", error);
         toast.error("Không thể tải danh sách nhóm");
+        setGroups([]);
       } finally {
         setLoading(false);
       }
@@ -50,7 +63,7 @@ const AdminGroupsManager = () => {
     (group) =>
       (group.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         group.description?.toLowerCase().includes(searchTerm.toLowerCase())) &&
-      (privacyFilter === "" || group.privacy?.toLowerCase() === privacyFilter)
+      (privacyFilter === "" || group.privacy?.toLowerCase() === privacyFilter),
   );
 
   const handleDeactivate = (id, name) => {
@@ -138,12 +151,15 @@ const AdminGroupsManager = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-surface-dark via-transparent to-transparent opacity-80"></div>
                   <div className="absolute top-4 right-4 flex gap-2">
                     <span
-                      className={`px-2.5 py-1 text-[9px] font-black uppercase rounded-lg border backdrop-blur-md ${group.privacy?.toLowerCase() === "public"
-                        ? "bg-green-500/20 text-green-400 border-green-500/20"
-                        : "bg-orange-500/20 text-orange-400 border-orange-500/20"
-                        }`}
+                      className={`px-2.5 py-1 text-[9px] font-black uppercase rounded-lg border backdrop-blur-md ${
+                        group.privacy?.toLowerCase() === "public"
+                          ? "bg-green-500/20 text-green-400 border-green-500/20"
+                          : "bg-orange-500/20 text-orange-400 border-orange-500/20"
+                      }`}
                     >
-                      {group.privacy?.toLowerCase() === "public" ? "CÔNG KHAI" : "RIÊNG TƯ"}
+                      {group.privacy?.toLowerCase() === "public"
+                        ? "CÔNG KHAI"
+                        : "RIÊNG TƯ"}
                     </span>
                     {group.is_deleted && (
                       <span className="px-2.5 py-1 text-[9px] font-black uppercase rounded-lg bg-red-500 text-white border border-white/20">
