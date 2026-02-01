@@ -6,9 +6,21 @@ import PostCard from "../../components/feed/PostCard";
 import postService from "../../services/PostService";
 import UserProfileService from "../../services/user/UserProfileService"; // Import service lấy profile
 import toast from "react-hot-toast";
+import ConfirmModal from "../../components/common/ConfirmModal";
+
+import { usePostManagement } from "../../hooks/usePostManagement";
 
 export default function Newsfeed() {
-  const [posts, setPosts] = useState([]);
+  const {
+    posts,
+    setPosts,
+    deleteModal,
+    setDeleteModal,
+    handleDeletePost,
+    confirmDelete,
+    handleUpdatePost,
+  } = usePostManagement();
+
   const [loading, setLoading] = useState(true);
   const [userAvatar, setUserAvatar] = useState("");
 
@@ -22,13 +34,16 @@ export default function Newsfeed() {
     try {
       // 1. Lấy string JSON từ localStorage
       const userProfileStr = localStorage.getItem("userProfile");
-      
+
       if (userProfileStr) {
         // 2. Parse từ String sang Object
         const userProfile = JSON.parse(userProfileStr);
         // 3. Lấy avatar (Fallback các trường hợp key có thể khác nhau)
-        const avatar = userProfile.currentAvatarUrl || userProfile.avatar || userProfile.avatarUrl;
-        
+        const avatar =
+          userProfile.currentAvatarUrl ||
+          userProfile.avatar ||
+          userProfile.avatarUrl;
+
         if (avatar) {
           setUserAvatar(avatar);
         }
@@ -80,7 +95,9 @@ export default function Newsfeed() {
               posts.map((post) => (
                 <PostCard
                   key={post.id}
-                  post={post} // <-- CHỈ CẦN TRUYỀN DÒNG NÀY LÀ ĐỦ
+                  post={post}
+                  onDelete={handleDeletePost} // <--- Thêm dòng này
+                  onUpdate={handleUpdatePost} // <--- Thêm dòng này
                 />
               ))
             )}
@@ -89,6 +106,18 @@ export default function Newsfeed() {
       </div>
 
       <RightSidebar />
+
+      {/* DELETE CONFIRMATION MODAL */}
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, postId: null })}
+        onConfirm={confirmDelete}
+        title="Xóa bài viết"
+        message="Bạn có chắc chắn muốn xóa bài viết này? Hành động này không thể hoàn tác."
+        confirmText="Xóa"
+        cancelText="Hủy"
+        type="danger"
+      />
     </div>
   );
 }
