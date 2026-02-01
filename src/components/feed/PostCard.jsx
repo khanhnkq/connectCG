@@ -19,6 +19,7 @@ import {
 import { useSelector } from "react-redux";
 import ImageLightbox from "../common/ImageLightBox";
 import PostUpdate from "./PostUpdate";
+import postService from "../../services/PostService";
 
 // --- HELPER 1: Format thời gian ---
 const formatTime = (dateString) => {
@@ -160,6 +161,8 @@ const MediaGallery = ({ mediaItems, onMediaClick }) => {
 };
 
 // --- COMPONENT CHÍNH ---
+import ReactionButton from "./ReactionButton";
+
 export default function PostCard({
   post, // DTO prop
   // Fallback props
@@ -205,6 +208,7 @@ export default function PostCard({
       visibility: post.visibility,
       aiStatus: post.aiStatus,
       approvedBy: post.approvedByFullName,
+      currentUserReaction: post.currentUserReaction, // Cần bổ sung từ DTO backend sau này
     };
   } else {
     data = {
@@ -215,6 +219,34 @@ export default function PostCard({
       mediaItems: image ? [{ url: image, type: "IMAGE" }] : [],
     };
   }
+
+  // Local state for optimistic updates
+  const [localReaction, setLocalReaction] = useState(data.currentUserReaction);
+
+  // Sync prop changes to local state
+  useEffect(() => {
+    setLocalReaction(data.currentUserReaction);
+  }, [data.currentUserReaction]);
+
+  const handleReactWrapper = async (type) => {
+    // 1. Optimistic Update
+    const previousReaction = localReaction;
+    setLocalReaction(type); // Update UI immediately
+
+    try {
+      if (type === null) {
+        // Un-react
+        await postService.unreactToPost(data.id);
+      } else {
+        // React/Update
+        await postService.reactToPost(data.id, type);
+      }
+    } catch (error) {
+      console.error("Reaction failed:", error);
+      // Revert if failed
+      setLocalReaction(previousReaction);
+    }
+  };
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -365,10 +397,10 @@ export default function PostCard({
       {/* FOOTER ACTIONS */}
       <div className="px-2 py-1">
         <div className="flex items-center justify-between border-t border-border-main mx-2 pt-1">
-          <button className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg hover:bg-background-main text-text-secondary hover:text-red-500 transition-colors group">
-            <Heart size={20} className="group-hover:stroke-red-500" />
-            <span className="text-sm font-medium">Like</span>
-          </button>
+          <ReactionButton
+            currentReaction={localReaction}
+            onReact={handleReactWrapper}
+          />
 
           <button className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg hover:bg-background-main text-text-secondary hover:text-blue-500 transition-colors">
             <MessageSquare size={20} />

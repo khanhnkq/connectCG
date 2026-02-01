@@ -28,7 +28,14 @@ const postService = {
     updatePost(id, data) {
     // data có thể là { content: "...", visibility: "..." }
     return axiosClient.put(`/posts/${id}`, data); 
-},
+    },
+    reactToPost(postId, reactionType) {
+        return axiosClient.post(`/posts/${postId}/react`, { reaction: reactionType });
+    },
+    unreactToPost(postId){
+        return axiosClient.delete(`/posts/${postId}/react`);
+    }
+    
 };
 
 export default postService;
