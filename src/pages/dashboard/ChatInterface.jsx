@@ -67,7 +67,7 @@ export default function ChatInterface() {
   const [inviteFriends, setInviteFriends] = useState([]);
   const [selectedInvitees, setSelectedInvitees] = useState([]);
   const [showReportUser, setShowReportUser] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState("");
@@ -75,7 +75,19 @@ export default function ChatInterface() {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const emojiPickerRef = useRef(null);
 
+  const [activeTab, setActiveTab] = useState("DIRECT"); // "DIRECT" | "GROUP"
+  const [kickMemberData, setKickMemberData] = useState(null);
+
   const emojis = ["😊", "😂", "🥰", "😍", "😒", "😭", "😘", "😩", "😔", "👍", "❤️", "🔥", "✨", "🎉", "🙏", "✅", "❌", "💯"];
+
+  // Calculate unread counts
+  const directUnreadCount = conversations
+    .filter(c => c.type === "DIRECT")
+    .reduce((acc, curr) => acc + (curr.unreadCount || 0), 0);
+
+  const groupUnreadCount = conversations
+    .filter(c => c.type === "GROUP")
+    .reduce((acc, curr) => acc + (curr.unreadCount || 0), 0);
 
   const handleCreateGroup = async () => {
     if (selectedMembers.length < 1) {
@@ -191,7 +203,35 @@ export default function ChatInterface() {
     try {
       const response = await ChatService.getMyChatRooms();
       const rooms = response.data;
-      setConversations(rooms);
+
+      setConversations(prev => {
+        // Merge new rooms with existing client-side data (like lastMessageVisible)
+        return rooms.map(newRoom => {
+          const existing = prev.find(p => p.id === newRoom.id);
+          if (existing) {
+            return {
+              ...newRoom,
+              lastMessageVisible: existing.lastMessageVisible,
+              lastMessageTimestamp: existing.lastMessageTimestamp && existing.lastMessageTimestamp > (newRoom.lastMessageAt ? new Date(newRoom.lastMessageAt).getTime() : 0)
+                ? existing.lastMessageTimestamp
+                : newRoom.lastMessageAt,
+              // Update status from backend
+              clientClearedAt: newRoom.clientClearedAt
+            };
+          }
+
+          // For newly loaded status, check if cleared
+          let visible = newRoom.lastMessageAt ? "Đang tải..." : "Chưa có tin nhắn";
+          if (newRoom.clientClearedAt && newRoom.lastMessageAt) {
+            const clearTime = new Date(newRoom.clientClearedAt).getTime();
+            const msgTime = new Date(newRoom.lastMessageAt).getTime();
+            if (msgTime <= clearTime) {
+              visible = "Chưa có tin nhắn";
+            }
+          }
+          return { ...newRoom, lastMessageVisible: visible };
+        });
+      });
 
       // Decide which room to select
       const selectedKey = location.state?.selectedRoomKey;
@@ -199,7 +239,7 @@ export default function ChatInterface() {
         const match = rooms.find((r) => r.firebaseRoomKey === selectedKey);
         if (match) setActiveRoom(match);
       } else if (rooms.length > 0 && !activeRoom && !location.state?.noAutoSelect) {
-        setActiveRoom(rooms[0]);
+        // setActiveRoom(rooms[0]); // User requested no auto-select
       }
     } catch (error) {
       console.error("Error fetching rooms:", error);
@@ -207,7 +247,7 @@ export default function ChatInterface() {
     } finally {
       setIsLoading(false);
     }
-  }, [activeRoom, location.state?.selectedRoomKey]);
+  }, [location.state?.selectedRoomKey]);
 
   useEffect(() => {
     fetchRooms();
@@ -230,6 +270,7 @@ export default function ChatInterface() {
       const unsub = FirebaseChatService.subscribeToMessages(
         room.firebaseRoomKey,
         (newMsg) => {
+          // console.log(`Received msg for ${room.name}:`, newMsg);
           // UPDATE ROOM LIST ONLY (for sorting and unread badges)
           setConversations((prev) => {
             const index = prev.findIndex(
@@ -245,13 +286,47 @@ export default function ChatInterface() {
             const isActiveRoom = activeRoomRef.current?.firebaseRoomKey === room.firebaseRoomKey;
 
             let newUnreadCount = oldRoom.unreadCount || 0;
-            if (isNewMessage && !isActiveRoom) {
+            const isFromMe = newMsg.senderId == currentUser?.id;
+            if (isNewMessage && !isActiveRoom && !isFromMe) {
               newUnreadCount += 1;
+            }
+
+            // Determine preview text based on message type
+            let prefix = "";
+            // Use == for loose equality (string vs number)
+            if (newMsg.senderId == currentUser?.id) {
+              prefix = "Bạn: ";
+            } else if (room.type === "GROUP") { // Always show name for group
+              const sender = room.members?.find(m => m.id == newMsg.senderId);
+              const nameToShow = sender?.fullName || newMsg.senderName || "Unknown";
+
+              // Get short name (last word)
+              const shortName = nameToShow.trim().split(' ').pop();
+              prefix = `${shortName}: `;
+            }
+
+            let content = "Tin nhắn mới";
+            if (newMsg.type === "image") {
+              content = "[Hình ảnh]";
+            } else if (newMsg.text) {
+              content = newMsg.text;
+            } else if (newMsg.content) {
+              content = newMsg.content;
+            }
+
+            let previewText = `${prefix}${content}`;
+
+            // Check if this latest message is actually "deleted" for this user
+            if (oldRoom.clientClearedAt) {
+              const clearTime = new Date(oldRoom.clientClearedAt).getTime();
+              if (newMsg.timestamp && newMsg.timestamp <= clearTime) {
+                previewText = "Chưa có tin nhắn";
+              }
             }
 
             const matched = {
               ...oldRoom,
-              lastMessageVisible: newMsg.text,
+              lastMessageVisible: previewText,
               lastMessageTimestamp: newMsg.timestamp,
               unreadCount: isActiveRoom ? 0 : newUnreadCount
             };
@@ -266,6 +341,7 @@ export default function ChatInterface() {
             }
           });
         },
+        1
       );
       listeners.push(unsub);
     });
@@ -284,10 +360,19 @@ export default function ChatInterface() {
 
     setMessages([]); // Clear previous chat
 
+    // Mark as read in backend
+    ChatService.markAsRead(activeRoom.id).catch(err => console.error("Mark as read error:", err));
+
     // Subscribe specifically to THIS room
     const unsub = FirebaseChatService.subscribeToMessages(
       activeRoom.firebaseRoomKey,
       (newMsg) => {
+        // Filter out if message is older than clientClearedAt
+        if (activeRoom.clientClearedAt) {
+          const clearTime = new Date(activeRoom.clientClearedAt).getTime();
+          if (newMsg.timestamp <= clearTime) return;
+        }
+
         setMessages((prev) => {
           // Prevent duplicates
           if (prev.some((m) => m.id === newMsg.id)) return prev;
@@ -433,36 +518,54 @@ export default function ChatInterface() {
     }
   };
 
-  const handleDeleteRoom = async () => {
-    if (!activeRoom) return;
+  const handleClearHistory = async () => {
+    setShowClearConfirm(false);
+    const tid = toast.loading("Đang xóa lịch sử...");
+    try {
+      await ChatService.clearHistory(activeRoom.id);
+      toast.success("Đã xóa lịch sử trò chuyện", { id: tid });
 
-    const isGroup = activeRoom.type === "GROUP";
-    const confirmMsg = isGroup
-      ? "Bạn có chắc muốn XÓA VĨNH VIỄN nhóm này và toàn bộ tin nhắn không? Thao tác này không thể hoàn tác."
-      : "Bạn có chắc muốn XÓA VĨNH VIỄN cuộc trò chuyện này không? Toàn bộ tin nhắn sẽ bị mất ở cả 2 phía.";
+      const now = new Date().toISOString();
+      setActiveRoom(prev => ({ ...prev, clientClearedAt: now }));
+      setMessages([]); // Clear current view
 
-    setShowDeleteConfirm(true);
+      // Update sidebar immediately
+      setConversations(prev => prev.map(c =>
+        c.id === activeRoom.id
+          ? { ...c, lastMessageVisible: "Chưa có tin nhắn", unreadCount: 0, clientClearedAt: now }
+          : c
+      ));
+
+      fetchRooms(); // Refresh list to get fresh data
+    } catch (err) {
+      console.error(err);
+      toast.error("Không thể xóa lịch sử", { id: tid });
+    }
   };
 
-  const confirmDeleteRoom = async () => {
-    setShowDeleteConfirm(false);
-    const tid = toast.loading("Đang xóa...");
+  const handleKickMember = (memberToKick) => {
+    if (!activeRoom || !memberToKick) return;
+    setKickMemberData(memberToKick);
+  };
+
+  const confirmKickMember = async () => {
+    if (!activeRoom || !kickMemberData) return;
+
+    setKickMemberData(null);
+    const tid = toast.loading(`Đang xóa ${kickMemberData.fullName}...`);
     try {
-      // 1. Xóa trên MySQL
-      await ChatService.deleteChatRoom(activeRoom.id);
+      const response = await ChatService.removeMember(activeRoom.id, kickMemberData.id);
+      const updatedRoom = response.data;
 
-      // 2. Xóa trên Firebase
-      await FirebaseChatService.deleteMessages(activeRoom.firebaseRoomKey);
+      setActiveRoom(updatedRoom);
+      setConversations((prev) =>
+        prev.map((c) => (c.id === updatedRoom.id ? updatedRoom : c)),
+      );
 
-      toast.success("Đã xóa cuộc trò chuyện", { id: tid });
-
-      // 3. Cập nhật UI: Quay về danh sách tin nhắn và không tự động chọn phòng mới
-      setActiveRoom(null);
-      navigate("/dashboard/chat", { state: { noAutoSelect: true }, replace: true });
-      await fetchRooms();
+      toast.success(`Đã xóa ${kickMemberData.fullName} khỏi nhóm`, { id: tid });
     } catch (error) {
-      console.error("Delete room error:", error);
-      toast.error(error.response?.data?.message || "Lỗi khi xóa cuộc trò chuyện", {
+      console.error("Kick member error:", error);
+      toast.error(error.response?.data?.message || "Lỗi khi xóa thành viên", {
         id: tid,
       });
     }
@@ -496,6 +599,38 @@ export default function ChatInterface() {
               <SquarePen size={20} />
             </button>
           </div>
+          <div className="px-5 pt-4 pb-2 flex gap-2">
+            <button
+              onClick={() => setActiveTab("DIRECT")}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-bold transition-all relative ${activeTab === "DIRECT"
+                ? "bg-surface-main text-primary shadow-sm"
+                : "text-text-secondary hover:bg-surface-main/50"
+                }`}
+            >
+              <User size={16} />
+              <span>Cá nhân</span>
+              {directUnreadCount > 0 && (
+                <span className="bg-red-600 text-white text-[10px] size-5 flex items-center justify-center rounded-full ml-1">
+                  {directUnreadCount > 99 ? '99+' : directUnreadCount}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab("GROUP")}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-bold transition-all relative ${activeTab === "GROUP"
+                ? "bg-surface-main text-primary shadow-sm"
+                : "text-text-secondary hover:bg-surface-main/50"
+                }`}
+            >
+              <Users size={16} />
+              <span>Nhóm</span>
+              {groupUnreadCount > 0 && (
+                <span className="bg-red-600 text-white text-[10px] size-5 flex items-center justify-center rounded-full ml-1">
+                  {groupUnreadCount > 99 ? '99+' : groupUnreadCount}
+                </span>
+              )}
+            </button>
+          </div>
           <div className="px-5 py-4">
             <div className="relative group">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -514,9 +649,14 @@ export default function ChatInterface() {
           </div>
           <div className="flex-1 overflow-y-auto px-3 pb-4 space-y-1">
             {conversations
-              .filter((conv) =>
-                conv.name?.toLowerCase().includes(searchTerm.toLowerCase()),
-              )
+              .filter((conv) => {
+                // Filter by Tab
+                if (activeTab === "DIRECT" && conv.type === "GROUP") return false;
+                if (activeTab === "GROUP" && conv.type !== "GROUP") return false;
+
+                // Filter by Search
+                return conv.name?.toLowerCase().includes(searchTerm.toLowerCase());
+              })
               .map((conv) => (
                 <div
                   key={conv.id}
@@ -568,7 +708,7 @@ export default function ChatInterface() {
                       )}
                     </div>
                     <p className={`text-text-secondary text-xs truncate max-w-full italic ${conv.unreadCount > 0 ? "font-bold text-primary" : ""}`}>
-                      {conv.lastMessageVisible || "Bấm để xem tin nhắn"}
+                      {conv.lastMessageVisible || (conv.lastMessageTimestamp ? "Đang tải..." : "Chưa có tin nhắn")}
                     </p>
                   </div>
                   {activeRoom?.id === conv.id && (
@@ -877,13 +1017,13 @@ export default function ChatInterface() {
                         `/dashboard/member/${activeRoom?.otherParticipantId}`,
                       )
                     }
-                    className="flex flex-col items-center gap-1 group"
+                    className={`flex flex-col items-center gap-1 group ${activeRoom?.type === "GROUP" ? "hidden" : ""}`}
                   >
                     <div className="size-10 rounded-full bg-[#2A1D15] group-hover:bg-primary group-hover:text-[#231810] flex items-center justify-center text-white transition-all border border-[#3A2A20]">
                       <User size={24} />
                     </div>
                     <span className="text-[10px] text-text-secondary font-bold uppercase tracking-wide group-hover:text-primary transition-colors">
-                      Profile
+                      Trang cá nhân
                     </span>
                   </button>
                   {activeRoom?.type === "GROUP" && (
@@ -895,42 +1035,42 @@ export default function ChatInterface() {
                         <UserPlus size={24} />
                       </div>
                       <span className="text-[10px] text-text-secondary font-bold uppercase tracking-wide group-hover:text-green-500 transition-colors">
-                        Invite
+                        Mời
                       </span>
                     </button>
                   )}
-                  <button className="flex flex-col items-center gap-1 group">
-                    <div className="size-10 rounded-full bg-[#2A1D15] group-hover:bg-primary group-hover:text-[#231810] flex items-center justify-center text-white transition-all border border-[#3A2A20]">
-                      <BellOff size={24} />
-                    </div>
-                    <span className="text-[10px] text-text-secondary font-bold uppercase tracking-wide group-hover:text-primary transition-colors">
-                      Mute
-                    </span>
-                  </button>
-                  <button className="flex flex-col items-center gap-1 group">
-                    <div className="size-10 rounded-full bg-surface-main group-hover:bg-red-500 group-hover:text-white flex items-center justify-center text-red-500 transition-all border border-border-main">
-                      <Ban size={24} />
-                    </div>
-                    <span className="text-[10px] text-text-secondary font-bold uppercase tracking-wide group-hover:text-red-500 transition-colors">
-                      Block
-                    </span>
-                  </button>
-                  {/* Delete Button */}
-                  {(activeRoom.type === "DIRECT" ||
-                    activeRoom.members?.find((m) => m.id === currentUser.id)
-                      ?.role === "ADMIN") && (
-                      <button
-                        onClick={handleDeleteRoom}
-                        className="flex flex-col items-center gap-1 group"
-                      >
-                        <div className="size-10 rounded-full bg-red-500/10 group-hover:bg-red-600 group-hover:text-white flex items-center justify-center text-red-500 transition-all border border-red-500/20">
-                          <Trash2 size={24} />
+                  {activeRoom?.type !== "GROUP" && (
+                    <>
+                      <button className="flex flex-col items-center gap-1 group">
+                        <div className="size-10 rounded-full bg-[#2A1D15] group-hover:bg-primary group-hover:text-[#231810] flex items-center justify-center text-white transition-all border border-[#3A2A20]">
+                          <BellOff size={24} />
                         </div>
-                        <span className="text-[10px] text-text-secondary font-bold uppercase tracking-wide group-hover:text-red-500 transition-colors">
-                          Delete
+                        <span className="text-[10px] text-text-secondary font-bold uppercase tracking-wide group-hover:text-primary transition-colors">
+                          Tắt TB
                         </span>
                       </button>
-                    )}
+                      <button className="flex flex-col items-center gap-1 group">
+                        <div className="size-10 rounded-full bg-surface-main group-hover:bg-red-500 group-hover:text-white flex items-center justify-center text-red-500 transition-all border border-border-main">
+                          <Ban size={24} />
+                        </div>
+                        <span className="text-[10px] text-text-secondary font-bold uppercase tracking-wide group-hover:text-red-500 transition-colors">
+                          Chặn
+                        </span>
+                      </button>
+                    </>
+                  )}
+                  {/* Unified Clear History Button - Available for Everyone */}
+                  <button
+                    onClick={() => setShowClearConfirm(true)}
+                    className="flex flex-col items-center gap-1 group"
+                  >
+                    <div className="size-10 rounded-full bg-blue-500/10 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center text-blue-500 transition-all border border-blue-500/20">
+                      <History size={24} />
+                    </div>
+                    <span className="text-[10px] text-text-secondary font-bold uppercase tracking-wide group-hover:text-blue-500 transition-colors">
+                      Xóa LS
+                    </span>
+                  </button>
                 </div>
               </div>
               <div className="p-5">
@@ -975,6 +1115,21 @@ export default function ChatInterface() {
                             size={16}
                             className="text-text-secondary opacity-0 group-hover:opacity-100 transition-all"
                           />
+                          {/* Kick Button for Admin */}
+                          {activeRoom.members?.find((m) => m.id === currentUser.id)?.role === "ADMIN" &&
+                            member.id !== currentUser.id && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  // Call kick handler
+                                  handleKickMember(member);
+                                }}
+                                className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                                title="Xóa khỏi nhóm"
+                              >
+                                <UserX size={16} />
+                              </button>
+                            )}
                         </div>
                       ))}
                     </div>
@@ -1022,6 +1177,18 @@ export default function ChatInterface() {
                     <ChevronRight size={16} className="text-text-secondary" />
                   </button>
 
+
+
+                  <button
+                    onClick={() => setShowClearConfirm(true)}
+                    className="w-full flex items-center justify-between p-3 rounded-xl bg-background-main hover:bg-surface-main border border-border-main group transition-colors text-left"
+                  >
+                    <div className="flex items-center gap-3 text-text-secondary group-hover:text-white">
+                      <Trash2 size={20} />
+                      <span className="text-sm font-medium">Xóa lịch sử</span>
+                    </div>
+                  </button>
+
                   <button
                     onClick={() => setShowReportUser(true)}
                     className="w-full flex items-center justify-between p-3 rounded-xl bg-surface-main hover:bg-background-main border border-border-main group transition-colors text-left"
@@ -1046,20 +1213,28 @@ export default function ChatInterface() {
         </aside>
 
         <ConfirmModal
-          isOpen={showDeleteConfirm}
-          title="Xác nhận xóa"
-          message={
-            activeRoom?.type === "GROUP"
-              ? "Bạn có chắc muốn XÓA VĨNH VIỄN nhóm này và toàn bộ tin nhắn không? Thao tác này không thể hoàn tác."
-              : "Bạn có chắc muốn XÓA VĨNH VIỄN cuộc trò chuyện này không? Toàn bộ tin nhắn sẽ bị mất ở cả 2 phía."
-          }
-          type="danger"
+          isOpen={showClearConfirm}
+          title="Xóa lịch sử cuộc trò chuyện"
+          message="Bạn có chắc muốn xóa lịch sử cuộc trò chuyện này? Lưu ý: Tin nhắn chỉ bị xóa ở phía bạn, người khác vẫn có thể xem được."
+          type="warning"
           confirmText="Xác nhận Xóa"
           cancelText="Hủy"
-          onConfirm={confirmDeleteRoom}
-          onClose={() => setShowDeleteConfirm(false)}
+          onConfirm={handleClearHistory}
+          onClose={() => setShowClearConfirm(false)}
         />
-      </div>
+
+        {/* Kick Member Confirm Modal */}
+        <ConfirmModal
+          isOpen={!!kickMemberData}
+          title="Xác nhận xóa thành viên"
+          message={`Bạn có chắc muốn xóa/mời "${kickMemberData?.fullName}" ra khỏi nhóm không?`}
+          type="warning"
+          confirmText="Xác nhận"
+          cancelText="Hủy"
+          onConfirm={confirmKickMember}
+          onClose={() => setKickMemberData(null)}
+        />
+      </div >
       <ReportModal
         isOpen={showReportUser}
         onClose={() => setShowReportUser(false)}
@@ -1117,254 +1292,260 @@ export default function ChatInterface() {
       />
 
       {/* New Chat Modal */}
-      {showNewChatModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-            onClick={() => setShowNewChatModal(false)}
-          ></div>
-          <div className="relative bg-surface-main border border-border-main w-full max-w-md rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-border-main flex justify-between items-center bg-background-main">
-              <h3 className="text-xl font-bold text-text-main">Tin nhắn mới</h3>
-              <button
-                onClick={() => setShowNewChatModal(false)}
-                className="text-text-secondary hover:text-text-main transition-colors"
-              >
-                <X size={24} />
-              </button>
-            </div>
-            <div className="p-4">
-              <div className="relative mb-4">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="text-text-secondary" size={16} />
-                </div>
-                <input
-                  className="block w-full pl-9 pr-4 py-2 bg-surface-main border border-border-main rounded-xl text-text-main placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary text-sm transition-all"
-                  placeholder="Tìm tên bạn bè..."
-                  type="text"
-                  autoFocus
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+      {
+        showNewChatModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              onClick={() => setShowNewChatModal(false)}
+            ></div>
+            <div className="relative bg-surface-main border border-border-main w-full max-w-md rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+              <div className="p-6 border-b border-border-main flex justify-between items-center bg-background-main">
+                <h3 className="text-xl font-bold text-text-main">Tin nhắn mới</h3>
+                <button
+                  onClick={() => setShowNewChatModal(false)}
+                  className="text-text-secondary hover:text-text-main transition-colors"
+                >
+                  <X size={24} />
+                </button>
               </div>
-              <div className="max-h-64 overflow-y-auto space-y-1 custom-scrollbar pr-2">
-                {filteredFriends.length > 0 ? (
-                  filteredFriends.map((friend) => (
-                    <div
-                      key={friend.id}
-                      onClick={() => {
-                        const isSelected = selectedMembers.some(
-                          (m) => m.id === friend.id,
-                        );
-                        if (isSelected) {
-                          setSelectedMembers((prev) =>
-                            prev.filter((m) => m.id !== friend.id),
+              <div className="p-4">
+                <div className="relative mb-4">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Search className="text-text-secondary" size={16} />
+                  </div>
+                  <input
+                    className="block w-full pl-9 pr-4 py-2 bg-surface-main border border-border-main rounded-xl text-text-main placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary text-sm transition-all"
+                    placeholder="Tìm tên bạn bè..."
+                    type="text"
+                    autoFocus
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <div className="max-h-64 overflow-y-auto space-y-1 custom-scrollbar pr-2">
+                  {filteredFriends.length > 0 ? (
+                    filteredFriends.map((friend) => (
+                      <div
+                        key={friend.id}
+                        onClick={() => {
+                          const isSelected = selectedMembers.some(
+                            (m) => m.id === friend.id,
                           );
-                        } else {
-                          setSelectedMembers((prev) => [...prev, friend]);
-                        }
-                      }}
-                      className={`flex items-center gap-3 p-3 rounded-2xl hover:bg-background-main cursor-pointer group transition-all ${selectedMembers.some((m) => m.id === friend.id)
-                        ? "bg-background-main ring-1 ring-primary/30"
-                        : ""
-                        }`}
-                    >
-                      <div className="relative">
-                        <div
-                          className="size-10 rounded-full bg-cover bg-center ring-2 ring-transparent group-hover:ring-primary/50 transition-all shadow-lg"
-                          style={{
-                            backgroundImage: `url("${friend.avatarUrl ||
-                              "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                              }")`,
-                          }}
-                        ></div>
-                        {selectedMembers.some((m) => m.id === friend.id) && (
-                          <div className="absolute -top-1 -right-1 size-5 bg-primary rounded-full flex items-center justify-center border-2 border-surface-main">
-                            <Check
-                              size={12}
-                              className="text-text-main font-bold"
-                            />
-                          </div>
+                          if (isSelected) {
+                            setSelectedMembers((prev) =>
+                              prev.filter((m) => m.id !== friend.id),
+                            );
+                          } else {
+                            setSelectedMembers((prev) => [...prev, friend]);
+                          }
+                        }}
+                        className={`flex items-center gap-3 p-3 rounded-2xl hover:bg-background-main cursor-pointer group transition-all ${selectedMembers.some((m) => m.id === friend.id)
+                          ? "bg-background-main ring-1 ring-primary/30"
+                          : ""
+                          }`}
+                      >
+                        <div className="relative">
+                          <div
+                            className="size-10 rounded-full bg-cover bg-center ring-2 ring-transparent group-hover:ring-primary/50 transition-all shadow-lg"
+                            style={{
+                              backgroundImage: `url("${friend.avatarUrl ||
+                                "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                                }")`,
+                            }}
+                          ></div>
+                          {selectedMembers.some((m) => m.id === friend.id) && (
+                            <div className="absolute -top-1 -right-1 size-5 bg-primary rounded-full flex items-center justify-center border-2 border-surface-main">
+                              <Check
+                                size={12}
+                                className="text-text-main font-bold"
+                              />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-text-main font-bold text-sm group-hover:text-primary transition-colors">
+                            {friend.fullName || friend.username}
+                          </p>
+                          <p className="text-text-secondary text-[11px]">
+                            @{friend.username}
+                          </p>
+                        </div>
+                        {!selectedMembers.length && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleStartNewChat(friend.id);
+                            }}
+                            className="text-text-secondary group-hover:text-primary transition-all opacity-0 group-hover:opacity-100"
+                          >
+                            <Send size={20} />
+                          </button>
                         )}
                       </div>
-                      <div className="flex-1">
-                        <p className="text-text-main font-bold text-sm group-hover:text-primary transition-colors">
-                          {friend.fullName || friend.username}
-                        </p>
-                        <p className="text-text-secondary text-[11px]">
-                          @{friend.username}
-                        </p>
-                      </div>
-                      {!selectedMembers.length && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleStartNewChat(friend.id);
-                          }}
-                          className="text-text-secondary group-hover:text-primary transition-all opacity-0 group-hover:opacity-100"
-                        >
-                          <Send size={20} />
-                        </button>
-                      )}
+                    ))
+                  ) : (
+                    <div className="py-8 text-center text-text-secondary flex flex-col items-center gap-2">
+                      <UserX size={48} className="opacity-20" />
+                      <p className="text-xs italic">Không tìm thấy bạn bè nào</p>
                     </div>
-                  ))
+                  )}
+                </div>
+
+                {selectedMembers.length > 0 && (
+                  <div className="mt-6 pt-6 border-t border-border-main space-y-4 animate-in slide-in-from-bottom-4 duration-300">
+                    <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto p-1">
+                      {selectedMembers.map((m) => (
+                        <div
+                          key={m.id}
+                          className="flex items-center gap-2 bg-background-main pl-1 pr-2 py-1 rounded-full border border-primary/20"
+                        >
+                          <div
+                            className="size-6 rounded-full bg-cover bg-center"
+                            style={{
+                              backgroundImage: `url("${m.avatarUrl ||
+                                "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                                }")`,
+                            }}
+                          ></div>
+                          <span className="text-[10px] text-text-main font-medium max-w-[80px] truncate">
+                            {m.fullName || m.username}
+                          </span>
+                          <button
+                            onClick={() =>
+                              setSelectedMembers((prev) =>
+                                prev.filter((x) => x.id !== m.id),
+                              )
+                            }
+                            className="text-text-secondary hover:text-red-400"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="space-y-3">
+                      {selectedMembers.length > 1 && (
+                        <input
+                          className="block w-full px-4 py-2.5 bg-surface-main border border-border-main rounded-xl text-text-main placeholder-text-secondary/50 focus:outline-none focus:ring-1 focus:ring-primary text-sm transition-all shadow-inner"
+                          placeholder="Tên nhóm (tùy chọn)..."
+                          type="text"
+                          value={groupName}
+                          onChange={(e) => setGroupName(e.target.value)}
+                        />
+                      )}
+                      <button
+                        onClick={handleCreateGroup}
+                        className="w-full py-3 bg-primary hover:bg-orange-600 text-text-main font-bold rounded-xl shadow-lg shadow-orange-500/10 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
+                      >
+                        {selectedMembers.length === 1 ? (
+                          <MessageSquare size={20} />
+                        ) : (
+                          <Users size={20} />
+                        )}
+                        {selectedMembers.length === 1
+                          ? "Bắt đầu trò chuyện"
+                          : `Tạo nhóm (${selectedMembers.length})`}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      {/* Invite Member Modal */}
+      {
+        showInviteModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-surface-main w-full max-w-md rounded-3xl border border-border-main shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+              <div className="p-6 border-b border-border-main flex items-center justify-between">
+                <h2 className="text-xl font-bold text-text-main">
+                  Mời bạn bè vào nhóm
+                </h2>
+                <button
+                  onClick={() => {
+                    setShowInviteModal(false);
+                    setSelectedInvitees([]);
+                  }}
+                  className="size-8 rounded-full bg-surface-main text-text-main flex items-center justify-center hover:bg-background-main transition-all border border-border-main"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                {inviteFriends.length === 0 ? (
+                  <div className="text-center py-10 text-text-muted">
+                    <UserX size={48} className="mx-auto mb-3 opacity-30" />
+                    <p>Không có bạn bè nào để mời</p>
+                    <p className="text-sm mt-1">Tất cả bạn bè đã có trong nhóm</p>
+                  </div>
                 ) : (
-                  <div className="py-8 text-center text-text-secondary flex flex-col items-center gap-2">
-                    <UserX size={48} className="opacity-20" />
-                    <p className="text-xs italic">Không tìm thấy bạn bè nào</p>
+                  <div className="space-y-2">
+                    {inviteFriends.map((friend) => {
+                      const isSelected = selectedInvitees.some(
+                        (f) => f.id === friend.id,
+                      );
+                      return (
+                        <div
+                          key={friend.id}
+                          onClick={() => toggleInvitee(friend)}
+                          className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${isSelected
+                            ? "bg-primary/10 border-primary/50"
+                            : "bg-surface-main border-border-main hover:bg-background-main"
+                            }`}
+                        >
+                          <div
+                            className="size-10 rounded-full bg-cover bg-center border border-border-main"
+                            style={{
+                              backgroundImage: `url("${friend.avatarUrl ||
+                                "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                                }")`,
+                            }}
+                          ></div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-text-main font-bold truncate">
+                              {friend.fullName}
+                            </p>
+                          </div>
+                          <div
+                            className={`size-5 rounded border-2 flex items-center justify-center transition-all ${isSelected
+                              ? "bg-primary border-primary"
+                              : "border-border-main"
+                              }`}
+                          >
+                            {isSelected && (
+                              <Check size={16} className="text-text-main" />
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
 
-              {selectedMembers.length > 0 && (
-                <div className="mt-6 pt-6 border-t border-border-main space-y-4 animate-in slide-in-from-bottom-4 duration-300">
-                  <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto p-1">
-                    {selectedMembers.map((m) => (
-                      <div
-                        key={m.id}
-                        className="flex items-center gap-2 bg-background-main pl-1 pr-2 py-1 rounded-full border border-primary/20"
-                      >
-                        <div
-                          className="size-6 rounded-full bg-cover bg-center"
-                          style={{
-                            backgroundImage: `url("${m.avatarUrl ||
-                              "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                              }")`,
-                          }}
-                        ></div>
-                        <span className="text-[10px] text-text-main font-medium max-w-[80px] truncate">
-                          {m.fullName || m.username}
-                        </span>
-                        <button
-                          onClick={() =>
-                            setSelectedMembers((prev) =>
-                              prev.filter((x) => x.id !== m.id),
-                            )
-                          }
-                          className="text-text-secondary hover:text-red-400"
-                        >
-                          <X size={14} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="space-y-3">
-                    <input
-                      className="block w-full px-4 py-2.5 bg-surface-main border border-border-main rounded-xl text-text-main placeholder-text-secondary/50 focus:outline-none focus:ring-1 focus:ring-primary text-sm transition-all shadow-inner"
-                      placeholder="Tên nhóm (tùy chọn)..."
-                      type="text"
-                      value={groupName}
-                      onChange={(e) => setGroupName(e.target.value)}
-                    />
-                    <button
-                      onClick={handleCreateGroup}
-                      className="w-full py-3 bg-primary hover:bg-orange-600 text-text-main font-bold rounded-xl shadow-lg shadow-orange-500/10 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
-                    >
-                      {selectedMembers.length === 1 ? (
-                        <MessageSquare size={20} />
-                      ) : (
-                        <Users size={20} />
-                      )}
-                      {selectedMembers.length === 1
-                        ? "Bắt đầu trò chuyện"
-                        : `Tạo nhóm (${selectedMembers.length})`}
-                    </button>
-                  </div>
+              {inviteFriends.length > 0 && (
+                <div className="p-6 border-t border-border-main">
+                  <button
+                    onClick={handleInviteMember}
+                    disabled={selectedInvitees.length === 0}
+                    className="w-full py-3 bg-primary hover:bg-orange-600 text-text-main font-bold rounded-xl shadow-lg shadow-orange-500/10 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
+                  >
+                    <UserPlus size={20} />
+                    {selectedInvitees.length > 0
+                      ? `Mời ${selectedInvitees.length} người`
+                      : "Chọn bạn bè để mời"}
+                  </button>
                 </div>
               )}
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Invite Member Modal */}
-      {showInviteModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-surface-main w-full max-w-md rounded-3xl border border-border-main shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-border-main flex items-center justify-between">
-              <h2 className="text-xl font-bold text-text-main">
-                Mời bạn bè vào nhóm
-              </h2>
-              <button
-                onClick={() => {
-                  setShowInviteModal(false);
-                  setSelectedInvitees([]);
-                }}
-                className="size-8 rounded-full bg-surface-main text-text-main flex items-center justify-center hover:bg-background-main transition-all border border-border-main"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <div className="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
-              {inviteFriends.length === 0 ? (
-                <div className="text-center py-10 text-text-muted">
-                  <UserX size={48} className="mx-auto mb-3 opacity-30" />
-                  <p>Không có bạn bè nào để mời</p>
-                  <p className="text-sm mt-1">Tất cả bạn bè đã có trong nhóm</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {inviteFriends.map((friend) => {
-                    const isSelected = selectedInvitees.some(
-                      (f) => f.id === friend.id,
-                    );
-                    return (
-                      <div
-                        key={friend.id}
-                        onClick={() => toggleInvitee(friend)}
-                        className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${isSelected
-                          ? "bg-primary/10 border-primary/50"
-                          : "bg-surface-main border-border-main hover:bg-background-main"
-                          }`}
-                      >
-                        <div
-                          className="size-10 rounded-full bg-cover bg-center border border-border-main"
-                          style={{
-                            backgroundImage: `url("${friend.avatarUrl ||
-                              "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                              }")`,
-                          }}
-                        ></div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-text-main font-bold truncate">
-                            {friend.fullName}
-                          </p>
-                        </div>
-                        <div
-                          className={`size-5 rounded border-2 flex items-center justify-center transition-all ${isSelected
-                            ? "bg-primary border-primary"
-                            : "border-border-main"
-                            }`}
-                        >
-                          {isSelected && (
-                            <Check size={16} className="text-text-main" />
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {inviteFriends.length > 0 && (
-              <div className="p-6 border-t border-border-main">
-                <button
-                  onClick={handleInviteMember}
-                  disabled={selectedInvitees.length === 0}
-                  className="w-full py-3 bg-primary hover:bg-orange-600 text-text-main font-bold rounded-xl shadow-lg shadow-orange-500/10 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
-                >
-                  <UserPlus size={20} />
-                  {selectedInvitees.length > 0
-                    ? `Mời ${selectedInvitees.length} người`
-                    : "Chọn bạn bè để mời"}
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+        )
+      }
     </>
   );
 }
