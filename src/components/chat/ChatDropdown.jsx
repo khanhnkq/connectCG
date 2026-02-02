@@ -4,31 +4,27 @@ import { useSelector } from 'react-redux';
 import { MessageSquare, SquarePen } from 'lucide-react';
 import ChatService from '../../services/chat/ChatService';
 import FirebaseChatService from '../../services/chat/FirebaseChatService';
+import useChatRooms from '../../pages/chat/hooks/useChatRooms';
 
 export default function ChatDropdown({ onClose }) {
     const navigate = useNavigate();
-    const { user } = useSelector((state) => state.auth);
-    const conversations = useSelector((state) => state.chat.conversations);
-    const [loading, setLoading] = useState(conversations.length === 0);
-
-    // No need for local state or periodic fetching anymore
-    // Redux state is automatically synced by ChatInterface
+    const { user: currentUser } = useSelector((state) => state.auth);
+    const { conversations, isLoading, fetchRooms } = useChatRooms();
+    const fetchRef = useRef(false);
 
     useEffect(() => {
-        if (conversations.length > 0) {
-            setLoading(false);
+        if (!fetchRef.current) {
+            fetchRooms();
+            fetchRef.current = true;
         }
-    }, [conversations]);
-
-    // Real-time updates are now handled by ChatInterface and shared via Redux
-    // No need for duplicate subscription logic here
+    }, [fetchRooms]);
 
     const handleRoomClick = (room) => {
         navigate('/dashboard/chat', { state: { selectedRoomKey: room.firebaseRoomKey } });
         onClose();
     };
 
-    if (loading) {
+    if (isLoading && conversations.length === 0) {
         return (
             <div className="p-4 flex justify-center">
                 <div className="size-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
@@ -85,6 +81,11 @@ export default function ChatDropdown({ onClose }) {
                                     )}
                                 </div>
                                 <p className={`text-xs truncate ${room.unreadCount > 0 ? 'text-text-main font-semibold' : 'text-text-secondary'}`}>
+                                    {room.lastMessageSenderName && (room.type === "GROUP" || String(room.lastMessageSenderId) === String(currentUser?.id)) && (
+                                        <span className="font-bold mr-1">
+                                            {String(room.lastMessageSenderId) === String(currentUser?.id) ? "Bạn" : room.lastMessageSenderName}:
+                                        </span>
+                                    )}
                                     {room.lastMessageVisible || "Bắt đầu cuộc trò chuyện"}
                                 </p>
                             </div>

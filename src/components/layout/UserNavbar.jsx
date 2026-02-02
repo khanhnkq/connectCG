@@ -23,6 +23,7 @@ import { AnimatedThemeToggler } from "../ui/animated-theme-toggler";
 import UserMenuDropdown from "./UserMenuDropdown";
 import NotificationDropdown from "./NotificationDropdown";
 import ChatDropdownWrapper from "./ChatDropdownWrapper";
+import useChatRooms from "../../pages/chat/hooks/useChatRooms";
 
 const UserNavbar = () => {
   const navigate = useNavigate();
@@ -38,56 +39,25 @@ const UserNavbar = () => {
   const [showChatDropdown, setShowChatDropdown] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [unreadChatCount, setUnreadChatCount] = useState(0);
+  const { directUnreadCount, groupUnreadCount, fetchRooms } = useChatRooms();
+  const totalUnreadChatCount = directUnreadCount + groupUnreadCount;
 
   const notificationRef = useRef(null);
   const chatDropdownRef = useRef(null);
   const userMenuRef = useRef(null);
 
-  // Global Chat Listener
+  // Global Chat Listener & Fetching
   useEffect(() => {
     if (!user?.id) return;
 
+    // Initial fetch to populate Redux/unread counts
+    fetchRooms();
+
     const listeners = [];
-    const startTime = Date.now();
-
-    const setupChatListener = async () => {
-      try {
-        const ChatService = (await import("../../services/chat/ChatService"))
-          .default;
-        const FirebaseChatService = (
-          await import("../../services/chat/FirebaseChatService")
-        ).default;
-
-        const response = await ChatService.getMyChatRooms();
-        const rooms = response.data || [];
-
-        rooms.forEach((room) => {
-          const unsub = FirebaseChatService.subscribeToMessages(
-            room.firebaseRoomKey,
-            (newMsg) => {
-              const isNew =
-                newMsg.timestamp && newMsg.timestamp > startTime - 10000;
-              const isNotMe = newMsg.senderId !== user.id;
-
-              if (isNew && isNotMe) {
-                setUnreadChatCount((prev) => prev + 1);
-              }
-            },
-          );
-          listeners.push(unsub);
-        });
-      } catch (err) {
-        console.error("Global chat listener failed:", err);
-      }
-    };
-
-    setupChatListener();
-
-    return () => {
-      listeners.forEach((u) => u());
-    };
-  }, [user?.id]);
+    // We don't need a local state listener anymore as Redux is updated by FirebaseChatService 
+    // if implemented correctly, but for now we keep the Firebase subscription logic if it was intended
+    // for just the badge. However, fetchRooms should be the main source of truth on mount.
+  }, [user?.id, fetchRooms]);
 
   useEffect(() => {
     dispatch(fetchNotifications());
@@ -265,11 +235,10 @@ const UserNavbar = () => {
         {/* Messenger/Chat Dropdown */}
         <div className="relative" ref={chatDropdownRef}>
           <button
-            className={`p-2.5 rounded-full transition-colors relative flex items-center justify-center w-10 h-10 ${
-              showChatDropdown
+            className={`p-2.5 rounded-full transition-colors relative flex items-center justify-center w-10 h-10 ${showChatDropdown
                 ? "bg-primary/20 text-primary"
                 : "bg-[#E4E6EB] dark:bg-[#3A3B3C] text-text-main hover:bg-[#D8DADF] dark:hover:bg-[#4E4F50]"
-            }`}
+              }`}
             onClick={() => {
               setShowChatDropdown(!showChatDropdown);
               setShowNotifications(false);
@@ -277,9 +246,9 @@ const UserNavbar = () => {
             }}
           >
             <MessageCircle size={20} weight="fill" />
-            {unreadChatCount > 0 && (
+            {totalUnreadChatCount > 0 && (
               <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-background-main">
-                {unreadChatCount > 99 ? "99+" : unreadCount}
+                {totalUnreadChatCount > 99 ? "99+" : totalUnreadChatCount}
               </span>
             )}
           </button>
@@ -293,11 +262,10 @@ const UserNavbar = () => {
         {/* Notifications */}
         <div className="relative" ref={notificationRef}>
           <button
-            className={`p-2.5 rounded-full transition-colors relative flex items-center justify-center w-10 h-10 ${
-              showNotifications
+            className={`p-2.5 rounded-full transition-colors relative flex items-center justify-center w-10 h-10 ${showNotifications
                 ? "bg-primary/20 text-primary"
                 : "bg-[#E4E6EB] dark:bg-[#3A3B3C] text-text-main hover:bg-[#D8DADF] dark:hover:bg-[#4E4F50]"
-            }`}
+              }`}
             onClick={() => {
               setShowNotifications(!showNotifications);
               setShowUserMenu(false);
@@ -332,11 +300,10 @@ const UserNavbar = () => {
               setShowNotifications(false);
               setShowChatDropdown(false);
             }}
-            className={`flex items-center gap-1.5 p-1 rounded-full transition-all duration-200 border ml-1 ${
-              showUserMenu
+            className={`flex items-center gap-1.5 p-1 rounded-full transition-all duration-200 border ml-1 ${showUserMenu
                 ? "bg-primary/10 border-primary/30"
                 : "bg-[#E4E6EB] dark:bg-[#3A3B3C] border-transparent hover:bg-[#D8DADF] dark:hover:bg-[#4E4F50]"
-            }`}
+              }`}
           >
             <div className="bg-gradient-to-tr from-primary to-orange-400 p-[2px] rounded-full">
               <img
@@ -350,9 +317,8 @@ const UserNavbar = () => {
             </div>
             <ChevronDown
               size={14}
-              className={`text-text-secondary transition-transform duration-200 mr-1 ${
-                showUserMenu ? "rotate-180 text-primary" : ""
-              }`}
+              className={`text-text-secondary transition-transform duration-200 mr-1 ${showUserMenu ? "rotate-180 text-primary" : ""
+                }`}
             />
           </button>
 
@@ -373,11 +339,10 @@ const NavItem = ({ icon, active, onClick, tooltip }) => {
       <button
         onClick={onClick}
         className={`relative flex items-center justify-center p-3 lg:px-10 lg:py-3.5 rounded-xl transition-all duration-300
-                    ${
-                      active
-                        ? "text-primary bg-primary/5"
-                        : "text-text-secondary hover:bg-surface-main hover:text-text-main"
-                    }
+                    ${active
+            ? "text-primary bg-primary/5"
+            : "text-text-secondary hover:bg-surface-main hover:text-text-main"
+          }
                 `}
       >
         {icon}

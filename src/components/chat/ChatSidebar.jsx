@@ -1,5 +1,6 @@
 import React from 'react';
 import { Search, SquarePen, User, Users } from 'lucide-react';
+import { useSelector } from 'react-redux';
 
 const ChatSidebar = ({
     conversations,
@@ -13,6 +14,7 @@ const ChatSidebar = ({
     onSelectRoom,
     onOpenNewChat
 }) => {
+    const { user: currentUser } = useSelector((state) => state.auth);
     return (
         <div
             className={`${activeRoom ? "hidden md:flex" : "flex"
@@ -135,6 +137,11 @@ const ChatSidebar = ({
                                     )}
                                 </div>
                                 <p className={`text-text-secondary text-xs truncate max-w-full italic ${conv.unreadCount > 0 ? "font-bold text-primary not-italic" : ""}`}>
+                                    {conv.lastMessageSenderName && (conv.type === "GROUP" || String(conv.lastMessageSenderId) === String(currentUser?.id)) && (
+                                        <span className="font-bold mr-1 not-italic">
+                                            {String(conv.lastMessageSenderId) === String(currentUser?.id) ? "Bạn" : conv.lastMessageSenderName}:
+                                        </span>
+                                    )}
                                     {conv.lastMessageVisible || (conv.lastMessageTimestamp ? "Đang tải..." : "Chưa có tin nhắn")}
                                 </p>
                             </div>

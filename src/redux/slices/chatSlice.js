@@ -13,19 +13,46 @@ const chatSlice = createSlice({
             state.activeRoomId = action.payload;
         },
         setConversations: (state, action) => {
-            state.conversations = action.payload;
+            state.conversations = [...action.payload].sort((a, b) => {
+                const timeA = a.lastMessageTimestamp || (a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0);
+                const timeB = b.lastMessageTimestamp || (b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0);
+                return timeB - timeA;
+            });
         },
         updateConversation: (state, action) => {
             const index = state.conversations.findIndex(c => c.id === action.payload.id);
             if (index !== -1) {
-                state.conversations[index] = { ...state.conversations[index], ...action.payload };
+                // Merge and update
+                const updated = { ...state.conversations[index], ...action.payload };
+                state.conversations[index] = updated;
+            } else {
+                // If not found, add it
+                state.conversations.push(action.payload);
             }
+
+            // Resort to ensure recent message is at top
+            state.conversations.sort((a, b) => {
+                const timeA = a.lastMessageTimestamp || (a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0);
+                const timeB = b.lastMessageTimestamp || (b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0);
+                return timeB - timeA;
+            });
         },
         updateConversations: (state, action) => {
             // Update multiple conversations at once
-            state.conversations = state.conversations.map(conv => {
-                const update = action.payload.find(u => u.id === conv.id);
-                return update ? { ...conv, ...update } : conv;
+            action.payload.forEach(update => {
+                const index = state.conversations.findIndex(c => c.id === update.id);
+                if (index !== -1) {
+                    state.conversations[index] = { ...state.conversations[index], ...update };
+                } else {
+                    state.conversations.push(update);
+                }
+            });
+
+            // Resort
+            state.conversations.sort((a, b) => {
+                const timeA = a.lastMessageTimestamp || (a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0);
+                const timeB = b.lastMessageTimestamp || (b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0);
+                return timeB - timeA;
             });
         },
         clearUnreadCount: (state, action) => {

@@ -58,6 +58,7 @@ import ChatSidebar from '../../components/chat/ChatSidebar.jsx';
 import ChatWindow from '../../components/chat/ChatWindow.jsx';
 import useChatRooms from '../chat/hooks/useChatRooms';
 import useChatMessages from '../chat/hooks/useChatMessages';
+import { fetchUserProfile } from "../../redux/slices/userSlice";
 
 export default function ChatInterface() {
   const { user: currentUser } = useSelector((state) => state.auth);
@@ -235,33 +236,41 @@ export default function ChatInterface() {
     fetchRooms();
   }, [fetchRooms]);
 
+  // Fetch profile if missing
+  useEffect(() => {
+    if (currentUser?.id && !userProfile) {
+      dispatch(fetchUserProfile(currentUser.id));
+    }
+  }, [currentUser?.id, userProfile, dispatch]);
+
   // useChatMessages hook handles active room message listening and marking as read
 
   // useChatMessages hook handles global cleanup for active room
 
-  // Track last room ID to detect room switch
-  const lastRoomIdRef = useRef(null);
-
+  // Scroll logic: Scroll to bottom whenever messages change or room changes
   useEffect(() => {
-    if (!activeRoom) return;
+    if (!activeRoom || messages.length === 0) return;
 
-    const isRoomSwitch = lastRoomIdRef.current !== activeRoom.id;
+    const scrollToBottom = (behavior = "auto") => {
+      messagesEndRef.current?.scrollIntoView({ behavior, block: 'end' });
+    };
 
-    if (isRoomSwitch) {
+    // First attempt
+    const timer1 = setTimeout(() => {
+      const isRoomSwitch = lastRoomIdRef.current !== activeRoom.id;
+      scrollToBottom(isRoomSwitch ? "auto" : "smooth");
       lastRoomIdRef.current = activeRoom.id;
-      // Instant scroll on room switch
-      const timer = setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
-      }, 100);
-      return () => clearTimeout(timer);
-    } else {
-      // Smooth scroll for new messages within the same room
-      // Use a slightly longer delay for new messages to ensure rendering
-      const timer = setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-      }, 50);
-      return () => clearTimeout(timer);
-    }
+    }, 150);
+
+    // Second "safety" attempt for slow rendering (images, etc)
+    const timer2 = setTimeout(() => {
+      scrollToBottom("auto");
+    }, 500);
+
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
   }, [messages, activeRoom?.id]);
 
   // Click outside to close emoji picker
@@ -324,8 +333,8 @@ export default function ChatInterface() {
     try {
       const msgData = {
         senderId: currentUser.id,
-        senderName: currentUser.fullName || currentUser.username || "Anonymous",
-        senderAvatarUrl: currentUser.avatarUrl || "",
+        senderName: userProfile?.fullName || currentUser.fullName || currentUser.username || "Anonymous",
+        senderAvatarUrl: userProfile?.currentAvatarUrl || currentUser.avatarUrl || "",
         text: text,
         type: "text",
         timestamp: Date.now(),
@@ -507,7 +516,11 @@ export default function ChatInterface() {
         <ChatWindow
           activeRoom={activeRoom}
           messages={messages}
-          currentUser={currentUser}
+          currentUser={{
+            ...currentUser,
+            fullName: userProfile?.fullName || currentUser.fullName || currentUser.username,
+            avatarUrl: userProfile?.currentAvatarUrl || currentUser.avatarUrl
+          }}
           messagesEndRef={messagesEndRef}
           inputText={inputText}
           setInputText={setInputText}
@@ -520,7 +533,11 @@ export default function ChatInterface() {
 
         <ChatSettings
           activeRoom={activeRoom}
-          currentUser={currentUser}
+          currentUser={{
+            ...currentUser,
+            fullName: userProfile?.fullName || currentUser.fullName || currentUser.username,
+            avatarUrl: userProfile?.currentAvatarUrl || currentUser.avatarUrl
+          }}
           onUpdateAvatar={handleUpdateAvatar}
           onRenameRoom={handleRenameName}
           onClearHistory={handleClearHistory}
