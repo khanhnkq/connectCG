@@ -1,5 +1,5 @@
 import { db } from "../../config/firebase";
-import { ref, push, onChildAdded, serverTimestamp } from "firebase/database";
+import { ref, push, onChildAdded, serverTimestamp, query, limitToLast, orderByKey, remove } from "firebase/database";
 
 const FirebaseChatService = {
     /**
@@ -16,13 +16,18 @@ const FirebaseChatService = {
     },
 
     /**
-     * Lắng nghe tin nhắn mới trong phòng
+     * Lắng nghe tin nhắn trong phòng
      * @param {string} roomKey 
      * @param {function} callback 
+     * @param {number} limit - Số lượng tin nhắn lấy ban đầu (mặc định 50)
      */
-    subscribeToMessages: (roomKey, callback) => {
+    subscribeToMessages: (roomKey, callback, limit = 50) => {
         const messagesRef = ref(db, `messages/${roomKey}`);
-        return onChildAdded(messagesRef, (snapshot) => {
+
+        // Sử dụng limitToLast để lấy lịch sử gần nhất
+        const msgQuery = query(messagesRef, orderByKey(), limitToLast(limit));
+
+        return onChildAdded(msgQuery, (snapshot) => {
             const data = snapshot.val();
             callback({
                 id: snapshot.key,
@@ -36,7 +41,6 @@ const FirebaseChatService = {
      * @param {string} roomKey 
      */
     deleteMessages: async (roomKey) => {
-        const { ref, remove } = await import("firebase/database");
         const messagesRef = ref(db, `messages/${roomKey}`);
         return remove(messagesRef);
     }
