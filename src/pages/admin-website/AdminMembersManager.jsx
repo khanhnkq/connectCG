@@ -87,8 +87,8 @@ const AdminMembersManager = () => {
           user.isDeleted || user.is_deleted
             ? "Deleted"
             : user.isLocked
-              ? "Banned"
-              : "Active",
+            ? "Banned"
+            : "Active",
         role: user.role,
         joinedDate: "N/A",
       }));
@@ -140,10 +140,11 @@ const AdminMembersManager = () => {
     setConfirmConfig({
       isOpen: true,
       title: `${actionLabel} tài khoản?`,
-      message: `Bạn có chắc muốn ${actionLabel.toLowerCase()} người dùng này? Họ sẽ ${currentStatus === "Active"
-        ? "không thể truy cập"
-        : "có thể truy cập lại"
-        } vào hệ thống.`,
+      message: `Bạn có chắc muốn ${actionLabel.toLowerCase()} người dùng này? Họ sẽ ${
+        currentStatus === "Active"
+          ? "không thể truy cập"
+          : "có thể truy cập lại"
+      } vào hệ thống.`,
       type: currentStatus === "Active" ? "danger" : "info",
       onConfirm: async () => {
         try {
@@ -187,10 +188,10 @@ const AdminMembersManager = () => {
     >
       <div className="p-8 space-y-8">
         {/* Search & Filter Bar */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-surface-dark/20 p-6 rounded-2xl border border-border-dark/50 shadow-xl">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-surface/20 p-6 rounded-2xl border border-border/50 shadow-xl">
           <div className="flex items-center gap-3">
             <Users className="text-primary size-8" />
-            <h2 className="text-2xl font-black text-white tracking-tight">
+            <h2 className="text-2xl font-black text-text-main tracking-tight">
               Danh sách người dùng
             </h2>
           </div>
@@ -202,7 +203,7 @@ const AdminMembersManager = () => {
                   setRoleFilter(e.target.value);
                   setPagination((prev) => ({ ...prev, currentPage: 0 }));
                 }}
-                className="w-full bg-background-dark/50 border border-border-dark/50 rounded-xl py-2.5 px-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all appearance-none cursor-pointer"
+                className="w-full bg-background/50 border border-border/50 rounded-xl py-2.5 px-4 text-sm text-text-main focus:outline-none focus:border-primary/50 transition-all appearance-none cursor-pointer"
               >
                 <option value="">Tất cả vai trò</option>
                 <option value="USER">Người dùng (USER)</option>
@@ -220,16 +221,16 @@ const AdminMembersManager = () => {
                   setSearchTerm(e.target.value);
                   setPagination((prev) => ({ ...prev, currentPage: 0 }));
                 }}
-                className="w-full bg-background-dark/50 border border-border-dark/50 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all"
+                className="w-full bg-background/50 border border-border/50 rounded-xl py-2.5 pl-10 pr-4 text-sm text-text-main focus:outline-none focus:border-primary/50 transition-all"
               />
             </div>
           </div>
         </div>
 
         {/* Users Table */}
-        <div className="bg-surface-dark/20 rounded-2xl border border-border-dark/50 overflow-hidden shadow-2xl">
+        <div className="bg-surface/20 rounded-2xl border border-border/50 overflow-hidden shadow-2xl">
           <table className="w-full text-left">
-            <thead className="bg-background-dark/60 border-b border-border-dark/50 text-[10px] uppercase font-black text-text-muted tracking-[0.15em]">
+            <thead className="bg-background/60 border-b border-border/50 text-[10px] uppercase font-black text-text-muted tracking-[0.15em]">
               <tr>
                 <th className="px-6 py-5">STT</th>
                 <th className="px-6 py-5">Thông tin</th>
@@ -238,18 +239,18 @@ const AdminMembersManager = () => {
                 <th className="px-6 py-5 text-right">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border-dark/30 text-sm">
+            <tbody className="divide-y divide-border/30 text-sm">
               {members.map((member, index) => (
                 <tr
                   key={member.id}
-                  className="hover:bg-surface-dark/40 transition-colors text-white/90 group"
+                  className="hover:bg-surface/40 transition-colors text-text-main group"
                 >
                   <td className="px-6 py-5 font-mono text-[10px] text-text-muted">
                     {index + 1}
                   </td>
                   <td className="px-6 py-5">
                     <div className="flex items-center gap-4">
-                      <div className="size-10 rounded-xl overflow-hidden border border-border-dark/50 shrink-0 group-hover:border-primary/50 transition-all">
+                      <div className="size-10 rounded-xl overflow-hidden border border-border/50 shrink-0 group-hover:border-primary/50 transition-all">
                         <img
                           src={member.avatar}
                           className="w-full h-full object-cover"
@@ -269,78 +270,80 @@ const AdminMembersManager = () => {
                       className={`px-2.5 py-1 text-[9px] font-black uppercase rounded-lg border flex items-center gap-1.5 w-fit ${
                         member.role === "ADMIN"
                           ? "bg-primary/10 text-primary border-primary/30"
-                          : "bg-zinc-800 text-zinc-400 border-zinc-700"
-                          }`}
-                      >
-                        {member.role === "ADMIN" ? (
-                          <ShieldCheck size={14} />
-                        ) : (
-                          <User size={14} />
-                        )}
-                        {member.role}
-                      </span>
-                    </td>
-                    <td className="px-6 py-5">
-                      <span
-                        className={`px-3 py-1 text-[10px] font-black uppercase rounded-full border ${member.status === "Active"
+                          : "bg-surface-main/10 text-text-muted border-border"
+                      }`}
+                    >
+                      {member.role === "ADMIN" ? (
+                        <ShieldCheck size={14} />
+                      ) : (
+                        <User size={14} />
+                      )}
+                      {member.role}
+                    </span>
+                  </td>
+                  <td className="px-6 py-5">
+                    <span
+                      className={`px-3 py-1 text-[10px] font-black uppercase rounded-full border ${
+                        member.status === "Active"
                           ? "bg-green-500/10 text-green-400 border-green-500/20"
                           : "bg-red-500/10 text-red-500 border-red-500/20"
-                          }`}
-                      >
-                        {member.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-5 text-right space-x-2">
-                      {member.id !== currentUserId && (
-                        <button
-                          onClick={() =>
-                            handleRoleUpdate(member.id, member.name, member.role)
-                          }
-                          className="p-2 hover:bg-primary/10 rounded-xl text-text-muted hover:text-primary transition-all"
-                          title={
-                            member.role === "USER"
-                              ? "Nâng cấp lên ADMIN"
-                              : "Hạ cấp xuống USER"
-                          }
-                        >
-                          {member.role === "USER" ? (
-                            <UserPlus size={18} />
-                          ) : (
-                            <UserMinus size={18} />
-                          )}
-                        </button>
-                      )}
+                      }`}
+                    >
+                      {member.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-5 text-right space-x-2">
+                    {member.id !== currentUserId && (
                       <button
-                        onClick={() => toggleStatus(member.id, member.status)}
-                        className="p-2 hover:bg-background-dark rounded-xl text-text-muted hover:text-orange-400 transition-all"
-                        title="Toggle Access"
+                        onClick={() =>
+                          handleRoleUpdate(member.id, member.name, member.role)
+                        }
+                        className="p-2 hover:bg-primary/10 rounded-xl text-text-muted hover:text-primary transition-all"
+                        title={
+                          member.role === "USER"
+                            ? "Nâng cấp lên ADMIN"
+                            : "Hạ cấp xuống USER"
+                        }
                       >
-                        {member.status === "Banned" ? (
-                          <ShieldCheck size={18} />
+                        {member.role === "USER" ? (
+                          <UserPlus size={18} />
                         ) : (
-                          <Ban size={18} />
+                          <UserMinus size={18} />
                         )}
                       </button>
-                      <button
-                        onClick={() => handleDelete(member.id, member.name)}
-                        className="p-2 hover:bg-red-500/10 rounded-xl text-text-muted hover:text-red-400 transition-all"
-                        title="Purge Identity"
-                      >
-                        <UserX size={18} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                    )}
+                    <button
+                      onClick={() => toggleStatus(member.id, member.status)}
+                      className="p-2 hover:bg-background rounded-xl text-text-muted hover:text-orange-400 transition-all"
+                      title="Toggle Access"
+                    >
+                      {member.status === "Banned" ? (
+                        <ShieldCheck size={18} />
+                      ) : (
+                        <Ban size={18} />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => handleDelete(member.id, member.name)}
+                      className="p-2 hover:bg-red-500/10 rounded-xl text-text-muted hover:text-red-400 transition-all"
+                      title="Purge Identity"
+                    >
+                      <UserX size={18} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
 
         {/* Pagination Controls */}
-        <div className="flex justify-between items-center bg-surface-dark/20 p-6 rounded-2xl border border-border-dark/50">
+        <div className="flex justify-between items-center bg-surface/20 p-6 rounded-2xl border border-border/50">
           <div className="text-text-muted text-xs font-bold">
-            Hiển thị <span className="text-white">{members.length}</span> trên{" "}
-            <span className="text-white">{pagination.totalElements}</span> người
-            dùng
+            Hiển thị <span className="text-text-main">{members.length}</span>{" "}
+            trên{" "}
+            <span className="text-text-main">{pagination.totalElements}</span>{" "}
+            người dùng
           </div>
           <div className="flex gap-2">
             <button
@@ -351,11 +354,11 @@ const AdminMembersManager = () => {
                 }))
               }
               disabled={pagination.currentPage === 0 || loading}
-              className="p-2 bg-background-dark border border-border-dark/50 rounded-lg text-text-muted hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              className="p-2 bg-background border border-border/50 rounded-lg text-text-muted hover:text-text-main disabled:opacity-30 disabled:cursor-not-allowed transition-all"
             >
               <ChevronLeft size={20} />
             </button>
-            <div className="flex items-center px-4 bg-background-dark border border-border-dark/50 rounded-lg text-[10px] font-black text-white uppercase tracking-widest">
+            <div className="flex items-center px-4 bg-background border border-border/50 rounded-lg text-[10px] font-black text-text-main uppercase tracking-widest">
               Trang {pagination.currentPage + 1} / {pagination.totalPages || 1}
             </div>
             <button
@@ -368,7 +371,7 @@ const AdminMembersManager = () => {
               disabled={
                 pagination.currentPage >= pagination.totalPages - 1 || loading
               }
-              className="p-2 bg-background-dark border border-border-dark/50 rounded-lg text-text-muted hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              className="p-2 bg-background border border-border/50 rounded-lg text-text-muted hover:text-text-main disabled:opacity-30 disabled:cursor-not-allowed transition-all"
             >
               <ChevronRight size={20} />
             </button>

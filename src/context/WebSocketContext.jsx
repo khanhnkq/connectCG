@@ -117,6 +117,14 @@ export const WebSocketProvider = ({ children }) => {
           } else if (payload.type === "WARNING") {
             dispatch(addNotification(payload));
             toast(payload.content, { icon: "⚠️" });
+          } else if (payload.type === "REPORT_SUBMITTED") {
+            // Admin receives notification about new report
+            dispatch(addNotification(payload));
+            toast(payload.content, { icon: "🚨", duration: 5000 });
+          } else if (payload.type === "REPORT_UPDATED") {
+            // User receives notification about their report status
+            dispatch(addNotification(payload));
+            toast.success(payload.content, { duration: 5000 });
           } else {
             // General notification
             dispatch(addNotification(payload));

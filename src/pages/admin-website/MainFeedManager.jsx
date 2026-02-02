@@ -82,7 +82,7 @@ const MainFeedManager = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-black text-white tracking-tight">
+            <h2 className="text-2xl font-black text-text-main tracking-tight">
               {activeTab === "pending"
                 ? "Hộp thư Chờ Duyệt"
                 : "Hộp thư Kiểm Tra (Toxic)"}
@@ -94,23 +94,25 @@ const MainFeedManager = () => {
             </p>
           </div>
 
-          <div className="flex bg-background-dark/50 p-1.5 rounded-2xl border border-border-dark/30">
+          <div className="flex bg-background/50 p-1.5 rounded-2xl border border-border/30">
             <button
               onClick={() => setActiveTab("pending")}
-              className={`px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${activeTab === "pending"
+              className={`px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${
+                activeTab === "pending"
                   ? "bg-red-500 text-white shadow-lg"
-                  : "text-text-muted hover:text-white"
-                }`}
+                  : "text-text-muted hover:text-text-main"
+              }`}
             >
               <Shield size={14} />
               Chờ Duyệt
             </button>
             <button
               onClick={() => setActiveTab("audit")}
-              className={`px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${activeTab === "audit"
+              className={`px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${
+                activeTab === "audit"
                   ? "bg-orange-500 text-white shadow-lg"
-                  : "text-text-muted hover:text-white"
-                }`}
+                  : "text-text-muted hover:text-text-main"
+              }`}
             >
               <AlertTriangle size={14} />
               Kiểm Tra Lại
@@ -119,9 +121,9 @@ const MainFeedManager = () => {
         </div>
 
         {/* Content Table */}
-        <div className="bg-surface-dark/20 rounded-2xl border border-border-dark/50 overflow-hidden shadow-2xl">
+        <div className="bg-surface/20 rounded-2xl border border-border/50 overflow-hidden shadow-2xl">
           <table className="w-full text-left">
-            <thead className="bg-background-dark/60 border-b border-border-dark/50 text-[10px] uppercase font-black text-text-muted tracking-widest">
+            <thead className="bg-background/60 border-b border-border/50 text-[10px] uppercase font-black text-text-muted tracking-widest">
               <tr>
                 <th className="px-6 py-5">Người đăng</th>
                 <th className="px-6 py-5">Nội dung</th>
@@ -132,7 +134,7 @@ const MainFeedManager = () => {
                 <th className="px-6 py-5 text-right">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border-dark/30 text-sm">
+            <tbody className="divide-y divide-border/30 text-sm">
               {loading ? (
                 <tr>
                   <td
@@ -158,11 +160,11 @@ const MainFeedManager = () => {
                 posts.map((post) => (
                   <tr
                     key={post.id}
-                    className="hover:bg-surface-dark/40 transition-colors text-white/90 group"
+                    className="hover:bg-surface/40 transition-colors text-text-main group"
                   >
                     <td className="px-6 py-5">
                       <div className="flex items-center gap-3">
-                        <div className="size-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary font-bold overflow-hidden border border-border-dark/50">
+                        <div className="size-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary font-bold overflow-hidden border border-border/50">
                           {post.authorAvatar ? (
                             <img src={post.authorAvatar} alt="" />
                           ) : (
@@ -186,17 +188,18 @@ const MainFeedManager = () => {
                     </td>
                     <td className="px-6 py-5">
                       <span
-                        className={`px-2 py-0.5 text-[9px] font-black uppercase rounded border ${post.aiStatus === "TOXIC"
-                            ? "bg-red-500/20 text-red-500 border-red-500/40"
-                            : "bg-orange-500/10 text-orange-400 border-orange-500/20"
-                          }`}
+                        className={`px-2 py-0.5 text-[9px] font-black uppercase rounded border ${
+                          post.aiStatus === "TOXIC"
+                            ? "bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/40"
+                            : "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20"
+                        }`}
                       >
                         {post.aiStatus}
                       </span>
                     </td>
                     {activeTab === "audit" && (
                       <td className="px-6 py-5">
-                        <div className="flex items-center gap-2 text-xs font-bold text-orange-400/80">
+                        <div className="flex items-center gap-2 text-xs font-bold text-orange-600/80 dark:text-orange-400/80">
                           <ShieldCheck size={14} />
                           {post.approvedByFullName || "System"}
                         </div>

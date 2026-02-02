@@ -84,13 +84,13 @@ const Sidebar = ({ brandName = "Quản trị MXH", activeTab = "Groups" }) => {
   ];
 
   return (
-    <aside className="w-72 flex flex-col border-r border-border-dark bg-background-dark">
+    <aside className="w-72 flex flex-col border-r border-border bg-background">
       <div className="p-8 flex items-center gap-4">
         <div className="bg-primary rounded-xl size-10 flex items-center justify-center text-white shadow-lg shadow-primary/20">
           <Network className="font-bold" size={24} />
         </div>
         <div className="flex flex-col">
-          <h1 className="text-lg font-bold leading-none tracking-tight">
+          <h1 className="text-lg font-bold leading-none tracking-tight text-text-main">
             {brandName}
           </h1>
           <p className="text-text-muted text-[10px] uppercase tracking-widest mt-1 font-semibold">
@@ -104,15 +104,17 @@ const Sidebar = ({ brandName = "Quản trị MXH", activeTab = "Groups" }) => {
           <Link
             key={item.name}
             to={item.path}
-            className={`flex items-center gap-3 px-5 py-3.5 rounded-xl transition-all group ${activeTab === item.name
-              ? "bg-primary text-white shadow-lg shadow-primary/20"
-              : "text-text-muted hover:bg-surface-dark hover:text-white"
-              }`}
+            className={`flex items-center gap-3 px-5 py-3.5 rounded-xl transition-all group ${
+              activeTab === item.name
+                ? "bg-primary text-white shadow-lg shadow-primary/20"
+                : "text-text-muted hover:bg-surface hover:text-text-main"
+            }`}
           >
             {React.createElement(iconMap[item.icon] || Settings, {
               size: 22,
-              className: `transition-transform ${activeTab !== item.name ? "group-hover:scale-110" : ""
-                }`,
+              className: `transition-transform ${
+                activeTab !== item.name ? "group-hover:scale-110" : ""
+              }`,
               fill: activeTab === item.name ? "currentColor" : "none",
             })}
             <span className="text-sm font-semibold">{item.label}</span>
@@ -129,36 +131,39 @@ const Sidebar = ({ brandName = "Quản trị MXH", activeTab = "Groups" }) => {
           <Link
             key={item.name}
             to={item.path}
-            className={`flex items-center gap-3 px-5 py-3.5 rounded-xl transition-all group ${activeTab === item.name
-              ? "bg-primary text-white shadow-lg shadow-primary/20"
-              : "text-text-muted hover:bg-surface-dark hover:text-white"
-              }`}
+            className={`flex items-center gap-3 px-5 py-3.5 rounded-xl transition-all group ${
+              activeTab === item.name
+                ? "bg-primary text-white shadow-lg shadow-primary/20"
+                : "text-text-muted hover:bg-surface hover:text-text-main"
+            }`}
           >
             {React.createElement(iconMap[item.icon] || Settings, {
               size: 22,
-              className: `transition-transform ${activeTab !== item.name ? "group-hover:scale-110" : ""
-                }`,
+              className: `transition-transform ${
+                activeTab !== item.name ? "group-hover:scale-110" : ""
+              }`,
             })}
             <span className="text-sm font-semibold">{item.label}</span>
           </Link>
         ))}
       </nav>
 
-      <div className="p-6 border-t border-border-dark space-y-4">
+      <div className="p-6 border-t border-border space-y-4">
         <Link
           to="/dashboard/feed"
-          className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-orange-500/10 text-orange-400 hover:bg-orange-500 hover:text-white transition-all font-black text-xs uppercase tracking-widest border border-orange-500/20"
+          className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all font-black text-xs uppercase tracking-widest border border-primary/20"
         >
           <Eye size={18} />
           Xem trang chủ
         </Link>
-        <div className="flex items-center gap-4 px-2 py-2 bg-surface-dark/50 rounded-2xl border border-border-dark">
+        <div className="flex items-center gap-4 px-2 py-2 bg-surface rounded-2xl border border-border">
           <div
             className="bg-center bg-no-repeat aspect-square bg-cover rounded-xl size-10 border-2 border-primary/20"
             style={{
-              backgroundImage: `url("${currentUser?.currentAvatarUrl ||
+              backgroundImage: `url("${
+                currentUser?.currentAvatarUrl ||
                 "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                }")`,
+              }")`,
             }}
           ></div>
           <div className="flex-1 min-w-0">
