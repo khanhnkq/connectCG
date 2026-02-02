@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { IconHome, IconBell, IconUsers, IconUser, IconSettings, IconLogout, IconChevronDown } from '@tabler/icons-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSelector, useDispatch } from 'react-redux';
@@ -19,6 +19,7 @@ const UserNavbar = () => {
 
     const [showNotifications, setShowNotifications] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
 
     const notificationRef = useRef(null);
     const userMenuRef = useRef(null);
@@ -44,6 +45,13 @@ const UserNavbar = () => {
     }, []);
 
     const isActive = (path) => location.pathname === path;
+
+    const handleSearch = (e) => {
+        if (e.key === 'Enter' && searchTerm.trim()) {
+            navigate(`/search/members?keyword=${encodeURIComponent(searchTerm.trim())}`);
+            setSearchTerm("");
+        }
+    };
 
     const handleMarkAsRead = async (id) => {
         try {
@@ -101,54 +109,96 @@ const UserNavbar = () => {
         <motion.div
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="sticky top-0 z-40 w-full px-6 py-3 bg-white/5 dark:bg-black/10 backdrop-blur-xl border-b border-white/10 dark:border-white/5 flex items-center justify-between"
+            className="sticky top-0 z-40 w-full px-4 md:px-6 py-2 bg-background-main/80 backdrop-blur-xl border-b border-border-main flex items-center justify-between"
         >
-            {/* Left Section: Page Title or Breadcrumbs (Optional) */}
-            <div className="flex items-center gap-4 cursor-pointer" onClick={() => navigate('/dashboard/feed')}>
-                <div className="font-normal flex space-x-2 items-center text-sm py-1 relative z-20">
-                    <img src="/logo.png" className="h-8 w-auto object-contain flex-shrink-0" alt="Connect Logo" />
-                    <span className="font-bold text-lg bg-gradient-to-r from-[#f47b25] to-[#ea580c] bg-clip-text text-transparent hidden md:block whitespace-pre">
-                        Connect CG
-                    </span>
+            {/* LEFT: Logo & Search */}
+            <div className="flex items-center gap-4 flex-1">
+                <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/dashboard/feed')}>
+                    <img src="/logo.png" className="h-9 w-auto object-contain flex-shrink-0" alt="Connect Logo" />
+                </div>
+
+                {/* Search Bar - Desktop */}
+                <div className="hidden md:flex relative w-full max-w-[240px] lg:max-w-[320px]">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <IconHome className="h-4 w-4 text-text-secondary opacity-0" /> {/* Spacer */}
+                        <svg className="h-4 w-4 text-text-secondary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <input
+                        type="text"
+                        className="block w-full pl-10 pr-3 py-2 border border-border-main rounded-full leading-5 bg-surface-main text-text-main placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-all"
+                        placeholder="Tìm kiếm trên Connect..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyDown={handleSearch}
+                    />
                 </div>
             </div>
 
-            {/* Right Section: Navigation Actions */}
-            <div className="flex items-center gap-3">
-                {/* Home Button */}
+            {/* CENTER: Navigation Links */}
+            <div className="hidden md:flex items-center justify-center gap-1 lg:gap-8 flex-1">
                 <NavItem
-                    icon={<IconHome size={22} />}
-                    label="Trang chủ"
+                    icon={<IconHome size={24} />}
                     active={!showNotifications && isActive('/dashboard/feed')}
                     onClick={() => {
                         navigate('/dashboard/feed');
                         setShowNotifications(false);
                     }}
+                    tooltip="Trang chủ"
                 />
-
-                {/* Groups Management Button */}
                 <NavItem
-                    icon={<IconUsers size={22} />}
-                    label="Quản lý nhóm"
+                    icon={<IconUsers size={24} />}
+                    active={!showNotifications && isActive('/dashboard/friends')}
+                    onClick={() => {
+                        navigate('/dashboard/friends');
+                        setShowNotifications(false);
+                    }}
+                    tooltip="Bạn bè"
+                />
+                <NavItem
+                    icon={<IconHome className="rotate-180" size={24} style={{ transform: 'scaleX(-1)' }} />} // Using IconHome as placeholder for Group if needed or just IconUsers
+                    label=""
+                    // Better Icon for Groups?
+                    customIcon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>}
                     active={!showNotifications && isActive('/dashboard/groups')}
                     onClick={() => {
                         navigate('/dashboard/groups');
                         setShowNotifications(false);
                     }}
+                    tooltip="Nhóm"
                 />
+            </div>
 
-                {/* Notifications Button */}
+            {/* RIGHT: User Actions */}
+            <div className="flex items-center justify-end gap-2 md:gap-3 flex-1">
+
+                {/* Mobile Search Icon */}
+                <button
+                    className="md:hidden p-2 rounded-full text-text-secondary hover:bg-surface-main transition-colors"
+                    onClick={() => navigate('/search/members')}
+                >
+                    <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </button>
+
+                {/* Notifications */}
                 <div className="relative" ref={notificationRef}>
-                    <NavItem
-                        icon={<IconBell size={22} />}
-                        label="Thông báo"
-                        active={showNotifications}
+                    <button
+                        className={`p-2.5 rounded-full transition-colors relative ${showNotifications ? 'bg-primary/10 text-primary' : 'bg-surface-main text-text-main hover:bg-border-main'}`}
                         onClick={() => {
                             setShowNotifications(!showNotifications);
                             setShowUserMenu(false);
                         }}
-                        badge={unreadCount}
-                    />
+                    >
+                        <IconBell size={22} />
+                        {unreadCount > 0 && (
+                            <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-background-main">
+                                {unreadCount > 99 ? '99+' : unreadCount}
+                            </span>
+                        )}
+                    </button>
 
                     <AnimatePresence>
                         {showNotifications && (
@@ -157,7 +207,7 @@ const UserNavbar = () => {
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
                                 transition={{ duration: 0.2 }}
-                                className="absolute right-0 top-full mt-2 w-80 md:w-96 z-50 origin-top-right"
+                                className="absolute right-0 top-full mt-2 w-80 md:w-96 z-50 origin-top-right shadow-2xl rounded-2xl"
                             >
                                 <NotificationList
                                     notifications={notifications}
@@ -170,21 +220,22 @@ const UserNavbar = () => {
                     </AnimatePresence>
                 </div>
 
-                {/* User Dropdown */}
-                <div className="relative ml-2" ref={userMenuRef}>
+                {/* User Menu */}
+                <div className="relative" ref={userMenuRef}>
                     <button
                         onClick={() => {
                             setShowUserMenu(!showUserMenu);
                             setShowNotifications(false);
                         }}
-                        className="flex items-center gap-2 p-1 pl-2 pr-3 rounded-full hover:bg-white/10 transition-colors border border-white/5"
+                        className="flex items-center gap-2 p-1 pl-2 pr-1 rounded-full hover:bg-surface-main transition-colors border border-border-main ml-1"
                     >
-                        <img
-                            src={userProfile?.currentAvatarUrl || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
-                            alt="User Avatar"
-                            className="w-8 h-8 rounded-full object-cover"
-                        />
-                        <IconChevronDown size={16} className={`text-gray-400 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
+                        <div className="bg-gradient-to-tr from-primary to-orange-400 p-[2px] rounded-full">
+                            <img
+                                src={userProfile?.currentAvatarUrl || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
+                                alt="User Avatar"
+                                className="w-8 h-8 rounded-full object-cover border-2 border-background-main"
+                            />
+                        </div>
                     </button>
 
                     <AnimatePresence>
@@ -194,35 +245,30 @@ const UserNavbar = () => {
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
                                 transition={{ duration: 0.2 }}
-                                className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-[#1A120B] border border-gray-200 dark:border-white/10 rounded-xl shadow-xl overflow-hidden z-50 p-1"
+                                className="absolute right-0 top-full mt-2 w-64 bg-background-main border border-border-main rounded-xl shadow-xl overflow-hidden z-50 p-2"
                             >
-                                <div className="p-3 border-b border-gray-100 dark:border-white/5 mb-1">
-                                    <p className="font-semibold text-gray-900 dark:text-white truncate">
+                                <div className="p-3 mb-2 rounded-lg bg-surface-main">
+                                    <p className="font-bold text-text-main truncate">
                                         {userProfile?.fullName || user?.username || "Người dùng"}
                                     </p>
-                                    <p className="text-xs text-gray-500 truncate">
+                                    <p className="text-xs text-text-secondary truncate">
                                         {user?.email || "user@example.com"}
                                     </p>
+                                    <Link to="/dashboard/my-profile" className="mt-2 text-xs font-semibold text-primary block hover:underline">
+                                        Xem trang cá nhân
+                                    </Link>
                                 </div>
 
                                 <DropdownItem
-                                    icon={<IconUser size={18} />}
-                                    label="Trang cá nhân"
-                                    onClick={() => {
-                                        navigate('/dashboard/my-profile');
-                                        setShowUserMenu(false);
-                                    }}
-                                />
-                                <DropdownItem
                                     icon={<IconSettings size={18} />}
-                                    label="Cài đặt quyền riêng tư"
+                                    label="Cài đặt & Quyền riêng tư"
                                     onClick={() => {
                                         navigate('/dashboard/settings/privacy');
                                         setShowUserMenu(false);
                                     }}
                                 />
 
-                                <div className="h-px bg-gray-100 dark:bg-white/5 my-1" />
+                                <div className="h-px bg-border-main my-2" />
 
                                 <DropdownItem
                                     icon={<IconLogout size={18} />}
@@ -240,36 +286,43 @@ const UserNavbar = () => {
 };
 
 // Reusable Nav Item Component with Hover Effects
-const NavItem = ({ icon, label, active, onClick, badge }) => {
+const NavItem = ({ icon, label, active, onClick, badge, customIcon, tooltip }) => {
     return (
-        <button
-            onClick={onClick}
-            className={`relative group flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-300
+        <div className="relative group/tooltip">
+            <button
+                onClick={onClick}
+                className={`relative flex items-center justify-center gap-2 p-3 lg:px-10 lg:py-3 rounded-xl transition-all duration-300
         ${active
-                    ? 'bg-orange-500/10 text-orange-600 dark:text-orange-500'
-                    : 'hover:bg-gray-100 dark:hover:bg-white/5 text-gray-600 dark:text-gray-300'
-                }
+                        ? 'text-primary'
+                        : 'hover:bg-surface-main text-text-secondary hover:text-text-main'
+                    }
       `}
-        >
-            <div className="relative">
-                {icon}
-                {badge > 0 && (
-                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-white dark:ring-black">
-                        {badge > 99 ? '99+' : badge}
-                    </span>
-                )}
-            </div>
-            <span className="font-medium text-sm hidden sm:block">{label}</span>
+            >
+                <div className="relative">
+                    {customIcon ? customIcon : icon}
+                    {badge > 0 && (
+                        <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-background-main">
+                            {badge > 99 ? '99+' : badge}
+                        </span>
+                    )}
+                </div>
+                {label && <span className="font-medium text-sm hidden lg:block">{label}</span>}
 
-            {/* Active Indicator */}
-            {active && (
-                <motion.div
-                    layoutId="navbar-active"
-                    className="absolute inset-0 rounded-xl bg-orange-500/10 border border-orange-500/20"
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                />
+                {/* Active Indicator (Bottom Bar) */}
+                {active && (
+                    <motion.div
+                        layoutId="navbar-active"
+                        className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-full"
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    />
+                )}
+            </button>
+            {tooltip && (
+                <span className="absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover/tooltip:opacity-100 transition-opacity z-50 pointer-events-none">
+                    {tooltip}
+                </span>
             )}
-        </button>
+        </div>
     );
 };
 

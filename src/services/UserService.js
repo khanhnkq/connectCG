@@ -9,6 +9,9 @@ const userService = {
     },
     unbanUser(id) {
         return axiosClient.post(`/users/${id}/unblock`);
+    },
+    getOnlineUsers() {
+        return axiosClient.get('/users/online');
     }
 };
 

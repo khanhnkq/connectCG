@@ -5,6 +5,8 @@ import toast from "react-hot-toast";
 import FriendService from "../../services/friend/FriendService";
 import FriendSuggestionService from "../../services/FriendSuggestionService";
 import FriendRequestService from "../../services/friend/FriendRequestService";
+import { useSelector } from 'react-redux';
+import { selectOnlineUserIds } from '../../redux/slices/onlineUsersSlice';
 
 export default function RightSidebar() {
   const [friends, setFriends] = useState([]);
@@ -15,6 +17,7 @@ export default function RightSidebar() {
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const loadingRef = useRef(false);
+  const onlineUserIds = useSelector(selectOnlineUserIds);
 
   const fetchFriends = useCallback(
     async (currentPage, currentSearchTerm) => {
@@ -218,7 +221,9 @@ export default function RightSidebar() {
                         }")`,
                     }}
                   ></div>
-                  <div className="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full border-2 border-background-main"></div>
+                  {onlineUserIds.includes(friend.id) && (
+                    <div className="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full border-2 border-background-main"></div>
+                  )}
                 </div>
                 <span className="text-text-main text-sm font-medium group-hover:text-primary transition-colors">
                   {friend.fullName}

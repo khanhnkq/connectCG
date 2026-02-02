@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useDispatch } from 'react-redux';
 import { addNotification } from '../redux/slices/notificationSlice';
+import { setOnlineUsers, userCameOnline, userWentOffline } from '../redux/slices/onlineUsersSlice';
+import userService from "../services/UserService";
 
 const WebSocketContext = createContext(null);
 
@@ -20,10 +22,16 @@ export const WebSocketProvider = ({ children }) => {
         const client = new Client({
             webSocketFactory: () => {
                 let url = import.meta.env.VITE_WS_URL;
-                // Fix Mixed Content: Automatically switch to https (wss) if running on https
-                // But do NOT upgrade for localhost as it usually doesn't support SSL locally
-                if (window.location.protocol === 'https:' && url.startsWith('http:') && !url.includes('localhost')) {
-                    url = url.replace('http:', 'https:');
+
+                // Force HTTP for localhost to avoid SSL errors
+                if (url.includes('localhost') && url.startsWith('https:')) {
+                    url = url.replace('https:', 'http:');
+                }
+
+                // Append token to URL for Handshake Interceptor
+                if (token) {
+                    // Check if url already has query params
+                    url += url.includes('?') ? `&access_token=${token}` : `?access_token=${token}`;
                 }
                 return new SockJS(url);
             },
@@ -38,6 +46,26 @@ export const WebSocketProvider = ({ children }) => {
 
         client.onConnect = () => {
             console.log("✅ WS connected");
+
+            // Fetch initial online users
+            // Fetch initial online users
+            userService.getOnlineUsers().then(res => {
+                dispatch(setOnlineUsers(res.data));
+            }).catch(err => console.error("Failed to fetch online users", err));
+
+            // Online Status Channel
+            client.subscribe("/topic/public/status", (message) => {
+                try {
+                    const payload = JSON.parse(message.body);
+                    if (payload.status === "ONLINE") {
+                        dispatch(userCameOnline(payload.userId));
+                    } else {
+                        dispatch(userWentOffline(payload.userId));
+                    }
+                } catch (e) {
+                    console.error("Error parsing status:", e);
+                }
+            });
 
             // Error Channel (Account Bans/Locks)
             client.subscribe("/user/queue/errors", (message) => {
