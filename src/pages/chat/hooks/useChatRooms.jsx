@@ -8,109 +8,136 @@ import toast from 'react-hot-toast';
 const useChatRooms = () => {
     const [isLoading, setIsLoading] = useState(true);
     const conversations = useSelector((state) => state.chat.conversations);
+    const activeRoomId = useSelector((state) => state.chat.activeRoomId);
+    const { user: currentUser } = useSelector((state) => state.auth);
     const dispatch = useDispatch();
 
-    // Map to track rooms currently being fetched from Firebase to prevent redundant calls
-    const fetchingMap = useRef(new Set());
+    // Map to track active Firebase listeners for last messages
+    const subscriptionsRef = useRef(new Map());
 
     // Use a ref to store the latest conversations to avoid dependency loop in fetchRooms
     const conversationsRef = useRef(conversations);
+    const activeRoomIdRef = useRef(activeRoomId);
+    const currentUserRef = useRef(currentUser);
+
     useEffect(() => {
         conversationsRef.current = conversations;
-    }, [conversations]);
+        activeRoomIdRef.current = activeRoomId;
+        currentUserRef.current = currentUser;
+    }, [conversations, activeRoomId, currentUser]);
 
-    // Function to fetch last message content for a specific room
-    const fetchLastMessageContent = useCallback(async (room) => {
+    // Function to subscribe to the last message of a room
+    const subscribeToRoomLastMessage = useCallback((room) => {
         if (!room?.id || !room?.firebaseRoomKey) return;
 
-        // Don't fetch if already fetching this room
-        if (fetchingMap.current.has(room.id)) return;
-        fetchingMap.current.add(room.id);
+        // Avoid redundant subscriptions
+        if (subscriptionsRef.current.has(room.id)) return;
 
-        try {
-            const lastMsg = await FirebaseChatService.getLastMessage(room.firebaseRoomKey);
-            let visible = "Chưa có tin nhắn";
-            let timestamp = room.lastMessageAt ? new Date(room.lastMessageAt).getTime() : 0;
-            let senderName = null;
+        const unsubscribe = FirebaseChatService.subscribeToMessages(room.firebaseRoomKey, (lastMsg) => {
+            if (!lastMsg) return;
 
-            if (lastMsg) {
-                // Determine the best display name from members list if possible
-                let bestName = lastMsg.senderName;
-                if (room.members) {
-                    const member = room.members.find(m => String(m.id) === String(lastMsg.senderId));
-                    if (member && member.fullName) {
-                        bestName = member.fullName;
-                    }
-                }
-
-                // Check if message is newer than clientClearedAt
-                if (room.clientClearedAt) {
-                    const clearTime = new Date(room.clientClearedAt).getTime();
-                    if (lastMsg.timestamp <= clearTime) {
-                        visible = "Chưa có tin nhắn";
-                        senderName = null;
-                    } else {
-                        visible = lastMsg.text || (lastMsg.type === 'image' ? "Đã gửi một ảnh" : "Đã gửi một tệp");
-                        timestamp = lastMsg.timestamp;
-                        senderName = bestName;
-                    }
-                } else {
-                    visible = lastMsg.text || (lastMsg.type === 'image' ? "Đã gửi một ảnh" : "Đã gửi một tệp");
-                    timestamp = lastMsg.timestamp;
-                    senderName = bestName;
+            // Determine display name priority (Full Name from members > senderName from Firebase)
+            let senderName = lastMsg.senderName;
+            if (room.members) {
+                const member = room.members.find(m => String(m.id) === String(lastMsg.senderId));
+                if (member && member.fullName) {
+                    senderName = member.fullName;
                 }
             }
 
-            dispatch(updateConversation({
+            let visible = lastMsg.text || (lastMsg.type === 'image' ? "Đã gửi một ảnh" : "Đã gửi một tệp");
+            let timestamp = lastMsg.timestamp;
+
+            // Handle client-side history clearing
+            if (room.clientClearedAt) {
+                const clearTime = new Date(room.clientClearedAt).getTime();
+                if (timestamp <= clearTime) {
+                    visible = "Chưa có tin nhắn";
+                    senderName = null;
+                }
+            }
+
+            // Determine if this is a "new" message that should trigger an unread badge
+            const existing = conversationsRef.current.find(c => c.id === room.id);
+            const isBrandNew = !existing || (lastMsg.timestamp > (existing.lastMessageTimestamp || 0));
+
+            // Push update to Redux - this triggers UI updates in Sidebar and Dropdown
+            const updatePayload = {
                 id: room.id,
                 lastMessageVisible: visible,
                 lastMessageTimestamp: timestamp,
                 lastMessageSenderName: senderName,
-                lastMessageSenderId: lastMsg?.senderId
-            }));
-        } catch (error) {
-            console.error(`Error fetching last message for room ${room.id}:`, error);
-            // Fallback so it doesn't stay "Đang tải..."
-            dispatch(updateConversation({
-                id: room.id,
-                lastMessageVisible: "Không thể tải tin nhắn",
-                lastMessageTimestamp: room.lastMessageAt ? new Date(room.lastMessageAt).getTime() : 0
-            }));
-        } finally {
-            fetchingMap.current.delete(room.id);
-        }
+                lastMessageSenderId: lastMsg.senderId,
+            };
+
+            // OPTIMISTIC UNREAD COUNT: If we get a new message from someone else while not in the room, 
+            // mark it unread immediately instead of waiting for the backend WebSocket.
+            const isFromOthers = String(lastMsg.senderId) !== String(currentUserRef.current?.id);
+            const isNotInRoom = String(activeRoomIdRef.current) !== String(room.id);
+
+            if (isBrandNew && isFromOthers && isNotInRoom) {
+                updatePayload.unreadCount = 1;
+            }
+
+            dispatch(updateConversation(updatePayload));
+        }, 1); // Only listen for the latest message
+
+        subscriptionsRef.current.set(room.id, unsubscribe);
     }, [dispatch]);
+
+    // Effect: Automatically subscribe to rooms when they appear in the conversations list
+    useEffect(() => {
+        conversations.forEach(room => {
+            if (room.firebaseRoomKey && !subscriptionsRef.current.has(room.id)) {
+                subscribeToRoomLastMessage(room);
+            }
+        });
+    }, [conversations, subscribeToRoomLastMessage]);
+
+    // Cleanup: Disconnect all listeners when the hook is unmounted
+    useEffect(() => {
+        return () => {
+            subscriptionsRef.current.forEach(unsub => unsub());
+            subscriptionsRef.current.clear();
+        };
+    }, []);
 
     const fetchRooms = useCallback(async () => {
         try {
             const response = await ChatService.getMyChatRooms();
             const rooms = response.data;
 
-            // Merge new rooms with existing client-side data (like lastMessageVisible)
+            // Prepare rooms for Redux (listeners will populate the message content shortly)
             const mergedRooms = rooms.map(newRoom => {
-                // Match by ID (handling potential string/number mismatch)
                 const existing = conversationsRef.current.find(p => String(p.id) === String(newRoom.id));
 
-                if (existing && existing.lastMessageVisible && existing.lastMessageVisible !== "Đang tải...") {
+                // IF we already have a real message (from Firebase listener), DON'T overwrite with "Đang tải..."
+                if (existing && existing.lastMessageVisible &&
+                    existing.lastMessageVisible !== "Đang tải..." &&
+                    existing.lastMessageVisible !== "Chưa có tin nhắn") {
+
                     return {
                         ...newRoom,
                         lastMessageVisible: existing.lastMessageVisible,
                         lastMessageTimestamp: existing.lastMessageTimestamp || (newRoom.lastMessageAt ? new Date(newRoom.lastMessageAt).getTime() : 0),
                         lastMessageSenderName: existing.lastMessageSenderName,
                         lastMessageSenderId: existing.lastMessageSenderId,
-                        clientClearedAt: newRoom.clientClearedAt
                     };
                 }
 
-                // For newly loaded status or if it was "Đang tải..."
-                let visible = newRoom.lastMessageAt ? "Đang tải..." : "Chưa có tin nhắn";
-                if (newRoom.clientClearedAt && newRoom.lastMessageAt) {
-                    const clearTime = new Date(newRoom.clientClearedAt).getTime();
-                    const msgTime = new Date(newRoom.lastMessageAt).getTime();
-                    if (msgTime <= clearTime) {
-                        visible = "Chưa có tin nhắn";
+                // If not in Redux yet, or only had "Chưa có tin nhắn/Đang tải...", check Backend state
+                let visible = "Chưa có tin nhắn";
+                if (newRoom.lastMessageAt) {
+                    visible = "Đang tải...";
+                    if (newRoom.clientClearedAt) {
+                        const clearTime = new Date(newRoom.clientClearedAt).getTime();
+                        const msgTime = new Date(newRoom.lastMessageAt).getTime();
+                        if (msgTime <= clearTime) {
+                            visible = "Chưa có tin nhắn";
+                        }
                     }
                 }
+
                 return {
                     ...newRoom,
                     lastMessageVisible: visible,
@@ -120,28 +147,13 @@ const useChatRooms = () => {
 
             dispatch(setConversations(mergedRooms));
 
-            // Eagerly fetch message contents for all rooms that need it
-            mergedRooms.forEach(room => {
-                if (room.lastMessageVisible === "Đang tải...") {
-                    fetchLastMessageContent(room);
-                }
-            });
-
         } catch (error) {
             console.error("Error fetching rooms:", error);
             toast.error("Không thể tải danh sách cuộc trò chuyện");
         } finally {
             setIsLoading(false);
         }
-    }, [dispatch, fetchLastMessageContent]); // Removed conversations from dependencies
-
-    // Defensive effect to catch any rooms stuck in "Đang tải..."
-    useEffect(() => {
-        const needsUpdate = conversations.filter(c => c.lastMessageVisible === "Đang tải...");
-        if (needsUpdate.length > 0) {
-            needsUpdate.forEach(room => fetchLastMessageContent(room));
-        }
-    }, [conversations, fetchLastMessageContent]);
+    }, [dispatch]);
 
 
     // Calculate unread counts

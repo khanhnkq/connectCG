@@ -165,6 +165,23 @@ export const WebSocketProvider = ({ children }) => {
           console.error("Error parsing comment event:", e);
         }
       });
+
+      // Chat Realtime Channel (System signals like unread counts)
+      client.subscribe("/user/queue/chat", (message) => {
+        try {
+          const payload = JSON.parse(message.body);
+          // payload = { type, roomId, firebaseRoomKey, lastMessageAt, unreadCount }
+          if (payload.type === "CHAT_UPDATE") {
+            dispatch(updateConversation({
+              id: payload.roomId,
+              lastMessageAt: payload.lastMessageAt,
+              unreadCount: payload.unreadCount
+            }));
+          }
+        } catch (e) {
+          console.error("Error parsing chat event:", e);
+        }
+      });
     };
 
     client.onStompError = (frame) => {
