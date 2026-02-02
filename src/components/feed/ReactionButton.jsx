@@ -1,15 +1,56 @@
 import React, { useState } from "react";
-import { Heart, ThumbsUp } from "lucide-react";
+import { AiOutlineLike } from "react-icons/ai"; // Like mặc định (chưa thả tim)
 import { motion, AnimatePresence } from "framer-motion";
+import { FacebookSelector } from "@charkour/react-reactions";
 
-// Danh sách các cảm xúc
+// Assets từ thư mục public/assets/reactions (Local)
+export const REACTION_ASSETS = {
+  LIKE: "/assets/reactions/Like Icon from Reactions.png",
+  LOVE: "/assets/reactions/Love Icon from Reactions.png",
+  HAHA: "/assets/reactions/Haha from Reactions.png",
+  WOW: "/assets/reactions/Wow image from Reactions.png",
+  SAD: "/assets/reactions/Sad Reaction Image.png",
+  ANGRY: "/assets/reactions/Angry Reaction.png",
+};
+
+// Danh sách các cảm xúc (Dùng để hiển thị kết quả đã chọn trên nút)
 export const REACTION_TYPES = [
-  { id: "LIKE", label: "Like", icon: "👍", color: "text-blue-500" },
-  { id: "LOVE", label: "Love", icon: "❤️", color: "text-red-500" },
-  { id: "HAHA", label: "Haha", icon: "😂", color: "text-yellow-500" },
-  { id: "WOW", label: "Wow", icon: "😮", color: "text-orange-500" },
-  { id: "SAD", label: "Sad", icon: "😢", color: "text-blue-400" },
-  { id: "ANGRY", label: "Angry", icon: "😡", color: "text-red-600" },
+  {
+    id: "LIKE",
+    label: "Like",
+    icon: <img src={REACTION_ASSETS.LIKE} alt="Like" className="w-6 h-6" />,
+    color: "text-blue-500",
+  },
+  {
+    id: "LOVE",
+    label: "Love",
+    icon: <img src={REACTION_ASSETS.LOVE} alt="Love" className="w-6 h-6" />,
+    color: "text-red-500",
+  },
+  {
+    id: "HAHA",
+    label: "Haha",
+    icon: <img src={REACTION_ASSETS.HAHA} alt="Haha" className="w-6 h-6" />,
+    color: "text-yellow-500",
+  },
+  {
+    id: "WOW",
+    label: "Wow",
+    icon: <img src={REACTION_ASSETS.WOW} alt="Wow" className="w-6 h-6" />,
+    color: "text-orange-500",
+  },
+  {
+    id: "SAD",
+    label: "Sad",
+    icon: <img src={REACTION_ASSETS.SAD} alt="Sad" className="w-6 h-6" />,
+    color: "text-blue-400",
+  },
+  {
+    id: "ANGRY",
+    label: "Angry",
+    icon: <img src={REACTION_ASSETS.ANGRY} alt="Angry" className="w-6 h-6" />,
+    color: "text-red-600",
+  },
 ];
 
 const ReactionButton = ({ currentReaction, onReact }) => {
@@ -28,7 +69,7 @@ const ReactionButton = ({ currentReaction, onReact }) => {
     if (!isHovering) {
       const timeout = setTimeout(() => {
         setIsHovering(true);
-      }, 200); // Delay 200ms để hiện popup (tránh hiện khi lướt qua nhanh)
+      }, 300); // Tăng delay lên 300ms tránh hiện khi lướt nhanh
       setHoverTimeout(timeout);
     }
   };
@@ -41,7 +82,7 @@ const ReactionButton = ({ currentReaction, onReact }) => {
     // Thêm thời gian chờ (grace period) trước khi đóng
     const timeout = setTimeout(() => {
       setIsHovering(false);
-    }, 300); // 300ms grace period
+    }, 500); // Grace period dài hơn chút để dễ chọn
     setCloseTimeout(timeout);
   };
 
@@ -60,7 +101,7 @@ const ReactionButton = ({ currentReaction, onReact }) => {
     if (!currentReaction) {
       return (
         <div className="flex items-center gap-2 text-text-secondary group-hover:text-blue-500 transition-colors">
-          <ThumbsUp size={20} />
+          <AiOutlineLike size={20} />
           <span className="text-sm font-medium">Like</span>
         </div>
       );
@@ -73,7 +114,7 @@ const ReactionButton = ({ currentReaction, onReact }) => {
       <div
         className={`flex items-center gap-2 ${reaction.color} font-bold transition-colors`}
       >
-        <span className="text-xl">{reaction.icon}</span>
+        <div className="transform scale-125">{reaction.icon}</div>
         <span className="text-sm">{reaction.label}</span>
       </div>
     );
@@ -93,33 +134,25 @@ const ReactionButton = ({ currentReaction, onReact }) => {
         {getMainIcon()}
       </button>
 
-      {/* Popup chọn cảm xúc */}
+      {/* Popup chọn cảm xúc Facebook Style */}
       <AnimatePresence>
         {isHovering && (
           <motion.div
-            initial={{ opacity: 0, y: 10, scale: 1 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 1 }}
+            initial={{ opacity: 0, y: 10, scale: 0.8 }}
+            animate={{ opacity: 1, y: -10, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.8 }}
             transition={{ duration: 0.2 }}
-            // Padding bottom tạo cầu nối an toàn khi rê chuột từ nút lên menu
-            className="absolute left-1/2 -translate-x-1/2 bottom-full pb-4 flex items-center justify-center z-50"
+            className="absolute left-1/2 -translate-x-1/2 bottom-full z-50 mb-2"
           >
-            <div className="flex items-center gap-2 bg-surface-main border border-border-main p-2 rounded-full shadow-2xl">
-              {REACTION_TYPES.map((reaction) => (
-                <motion.button
-                  key={reaction.id}
-                  whileHover={{ scale: 1.3, y: -5 }}
-                  whileTap={{ scale: 1 }}
-                  onClick={() => {
-                    onReact(reaction.id);
-                    setIsHovering(false);
-                  }}
-                  className="text-2xl hover:drop-shadow-lg transition-all px-1"
-                  title={reaction.label}
-                >
-                  {reaction.icon}
-                </motion.button>
-              ))}
+            <div className="shadow-2xl rounded-full bg-white p-1">
+              <FacebookSelector
+                onSelect={(key) => {
+                  // Key trả về thường là 'like', 'love'... -> convert to UPPERCASE
+                  onReact(key.toUpperCase());
+                  setIsHovering(false);
+                }}
+                iconSize={40} // Kích thước icon động
+              />
             </div>
           </motion.div>
         )}
