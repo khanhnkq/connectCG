@@ -43,6 +43,23 @@ const FirebaseChatService = {
     deleteMessages: async (roomKey) => {
         const messagesRef = ref(db, `messages/${roomKey}`);
         return remove(messagesRef);
+    },
+
+    /**
+     * Lấy tin nhắn cuối cùng của phòng
+     */
+    getLastMessage: async (roomKey) => {
+        const { query, limitToLast, get, orderByKey } = await import("firebase/database");
+        const messagesRef = ref(db, `messages/${roomKey}`);
+        const lastMsgQuery = query(messagesRef, orderByKey(), limitToLast(1));
+        const snapshot = await get(lastMsgQuery);
+
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            const key = Object.keys(data)[0];
+            return { id: key, ...data[key] };
+        }
+        return null;
     }
 };
 

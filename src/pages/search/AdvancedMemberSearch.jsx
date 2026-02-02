@@ -1,6 +1,6 @@
 import { Loader2, Check, X, UserPlus, Search, ChevronDown } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import UserSearchService from "../../services/user/UserSearchService";
 import CityService from "../../services/CityService";
 import FriendRequestService from "../../services/friend/FriendRequestService";
@@ -9,13 +9,20 @@ import toast from "react-hot-toast";
 
 import CitySelect from "../../components/common/CitySelect";
 import ChatService from "../../services/chat/ChatService";
+import MemberFilterSidebar from "./MemberFilterSidebar";
 
 export default function AdvancedMemberSearch() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [sendingRequests, setSendingRequests] = useState({});
-  const [keyword, setKeyword] = useState("");
+
+  // Get keyword from URL if exists
+  const queryParams = new URLSearchParams(location.search);
+  const initialKeyword = queryParams.get("keyword") || "";
+
+  const [keyword, setKeyword] = useState(initialKeyword);
   const [pagination, setPagination] = useState({
     page: 0,
     size: 8,
@@ -67,10 +74,20 @@ export default function AdvancedMemberSearch() {
     cityCode,
   ]);
 
-  // Reset to page 0 when filters change
+  // Reset to page 0 when filters change (except keyword which is handled separately now)
   useEffect(() => {
     setPagination((prev) => ({ ...prev, page: 0 }));
-  }, [maritalStatus, lookingFor, keyword, cityCode]);
+  }, [maritalStatus, lookingFor, cityCode]);
+
+  // Sync keyword from URL when location changes
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const kw = params.get("keyword") || "";
+    if (kw !== keyword) {
+      setKeyword(kw);
+      setPagination((prev) => ({ ...prev, page: 0 }));
+    }
+  }, [location.search]);
 
   useEffect(() => {
     fetchMembers();
@@ -210,327 +227,214 @@ export default function AdvancedMemberSearch() {
   const suggestions = []; // Data suggestion chưa có API, tạm thời để trống
 
   return (
-    <>
-      <div className="flex flex-1 overflow-hidden relative">
-        <main className="flex-1 overflow-y-auto bg-background-main p-4 md:p-8 custom-scrollbar">
-          <div className="max-w-[1600px] mx-auto">
-            <div className="mb-8">
-              {/* Suggestions Section */}
-              <div className="mb-12">
-                <h2 className="text-xl font-bold text-text-main mb-6 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-primary">
-                    recommend
-                  </span>
-                  Gợi ý kết bạn
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {suggestions.map((person) => (
+    <div className="flex flex-1 overflow-hidden relative bg-background-main">
+      <main className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-6 lg:p-8">
+        <div className="max-w-[1600px] mx-auto">
+
+          {/* Header Section */}
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold text-text-main flex items-center gap-2">
+              <span className="p-2 rounded-lg bg-primary/10 text-primary">
+                <Search size={24} />
+              </span>
+              Tìm kiếm thành viên
+            </h1>
+            <p className="text-text-secondary mt-1 ml-11">
+              Kết nối với những người phù hợp với tiêu chí của bạn.
+            </p>
+          </div>
+
+          <div className="flex flex-col lg:flex-row gap-8 items-start">
+
+            {/* Left Sidebar - Filters */}
+            <MemberFilterSidebar
+              keyword={keyword} setKeyword={setKeyword}
+              cityCode={cityCode} setCityCode={(code) => {
+                setCityCode(code);
+                setPagination(prev => ({ ...prev, page: 0 }));
+              }}
+              maritalStatus={maritalStatus} setMaritalStatus={setMaritalStatus}
+              lookingFor={lookingFor} setLookingFor={setLookingFor}
+              onReset={handleReset}
+              className="hidden lg:block"
+            />
+
+            {/* Mobile Filter Toggle (Optional - can be improved with a drawer later) */}
+            <div className="lg:hidden w-full mb-4">
+              <details className="group bg-surface-main rounded-xl border border-border-main p-4">
+                <summary className="font-bold text-text-main list-none cursor-pointer flex justify-between items-center">
+                  <span>Bộ lọc tìm kiếm</span>
+                  <ChevronDown className="group-open:rotate-180 transition-transform" />
+                </summary>
+                <div className="mt-4 pt-4 border-t border-border-main">
+                  <MemberFilterSidebar
+                    keyword={keyword} setKeyword={setKeyword}
+                    cityCode={cityCode} setCityCode={(code) => {
+                      setCityCode(code);
+                      setPagination(prev => ({ ...prev, page: 0 }));
+                    }}
+                    maritalStatus={maritalStatus} setMaritalStatus={setMaritalStatus}
+                    lookingFor={lookingFor} setLookingFor={setLookingFor}
+                    onReset={handleReset}
+                    className="!w-full"
+                  />
+                </div>
+              </details>
+            </div>
+
+            {/* Right Content - Results */}
+            <div className="flex-1 w-full">
+              {/* Suggestions Section (Small snippet above results) */}
+              {suggestions.length > 0 && (
+                <div className="mb-8">
+                  <h2 className="text-lg font-bold text-text-main mb-4">Gợi ý cho bạn</h2>
+                  {/* Suggestion Grid... (Simplified for now) */}
+                </div>
+              )}
+
+              {/* Results Grid */}
+              {loading && pagination.page === 0 ? (
+                <div className="flex items-center justify-center py-20">
+                  <Loader2 className="animate-spin text-primary h-8 w-8" />
+                </div>
+              ) : members.length === 0 ? (
+                <div className="bg-surface-main rounded-2xl border border-border-main p-12 text-center">
+                  <div className="mx-auto w-16 h-16 bg-background-main rounded-full flex items-center justify-center mb-4">
+                    <Search className="text-text-secondary h-8 w-8" />
+                  </div>
+                  <h3 className="text-lg font-bold text-text-main mb-2">Không tìm thấy kết quả</h3>
+                  <p className="text-text-secondary max-w-md mx-auto">
+                    Thử diều chỉnh bộ lọc hoặc từ khóa tìm kiếm của bạn để thấy nhiều kết quả hơn.
+                  </p>
+                  <button onClick={handleReset} className="mt-6 text-primary font-medium hover:underline">
+                    Xóa bộ lọc
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {members.map((member) => (
                     <article
-                      key={person.id}
-                      className="flex flex-col bg-surface-main rounded-2xl overflow-hidden border border-border-main hover:border-primary/50 transition-all shadow-xl group"
+                      key={member.userId}
+                      className="flex flex-col bg-surface-main rounded-xl overflow-hidden border border-border-main hover:border-primary/50 transition-all shadow-sm hover:shadow-md group"
                     >
-                      <div className="h-48 w-full overflow-hidden relative">
-                        <img
-                          src={person.image}
-                          alt={person.name}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                        />
-                        {person.online && (
-                          <div className="absolute top-4 right-4 size-3 bg-green-500 border-2 border-surface-main rounded-full shadow-lg"></div>
+                      <div className="h-56 w-full overflow-hidden relative">
+                        <Link
+                          to={`/dashboard/member/${member.userId}`}
+                          className="block w-full h-full"
+                        >
+                          <img
+                            src={
+                              member.avatarUrl ||
+                              "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                            }
+                            alt={member.fullName}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                        </Link>
+
+                        {/* Status Badge Overlay (Optional) */}
+                        {member.isFriend && (
+                          <div className="absolute top-3 right-3 bg-green-500/90 backdrop-blur text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm">
+                            BẠN BÈ
+                          </div>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-surface-main via-transparent to-transparent opacity-60"></div>
-                        <div className="absolute bottom-3 left-3 bg-background-main/90 backdrop-blur-sm px-2 py-1 rounded-lg border border-border-main">
-                          <p className="text-primary text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
-                            <span className="material-symbols-outlined text-[12px]">
-                              info
-                            </span>
-                            {person.reason}
-                          </p>
-                        </div>
                       </div>
 
                       <div className="p-4 flex flex-col flex-1">
-                        <div className="flex justify-between items-start mb-2">
-                          <h3 className="text-text-main font-bold text-lg group-hover:text-primary transition-colors">
-                            {person.name}, {person.age}
-                          </h3>
-                          <span className="text-text-secondary text-xs flex items-center gap-1 font-medium bg-background-main px-2 py-1 rounded-full">
-                            <span className="material-symbols-outlined text-[12px]">
-                              location_on
-                            </span>
-                            {person.location}
-                          </span>
+                        <h3 className="text-text-main font-bold text-lg leading-tight mb-1 truncate">
+                          <Link
+                            to={`/dashboard/member/${member.userId}`}
+                            className="hover:text-primary transition-colors"
+                          >
+                            {member.fullName}
+                          </Link>
+                        </h3>
+                        <div className="flex items-center gap-1.5 text-text-secondary text-sm mb-3">
+                          <span className="material-symbols-outlined text-[16px]">location_on</span>
+                          <span className="truncate">{member.cityName || "Chưa cập nhật"}</span>
                         </div>
 
-                        <p className="text-text-secondary text-xs mb-4 flex items-center gap-2">
-                          <span className="material-symbols-outlined text-[16px]">
-                            group
-                          </span>
-                          {person.mutualFriends} bạn chung
-                        </p>
-
-                        <div className="mt-auto flex gap-2">
-                          <button className="flex-1 py-2 rounded-xl bg-primary hover:bg-orange-600 text-[#231810] font-bold text-xs uppercase tracking-wider transition-all shadow-lg flex items-center justify-center gap-1">
-                            <span className="material-symbols-outlined text-[16px]">
-                              person_add
-                            </span>
-                            Kết bạn
-                          </button>
-                          <button
-                            onClick={() => handleStartChat(person.id)}
-                            className="size-9 rounded-xl bg-background-main hover:bg-surface-main text-text-main transition-colors border border-border-main flex items-center justify-center"
-                            title="Nhắn tin"
-                          >
-                            <span className="material-symbols-outlined text-[18px]">
-                              chat_bubble
-                            </span>
-                          </button>
+                        <div className="mt-auto pt-4 border-t border-border-main flex flex-col gap-2">
+                          {member.isFriend ? (
+                            <button
+                              onClick={() => handleStartChat(member.userId)}
+                              className="w-full py-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary font-bold text-sm transition-colors flex items-center justify-center gap-2"
+                            >
+                              <span className="material-symbols-outlined text-sm">chat</span>
+                              Nhắn tin
+                            </button>
+                          ) : member.requestSent ? (
+                            member.isRequestReceiver ? (
+                              <div className="grid grid-cols-2 gap-2">
+                                <button
+                                  onClick={() => handleAcceptRequest(member.requestId, member.userId)}
+                                  disabled={sendingRequests[member.userId]}
+                                  className="py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-orange-600 transition-colors"
+                                >
+                                  Chấp nhận
+                                </button>
+                                <button
+                                  onClick={() => handleRejectRequest(member.requestId, member.userId)}
+                                  disabled={sendingRequests[member.userId]}
+                                  className="py-2 rounded-lg bg-background-main text-text-main font-bold text-sm border border-border-main hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-colors"
+                                >
+                                  Từ chối
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => confirmCancelRequest(member.userId)}
+                                disabled={sendingRequests[member.userId]}
+                                className="w-full py-2 rounded-lg bg-background-main text-text-secondary font-bold text-sm border border-border-main hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-colors"
+                              >
+                                {sendingRequests[member.userId] ? "Đang xử lý..." : "Hủy lời mời"}
+                              </button>
+                            )
+                          ) : (
+                            <button
+                              onClick={() => handleSendFriendRequest(member.userId)}
+                              disabled={sendingRequests[member.userId]}
+                              className="w-full py-2 rounded-lg bg-surface-main text-text-main font-bold text-sm border border-border-main hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2 shadow-sm"
+                            >
+                              <UserPlus size={16} />
+                              {sendingRequests[member.userId] ? "Đang gửi..." : "Kết bạn"}
+                            </button>
+                          )}
                         </div>
                       </div>
                     </article>
                   ))}
                 </div>
-              </div>
+              )}
 
-              <div className="h-[1px] w-full bg-border-main mb-10"></div>
-
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                <div>
-                  <h1 className="text-2xl font-bold text-text-main">
-                    Tìm bạn mới
-                  </h1>
-                  <p className="text-text-secondary text-sm mt-1">
-                    Kết nối với những người phù hợp nhất.
-                  </p>
-                </div>
-                <button
-                  onClick={handleReset}
-                  className="text-sm font-bold text-primary hover:text-orange-400 flex items-center gap-1 bg-surface-main px-4 py-2 rounded-lg border border-border-main hover:border-primary/50 transition-all"
-                >
-                  <span className="material-symbols-outlined text-sm">
-                    restart_alt
-                  </span>
-                  Đặt lại bộ lọc
-                </button>
-              </div>
-
-              {/* Filter Bar */}
-              <div className="bg-surface-main p-5 rounded-2xl border border-border-main shadow-lg flex flex-col xl:flex-row gap-4">
-                {/* Keyword */}
-                <div className="relative flex-1">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary material-symbols-outlined">
-                    search
-                  </span>
-                  <input
-                    className="w-full h-12 bg-background-main border border-border-main rounded-xl pl-11 pr-4 text-text-main placeholder-text-secondary/40 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all font-medium"
-                    placeholder="Tìm theo tên..."
-                    value={keyword}
-                    onChange={(e) => setKeyword(e.target.value)}
-                  />
-                </div>
-
-                {/* City Select */}
-                <div className="flex-1">
-                  <CitySelect
-                    label=""
-                    value={cityCode ? { code: cityCode, name: "" } : null}
-                    onChange={(city) => {
-                      setCityCode(city.code);
-                      setPagination((prev) => ({ ...prev, page: 0 }));
-                    }}
-                    error={null}
-                  />
-                </div>
-
-                {/* Marital Status */}
-                <div className="relative group flex-1">
-                  <select
-                    value={maritalStatus}
-                    onChange={(e) => setMaritalStatus(e.target.value)}
-                    className="w-full h-12 bg-surface-main border border-border-main rounded-xl px-4 text-text-main focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer transition-all"
+              {pagination.page < pagination.totalPages - 1 && (
+                <div className="mt-12 flex justify-center pb-8">
+                  <button
+                    onClick={handleLoadMore}
+                    disabled={loading}
+                    className="px-8 py-3 rounded-full bg-surface-main hover:bg-background-main text-text-main font-bold border border-border-main transition-all shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
-                    <option value="">Hôn nhân (Tất cả)</option>
-                    <option value="SINGLE">Độc thân</option>
-                    <option value="MARRIED">Đã kết hôn</option>
-                    <option value="DIVORCED">Đã ly hôn</option>
-                    <option value="WIDOWED">Góa</option>
-                  </select>
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none material-symbols-outlined transition-transform group-hover:text-primary">
-                    expand_more
-                  </span>
+                    {loading && <Loader2 className="animate-spin h-4 w-4" />}
+                    {loading ? "Đang tải..." : "Xem thêm kết quả"}
+                  </button>
                 </div>
-
-                {/* Looking For */}
-                <div className="relative group flex-1">
-                  <select
-                    value={lookingFor}
-                    onChange={(e) => setLookingFor(e.target.value)}
-                    className="w-full h-12 bg-surface-main border border-border-main rounded-xl px-4 text-text-main focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer transition-all"
-                  >
-                    <option value="">Mục đích (Tất cả)</option>
-                    <option value="love">Tìm tình yêu</option>
-                    <option value="friends">Kết bạn</option>
-                    <option value="networking">Kết nối</option>
-                  </select>
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none material-symbols-outlined transition-transform group-hover:text-primary">
-                    expand_more
-                  </span>
-                </div>
-
-                {/* Reset Button */}
-                <button
-                  onClick={handleReset}
-                  className="h-12 px-6 rounded-xl bg-surface-main hover:bg-background-main text-text-main font-bold border border-border-main transition-all flex items-center justify-center gap-2 whitespace-nowrap min-w-fit hover:text-primary"
-                  title="Đặt lại bộ lọc"
-                >
-                  <span className="material-symbols-outlined">restart_alt</span>
-                  <span className="hidden xl:inline">Đặt lại</span>
-                </button>
-              </div>
+              )}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
-              {members.map((member) => (
-                <article
-                  key={member.userId}
-                  className="flex flex-col bg-surface-main rounded-xl overflow-hidden border border-border-main hover:border-primary/50 transition-colors shadow-lg"
-                >
-                  <div className="h-64 sm:h-[16rem] w-full overflow-hidden relative">
-                    <Link
-                      to={`/dashboard/member/${member.userId}`}
-                      className="block w-full h-full"
-                    >
-                      <img
-                        src={
-                          member.avatarUrl ||
-                          "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                        }
-                        alt={member.fullName}
-                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                      />
-                    </Link>
-                  </div>
-
-                  <div className="p-4 flex flex-col flex-1">
-                    <h3 className="text-text-main font-bold text-lg leading-tight mb-1">
-                      <Link
-                        to={`/dashboard/member/${member.userId}`}
-                        className="hover:text-primary transition-colors"
-                      >
-                        {member.fullName}
-                      </Link>
-                    </h3>
-                    <p className="text-text-secondary text-sm mb-2">
-                      {member.cityName || "Chưa cập nhật"}
-                    </p>
-
-                    <div className="flex items-center gap-2 mb-4">
-                      <span className="text-text-secondary text-sm font-medium">
-                        {member.mutualFriends
-                          ? `${member.mutualFriends} bạn chung`
-                          : "Không có bạn chung"}
-                      </span>
-                    </div>
-
-                    <div className="mt-auto flex flex-col gap-2">
-                      {member.isFriend ? (
-                        <button className="w-full py-2 rounded-lg bg-background-main text-text-secondary font-bold text-sm cursor-default border border-border-main">
-                          Đã là bạn bè
-                        </button>
-                      ) : member.requestSent && member.isRequestReceiver ? (
-                        <div className="flex flex-col gap-2 w-full">
-                          <button
-                            onClick={() =>
-                              handleAcceptRequest(
-                                member.requestId,
-                                member.userId,
-                              )
-                            }
-                            disabled={sendingRequests[member.userId]}
-                            className="w-full py-2 rounded-lg bg-primary hover:bg-orange-600 text-[#231810] font-bold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <span className="material-symbols-outlined text-sm">
-                              {sendingRequests[member.userId] ? "sync" : "done"}
-                            </span>
-                            {sendingRequests[member.userId]
-                              ? "Đang xử lý..."
-                              : "Chấp nhận"}
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleRejectRequest(
-                                member.requestId,
-                                member.userId,
-                              )
-                            }
-                            disabled={sendingRequests[member.userId]}
-                            className="w-full py-2 rounded-lg bg-surface-main hover:bg-red-500/10 hover:text-red-500 text-text-main font-bold text-sm transition-all flex items-center justify-center gap-2 border border-border-main hover:border-red-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <span className="material-symbols-outlined text-sm">
-                              close
-                            </span>
-                            Từ chối
-                          </button>
-                        </div>
-                      ) : member.requestSent ? (
-                        <button
-                          onClick={() => confirmCancelRequest(member.userId)}
-                          disabled={sendingRequests[member.userId]}
-                          className="w-full py-2 rounded-lg bg-background-main text-text-secondary hover:text-red-500 hover:bg-red-500/10 font-bold text-sm cursor-pointer transition-all flex items-center justify-center gap-2 border border-border-main hover:border-red-500/50"
-                        >
-                          <span className="material-symbols-outlined text-sm">
-                            done
-                          </span>
-                          {sendingRequests[member.userId]
-                            ? "Đang hủy..."
-                            : "Đã gửi yêu cầu"}
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleSendFriendRequest(member.userId)}
-                          disabled={sendingRequests[member.userId]}
-                          className="w-full py-2 rounded-lg bg-primary hover:bg-orange-600 text-[#231810] font-bold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          <span className="material-symbols-outlined text-sm">
-                            {sendingRequests[member.userId]
-                              ? "sync"
-                              : "person_add"}
-                          </span>
-                          {sendingRequests[member.userId]
-                            ? "Đang gửi..."
-                            : "Kết bạn"}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-
-            {pagination.page < pagination.totalPages - 1 && (
-              <div className="mt-12 flex justify-center pb-8">
-                <button
-                  onClick={handleLoadMore}
-                  disabled={loading}
-                  className="px-8 py-3 rounded-full bg-surface-main hover:bg-background-main text-text-main font-bold border border-border-main transition-all shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? "Đang tải..." : "Xem thêm kết quả"}
-                </button>
-              </div>
-            )}
           </div>
-        </main>
-      </div>
+        </div>
+      </main>
+
       <ConfirmModal
         isOpen={confirmModal.isOpen}
         onClose={() => setConfirmModal({ isOpen: false, receiverId: null })}
         onConfirm={handleCancelRequest}
         title="Hủy lời mời kết bạn"
-        message="Bạn có chắc chắn muốn hủy lời mời kết bạn này? Hành động này không thể hoàn tác."
+        message="Bạn có chắc chắn muốn hủy lời mời kết bạn này?"
         type="danger"
         confirmText="Hủy kết bạn"
         cancelText="Đóng"
       />
-    </>
+    </div>
   );
 }
