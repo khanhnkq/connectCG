@@ -44,6 +44,10 @@ const ChatService = {
 
     clearHistory: async (roomId) => {
         return axiosClient.put(`/chat/${roomId}/clear`);
+    },
+
+    leaveGroup: async (roomId) => {
+        return axiosClient.post(`/chat/${roomId}/leave`);
     }
 };
 
