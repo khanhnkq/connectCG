@@ -12,7 +12,7 @@ import AdminLayout from "../../components/layout-admin/AdminLayout";
 import * as Yup from "yup";
 import toast from "react-hot-toast";
 import ConfirmModal from "../../components/common/ConfirmModal";
-import { findAllGroup } from "../../services/groups/GroupService";
+import { findAllGroup, deleteGroup } from "../../services/groups/GroupService";
 import GroupInspectorModal from "../../components/admin/GroupInspectorModal";
 
 const AdminGroupsManager = () => {
@@ -26,7 +26,7 @@ const AdminGroupsManager = () => {
     isOpen: false,
     title: "",
     message: "",
-    onConfirm: () => {},
+    onConfirm: () => { },
   });
 
   const handleInspect = (group) => {
@@ -71,9 +71,19 @@ const AdminGroupsManager = () => {
       isOpen: true,
       title: "Vô hiệu hóa nhóm?",
       message: `Bạn sắp vô hiệu hóa "${name}". Nhóm sẽ bị ẩn khỏi bảng tin công khai và hạn chế thành viên mới.`,
-      onConfirm: () => {
-        setGroups(groups.filter((g) => g.id !== id));
-        toast.error("Nhóm đã bị vô hiệu hóa");
+      onConfirm: async () => {
+        try {
+          await deleteGroup(id);
+          setGroups(groups.filter((g) => g.id !== id));
+          toast.success("Đã xóa nhóm thành công");
+          // If expecting, close inspector too
+          if (inspectingGroupId === id) {
+            setInspectingGroupId(null);
+          }
+        } catch (error) {
+          console.error("Failed to delete group:", error);
+          toast.error("Không thể xóa nhóm");
+        }
         setConfirmConfig({ ...confirmConfig, isOpen: false });
       },
     });
@@ -151,11 +161,10 @@ const AdminGroupsManager = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-surface-dark via-transparent to-transparent opacity-80"></div>
                   <div className="absolute top-4 right-4 flex gap-2">
                     <span
-                      className={`px-2.5 py-1 text-[9px] font-black uppercase rounded-lg border backdrop-blur-md ${
-                        group.privacy?.toLowerCase() === "public"
+                      className={`px-2.5 py-1 text-[9px] font-black uppercase rounded-lg border backdrop-blur-md ${group.privacy?.toLowerCase() === "public"
                           ? "bg-green-500/20 text-green-400 border-green-500/20"
                           : "bg-orange-500/20 text-orange-400 border-orange-500/20"
-                      }`}
+                        }`}
                     >
                       {group.privacy?.toLowerCase() === "public"
                         ? "CÔNG KHAI"

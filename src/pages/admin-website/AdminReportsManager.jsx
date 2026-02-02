@@ -997,15 +997,59 @@ const AdminReportsManagement = () => {
 
                         {/* Content Preview for Post */}
                         {detailModal.report.targetType === "POST" && (
-                          <div className="bg-black/20 p-4 rounded-xl text-sm italic text-gray-300 border-l-2 border-primary">
-                            "{detailModal.targetData.content}"
-                            {detailModal.targetData.images?.length > 0 && (
+                          <div className="space-y-4">
+                            {/* Author Info */}
+                            <div className="flex items-center gap-3 bg-white/5 p-3 rounded-xl border border-white/5">
                               <img
-                                src={detailModal.targetData.images[0]}
-                                className="mt-2 rounded-lg max-h-40 object-cover"
+                                src={detailModal.targetData.authorAvatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
+                                className="w-10 h-10 rounded-full object-cover bg-black/30"
                                 alt=""
                               />
-                            )}
+                              <div>
+                                <h5 className="text-sm font-bold text-white">
+                                  {detailModal.targetData.authorFullName || detailModal.targetData.authorName || "Người dùng"}
+                                </h5>
+                                <div className="text-xs text-text-muted flex flex-wrap items-center gap-x-2">
+                                  <span>{new Date(detailModal.targetData.createdAt).toLocaleDateString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
+
+                                  {(detailModal.targetData.groupName || detailModal.targetData.groupId) && (
+                                    <>
+                                      <span>•</span>
+                                      <span className="flex items-center gap-1 text-primary">
+                                        Đăng trong nhóm
+                                        <span className="font-bold underline cursor-pointer">
+                                          {detailModal.targetData.groupName || `#${detailModal.targetData.groupId}`}
+                                        </span>
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Content */}
+                            <div className="bg-black/20 p-4 rounded-xl text-sm text-gray-300 border-l-2 border-primary">
+                              <p className="whitespace-pre-wrap italic">"{detailModal.targetData.content}"</p>
+                              {detailModal.targetData.images?.length > 0 && (
+                                <div className="mt-3 grid grid-cols-2 gap-2">
+                                  {detailModal.targetData.images.map((img, idx) => (
+                                    <img
+                                      key={idx}
+                                      src={img}
+                                      className="rounded-lg w-full h-32 object-cover border border-white/10"
+                                      alt=""
+                                    />
+                                  ))}
+                                </div>
+                              )}
+
+                              {/* Video placeholder if needed, though usually just images/content */}
+                              {detailModal.targetData.media?.some(m => m.type === 'VIDEO') && (
+                                <div className="mt-2 text-xs text-text-muted flex items-center gap-1">
+                                  <span className="bg-white/10 px-2 py-0.5 rounded">Có đính kèm video</span>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         )}
                       </div>
