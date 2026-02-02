@@ -567,7 +567,6 @@ export default function PostCard({
           onClose={() => setLightboxIndex(-1)}
         />
       )}
-      {showComments && <CommentSection postId={data.id} />}
 
       <ReportModal
         isOpen={showReportModal}
