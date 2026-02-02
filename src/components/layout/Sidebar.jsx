@@ -8,14 +8,18 @@ import {
   UserCheck,
   Search,
   Settings,
-  LogOut,
   Sun,
   Moon,
+  ShieldCheck,
+
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../redux/slices/authSlice";
 import { fetchUserProfile } from "../../redux/slices/userSlice";
+import { findMyGroups } from "../../services/groups/GroupService";
 
 export default function SidebarComponent() {
   const { theme, toggleTheme } = useTheme();
@@ -45,6 +49,40 @@ export default function SidebarComponent() {
 
   const [isAdmin, setIsAdmin] = useState(false);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
+
+  // Groups Logic
+  const [myGroups, setMyGroups] = useState([]);
+  const [managedGroups, setManagedGroups] = useState([]);
+  const [joinedGroups, setJoinedGroups] = useState([]);
+  const [showManaged, setShowManaged] = useState(true);
+  const [showJoined, setShowJoined] = useState(true);
+
+  useEffect(() => {
+    const fetchGroups = async () => {
+      if (!user?.id) return;
+      try {
+        const response = await findMyGroups(0, 50); // Fetch up to 50 groups
+        const groups = response.content || response || [];
+        setMyGroups(groups);
+
+        // Filter groups
+        const managed = [];
+        const joined = [];
+
+        groups.forEach(g => {
+          const isManager = g.ownerId === user.id || g.currentUserRole === "ADMIN";
+          if (isManager) managed.push(g);
+          else joined.push(g);
+        });
+
+        setManagedGroups(managed);
+        setJoinedGroups(joined);
+      } catch (error) {
+        console.error("Failed to fetch sidebar groups", error);
+      }
+    };
+    fetchGroups();
+  }, [user?.id]);
 
   // Global Chat Listener for unread messages
   useEffect(() => {
@@ -114,41 +152,8 @@ export default function SidebarComponent() {
   };
 
   const menuItems = [
-    {
-      label: "Trang chủ",
-      href: "/dashboard/feed",
-      icon: <Home className="text-text-secondary h-5 w-5 flex-shrink-0" />,
-    },
-    {
-      label: "Tin nhắn",
-      href: "/dashboard/chat",
-      icon: (
-        <div className="relative">
-          <MessageCircle className="text-text-secondary h-5 w-5 flex-shrink-0" />
-          {unreadChatCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
-            </span>
-          )}
-        </div>
-      ),
-    },
-    {
-      label: "Bạn bè",
-      href: "/dashboard/friends",
-      icon: <UserCheck className="text-text-secondary h-5 w-5 flex-shrink-0" />,
-    },
-    {
-      label: "Nhóm",
-      href: "/dashboard/groups",
-      icon: <Users className="text-text-secondary h-5 w-5 flex-shrink-0" />,
-    },
-    {
-      label: "Tìm kiếm",
-      href: "/search/members",
-      icon: <Search className="text-text-secondary h-5 w-5 flex-shrink-0" />,
-    },
+    // Redundant items removed (Home, Friends, Groups, Search)
+    // Sidebar now serves for utilities and admin features
   ];
 
   // Add Admin Panel if user is admin
@@ -165,23 +170,112 @@ export default function SidebarComponent() {
     <Sidebar open={open} setOpen={setOpen}>
       <SidebarBody className="justify-between gap-10 bg-background-main border-r border-border-main transition-colors duration-300">
         <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-          <div className="mt-4 flex flex-col gap-2">
+          {/* Profile Section at Top */}
+          <div className="mb-6">
+            <SidebarLink
+              link={{
+                label: userProfile?.fullName || user?.username || "StartUP",
+                href: "/dashboard/my-profile",
+                icon: (
+                  <img
+                    src={
+                      userProfile?.currentAvatarUrl ||
+                      "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                    }
+                    className="h-7 w-7 min-w-7 min-h-7 flex-shrink-0 !rounded-full object-cover aspect-square border border-border-main"
+                    width={28}
+                    height={28}
+                    alt="Avatar"
+                  />
+                ),
+              }}
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
             {menuItems.map((link, idx) => (
               <div key={idx}>
                 <SidebarLink link={link} />
               </div>
             ))}
 
-            <SidebarLink
-              link={{
-                label: "Đăng xuất",
-                onClick: handleLogout,
+            <div className="my-2 border-t border-border-main/50" />
 
-                icon: (
-                  <LogOut className="text-text-secondary h-5 w-5 flex-shrink-0" />
-                ),
-              }}
-            />
+            {/* Managed Groups */}
+            {managedGroups.length > 0 && (
+              <div className="mb-2">
+                {open ? (
+                  <button
+                    onClick={() => setShowManaged(!showManaged)}
+                    className="flex items-center justify-between w-full px-2 py-2 text-xs font-bold text-text-secondary uppercase tracking-wider hover:text-primary transition-colors mb-1"
+                  >
+                    <span>Quản lý nhóm</span>
+                    {showManaged ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                  </button>
+                ) : (
+                  <div className="h-4" /> // Spacer when collapsed
+                )}
+
+                {showManaged && managedGroups.map(group => (
+                  <SidebarLink
+                    key={group.id}
+                    link={{
+                      label: group.name,
+                      href: `/dashboard/groups/${group.id}`,
+                      icon: (
+                        <div className="relative">
+                          <img
+                            src={group.image || "https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=1000"}
+                            alt={group.name}
+                            className="h-6 w-6 !rounded-lg object-cover flex-shrink-0 border border-border-main"
+                          />
+                          <div className="absolute -bottom-1 -right-1 bg-orange-500 rounded-full p-[2px] border border-background-main">
+                            <ShieldCheck size={8} className="text-white" />
+                          </div>
+                        </div>
+                      )
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Joined Groups */}
+            {joinedGroups.length > 0 && (
+              <div className="mb-2">
+                {open ? (
+                  <button
+                    onClick={() => setShowJoined(!showJoined)}
+                    className="flex items-center justify-between w-full px-2 py-2 text-xs font-bold text-text-secondary uppercase tracking-wider hover:text-primary transition-colors mb-1"
+                  >
+                    <span>Nhóm tham gia</span>
+                    {showJoined ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                  </button>
+                ) : (
+                  <div className="h-4" />
+                )}
+
+                {showJoined && joinedGroups.map(group => (
+                  <SidebarLink
+                    key={group.id}
+                    link={{
+                      label: group.name,
+                      href: `/dashboard/groups/${group.id}`,
+                      icon: (
+                        <img
+                          src={group.image || "https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=1000"}
+                          alt={group.name}
+                          className="h-6 w-6 !rounded-lg object-cover flex-shrink-0 border border-border-main"
+                        />
+                      )
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+
+            <div className="my-2 border-t border-border-main/50" />
+
             <SidebarLink
               link={{
                 label: `Chế độ ${theme === "dark" ? "Sáng" : "Tối"}`,
@@ -195,26 +289,6 @@ export default function SidebarComponent() {
               }}
             />
           </div>
-        </div>
-        <div>
-          <SidebarLink
-            link={{
-              label: userProfile?.fullName || user?.username || "StartUP",
-              href: "/dashboard/my-profile",
-              icon: (
-                <img
-                  src={
-                    userProfile?.currentAvatarUrl ||
-                    "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                  }
-                  className="h-7 w-7 min-w-7 min-h-7 flex-shrink-0 !rounded-full object-cover aspect-square"
-                  width={28}
-                  height={28}
-                  alt="Avatar"
-                />
-              ),
-            }}
-          />
         </div>
       </SidebarBody>
     </Sidebar>

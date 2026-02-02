@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { IconHome, IconBell, IconUsers, IconUser, IconSettings, IconLogout, IconChevronDown } from '@tabler/icons-react';
+import { Search, Bell, Settings, LogOut, Home, Users, UsersRound, MessageCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchNotifications, markAsRead, deleteNotification, markAllAsRead } from '../../redux/slices/notificationSlice';
 import { logout } from '../../redux/slices/authSlice';
 import NotificationList from '../notification/NotificationList';
+import ChatDropdown from '../chat/ChatDropdown';
 import NotificationService from '../../services/NotificationService';
 import toast from 'react-hot-toast';
 
@@ -18,11 +19,55 @@ const UserNavbar = () => {
     const { profile: userProfile } = useSelector((state) => state.user);
 
     const [showNotifications, setShowNotifications] = useState(false);
+    const [showChatDropdown, setShowChatDropdown] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [unreadChatCount, setUnreadChatCount] = useState(0);
 
     const notificationRef = useRef(null);
+    const chatDropdownRef = useRef(null);
     const userMenuRef = useRef(null);
+
+    // Global Chat Listener
+    useEffect(() => {
+        if (!user?.id) return;
+
+        const listeners = [];
+        const startTime = Date.now();
+
+        const setupChatListener = async () => {
+            try {
+                const ChatService = (await import("../../services/chat/ChatService")).default;
+                const FirebaseChatService = (await import("../../services/chat/FirebaseChatService")).default;
+
+                const response = await ChatService.getMyChatRooms();
+                const rooms = response.data || [];
+
+                rooms.forEach((room) => {
+                    const unsub = FirebaseChatService.subscribeToMessages(
+                        room.firebaseRoomKey,
+                        (newMsg) => {
+                            const isNew = newMsg.timestamp && newMsg.timestamp > startTime - 10000;
+                            const isNotMe = newMsg.senderId !== user.id;
+
+                            if (isNew && isNotMe) {
+                                setUnreadChatCount((prev) => prev + 1);
+                            }
+                        }
+                    );
+                    listeners.push(unsub);
+                });
+            } catch (err) {
+                console.error("Global chat listener failed:", err);
+            }
+        };
+
+        setupChatListener();
+
+        return () => {
+            listeners.forEach(u => u());
+        };
+    }, [user?.id]);
 
     useEffect(() => {
         dispatch(fetchNotifications());
@@ -120,14 +165,11 @@ const UserNavbar = () => {
                 {/* Search Bar - Desktop */}
                 <div className="hidden md:flex relative w-full max-w-[240px] lg:max-w-[320px]">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <IconHome className="h-4 w-4 text-text-secondary opacity-0" /> {/* Spacer */}
-                        <svg className="h-4 w-4 text-text-secondary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
+                        <Search className="h-4 w-4 text-text-secondary" />
                     </div>
                     <input
                         type="text"
-                        className="block w-full pl-10 pr-3 py-2 border border-border-main rounded-full leading-5 bg-surface-main text-text-main placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-all"
+                        className="block w-full pl-10 pr-3 py-2.5 border-none rounded-full leading-5 bg-[#F0F2F5] dark:bg-[#3A3B3C] text-text-main placeholder-text-secondary focus:outline-none focus:ring-0 sm:text-sm transition-all shadow-inner"
                         placeholder="Tìm kiếm trên Connect..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -136,11 +178,11 @@ const UserNavbar = () => {
                 </div>
             </div>
 
-            {/* CENTER: Navigation Links */}
-            <div className="hidden md:flex items-center justify-center gap-1 lg:gap-8 flex-1">
+            {/* CENTER: Primary Navigation */}
+            <div className="hidden md:flex items-center justify-center gap-2 lg:gap-8 flex-1">
                 <NavItem
-                    icon={<IconHome size={24} />}
-                    active={!showNotifications && isActive('/dashboard/feed')}
+                    icon={<Home size={28} strokeWidth={isActive('/dashboard/feed') ? 3 : 2} />}
+                    active={isActive('/dashboard/feed')}
                     onClick={() => {
                         navigate('/dashboard/feed');
                         setShowNotifications(false);
@@ -148,8 +190,8 @@ const UserNavbar = () => {
                     tooltip="Trang chủ"
                 />
                 <NavItem
-                    icon={<IconUsers size={24} />}
-                    active={!showNotifications && isActive('/dashboard/friends')}
+                    icon={<Users size={26} strokeWidth={isActive('/dashboard/friends') ? 2.8 : 2} />}
+                    active={isActive('/dashboard/friends')}
                     onClick={() => {
                         navigate('/dashboard/friends');
                         setShowNotifications(false);
@@ -157,11 +199,8 @@ const UserNavbar = () => {
                     tooltip="Bạn bè"
                 />
                 <NavItem
-                    icon={<IconHome className="rotate-180" size={24} style={{ transform: 'scaleX(-1)' }} />} // Using IconHome as placeholder for Group if needed or just IconUsers
-                    label=""
-                    // Better Icon for Groups?
-                    customIcon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>}
-                    active={!showNotifications && isActive('/dashboard/groups')}
+                    icon={<UsersRound size={26} strokeWidth={isActive('/dashboard/groups') ? 2.8 : 2} />}
+                    active={isActive('/dashboard/groups')}
                     onClick={() => {
                         navigate('/dashboard/groups');
                         setShowNotifications(false);
@@ -178,21 +217,61 @@ const UserNavbar = () => {
                     className="md:hidden p-2 rounded-full text-text-secondary hover:bg-surface-main transition-colors"
                     onClick={() => navigate('/search/members')}
                 >
-                    <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+                    <Search className="h-6 w-6" />
                 </button>
+
+                {/* Messenger/Chat */}
+
+
+                {/* Messenger/Chat Dropdown */}
+                <div className="relative" ref={chatDropdownRef}>
+                    <button
+                        className={`p-2.5 rounded-full transition-colors relative flex items-center justify-center w-10 h-10 ${showChatDropdown
+                            ? 'bg-primary/20 text-primary'
+                            : 'bg-[#E4E6EB] dark:bg-[#3A3B3C] text-text-main hover:bg-[#D8DADF] dark:hover:bg-[#4E4F50]'
+                            }`}
+                        onClick={() => {
+                            setShowChatDropdown(!showChatDropdown);
+                            setShowNotifications(false);
+                            setShowUserMenu(false);
+                        }}
+                    >
+                        <MessageCircle size={20} weight="fill" />
+                        {unreadChatCount > 0 && (
+                            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-background-main">
+                                {unreadChatCount > 99 ? '99+' : unreadCount}
+                            </span>
+                        )}
+                    </button>
+
+                    <AnimatePresence>
+                        {showChatDropdown && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                transition={{ duration: 0.2 }}
+                                className="absolute right-0 top-full mt-2 w-80 md:w-96 z-50 origin-top-right shadow-2xl rounded-2xl bg-background-main border border-border-main overflow-hidden"
+                            >
+                                <ChatDropdown onClose={() => setShowChatDropdown(false)} />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
 
                 {/* Notifications */}
                 <div className="relative" ref={notificationRef}>
                     <button
-                        className={`p-2.5 rounded-full transition-colors relative ${showNotifications ? 'bg-primary/10 text-primary' : 'bg-surface-main text-text-main hover:bg-border-main'}`}
+                        className={`p-2.5 rounded-full transition-colors relative flex items-center justify-center w-10 h-10 ${showNotifications
+                            ? 'bg-primary/20 text-primary'
+                            : 'bg-[#E4E6EB] dark:bg-[#3A3B3C] text-text-main hover:bg-[#D8DADF] dark:hover:bg-[#4E4F50]'
+                            }`}
                         onClick={() => {
                             setShowNotifications(!showNotifications);
                             setShowUserMenu(false);
                         }}
                     >
-                        <IconBell size={22} />
+                        <Bell size={20} weight="fill" />
                         {unreadCount > 0 && (
                             <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-background-main">
                                 {unreadCount > 99 ? '99+' : unreadCount}
@@ -226,6 +305,7 @@ const UserNavbar = () => {
                         onClick={() => {
                             setShowUserMenu(!showUserMenu);
                             setShowNotifications(false);
+                            setShowChatDropdown(false);
                         }}
                         className="flex items-center gap-2 p-1 pl-2 pr-1 rounded-full hover:bg-surface-main transition-colors border border-border-main ml-1"
                     >
@@ -260,7 +340,7 @@ const UserNavbar = () => {
                                 </div>
 
                                 <DropdownItem
-                                    icon={<IconSettings size={18} />}
+                                    icon={<Settings size={18} />}
                                     label="Cài đặt & Quyền riêng tư"
                                     onClick={() => {
                                         navigate('/dashboard/settings/privacy');
@@ -271,7 +351,7 @@ const UserNavbar = () => {
                                 <div className="h-px bg-border-main my-2" />
 
                                 <DropdownItem
-                                    icon={<IconLogout size={18} />}
+                                    icon={<LogOut size={18} />}
                                     label="Đăng xuất"
                                     onClick={handleLogout}
                                     danger
@@ -281,44 +361,37 @@ const UserNavbar = () => {
                     </AnimatePresence>
                 </div>
             </div>
-        </motion.div>
+        </motion.div >
     );
 };
 
-// Reusable Nav Item Component with Hover Effects
-const NavItem = ({ icon, label, active, onClick, badge, customIcon, tooltip }) => {
+
+
+const NavItem = ({ icon, active, onClick, tooltip }) => {
     return (
         <div className="relative group/tooltip">
             <button
                 onClick={onClick}
-                className={`relative flex items-center justify-center gap-2 p-3 lg:px-10 lg:py-3 rounded-xl transition-all duration-300
-        ${active
-                        ? 'text-primary'
-                        : 'hover:bg-surface-main text-text-secondary hover:text-text-main'
+                className={`relative flex items-center justify-center p-3 lg:px-10 lg:py-3.5 rounded-xl transition-all duration-300
+                    ${active
+                        ? 'text-primary bg-primary/5'
+                        : 'text-text-secondary hover:bg-surface-main hover:text-text-main'
                     }
-      `}
+                `}
             >
-                <div className="relative">
-                    {customIcon ? customIcon : icon}
-                    {badge > 0 && (
-                        <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-background-main">
-                            {badge > 99 ? '99+' : badge}
-                        </span>
-                    )}
-                </div>
-                {label && <span className="font-medium text-sm hidden lg:block">{label}</span>}
+                {icon}
 
-                {/* Active Indicator (Bottom Bar) */}
+                {/* Active Indicator */}
                 {active && (
                     <motion.div
                         layoutId="navbar-active"
-                        className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-full"
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        className="absolute bottom-0 left-0 right-0 h-[3px] bg-primary rounded-t-full mx-4"
+                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
                     />
                 )}
             </button>
             {tooltip && (
-                <span className="absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover/tooltip:opacity-100 transition-opacity z-50 pointer-events-none">
+                <span className="absolute top-full mt-1.5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-gray-900/90 backdrop-blur-sm text-white text-[11px] font-bold px-2 py-1 rounded-md opacity-0 group-hover/tooltip:opacity-100 transition-all duration-200 z-50 pointer-events-none transform translate-y-1 group-hover/tooltip:translate-y-0">
                     {tooltip}
                 </span>
             )}
