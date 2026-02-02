@@ -15,11 +15,13 @@ import {
   X,
   Lock,
   ChevronDown,
+  ThumbsUp,
 } from "lucide-react";
 import { useSelector } from "react-redux";
 import ImageLightbox from "../common/ImageLightBox";
 import PostUpdate from "./PostUpdate";
 import postService from "../../services/PostService";
+import CommentSection from "./CommentSection";
 
 // --- HELPER 1: Format thời gian ---
 const formatTime = (dateString) => {
@@ -175,6 +177,7 @@ export default function PostCard({
   onUpdate,
   onDelete,
 }) {
+  const [showComments, setShowComments] = useState(false);
   const { user } = useSelector((state) => state.auth);
   const [showMenu, setShowMenu] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(-1); // Index ảnh đang xem (-1 là đóng)
@@ -208,7 +211,9 @@ export default function PostCard({
       visibility: post.visibility,
       aiStatus: post.aiStatus,
       approvedBy: post.approvedByFullName,
-      currentUserReaction: post.currentUserReaction, // Cần bổ sung từ DTO backend sau này
+      currentUserReaction: post.currentUserReaction,
+      reactCount: post.reactCount || 0,
+      commentCount: post.commentCount || 0,
     };
   } else {
     data = {
@@ -386,11 +391,31 @@ export default function PostCard({
         </div>
       )}
 
-      {/* NẾU CÓ APPROVED BY */}
-      {data.approvedBy && (
-        <div className="px-4 py-2 bg-green-500/5 border-b border-green-500/10 text-xs text-green-700 flex items-center gap-2">
-          <CheckCircle size={12} />
-          Approved by: <span className="font-semibold">{data.approvedBy}</span>
+      {(data.reactCount > 0 || data.commentCount > 0) && (
+        <div className="px-5 py-2 flex items-center justify-between text-[13px] text-text-secondary">
+          <div className="flex items-center gap-1.5 cursor-pointer hover:underline decoration-text-secondary/50 transition-all">
+            {data.reactCount > 0 && (
+              <>
+                <div className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-500/10">
+                  <ThumbsUp size={12} className="text-blue-600 fill-blue-600" />
+                </div>
+                <span className="font-medium">{data.reactCount}</span>
+              </>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3">
+            {data.commentCount > 0 && (
+              <button
+                onClick={() => setShowComments(!showComments)}
+                className="hover:text-text-main transition-colors"
+              >
+                {data.commentCount} comments
+              </button>
+            )}
+            {/* Placeholder for share count if future-proofed */}
+            {/* <span>2 shares</span> */}
+          </div>
         </div>
       )}
 
@@ -402,7 +427,10 @@ export default function PostCard({
             onReact={handleReactWrapper}
           />
 
-          <button className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg hover:bg-background-main text-text-secondary hover:text-blue-500 transition-colors">
+          <button
+            onClick={() => setShowComments(!showComments)}
+            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg hover:bg-background-main text-text-secondary hover:text-blue-500 transition-colors"
+          >
             <MessageSquare size={20} />
             <span className="text-sm font-medium">Comment</span>
           </button>
@@ -422,6 +450,7 @@ export default function PostCard({
           onClose={() => setLightboxIndex(-1)}
         />
       )}
+      {showComments && <CommentSection postId={data.id} />}
     </article>
   );
 }
