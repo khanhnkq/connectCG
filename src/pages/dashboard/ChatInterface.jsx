@@ -82,12 +82,12 @@ export default function ChatInterface() {
 
   // Calculate unread counts
   const directUnreadCount = conversations
-    .filter(c => c.type === "DIRECT")
-    .reduce((acc, curr) => acc + (curr.unreadCount || 0), 0);
+    .filter(c => c.type === "DIRECT" && (c.unreadCount || 0) > 0)
+    .length;
 
   const groupUnreadCount = conversations
-    .filter(c => c.type === "GROUP")
-    .reduce((acc, curr) => acc + (curr.unreadCount || 0), 0);
+    .filter(c => c.type === "GROUP" && (c.unreadCount || 0) > 0)
+    .length;
 
   const handleCreateGroup = async () => {
     if (selectedMembers.length < 1) {
@@ -1060,17 +1060,6 @@ export default function ChatInterface() {
                     </>
                   )}
                   {/* Unified Clear History Button - Available for Everyone */}
-                  <button
-                    onClick={() => setShowClearConfirm(true)}
-                    className="flex flex-col items-center gap-1 group"
-                  >
-                    <div className="size-10 rounded-full bg-blue-500/10 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center text-blue-500 transition-all border border-blue-500/20">
-                      <History size={24} />
-                    </div>
-                    <span className="text-[10px] text-text-secondary font-bold uppercase tracking-wide group-hover:text-blue-500 transition-colors">
-                      Xóa LS
-                    </span>
-                  </button>
                 </div>
               </div>
               <div className="p-5">
@@ -1169,16 +1158,6 @@ export default function ChatInterface() {
                   Privacy & Support
                 </h3>
                 <div className="flex flex-col gap-2">
-                  <button className="w-full flex items-center justify-between p-3 rounded-xl bg-background-main hover:bg-surface-main border border-border-main group transition-colors text-left">
-                    <div className="flex items-center gap-3 text-text-secondary group-hover:text-white">
-                      <Lock size={20} />
-                      <span className="text-sm font-medium">Encryption</span>
-                    </div>
-                    <ChevronRight size={16} className="text-text-secondary" />
-                  </button>
-
-
-
                   <button
                     onClick={() => setShowClearConfirm(true)}
                     className="w-full flex items-center justify-between p-3 rounded-xl bg-background-main hover:bg-surface-main border border-border-main group transition-colors text-left"
@@ -1215,7 +1194,15 @@ export default function ChatInterface() {
         <ConfirmModal
           isOpen={showClearConfirm}
           title="Xóa lịch sử cuộc trò chuyện"
-          message="Bạn có chắc muốn xóa lịch sử cuộc trò chuyện này? Lưu ý: Tin nhắn chỉ bị xóa ở phía bạn, người khác vẫn có thể xem được."
+          message={
+            <>
+              Bạn có chắc muốn xóa lịch sử cuộc trò chuyện này?
+              <br />
+              <span className="text-xs opacity-70 mt-2 block">
+                Lưu ý: Tin nhắn chỉ bị xóa ở phía bạn, người khác vẫn có thể xem được.
+              </span>
+            </>
+          }
           type="warning"
           confirmText="Xác nhận Xóa"
           cancelText="Hủy"
