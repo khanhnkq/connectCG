@@ -46,7 +46,8 @@ import {
 import InviteMemberModal from "../../components/groups/InviteMemberModal";
 import TransferOwnershipModal from "../../components/groups/TransferOwnershipModal";
 import reportService from "../../services/ReportService";
-
+import ConfirmModal from "../../components/common/ConfirmModal";
+import { usePostManagement } from "../../hooks/usePostManagement";
 
 const GroupDetailPage = () => {
   const { id } = useParams();
@@ -58,7 +59,6 @@ const GroupDetailPage = () => {
   const [activeTab, setActiveTab] = useState("Bản tin");
   const [showReportGroup, setShowReportGroup] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
-  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [showKickModal, setShowKickModal] = useState(false);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [showTransferConfirmModal, setShowTransferConfirmModal] =
@@ -67,11 +67,20 @@ const GroupDetailPage = () => {
   const [memberToTransfer, setMemberToTransfer] = useState(null);
 
   const [pendingPosts, setPendingPosts] = useState([]);
-  const [approvedPosts, setApprovedPosts] = useState([]);
   const [memberRequests, setMemberRequests] = useState([]);
   const [modTab, setModTab] = useState("Bài viết");
   const [members, setMembers] = useState([]);
   const [userMembership, setUserMembership] = useState(null); // { userId, status, role }
+
+  const {
+    posts: approvedPosts,
+    setPosts: setApprovedPosts,
+    deleteModal,
+    setDeleteModal,
+    handleDeletePost,
+    handleUpdatePost,
+    confirmDelete,
+  } = usePostManagement();
 
   const [showTransferOwnershipModal, setShowTransferOwnershipModal] =
     useState(false);
@@ -201,7 +210,9 @@ const GroupDetailPage = () => {
     try {
       const isRequest = userMembership?.status === "REQUESTED";
       await leaveGroup(id || group.id);
-      toast.success(isRequest ? "Đã hủy yêu cầu tham gia!" : "Đã rời nhóm thành công");
+      toast.success(
+        isRequest ? "Đã hủy yêu cầu tham gia!" : "Đã rời nhóm thành công",
+      );
       setShowLeaveModal(false);
 
       if (isRequest) {
@@ -494,7 +505,10 @@ const GroupDetailPage = () => {
                   className="flex-1 sm:flex-none h-10 px-6 rounded-full bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 border border-orange-500/20 backdrop-blur-md font-bold text-sm transition-all flex items-center justify-center gap-2 group/cancel"
                   title="Nhấn để hủy yêu cầu tham gia"
                 >
-                  <Hourglass size={20} className="group-hover/cancel:rotate-12 transition-transform" />
+                  <Hourglass
+                    size={20}
+                    className="group-hover/cancel:rotate-12 transition-transform"
+                  />
                   Hủy yêu cầu
                 </button>
               ) : userMembership?.status === "PENDING" ? (
@@ -557,10 +571,11 @@ const GroupDetailPage = () => {
                   <button
                     key={tab.en}
                     onClick={() => setActiveTab(tab.vi)}
-                    className={`py-4 font-bold text-sm tracking-wide whitespace-nowrap transition-all border-b-2 ${activeTab === tab.vi
-                      ? "text-primary border-primary"
-                      : "text-text-secondary hover:text-text-main border-transparent"
-                      }`}
+                    className={`py-4 font-bold text-sm tracking-wide whitespace-nowrap transition-all border-b-2 ${
+                      activeTab === tab.vi
+                        ? "text-primary border-primary"
+                        : "text-text-secondary hover:text-text-main border-transparent"
+                    }`}
                   >
                     {tab.vi}
                   </button>
@@ -568,10 +583,11 @@ const GroupDetailPage = () => {
               {isAdmin && (
                 <button
                   onClick={() => setActiveTab("Kiểm duyệt")}
-                  className={`py-4 font-black text-sm tracking-widest whitespace-nowrap transition-all border-b-2 flex items-center gap-2 ${activeTab === "Kiểm duyệt"
-                    ? "text-orange-400 border-orange-400"
-                    : "text-text-secondary hover:text-orange-400 border-transparent"
-                    }`}
+                  className={`py-4 font-black text-sm tracking-widest whitespace-nowrap transition-all border-b-2 flex items-center gap-2 ${
+                    activeTab === "Kiểm duyệt"
+                      ? "text-orange-400 border-orange-400"
+                      : "text-text-secondary hover:text-orange-400 border-transparent"
+                  }`}
                 >
                   <Gavel size={18} />
                   KIỂM DUYỆT
@@ -592,8 +608,8 @@ const GroupDetailPage = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 flex flex-col gap-6">
                 {group.privacy === "PRIVATE" &&
-                  userMembership?.status !== "ACCEPTED" &&
-                  !isAdmin ? (
+                userMembership?.status !== "ACCEPTED" &&
+                !isAdmin ? (
                   <div className="bg-surface-main rounded-[2.5rem] p-12 border border-border-main text-center space-y-6">
                     <div className="size-24 rounded-full bg-primary/10 flex items-center justify-center text-primary mx-auto mb-8">
                       <Lock size={40} />
@@ -605,8 +621,8 @@ const GroupDetailPage = () => {
                       {userMembership?.status === "PENDING"
                         ? "Bạn đã nhận được lời mời tham gia nhóm này. Vui lòng phản hồi lời mời ở phía trên để xem nội dung."
                         : userMembership?.status === "REQUESTED"
-                          ? "Yêu cầu gia nhập của bạn đang chờ quản trị viên phê duyệt. Nội dung sẽ hiển thị sau khi yêu cầu được chấp nhận."
-                          : "Nội dung và danh sách thành viên của nhóm này đã được ẩn. Vui lòng gia nhập nhóm để tham gia cộng đồng."}
+                        ? "Yêu cầu gia nhập của bạn đang chờ quản trị viên phê duyệt. Nội dung sẽ hiển thị sau khi yêu cầu được chấp nhận."
+                        : "Nội dung và danh sách thành viên của nhóm này đã được ẩn. Vui lòng gia nhập nhóm để tham gia cộng đồng."}
                     </p>
                     {!userMembership?.status && (
                       <button
@@ -622,9 +638,26 @@ const GroupDetailPage = () => {
                     {userMembership?.status === "ACCEPTED" ? (
                       <PostComposer
                         userAvatar={
-                          JSON.parse(localStorage.getItem("user"))?.avatar ||
+                          JSON.parse(localStorage.getItem("userProfile"))
+                            ?.currentAvatarUrl ||
                           "https://cdn-icons-png.flaticon.com/512/149/149071.png"
                         }
+                        groupId={group.id}
+                        onPostCreated={(newPost) => {
+                          if (newPost.status === "APPROVED") {
+                            setApprovedPosts((prev) => [newPost, ...prev]);
+                            toast.success("Đăng bài viết thành công!");
+                          } else if (newPost.status === "PENDING") {
+                            toast("Bài viết đang chờ quản trị viên duyệt.", {
+                              icon: "⏳",
+                              style: {
+                                borderRadius: "10px",
+                                background: "#333",
+                                color: "#fff",
+                              },
+                            });
+                          }
+                        }}
                       />
                     ) : (
                       <div className="bg-surface-main rounded-[2rem] p-8 border border-border-main text-center mb-6">
@@ -634,8 +667,13 @@ const GroupDetailPage = () => {
                               <MessageSquare size={24} />
                             </div>
                             <div>
-                              <h4 className="text-text-main font-bold">Tham gia cộng đồng</h4>
-                              <p className="text-text-secondary text-sm">Hãy tham gia nhóm để bắt đầu chia sẻ và thảo luận cùng mọi người.</p>
+                              <h4 className="text-text-main font-bold">
+                                Tham gia cộng đồng
+                              </h4>
+                              <p className="text-text-secondary text-sm">
+                                Hãy tham gia nhóm để bắt đầu chia sẻ và thảo
+                                luận cùng mọi người.
+                              </p>
                             </div>
                           </div>
                           <button
@@ -653,7 +691,9 @@ const GroupDetailPage = () => {
                         approvedPosts.map((post) => (
                           <PostCard
                             key={post.id}
-                            post={post} // <-- CHỈ CẦN TRUYỀN DÒNG NÀY LÀ ĐỦ
+                            post={post}
+                            onDelete={handleDeletePost}
+                            onUpdate={handleUpdatePost}
                           />
                         ))
                       ) : (
@@ -728,16 +768,17 @@ const GroupDetailPage = () => {
                               {member.fullName}
                             </p>
                             <span
-                              className={`px-2 py-0.5 text-[10px] font-black rounded uppercase ${member.role === "ADMIN"
-                                ? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
-                                : "bg-zinc-800 text-zinc-400"
-                                }`}
+                              className={`px-2 py-0.5 text-[10px] font-black rounded uppercase ${
+                                member.role === "ADMIN"
+                                  ? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
+                                  : "bg-zinc-800 text-zinc-400"
+                              }`}
                             >
                               {member.role === "ADMIN"
                                 ? "Quản trị viên"
                                 : member.role === "OWNER"
-                                  ? "Chủ nhóm"
-                                  : "Thành viên"}
+                                ? "Chủ nhóm"
+                                : "Thành viên"}
                             </span>
                           </div>
                           <p className="text-xs text-text-secondary mt-0.5 italic">
@@ -794,19 +835,21 @@ const GroupDetailPage = () => {
               <div className="flex gap-4 border-b border-border-main">
                 <button
                   onClick={() => setModTab("Bài viết")}
-                  className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${modTab === "Bài viết"
-                    ? "text-primary border-primary"
-                    : "text-text-secondary border-transparent"
-                    }`}
+                  className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${
+                    modTab === "Bài viết"
+                      ? "text-primary border-primary"
+                      : "text-text-secondary border-transparent"
+                  }`}
                 >
                   Bài viết chờ duyệt
                 </button>
                 <button
                   onClick={() => setModTab("Yêu cầu")}
-                  className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${modTab === "Yêu cầu"
-                    ? "text-primary border-primary"
-                    : "text-text-secondary border-transparent"
-                    }`}
+                  className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${
+                    modTab === "Yêu cầu"
+                      ? "text-primary border-primary"
+                      : "text-text-secondary border-transparent"
+                  }`}
                 >
                   Yêu cầu tham gia ({memberRequests.length})
                 </button>
@@ -870,10 +913,11 @@ const GroupDetailPage = () => {
 
                           {post.images && post.images.length > 0 && (
                             <div
-                              className={`grid gap-2 ${post.images.length === 1
-                                ? "grid-cols-1"
-                                : "grid-cols-2"
-                                }`}
+                              className={`grid gap-2 ${
+                                post.images.length === 1
+                                  ? "grid-cols-1"
+                                  : "grid-cols-2"
+                              }`}
                             >
                               {post.images.map((img, idx) => (
                                 <img
@@ -1095,6 +1139,16 @@ const GroupDetailPage = () => {
           </div>
         </div>
       )}
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, postId: null })}
+        onConfirm={confirmDelete}
+        title="Xóa bài viết"
+        message="Bạn có chắc chắn muốn xóa bài viết này? Hành động này không thể hoàn tác."
+        confirmText="Xóa"
+        cancelText="Hủy"
+        type="danger"
+      />
 
       {/* Transfer Ownership Modal */}
       <TransferOwnershipModal

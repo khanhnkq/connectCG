@@ -4,16 +4,24 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import postService from "../../services/PostService";
 import { uploadImage } from "../../utils/uploadImage"; // Import hàm uploadImage gốc từ utils
+import toast from "react-hot-toast";
 
 // --- CẤU HÌNH VALIDATION ---
 const FILE_SIZE = 50 * 1024 * 1024; // 50MB (Cho phép video)
 const SUPPORTED_FORMATS = [
-  "image/jpg", "image/jpeg", "image/png", "image/gif", "image/webp",
-  "video/mp4", "video/webm"
+  "image/jpg",
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+  "video/mp4",
+  "video/webm",
 ];
 
 const validationSchema = Yup.object({
-  content: Yup.string().trim().required("Please write something before posting!"),
+  content: Yup.string()
+    .trim()
+    .required("Please write something before posting!"),
   visibility: Yup.string().oneOf(["PUBLIC", "FRIENDS", "PRIVATE"]).required(),
   media: Yup.array()
     .of(
@@ -25,14 +33,14 @@ const validationSchema = Yup.object({
         .test("fileType", "Unsupported format", (value) => {
           if (!value) return true;
           return SUPPORTED_FORMATS.includes(value.type);
-        })
+        }),
     )
     .max(4, "You can only upload up to 4 files."),
 });
 
-export default function PostComposer({ userAvatar, onPostCreated }) {
+export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
   const [showVisibilityMenu, setShowVisibilityMenu] = useState(false);
-  
+
   // Refs cho input file ẩn
   const imageInputRef = useRef(null);
   const videoInputRef = useRef(null);
@@ -52,9 +60,9 @@ export default function PostComposer({ userAvatar, onPostCreated }) {
         // Lưu ý: Đảm bảo file src/utils/uploadImage.js của bạn đã cho phép upload Video như hướng dẫn trước
         let mediaUrls = [];
         if (values.media.length > 0) {
-          const uploadPromises = values.media.map((file) => 
-             // Tham số thứ 2 là folder trên Cloudinary
-             uploadImage(file, "posts") 
+          const uploadPromises = values.media.map((file) =>
+            // Tham số thứ 2 là folder trên Cloudinary
+            uploadImage(file, "posts"),
           );
           mediaUrls = await Promise.all(uploadPromises);
         }
@@ -65,6 +73,7 @@ export default function PostComposer({ userAvatar, onPostCreated }) {
           content: values.content,
           visibility: values.visibility,
           mediaUrls: mediaUrls, // Mảng các đường dẫn URL ảnh/video
+          groupId: groupId || null, // Thêm groupId nếu có
         };
 
         const response = await postService.createPost(payload);
@@ -72,22 +81,29 @@ export default function PostComposer({ userAvatar, onPostCreated }) {
 
         // 3. Xử lý phản hồi
         if (createdPost.status === "PENDING") {
-          alert("⚠️ Your post has been flagged for admin review.");
+          toast.error("⚠️ Your post has been flagged for admin review.");
         } else {
-          alert("✅ Post created successfully!");
-          if (onPostCreated) {
-            onPostCreated(createdPost);
+          // Chỉ hiện alert nếu KHÔNG phải là post trong group (vì GroupDetailPage sẽ handle toast riêng)
+          // Hoặc cứ alert chung cũng được, nhưng user flow bên Group đang plan là handle ở parent.
+          // Tuy nhiên để an toàn và nhất quán với code cũ, ta vẫn giữ alert hoặc custom lại.
+          // Tạm thời giữ nguyên alert nếu không có onPostCreated, hoặc để parent handle.
+          if (!onPostCreated) {
+            toast.success("✅ Post created successfully!");
           }
+        }
+
+        // Gọi callback để parent xử lý (cập nhật UI list post)
+        if (onPostCreated) {
+          onPostCreated(createdPost);
         }
 
         // 4. Reset form
         resetForm();
         if (imageInputRef.current) imageInputRef.current.value = "";
         if (videoInputRef.current) videoInputRef.current.value = "";
-
       } catch (error) {
         console.error("Error creating post:", error);
-        alert(error.message || "❌ Failed to create post.");
+        toast.error(error.message || "❌ Failed to create post.");
       } finally {
         setSubmitting(false);
       }
@@ -101,7 +117,7 @@ export default function PostComposer({ userAvatar, onPostCreated }) {
       // Thêm file vào mảng media hiện tại
       formik.setFieldValue("media", [...formik.values.media, file]);
       // Reset input để chọn lại file giống nhau nếu muốn
-      e.target.value = '';
+      e.target.value = "";
     }
   };
 
@@ -119,7 +135,6 @@ export default function PostComposer({ userAvatar, onPostCreated }) {
 
   return (
     <div className="flex flex-col gap-4 bg-surface-main p-5 rounded-2xl shadow-lg border border-border-main transition-shadow hover:shadow-primary/5 mb-6">
-      
       {/* --- HEADER: Avatar & Input --- */}
       <div className="flex gap-4">
         <div
@@ -146,17 +161,20 @@ export default function PostComposer({ userAvatar, onPostCreated }) {
       {formik.values.media.length > 0 && (
         <div className="flex gap-3 overflow-x-auto pb-2">
           {formik.values.media.map((file, index) => (
-            <div key={index} className="relative w-32 h-32 shrink-0 rounded-xl overflow-hidden border border-border-main group">
+            <div
+              key={index}
+              className="relative w-32 h-32 shrink-0 rounded-xl overflow-hidden border border-border-main group"
+            >
               {file.type.startsWith("image/") ? (
-                <img 
-                  src={URL.createObjectURL(file)} 
-                  alt="preview" 
-                  className="w-full h-full object-cover" 
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt="preview"
+                  className="w-full h-full object-cover"
                 />
               ) : (
-                <video 
-                  src={URL.createObjectURL(file)} 
-                  className="w-full h-full object-cover bg-black" 
+                <video
+                  src={URL.createObjectURL(file)}
+                  className="w-full h-full object-cover bg-black"
                 />
               )}
               <button
@@ -170,7 +188,7 @@ export default function PostComposer({ userAvatar, onPostCreated }) {
           ))}
         </div>
       )}
-      {formik.errors.media && typeof formik.errors.media === 'string' && (
+      {formik.errors.media && typeof formik.errors.media === "string" && (
         <p className="text-red-500 text-xs">{formik.errors.media}</p>
       )}
 
@@ -178,23 +196,23 @@ export default function PostComposer({ userAvatar, onPostCreated }) {
       <div className="flex flex-wrap gap-2 justify-between items-center border-t border-border-main pt-4 mt-1">
         <div className="flex gap-1 items-center">
           {/* Inputs ẩn */}
-          <input 
-            type="file" 
-            hidden 
-            ref={imageInputRef} 
-            accept="image/*" 
-            onChange={handleFileChange} 
+          <input
+            type="file"
+            hidden
+            ref={imageInputRef}
+            accept="image/*"
+            onChange={handleFileChange}
           />
-          <input 
-            type="file" 
-            hidden 
-            ref={videoInputRef} 
-            accept="video/*" 
-            onChange={handleFileChange} 
+          <input
+            type="file"
+            hidden
+            ref={videoInputRef}
+            accept="video/*"
+            onChange={handleFileChange}
           />
 
           {/* Button Photo */}
-          <button 
+          <button
             type="button"
             onClick={() => imageInputRef.current.click()}
             className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-background-main text-text-secondary hover:text-green-500 transition-colors"
@@ -202,9 +220,9 @@ export default function PostComposer({ userAvatar, onPostCreated }) {
             <Image size={22} />
             <span className="text-sm font-medium hidden sm:block">Photo</span>
           </button>
-          
+
           {/* Button Video */}
-          <button 
+          <button
             type="button"
             onClick={() => videoInputRef.current.click()}
             className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-background-main text-text-secondary hover:text-blue-500 transition-colors"
@@ -213,49 +231,56 @@ export default function PostComposer({ userAvatar, onPostCreated }) {
             <span className="text-sm font-medium hidden sm:block">Video</span>
           </button>
 
-          {/* Visibility Dropdown */}
-          <div className="relative ml-2">
-            <button
-              type="button"
-              onClick={() => setShowVisibilityMenu(!showVisibilityMenu)}
-              className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-[#493222] text-text-secondary hover:text-white transition-colors"
-            >
-              {(() => {
-                const Icon = visibilityIcons[formik.values.visibility];
-                return <Icon size={18} />;
-              })()}
-              <span className="text-sm font-medium text-xs">{formik.values.visibility}</span>
-              <ChevronDown size={16} />
-            </button>
-            
-            {showVisibilityMenu && (
-              <div className="absolute top-full left-0 mt-2 w-32 bg-surface-main border border-border-main rounded-lg shadow-xl z-20 overflow-hidden">
-                {["PUBLIC", "FRIENDS", "PRIVATE"].map((vis) => (
-                  <button
-                    key={vis}
-                    type="button"
-                    onClick={() => {
-                      formik.setFieldValue("visibility", vis);
-                      setShowVisibilityMenu(false);
-                    }}
-                    className="flex items-center gap-2 px-4 py-2 hover:bg-background-main text-text-main text-sm w-full text-left transition-colors"
-                  >
-                    {(() => {
-                      const Icon = visibilityIcons[vis];
-                      return <Icon size={16} />;
-                    })()}
-                    {vis}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          {/* Visibility Dropdown - Hide if groupId is present */}
+          {!groupId && (
+            <div className="relative ml-2">
+              <button
+                type="button"
+                onClick={() => setShowVisibilityMenu(!showVisibilityMenu)}
+                className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-[#493222] text-text-secondary hover:text-white transition-colors"
+              >
+                {(() => {
+                  const Icon = visibilityIcons[formik.values.visibility];
+                  return <Icon size={18} />;
+                })()}
+                <span className="text-sm font-medium text-xs">
+                  {formik.values.visibility}
+                </span>
+                <ChevronDown size={16} />
+              </button>
+
+              {showVisibilityMenu && (
+                <div className="absolute top-full left-0 mt-2 w-32 bg-surface-main border border-border-main rounded-lg shadow-xl z-20 overflow-hidden">
+                  {["PUBLIC", "FRIENDS", "PRIVATE"].map((vis) => (
+                    <button
+                      key={vis}
+                      type="button"
+                      onClick={() => {
+                        formik.setFieldValue("visibility", vis);
+                        setShowVisibilityMenu(false);
+                      }}
+                      className="flex items-center gap-2 px-4 py-2 hover:bg-background-main text-text-main text-sm w-full text-left transition-colors"
+                    >
+                      {(() => {
+                        const Icon = visibilityIcons[vis];
+                        return <Icon size={16} />;
+                      })()}
+                      {vis}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Submit Button */}
         <button
           onClick={formik.handleSubmit}
-          disabled={formik.isSubmitting || (!formik.values.content.trim() && formik.values.media.length === 0)}
+          disabled={
+            formik.isSubmitting ||
+            (!formik.values.content.trim() && formik.values.media.length === 0)
+          }
           className="bg-primary hover:bg-orange-600 text-[#231810] font-bold text-sm px-6 py-2.5 rounded-full transition-all shadow-md shadow-orange-500/10 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
         >
           {formik.isSubmitting && (

@@ -8,7 +8,7 @@ import {
   MapPin,
   SlidersHorizontal,
   PlusSquare,
-  UserX
+  UserX,
 } from "lucide-react";
 
 import PostComposer from "../../components/feed/PostComposer";
@@ -26,6 +26,10 @@ import { toast } from "react-toastify";
 import EditProfileModal from "../../components/profile/EditProfileModal";
 import PostService from "../../services/PostService";
 import PostCard from "../../components/feed/PostCard";
+import ConfirmModal from "../../components/common/ConfirmModal";
+import UserProfileService from "../../services/user/UserProfileService";
+
+import { usePostManagement } from "../../hooks/usePostManagement";
 
 export default function UserProfile() {
   const dispatch = useDispatch();
@@ -36,30 +40,68 @@ export default function UserProfile() {
   const [isUploadingCover, setIsUploadingCover] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
+  const [userAvatar, setUserAvatar] = useState("");
+
+  const {
+    posts,
+    setPosts,
+    deleteModal,
+    setDeleteModal,
+    handleDeletePost,
+    confirmDelete,
+    handleUpdatePost,
+  } = usePostManagement();
+
   // Hidden file inputs
   const avatarInputRef = useRef(null);
   const coverInputRef = useRef(null);
 
-    const [posts, setPosts] = useState([]);
-    const [loadingPosts, setLoadingPosts] = useState(false);
+  const [loadingPosts, setLoadingPosts] = useState(false);
 
-    const fetchPosts = async (userId) => {
-      
-        setLoadingPosts(true);
-        try {
-          const response = await PostService.getPostsByUserId(userId);
-          // Assuming response.data is the array of posts
-          const sortedPosts = (response.data || []).sort(
-            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-          );
-          setPosts(sortedPosts);
-        } catch (error) {
-          console.error("Error fetching user posts:", error);
-        } finally {
-          setLoadingPosts(false);
+  const fetchPosts = async (userId) => {
+    setLoadingPosts(true);
+    try {
+      const response = await PostService.getPostsByUserId(userId);
+      // Assuming response.data is the array of posts
+      const sortedPosts = (response.data || []).sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+      );
+      setPosts(sortedPosts);
+    } catch (error) {
+      console.error("Error fetching user posts:", error);
+    } finally {
+      setLoadingPosts(false);
+    }
+  };
+  // Hàm lấy Avatar
+  const fetchCurrentUserAvatar = async () => {
+    try {
+      // 1. Lấy string JSON từ localStorage
+      const userProfileStr = localStorage.getItem("userProfile");
+
+      if (userProfileStr) {
+        // 2. Parse từ String sang Object
+        const userProfile = JSON.parse(userProfileStr);
+        // 3. Lấy avatar (Fallback các trường hợp key có thể khác nhau)
+        const avatar =
+          userProfile.currentAvatarUrl ||
+          userProfile.avatar ||
+          userProfile.avatarUrl;
+
+        if (avatar) {
+          setUserAvatar(avatar);
         }
-      
-    };
+      }
+    } catch (error) {
+      console.error("Failed to fetch user avatar", error);
+    }
+  };
+  const handlePostCreated = (newPost) => {
+    // only add if approved (AI check result)
+    if (newPost.status === "APPROVED") {
+      setPosts((prevPosts) => [newPost, ...prevPosts]);
+    }
+  };
 
   useEffect(() => {
     const userId = user?.id || user?.userId || user?.sub;
@@ -67,6 +109,7 @@ export default function UserProfile() {
       dispatch(fetchUserProfile(userId));
     }
     fetchPosts(userId);
+    fetchCurrentUserAvatar();
   }, [user, profile, dispatch]);
 
   const handleAvatarChange = async (e) => {
@@ -393,29 +436,39 @@ export default function UserProfile() {
                   ? "lg:col-span-7 xl:col-span-8"
                   : "lg:col-span-1"
               } flex flex-col gap-6`}
-            >{activeTab === "timeline" && (
-              <div className="flex flex-col gap-6">
-                {loadingPosts ? (
-                  // Hiệu ứng loading quay quay
-                  <div className="flex justify-center p-8 bg-surface-main rounded-2xl border border-border-main">
-                    <div className="size-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                  </div>
-                ) : posts.length > 0 ? (
-                  // Duyệt mảng posts và hiển thị PostCard
-                  posts.map((post) => (
-                    <PostCard key={post.id} post={post} />
-                  ))
-                ) : (
-                  // Trạng thái trống nếu không có bài nào
-                  <div className="flex flex-col gap-6 text-center py-20 bg-surface-main rounded-2xl border border-border-main">
-                    <UserX className="size-12 text-text-secondary/30 mb-4 mx-auto" />
-                    <p className="text-text-secondary italic">
-                      Người dùng này chưa có bài viết nào.
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
+            >
+              {activeTab === "timeline" && (
+                <div className="flex flex-col gap-6">
+                  <PostComposer
+                    userAvatar={userAvatar}
+                    onPostCreated={handlePostCreated}
+                  />
+                  {loadingPosts ? (
+                    // Hiệu ứng loading quay quay
+                    <div className="flex justify-center p-8 bg-surface-main rounded-2xl border border-border-main">
+                      <div className="size-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                  ) : posts.length > 0 ? (
+                    // Duyệt mảng posts và hiển thị PostCard
+                    posts.map((post) => (
+                      <PostCard
+                        key={post.id}
+                        post={post}
+                        onDelete={handleDeletePost}
+                        onUpdate={handleUpdatePost}
+                      />
+                    ))
+                  ) : (
+                    // Trạng thái trống nếu không có bài nào
+                    <div className="flex flex-col gap-6 text-center py-20 bg-surface-main rounded-2xl border border-border-main">
+                      <UserX className="size-12 text-text-secondary/30 mb-4 mx-auto" />
+                      <p className="text-text-secondary italic">
+                        Người dùng này chưa có bài viết nào.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {activeTab === "about" && (
                 <ProfileAbout profile={profile} isOwner={true} />
@@ -440,6 +493,16 @@ export default function UserProfile() {
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         profile={profile}
+      />
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, postId: null })}
+        onConfirm={confirmDelete}
+        title="Xóa bài viết"
+        message="Bạn có chắc chắn muốn xóa bài viết này? Hành động này không thể hoàn tác."
+        confirmText="Xóa"
+        cancelText="Hủy"
+        type="danger"
       />
     </>
   );
