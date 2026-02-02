@@ -4,9 +4,16 @@ import SockJS from "sockjs-client";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
-import { useDispatch } from 'react-redux';
-import { addNotification, setGroupDeletionAlert } from '../redux/slices/notificationSlice';
-import { setOnlineUsers, userCameOnline, userWentOffline } from '../redux/slices/onlineUsersSlice';
+import { useDispatch } from "react-redux";
+import {
+  addNotification,
+  setGroupDeletionAlert,
+} from "../redux/slices/notificationSlice";
+import {
+  setOnlineUsers,
+  userCameOnline,
+  userWentOffline,
+} from "../redux/slices/onlineUsersSlice";
 
 import userService from "../services/UserService";
 
@@ -74,6 +81,52 @@ export const WebSocketProvider = ({ children }) => {
         }
       });
 
+      client.subscribe("/user/queue/errors", (message) => {
+        const payload = JSON.parse(message.body);
+
+        if (payload.type === "LOCK" || payload.type === "DELETE") {
+          console.warn("🚫 Account disabled:", payload.message);
+          const msg =
+            payload.message || "Tài khoản của bạn đã bị khóa hoặc xóa.";
+          localStorage.clear();
+          localStorage.setItem("loginError", msg);
+          client.deactivate();
+          navigate("/login");
+        }
+      });
+
+      client.subscribe("/user/queue/notifications", (message) => {
+        try {
+          const payload = JSON.parse(message.body);
+          // TungNotificationDTO structure: { type, content, actorName, ... }
+
+          if (payload.type === "GROUP_DELETED") {
+            console.log("🔔 Received GROUP_DELETED event:", payload);
+            dispatch(addNotification(payload));
+
+            // Check if user is currently viewing this group
+            const currentPath = window.location.pathname;
+            if (currentPath.includes(`/groups/${payload.targetId}`)) {
+              dispatch(setGroupDeletionAlert(payload));
+            }
+
+            toast.error(
+              payload.content || "Nhóm của bạn đã bị xóa do vi phạm.",
+              { duration: 6000 },
+            );
+          } else if (payload.type === "WARNING") {
+            dispatch(addNotification(payload));
+            toast(payload.content, { icon: "⚠️" });
+          } else {
+            // General notification
+            dispatch(addNotification(payload));
+            toast(payload.content, { icon: "🔔" });
+          }
+        } catch (e) {
+          console.error("Error parsing notification:", e);
+        }
+      });
+
       client.subscribe("/topic/posts", (message) => {
         try {
           const payload = JSON.parse(message.body);
@@ -110,79 +163,6 @@ export const WebSocketProvider = ({ children }) => {
           );
         } catch (e) {
           console.error("Error parsing comment event:", e);
-        }
-      });
-
-
-                    if (payload.type === "GROUP_DELETED") {
-                        console.log("🔔 Received GROUP_DELETED event:", payload);
-                        dispatch(addNotification(payload));
-
-                        // Check if user is currently viewing this group
-                        const currentPath = window.location.pathname;
-                        // Assuming payload.targetId is the groupId
-                        if (currentPath.includes(`/groups/${payload.targetId}`)) {
-                            dispatch(setGroupDeletionAlert(payload));
-                        }
-                    } else if (payload.type === "WARNING") {
-
-                        // We can modify the imports at the top instead of dynamic import here?
-                        // Let's check imports first.
-                    } else if (payload.type === "WARNING") {
-                        dispatch(addNotification(payload));
-                        toast(payload.content, { icon: '⚠️' });
-                    } else {
-                        // General notification
-                        dispatch(addNotification(payload));
-                        toast(payload.content, { icon: '🔔' });
-                    }
-                } catch (e) {
-                    console.error("Error parsing notification:", e);
-                }
-            });
-        };
-
-      // Error Channel (Account Bans/Locks)
-      client.subscribe("/user/queue/errors", (message) => {
-        const payload = JSON.parse(message.body);
-
-        if (payload.type === "LOCK" || payload.type === "DELETE") {
-          console.warn("🚫 Account disabled:", payload.message);
-          const msg =
-            payload.message || "Tài khoản của bạn đã bị khóa hoặc xóa.";
-          localStorage.clear();
-          localStorage.setItem("loginError", msg);
-          client.deactivate();
-          navigate("/login");
-        }
-      });
-
-      // Notification Channel
-      client.subscribe("/user/queue/notifications", (message) => {
-        try {
-          const payload = JSON.parse(message.body);
-          // TungNotificationDTO structure: { type, content, actorName, ... }
-
-          if (payload.type === "GROUP_DELETED") {
-            dispatch(addNotification(payload)); // Add to Redux Store
-
-            toast.error(
-              payload.content || "Nhóm của bạn đã bị xóa do vi phạm.",
-              {
-                duration: 6000,
-                className: "border border-red-500", // Use Tailwind utility instead if configured
-              },
-            );
-          } else if (payload.type === "WARNING") {
-            dispatch(addNotification(payload));
-            toast(payload.content, { icon: "⚠️" });
-          } else {
-            // General notification
-            dispatch(addNotification(payload));
-            toast(payload.content, { icon: "🔔" });
-          }
-        } catch (e) {
-          console.error("Error parsing notification:", e);
         }
       });
     };
