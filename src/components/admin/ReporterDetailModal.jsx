@@ -1,4 +1,4 @@
-import { Mail, Cake, Calendar } from "lucide-react";
+import { User } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import UserProfileService from "../../services/user/UserProfileService";
 
@@ -22,118 +22,111 @@ const ReporterDetailModal = ({ userId, onClose }) => {
     fetchUser();
   }, [userId]);
 
+  if (!userId) return null;
+
   return (
     <div
-      className="fixed inset-0 z-[140] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-[140] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
-        className="bg-surface-dark w-full max-w-md rounded-2xl border border-white/10 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+        className="bg-[#231810] w-full max-w-[550px] rounded-[32px] border border-[#3e2723] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {loading ? (
-          <div className="h-40 flex items-center justify-center">
+          <div className="h-64 flex items-center justify-center">
             <div className="size-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : user ? (
           <div>
-            {/* Cover & Avatar */}
-            <div className="relative h-24 bg-gradient-to-r from-primary/20 to-purple-500/20">
-              <img
-                src={
-                  user.currentCoverUrl || "https://via.placeholder.com/400x150"
-                }
-                className="w-full h-full object-cover opacity-50"
-                alt=""
-              />
-              <div className="absolute -bottom-8 left-6">
+            {/* Header / Cover */}
+            <div className="relative h-28 w-full">
+              <div
+                className="absolute inset-0 bg-cover bg-center"
+                style={{
+                  backgroundImage: `url("${user.currentCoverUrl || "https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&q=80"}")`,
+                }}
+              ></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#231810] via-transparent to-black/40"></div>
+            </div>
+
+            {/* Profile Info - Centered */}
+            <div className="px-6 pb-8 -mt-[4.5rem] relative flex flex-col items-center">
+              {/* Avatar */}
+              <div className="size-[6.5rem] rounded-[24px] bg-[#231810] p-1.5 shadow-2xl skew-y-0 rotate-0">
                 <img
-                  src={
-                    user.currentAvatarUrl || "https://via.placeholder.com/100"
-                  }
-                  className="size-16 rounded-full border-4 border-surface-dark bg-surface-dark"
+                  src={user.currentAvatarUrl || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
+                  className="w-full h-full rounded-[20px] object-cover"
                   alt=""
                 />
               </div>
-            </div>
 
-            <div className="pt-10 px-6 pb-6">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="text-xl font-bold text-white">
-                    {user.fullName}
-                  </h3>
-                  <p className="text-text-muted text-sm">
-                    @{user.username || "unknown"}
-                  </p>
-                </div>
-                <span
-                  className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${
-                    user.role === "ADMIN"
-                      ? "bg-indigo-500/20 text-indigo-400"
-                      : "bg-white/5 text-text-muted"
-                  }`}
-                >
-                  {user.role || "USER"}
-                </span>
+              {/* Name & Badge */}
+              <div className="text-center mt-3">
+                <h3 className="text-2xl font-[900] text-white tracking-tight flex items-center justify-center gap-2">
+                  {user.fullName}
+                  {user.role === "ADMIN" && (
+                    <span className="bg-[#ff8a2a]/20 text-[#ff8a2a] text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border border-[#ff8a2a]/20">Admin</span>
+                  )}
+                </h3>
+                <p className="text-[#8d6e63] text-sm font-semibold">@{user.username || "unknown"}</p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="bg-white/5 p-3 rounded-xl text-center">
-                  <p className="text-xs text-text-muted uppercase font-bold">
-                    Friends
-                  </p>
-                  <p className="text-lg font-black text-white">
-                    {user.friendsCount || 0}
-                  </p>
-                </div>
-                <div className="bg-white/5 p-3 rounded-xl text-center">
-                  <p className="text-xs text-text-muted uppercase font-bold">
-                    Posts
-                  </p>
-                  <p className="text-lg font-black text-white">{0}</p>
-                </div>
+              {/* Stats Pill */}
+              <div className="mt-4 bg-[#3d2b22] rounded-full px-5 py-2 flex items-center gap-2 text-sm font-bold text-[#eecfa1] shadow-inner border border-[#4e342e]">
+                <User size={16} className="text-[#ff8a2a]" />
+                <span>{user.friendsCount || 0} bạn bè</span>
               </div>
 
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 text-sm text-gray-300">
-                  <Mail className="text-text-muted" size={18} />
-                  {user.email}
+              {/* Info Details Box */}
+              <div className="w-full bg-[#2a1d15] rounded-xl mt-8 px-6 py-5 border border-[#3e2723]/50">
+                <div className="flex items-center gap-2 mb-5">
+                  <User size={16} className="text-[#ff8a2a]" />
+                  <h4 className="text-white/90 font-bold text-[15px]">Thông tin chi tiết</h4>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-gray-300">
-                  <Cake className="text-text-muted" size={18} />
-                  {user.dob ? new Date(user.dob).toLocaleDateString() : "N/A"}
-                </div>
-                <div className="flex items-center gap-3 text-sm text-gray-300">
-                  <Calendar className="text-text-muted" size={18} />
-                  Joined:{" "}
-                  {user.createdAt || user.created_at
-                    ? new Date(
-                        user.createdAt || user.created_at,
-                      ).toLocaleDateString()
-                    : "Unknown"}
+
+                <div className="space-y-4">
+                  <InfoRow label="Giới tính" value={{
+                    MALE: "Nam",
+                    FEMALE: "Nữ",
+                    OTHER: "Khác",
+                  }[user.gender] || "Chưa cập nhật"} />
+                  <InfoRow label="Ngày sinh" value={user.dateOfBirth || "Chưa cập nhật"} />
+                  <InfoRow label="Tìm kiếm" value={{
+                    LOVE: "Tình yêu",
+                    FRIENDS: "Bạn bè",
+                    NETWORKING: "Kết nối",
+                  }[user.lookingFor] || "Chưa cập nhật"} />
+                  <InfoRow label="Nghề nghiệp" value={user.occupation || 'Chưa cập nhật'} />
+                  <InfoRow label="Tình trạng" value={{
+                    SINGLE: "Độc thân",
+                    MARRIED: "Đã kết hôn",
+                    DIVORCED: "Ly hôn",
+                  }[user.maritalStatus] || "Chưa cập nhật"} />
+                  <InfoRow label="Thành phố" value={user.cityName || 'Chưa cập nhật'} />
                 </div>
               </div>
 
-              <div className="mt-6 flex gap-3">
-                <button
-                  onClick={onClose}
-                  className="flex-1 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-white font-bold transition-all"
-                >
-                  Close
-                </button>
-                {/* <button onClick={onBan} className="flex-1 py-2.5 rounded-lg bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white font-bold transition-all border border-red-500/20">
-                                     Ban User
-                                 </button> */}
-              </div>
+              <button onClick={onClose} className="mt-8 text-[#8d6e63] hover:text-[#d7ccc8] text-sm font-extrabold uppercase tracking-wider transition-colors">
+                Đóng
+              </button>
             </div>
           </div>
         ) : (
-          <div className="p-8 text-center text-text-muted">User not found</div>
+          <div className="p-12 text-center text-[#8d6e63]">
+            User not found
+          </div>
         )}
       </div>
     </div>
   );
 };
+
+const InfoRow = ({ label, value }) => (
+  <div className="flex justify-between items-center text-[13px] border-b border-[#3e2723]/30 last:border-0 pb-3 last:pb-0">
+    <span className="text-[#a1887f] font-medium">{label}</span>
+    <span className="text-white font-bold">{value}</span>
+  </div>
+);
 
 export default ReporterDetailModal;

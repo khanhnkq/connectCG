@@ -4,7 +4,7 @@ import SockJS from "sockjs-client";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useDispatch } from 'react-redux';
-import { addNotification } from '../redux/slices/notificationSlice';
+import { addNotification, setGroupDeletionAlert } from '../redux/slices/notificationSlice';
 import { setOnlineUsers, userCameOnline, userWentOffline } from '../redux/slices/onlineUsersSlice';
 import userService from "../services/UserService";
 
@@ -88,12 +88,19 @@ export const WebSocketProvider = ({ children }) => {
                     // TungNotificationDTO structure: { type, content, actorName, ... }
 
                     if (payload.type === "GROUP_DELETED") {
-                        dispatch(addNotification(payload)); // Add to Redux Store
+                        console.log("🔔 Received GROUP_DELETED event:", payload);
+                        dispatch(addNotification(payload));
 
-                        toast.error(payload.content || "Nhóm của bạn đã bị xóa do vi phạm.", {
-                            duration: 6000,
-                            className: 'border border-red-500', // Use Tailwind utility instead if configured
-                        });
+                        // Check if user is currently viewing this group
+                        const currentPath = window.location.pathname;
+                        // Assuming payload.targetId is the groupId
+                        if (currentPath.includes(`/groups/${payload.targetId}`)) {
+                            dispatch(setGroupDeletionAlert(payload));
+                        }
+                    } else if (payload.type === "WARNING") {
+
+                        // We can modify the imports at the top instead of dynamic import here?
+                        // Let's check imports first.
                     } else if (payload.type === "WARNING") {
                         dispatch(addNotification(payload));
                         toast(payload.content, { icon: '⚠️' });

@@ -22,6 +22,9 @@ import ImageLightbox from "../common/ImageLightBox";
 import PostUpdate from "./PostUpdate";
 import postService from "../../services/PostService";
 import CommentSection from "./CommentSection";
+import ReportModal from "../report/ReportModal";
+import reportService from "../../services/ReportService";
+import toast from "react-hot-toast";
 
 // --- HELPER 1: Format thời gian ---
 const formatTime = (dateString) => {
@@ -185,6 +188,28 @@ export default function PostCard({
 
   // Edit mode state
   const [isEditing, setIsEditing] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+
+  const reportReasons = [
+    "Spam hoặc lừa đảo",
+    "Nội dung khiêu dâm",
+    "Bạo lực hoặc nguy hiểm",
+    "Quấy rối hoặc bắt nạt",
+    "Thông tin sai lệch",
+    "Vi phạm quyền sở hữu trí tuệ",
+    "Khác"
+  ];
+
+  const handleReportSubmit = async (reportData) => {
+    try {
+      await reportService.createReport(reportData);
+      toast.success("Báo cáo đã được gửi. Cảm ơn bạn đã đóng góp!");
+      setShowReportModal(false);
+    } catch (error) {
+      toast.error("Gửi báo cáo thất bại. Vui lòng thử lại sau.");
+      console.error("Report error:", error);
+    }
+  };
 
   // Chuẩn hóa dữ liệu logic
   let data = {};
@@ -273,9 +298,8 @@ export default function PostCard({
 
   return (
     <article
-      className={`bg-surface-main rounded-2xl border border-border-main shadow-sm transition-colors duration-300 mb-4 ${
-        type === "dashboard" ? "shadow-lg" : ""
-      }`}
+      className={`bg-surface-main rounded-2xl border border-border-main shadow-sm transition-colors duration-300 mb-4 ${type === "dashboard" ? "shadow-lg" : ""
+        }`}
     >
       {/* HEADER */}
       <div className="p-4 flex justify-between items-start">
@@ -355,7 +379,13 @@ export default function PostCard({
               <button className="w-full text-left px-4 py-2.5 text-sm text-text-main hover:bg-background-main flex items-center gap-2">
                 <Share2 size={16} /> Share
               </button>
-              <button className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 hover:text-red-600 flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setShowReportModal(true);
+                  setShowMenu(false);
+                }}
+                className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 hover:text-red-600 flex items-center gap-2"
+              >
                 <AlertTriangle size={16} /> Report
               </button>
             </div>
@@ -451,6 +481,20 @@ export default function PostCard({
         />
       )}
       {showComments && <CommentSection postId={data.id} />}
+
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        onSubmit={handleReportSubmit}
+        title="Báo cáo bài viết"
+        subtitle="Hãy giúp chúng tôi hiểu vấn đề với bài viết này"
+        reasons={reportReasons}
+        targetPayload={{
+          targetType: "POST",
+          targetId: data.id,
+        }}
+        user={data.author}
+      />
     </article>
   );
 }
