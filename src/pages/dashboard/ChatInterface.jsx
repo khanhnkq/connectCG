@@ -206,6 +206,7 @@ export default function ChatInterface() {
 
   const [searchTerm, setSearchTerm] = useState("");
   const messagesEndRef = useRef(null);
+  const lastRoomIdRef = useRef(null);
 
   // useChatRooms hook handles fetchRooms
 
