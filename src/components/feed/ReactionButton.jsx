@@ -129,7 +129,7 @@ const ReactionButton = ({ currentReaction, onReact }) => {
       {/* Nút chính */}
       <button
         onClick={handleClick}
-        className="w-full flex items-center justify-center gap-2 py-2 rounded-lg hover:bg-background-main transition-colors group"
+        className="w-full flex items-center justify-center gap-2 py-2 rounded-md hover:bg-background-main transition-colors group"
       >
         {getMainIcon()}
       </button>

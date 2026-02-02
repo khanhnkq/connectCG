@@ -100,7 +100,7 @@ export default function PostUpdate({ post, onUpdate, onCancel }) {
           <div className="flex items-center gap-2 mb-2">
             {/* If we want to show "Editing" text, make it subtle */}
             <span className="text-sm font-semibold text-primary">
-              Editing Post
+              Chỉnh sửa bài viết
             </span>
 
             {/* Visibility Selector */}
@@ -198,7 +198,7 @@ export default function PostUpdate({ post, onUpdate, onCancel }) {
             className="aspect-square rounded-xl border-2 border-dashed border-border-main flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors group text-text-secondary hover:text-primary"
           >
             <ImageIcon size={20} />
-            <span className="text-[10px] font-medium mt-1">Add</span>
+            <span className="text-[10px] font-medium mt-1">Thêm</span>
           </div>
         </div>
       )}
@@ -222,7 +222,7 @@ export default function PostUpdate({ post, onUpdate, onCancel }) {
           <div className="p-1 bg-green-500/10 rounded-full group-hover:bg-green-500/20 transition-colors">
             <ImageIcon size={14} className="text-green-600" />
           </div>
-          <span className="text-xs font-medium">Add Photo</span>
+          <span className="text-xs font-medium">Thêm hình ảnh</span>
         </button>
 
         {/* Right: Actions */}
@@ -232,7 +232,7 @@ export default function PostUpdate({ post, onUpdate, onCancel }) {
             disabled={isSaving}
             className="px-4 py-1.5 text-xs font-semibold text-text-secondary hover:bg-background-main hover:text-text-main rounded-full transition-colors"
           >
-            Cancel
+            Hủy
           </button>
           <button
             onClick={handleSave}
@@ -242,7 +242,7 @@ export default function PostUpdate({ post, onUpdate, onCancel }) {
             {isSaving && (
               <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             )}
-            {isSaving ? "Saving..." : "Save"}
+            {isSaving ? "Đang lưu..." : "Lưu"}
           </button>
         </div>
       </div>

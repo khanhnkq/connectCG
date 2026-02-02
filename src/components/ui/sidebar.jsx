@@ -54,9 +54,11 @@ export const DesktopSidebar = ({ className, children, ...props }) => {
   const { open, setOpen, animate } = useSidebar();
   return (
     <>
+      <div className="hidden md:block w-[60px] shrink-0" />
+
       <motion.div
         className={cn(
-          "h-full px-4 py-4 hidden md:flex md:flex-col bg-background-main w-[240px] shrink-0 border-r border-border-main",
+          "h-full px-4 py-4 hidden md:flex md:flex-col bg-background-main shrink-0 border-r border-border-main fixed left-0 top-[64px] z-40",
           className,
         )}
         animate={{

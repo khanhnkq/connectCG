@@ -22,6 +22,9 @@ import ImageLightbox from "../common/ImageLightBox";
 import PostUpdate from "./PostUpdate";
 import postService from "../../services/PostService";
 import CommentSection from "./CommentSection";
+import ReportModal from "../report/ReportModal";
+import reportService from "../../services/ReportService";
+import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 
 // --- HELPER 1: Format thời gian ---
@@ -31,10 +34,10 @@ const formatTime = (dateString) => {
   const now = new Date();
   const diff = Math.floor((now - date) / 1000); // giây
 
-  if (diff < 60) return "Just now";
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+  if (diff < 60) return "Vừa xong";
+  if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)} ngày trước`;
   return date.toLocaleDateString("vi-VN", { day: "numeric", month: "short" });
 };
 
@@ -186,6 +189,28 @@ export default function PostCard({
 
   // Edit mode state
   const [isEditing, setIsEditing] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+
+  const reportReasons = [
+    "Spam hoặc lừa đảo",
+    "Nội dung khiêu dâm",
+    "Bạo lực hoặc nguy hiểm",
+    "Quấy rối hoặc bắt nạt",
+    "Thông tin sai lệch",
+    "Vi phạm quyền sở hữu trí tuệ",
+    "Khác",
+  ];
+
+  const handleReportSubmit = async (reportData) => {
+    try {
+      await reportService.createReport(reportData);
+      toast.success("Báo cáo đã được gửi. Cảm ơn bạn đã đóng góp!");
+      setShowReportModal(false);
+    } catch (error) {
+      toast.error("Gửi báo cáo thất bại. Vui lòng thử lại sau.");
+      console.error("Report error:", error);
+    }
+  };
 
   // Chuẩn hóa dữ liệu logic
   let data = {};
@@ -240,6 +265,31 @@ export default function PostCard({
     setLocalCommentCount(data.commentCount);
   }, [data.currentUserReaction, data.reactCount, data.commentCount]);
 
+  // Listen for realtime reaction events
+  useEffect(() => {
+    const handleReactionEvent = (e) => {
+      const { postId, newReactCount } = e.detail;
+      if (postId === data.id) {
+        setLocalReactCount(newReactCount);
+      }
+    };
+    window.addEventListener("reactionEvent", handleReactionEvent);
+    return () =>
+      window.removeEventListener("reactionEvent", handleReactionEvent);
+  }, [data.id]);
+
+  // Listen for realtime comment events
+  useEffect(() => {
+    const handleCommentEvent = (e) => {
+      const { postId, newCommentCount } = e.detail;
+      if (postId === data.id) {
+        setLocalCommentCount(newCommentCount);
+      }
+    };
+    window.addEventListener("commentEvent", handleCommentEvent);
+    return () => window.removeEventListener("commentEvent", handleCommentEvent);
+  }, [data.id]);
+
   const handleReactWrapper = async (type) => {
     // 1. Optimistic Update
     const previousReaction = localReaction;
@@ -293,7 +343,7 @@ export default function PostCard({
 
   return (
     <article
-      className={`bg-surface-main rounded-2xl border border-border-main shadow-sm transition-colors duration-300 mb-4 ${
+      className={`bg-surface-main rounded-lg border border-border-main shadow-sm transition-colors duration-300 mb-4 ${
         type === "dashboard" ? "shadow-lg" : ""
       }`}
     >
@@ -328,7 +378,7 @@ export default function PostCard({
               {data.author.isSystem && (
                 <span className="bg-primary/20 text-primary text-[9px] font-black px-1.5 py-0.5 rounded border border-primary/30 tracking-tighter uppercase flex items-center gap-0.5">
                   <CheckCircle2 size={10} />
-                  Official
+                  Chính thức
                 </span>
               )}
             </div>
@@ -340,7 +390,7 @@ export default function PostCard({
               ) : data.visibility === "PRIVATE" ? (
                 <div className="flex items-center gap-1">
                   <i className="lucide-lock w-3 h-3" />
-                  Private
+                  Riêng tư
                 </div>
               ) : (
                 <Globe size={12} />
@@ -361,13 +411,13 @@ export default function PostCard({
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setShowMenu((prev) => !prev)}
-            className="size-8 flex items-center justify-center rounded-full text-text-secondary hover:bg-background-main transition-all"
+            className="size-8 flex items-center justify-center rounded-md text-text-secondary hover:bg-background-main transition-all"
           >
             <MoreHorizontal size={20} />
           </button>
 
           {showMenu && (
-            <div className="absolute right-0 top-full mt-1 w-48 bg-surface-main rounded-lg shadow-xl border border-border-main z-10 overflow-hidden py-1">
+            <div className="absolute right-0 top-full mt-1 w-48 bg-surface-main rounded-md shadow-xl border border-border-main z-10 overflow-hidden py-1">
               {user.id === data.author.id && (
                 <>
                   <button
@@ -377,7 +427,7 @@ export default function PostCard({
                     }}
                     className="w-full text-left px-4 py-2.5 text-sm text-text-main hover:bg-background-main flex items-center gap-2"
                   >
-                    <Pencil size={16} /> Edit
+                    <Pencil size={16} /> Chỉnh sửa
                   </button>
                   <button
                     onClick={() => {
@@ -386,14 +436,21 @@ export default function PostCard({
                     }}
                     className="w-full text-left px-4 py-2.5 text-sm text-text-main hover:bg-background-main flex items-center gap-2"
                   >
-                    <Trash size={16} /> Delete
+                    <Trash size={16} /> Xóa
                   </button>
                 </>
               )}
               <button className="w-full text-left px-4 py-2.5 text-sm text-text-main hover:bg-background-main flex items-center gap-2">
-                <Share2 size={16} /> Share
+                <Share2 size={16} /> Chia sẻ
               </button>
-              <button className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 hover:text-red-600 flex items-center gap-2">
+
+              <button
+                onClick={() => {
+                  setShowReportModal(true);
+                  setShowMenu(false);
+                }}
+                className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 hover:text-red-600 flex items-center gap-2"
+              >
                 <AlertTriangle size={16} /> Report
               </button>
             </div>
@@ -421,7 +478,7 @@ export default function PostCard({
       {/* MEDIA GALLERY */}
       {/* Hide media when editing because PostUpdate handles preview */}
       {!isEditing && data.mediaItems.length > 0 && (
-        <div className="w-full border-t border-b border-border-main/50">
+        <div className="w-full border-t border-b border-border-main/50 px-4 md:px-0 pb-2 md:pb-0">
           <MediaGallery
             mediaItems={data.mediaItems}
             onMediaClick={(index) => setLightboxIndex(index)}
@@ -470,7 +527,7 @@ export default function PostCard({
                 onClick={() => setShowComments(!showComments)}
                 className="hover:text-text-main transition-colors"
               >
-                {localCommentCount} comments
+                {localCommentCount} bình luận
               </button>
             )}
             {/* Placeholder for share count if future-proofed */}
@@ -489,15 +546,15 @@ export default function PostCard({
 
           <button
             onClick={() => setShowComments(!showComments)}
-            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg hover:bg-background-main text-text-secondary hover:text-blue-500 transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-md hover:bg-background-main text-text-secondary hover:text-blue-500 transition-colors"
           >
             <MessageSquare size={20} />
-            <span className="text-sm font-medium">Comment</span>
+            <span className="text-sm font-medium">Bình luận</span>
           </button>
 
-          <button className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg hover:bg-background-main text-text-secondary hover:text-green-500 transition-colors">
+          <button className="flex-1 flex items-center justify-center gap-2 py-2 rounded-md hover:bg-background-main text-text-secondary hover:text-green-500 transition-colors">
             <Share2 size={20} />
-            <span className="text-sm font-medium">Share</span>
+            <span className="text-sm font-medium">Chia sẻ</span>
           </button>
         </div>
       </div>
@@ -510,6 +567,21 @@ export default function PostCard({
           onClose={() => setLightboxIndex(-1)}
         />
       )}
+      {showComments && <CommentSection postId={data.id} />}
+
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        onSubmit={handleReportSubmit}
+        title="Báo cáo bài viết"
+        subtitle="Hãy giúp chúng tôi hiểu vấn đề với bài viết này"
+        reasons={reportReasons}
+        targetPayload={{
+          targetType: "POST",
+          targetId: data.id,
+        }}
+        user={data.author}
+      />
       {showComments && (
         <CommentSection
           postId={data.id}

@@ -30,6 +30,8 @@ import OAuth2RedirectHandler from "./pages/auth/OAuth2RedirectHandler";
 import TermsOfService from "./pages/auth/TermsOfService";
 import { ThemeProvider } from "./context/ThemeContext";
 
+import GroupDeletedModal from "./components/common/GroupDeletedModal";
+
 function App() {
   return (
     <ThemeProvider>
@@ -59,6 +61,7 @@ function App() {
         }}
       />
       <WebSocketProvider>
+        <GroupDeletedModal />
         <Routes>
           {/* Guest Routes - Redirect to Dashboard if already logged in */}
           <Route element={<GuestRoute />}>

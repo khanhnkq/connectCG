@@ -29,6 +29,39 @@ export default function Newsfeed() {
     fetchCurrentUserAvatar(); // Gọi hàm lấy avatar
   }, []);
 
+  useEffect(() => {
+    const handlePostEvent = (e) => {
+      const { action, post, postId } = e.detail;
+
+      // Get current user ID from localStorage
+      const userStr = localStorage.getItem("user");
+      const currentUserId = userStr ? JSON.parse(userStr).id : null;
+
+      if (action === "CREATED" && post) {
+        // Skip if this is from current user (already added via handlePostCreated)
+        if (post.authorId === currentUserId) return;
+
+        // Thêm bài mới vào đầu danh sách (nếu chưa có)
+        setPosts((prev) => {
+          if (prev.some((p) => p.id === post.id)) return prev;
+          return [post, ...prev];
+        });
+      } else if (action === "UPDATED" && post) {
+        // Skip if this is from current user (already updated via handleUpdatePost)
+        if (post.authorId === currentUserId) return;
+
+        // Cập nhật bài viết
+        setPosts((prev) => prev.map((p) => (p.id === post.id ? post : p)));
+      } else if (action === "DELETED" && postId) {
+        // For delete, we don't have authorId in event, so always process
+        // This is acceptable since delete already filters by ID
+        setPosts((prev) => prev.filter((p) => p.id !== postId));
+      }
+    };
+    window.addEventListener("postEvent", handlePostEvent);
+    return () => window.removeEventListener("postEvent", handlePostEvent);
+  }, [setPosts]);
+
   // Hàm lấy Avatar
   const fetchCurrentUserAvatar = async () => {
     try {

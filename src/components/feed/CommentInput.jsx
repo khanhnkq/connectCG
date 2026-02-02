@@ -27,22 +27,20 @@ export default function CommentInput({
         resetForm();
       }}
     >
-      {({ values, isSubmitting, isValid }) => (
-        <Form
-          className={`flex-1 flex gap-2 relative rounded-full ${className}`}
-        >
+      {({ values, isSubmitting }) => (
+        <Form className={`flex-1 flex gap-2 relative rounded-lg ${className}`}>
           <Field
             name="content"
             placeholder={placeholder}
             autoFocus={autoFocus}
             autoComplete="off"
-            className="w-full px-4 py-2 text-sm rounded-full bg-background-main border border-border-main  focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all pr-10"
+            className="w-full px-4 py-2 text-sm rounded-lg bg-background-main border border-border-main  focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all pr-10"
           />
 
           <button
             type="submit"
             disabled={!values.content.trim() || isSubmitting}
-            className={`absolute right-1.5 top-1/2 -translate-y-1/2 p-1.5 rounded-full transition-all ${
+            className={`absolute right-1.5 top-1/2 -translate-y-1/2 p-1.5 rounded-md transition-all ${
               values.content.trim() && !isSubmitting
                 ? "bg-primary text-white hover:bg-primary/90"
                 : "text-text-secondary/50 cursor-not-allowed hover:bg-transparent"
