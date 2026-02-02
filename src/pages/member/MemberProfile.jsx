@@ -47,6 +47,13 @@ export default function MemberProfile() {
   const [loadingPosts, setLoadingPosts] = useState(false);
 
   useEffect(() => {
+    // Nếu ID trên URL trùng với ID user đang đăng nhập -> Chuyển về trang cá nhân
+    if (user && id && String(user.id) === String(id)) {
+      navigate("/dashboard/my-profile");
+    }
+  }, [user, id, navigate]);
+
+  useEffect(() => {
     const fetchPosts = async () => {
       if (activeTab === "timeline" && id) {
         setLoadingPosts(true);
@@ -271,9 +278,10 @@ export default function MemberProfile() {
             <div
               className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
               style={{
-                backgroundImage: `url("${profile?.currentCoverUrl ||
+                backgroundImage: `url("${
+                  profile?.currentCoverUrl ||
                   "https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&q=80"
-                  }")`,
+                }")`,
               }}
             ></div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
@@ -285,9 +293,10 @@ export default function MemberProfile() {
                   <div
                     className="w-full h-full rounded-full bg-cover bg-center"
                     style={{
-                      backgroundImage: `url("${profile?.currentAvatarUrl ||
+                      backgroundImage: `url("${
+                        profile?.currentAvatarUrl ||
                         "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                        }")`,
+                      }")`,
                     }}
                   ></div>
                 </div>
@@ -393,46 +402,51 @@ export default function MemberProfile() {
             <div className="flex gap-1 overflow-x-auto pb-1 border-t border-border-main pt-2 scrollbar-hide">
               <button
                 onClick={() => setActiveTab("timeline")}
-                className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${activeTab === "timeline"
-                  ? "text-primary border-b-2 border-primary"
-                  : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
-                  }`}
+                className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${
+                  activeTab === "timeline"
+                    ? "text-primary border-b-2 border-primary"
+                    : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
+                }`}
               >
                 Dòng thời gian
               </button>
               <button
                 onClick={() => setActiveTab("about")}
-                className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${activeTab === "about"
-                  ? "text-primary border-b-2 border-primary"
-                  : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
-                  }`}
+                className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${
+                  activeTab === "about"
+                    ? "text-primary border-b-2 border-primary"
+                    : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
+                }`}
               >
                 Giới thiệu
               </button>
               <button
                 onClick={() => setActiveTab("photos")}
-                className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${activeTab === "photos"
-                  ? "text-primary border-b-2 border-primary"
-                  : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
-                  }`}
+                className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${
+                  activeTab === "photos"
+                    ? "text-primary border-b-2 border-primary"
+                    : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
+                }`}
               >
                 Ảnh
               </button>
               <button
                 onClick={() => setActiveTab("hobbies")}
-                className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${activeTab === "hobbies"
-                  ? "text-primary border-b-2 border-primary"
-                  : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
-                  }`}
+                className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${
+                  activeTab === "hobbies"
+                    ? "text-primary border-b-2 border-primary"
+                    : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
+                }`}
               >
                 Sở thích
               </button>
               <button
                 onClick={() => setActiveTab("friends")}
-                className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${activeTab === "friends"
-                  ? "text-primary border-b-2 border-primary"
-                  : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
-                  }`}
+                className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${
+                  activeTab === "friends"
+                    ? "text-primary border-b-2 border-primary"
+                    : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
+                }`}
               >
                 Bạn bè ({profile?.friendsCount || 0})
               </button>
@@ -443,8 +457,9 @@ export default function MemberProfile() {
 
       <div className="w-full max-w-6xl mx-auto px-4 md:px-8 mt-8">
         <div
-          className={`grid grid-cols-1 ${activeTab === "timeline" ? "lg:grid-cols-12" : "lg:grid-cols-1"
-            } gap-6`}
+          className={`grid grid-cols-1 ${
+            activeTab === "timeline" ? "lg:grid-cols-12" : "lg:grid-cols-1"
+          } gap-6`}
         >
           {/* Left Column - Only show on timeline */}
           {activeTab === "timeline" && (
@@ -510,10 +525,11 @@ export default function MemberProfile() {
 
           {/* Right Column */}
           <div
-            className={`${activeTab === "timeline"
-              ? "lg:col-span-7 xl:col-span-8"
-              : "lg:col-span-1"
-              } flex flex-col gap-6`}
+            className={`${
+              activeTab === "timeline"
+                ? "lg:col-span-7 xl:col-span-8"
+                : "lg:col-span-1"
+            } flex flex-col gap-6`}
           >
             {activeTab === "timeline" && (
               <div className="flex flex-col gap-6">
@@ -606,35 +622,35 @@ export default function MemberProfile() {
           confirmModal.type === "UNFRIEND"
             ? "Hủy kết bạn"
             : confirmModal.type === "CANCEL_REQUEST"
-              ? "Hủy lời mời kết bạn"
-              : confirmModal.type === "ACCEPT_REQUEST"
-                ? "Chấp nhận lời mời?"
-                : "Từ chối lời mời?"
+            ? "Hủy lời mời kết bạn"
+            : confirmModal.type === "ACCEPT_REQUEST"
+            ? "Chấp nhận lời mời?"
+            : "Từ chối lời mời?"
         }
         message={
           confirmModal.type === "UNFRIEND"
             ? `Bạn có chắc muốn hủy kết bạn với ${profile?.fullName}?`
             : confirmModal.type === "CANCEL_REQUEST"
-              ? "Bạn có chắc chắn muốn hủy lời mời kết bạn này?"
-              : confirmModal.type === "ACCEPT_REQUEST"
-                ? `Bạn muốn chấp nhận lời mời kết bạn từ ${profile?.fullName}?`
-                : `Bạn có chắc muốn từ chối lời mời kết bạn từ ${profile?.fullName}?`
+            ? "Bạn có chắc chắn muốn hủy lời mời kết bạn này?"
+            : confirmModal.type === "ACCEPT_REQUEST"
+            ? `Bạn muốn chấp nhận lời mời kết bạn từ ${profile?.fullName}?`
+            : `Bạn có chắc muốn từ chối lời mời kết bạn từ ${profile?.fullName}?`
         }
         type={
           confirmModal.type === "ACCEPT_REQUEST"
             ? "info"
             : confirmModal.type === "REJECT_REQUEST"
-              ? "warning"
-              : "danger"
+            ? "warning"
+            : "danger"
         }
         confirmText={
           confirmModal.type === "UNFRIEND"
             ? "Hủy kết bạn"
             : confirmModal.type === "CANCEL_REQUEST"
-              ? "Hủy lời mời"
-              : confirmModal.type === "ACCEPT_REQUEST"
-                ? "Chấp nhận"
-                : "Từ chối"
+            ? "Hủy lời mời"
+            : confirmModal.type === "ACCEPT_REQUEST"
+            ? "Chấp nhận"
+            : "Từ chối"
         }
         cancelText="Hủy"
       />

@@ -25,6 +25,7 @@ import CommentSection from "./CommentSection";
 import ReportModal from "../report/ReportModal";
 import reportService from "../../services/ReportService";
 import toast from "react-hot-toast";
+import { Link } from "react-router-dom";
 
 // --- HELPER 1: Format thời gian ---
 const formatTime = (dateString) => {
@@ -166,7 +167,7 @@ const MediaGallery = ({ mediaItems, onMediaClick }) => {
 };
 
 // --- COMPONENT CHÍNH ---
-import ReactionButton from "./ReactionButton";
+import ReactionButton, { REACTION_ASSETS } from "./ReactionButton";
 
 export default function PostCard({
   post, // DTO prop
@@ -231,6 +232,8 @@ export default function PostCard({
         id: post.authorId,
         isSystem: post.isSystem,
       },
+      groupId: post.groupId,
+      groupName: post.groupName,
       timeDisplay: formatTime(post.createdAt),
       mediaItems: mediaList,
       visibility: post.visibility,
@@ -252,16 +255,27 @@ export default function PostCard({
 
   // Local state for optimistic updates
   const [localReaction, setLocalReaction] = useState(data.currentUserReaction);
+  const [localReactCount, setLocalReactCount] = useState(data.reactCount);
+  const [localCommentCount, setLocalCommentCount] = useState(data.commentCount);
 
   // Sync prop changes to local state
   useEffect(() => {
     setLocalReaction(data.currentUserReaction);
-  }, [data.currentUserReaction]);
+    setLocalReactCount(data.reactCount);
+    setLocalCommentCount(data.commentCount);
+  }, [data.currentUserReaction, data.reactCount, data.commentCount]);
 
   const handleReactWrapper = async (type) => {
     // 1. Optimistic Update
     const previousReaction = localReaction;
     setLocalReaction(type); // Update UI immediately
+
+    // Update count optimistically
+    if (previousReaction === null && type !== null) {
+      setLocalReactCount((prev) => prev + 1);
+    } else if (previousReaction !== null && type === null) {
+      setLocalReactCount((prev) => Math.max(0, prev - 1));
+    }
 
     try {
       if (type === null) {
@@ -275,6 +289,12 @@ export default function PostCard({
       console.error("Reaction failed:", error);
       // Revert if failed
       setLocalReaction(previousReaction);
+      // Revert count
+      if (previousReaction === null && type !== null) {
+        setLocalReactCount((prev) => Math.max(0, prev - 1));
+      } else if (previousReaction !== null && type === null) {
+        setLocalReactCount((prev) => prev + 1);
+      }
     }
   };
 
@@ -310,9 +330,25 @@ export default function PostCard({
           ></div>
           <div className="flex flex-col justify-center">
             <div className="flex items-center gap-2">
-              <h3 className="text-text-main font-bold text-sm sm:text-base hover:text-primary cursor-pointer transition-colors">
+              <Link
+                to={`/dashboard/member/${data.author.id}`}
+                className="text-text-main font-bold text-base hover:underline transition-all"
+              >
                 {data.author.name}
-              </h3>
+              </Link>
+              {data.groupId && data.groupName && (
+                <div className="flex items-baseline gap-1">
+                  <span className="text-text-secondary font-normal text-sm">
+                    đăng ở
+                  </span>
+                  <Link
+                    to={`/dashboard/groups/${data.groupId}`}
+                    className="text-primary font-bold text-sm sm:text-base hover:underline transition-all"
+                  >
+                    {data.groupName}
+                  </Link>
+                </div>
+              )}
               {data.author.isSystem && (
                 <span className="bg-primary/20 text-primary text-[9px] font-black px-1.5 py-0.5 rounded border border-primary/30 tracking-tighter uppercase flex items-center gap-0.5">
                   <CheckCircle2 size={10} />
@@ -334,11 +370,13 @@ export default function PostCard({
                 <Globe size={12} />
               )}
 
-              {data.aiStatus && data.aiStatus !== "Clean" && (
-                <span className="ml-2 px-2 py-0.5 bg-yellow-500/10 text-yellow-600 rounded-full text-[10px] font-bold border border-yellow-500/20 flex items-center gap-1">
-                  <AlertTriangle size={10} /> AI Flagged
-                </span>
-              )}
+              {data.aiStatus &&
+                data.aiStatus !== "SAFE" &&
+                data.aiStatus !== "NOT_CHECKED" && (
+                  <span className="ml-2 px-2 py-0.5 bg-yellow-500/10 text-yellow-600 rounded-full text-[10px] font-bold border border-yellow-500/20 flex items-center gap-1">
+                    <AlertTriangle size={10} /> Đánh dấu bởi AI
+                  </span>
+                )}
             </div>
           </div>
         </div>
@@ -421,26 +459,48 @@ export default function PostCard({
         </div>
       )}
 
-      {(data.reactCount > 0 || data.commentCount > 0) && (
+      {(localReactCount > 0 || localCommentCount > 0) && (
         <div className="px-5 py-2 flex items-center justify-between text-[13px] text-text-secondary">
           <div className="flex items-center gap-1.5 cursor-pointer hover:underline decoration-text-secondary/50 transition-all">
-            {data.reactCount > 0 && (
-              <>
-                <div className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-500/10">
-                  <ThumbsUp size={12} className="text-blue-600 fill-blue-600" />
+            {localReactCount > 0 && (
+              <div className="flex items-center gap-1">
+                {/* Stack các icon phản ứng */}
+                <div className="flex flex-row-reverse justify-end pl-1">
+                  {/* Luôn hiện Like nếu có react */}
+                  <img
+                    src={REACTION_ASSETS.LIKE}
+                    alt="Like"
+                    className="w-4 h-4 -mr-1 border border-white rounded-full bg-white relative z-30 object-cover"
+                  />
+                  {/* Hiện thêm tim nếu > 1 reaction (giả lập) */}
+                  {localReactCount > 1 && (
+                    <img
+                      src={REACTION_ASSETS.LOVE}
+                      alt="Love"
+                      className="w-4 h-4 -mr-1 border border-white rounded-full bg-white relative z-20 object-cover"
+                    />
+                  )}
+                  {/* Hiện thêm Haha nếu > 5 reaction (giả lập cho vui mắt) */}
+                  {localReactCount > 5 && (
+                    <img
+                      src={REACTION_ASSETS.HAHA}
+                      alt="Haha"
+                      className="w-4 h-4 border border-white rounded-full bg-white relative z-10 object-cover"
+                    />
+                  )}
                 </div>
-                <span className="font-medium">{data.reactCount}</span>
-              </>
+                <span className="font-medium ml-1">{localReactCount}</span>
+              </div>
             )}
           </div>
 
           <div className="flex items-center gap-3">
-            {data.commentCount > 0 && (
+            {localCommentCount > 0 && (
               <button
                 onClick={() => setShowComments(!showComments)}
                 className="hover:text-text-main transition-colors"
               >
-                {data.commentCount} comments
+                {localCommentCount} comments
               </button>
             )}
             {/* Placeholder for share count if future-proofed */}
@@ -495,6 +555,15 @@ export default function PostCard({
         }}
         user={data.author}
       />
+      {showComments && (
+        <CommentSection
+          postId={data.id}
+          onCommentAdded={() => setLocalCommentCount((prev) => prev + 1)}
+          onCommentDeleted={() =>
+            setLocalCommentCount((prev) => Math.max(0, prev - 1))
+          }
+        />
+      )}
     </article>
   );
 }

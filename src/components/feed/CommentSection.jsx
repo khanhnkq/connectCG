@@ -4,7 +4,11 @@ import commentService from "../../services/CommentService";
 import CommentItem from "./CommentItem";
 import CommentInput from "./CommentInput";
 
-export default function CommentSection({ postId }) {
+export default function CommentSection({
+  postId,
+  onCommentAdded,
+  onCommentDeleted,
+}) {
   const { user: authUser } = useSelector((state) => state.auth);
   const { profile } = useSelector((state) => state.user);
 
@@ -36,11 +40,11 @@ export default function CommentSection({ postId }) {
     }
   };
   // Tạo comment mới
-  // Tạo comment mới
   const handleSubmit = async (content) => {
     try {
       await commentService.createComment(postId, content);
       fetchComments(); // Refresh list
+      if (onCommentAdded) onCommentAdded();
     } catch (error) {
       console.error("Error creating comment:", error);
     }
@@ -50,6 +54,7 @@ export default function CommentSection({ postId }) {
     try {
       await commentService.createComment(postId, content, parentId);
       fetchComments();
+      if (onCommentAdded) onCommentAdded();
     } catch (error) {
       console.error("Error replying:", error);
     }
@@ -59,6 +64,7 @@ export default function CommentSection({ postId }) {
     try {
       await commentService.deleteComment(postId, commentId);
       fetchComments();
+      if (onCommentDeleted) onCommentDeleted();
     } catch (error) {
       console.error("Error deleting comment:", error);
     }
