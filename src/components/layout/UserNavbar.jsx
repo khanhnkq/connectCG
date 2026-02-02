@@ -8,6 +8,9 @@ import { logout } from '../../redux/slices/authSlice';
 import NotificationList from '../notification/NotificationList';
 import ChatDropdown from '../chat/ChatDropdown';
 import NotificationService from '../../services/NotificationService';
+import ChatService from '../../services/chat/ChatService';
+import FirebaseChatService from '../../services/chat/FirebaseChatService';
+import { setConversations, updateConversation } from '../../redux/slices/chatSlice';
 import toast from 'react-hot-toast';
 
 const UserNavbar = () => {
@@ -17,67 +20,139 @@ const UserNavbar = () => {
     const { items: notifications, unreadCount } = useSelector((state) => state.notifications);
     const { user } = useSelector((state) => state.auth);
     const { profile: userProfile } = useSelector((state) => state.user);
+    const { conversations, activeRoomId } = useSelector((state) => state.chat);
 
     const [showNotifications, setShowNotifications] = useState(false);
     const [showChatDropdown, setShowChatDropdown] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
-    const [unreadChatCount, setUnreadChatCount] = useState(0);
+
+    // Derived from Redux state
+    const unreadChatCount = conversations.reduce((sum, room) => sum + (room.unreadCount || 0), 0);
 
     const notificationRef = useRef(null);
     const chatDropdownRef = useRef(null);
     const userMenuRef = useRef(null);
+    const conversationsRef = useRef([]);
+    const activeRoomIdRef = useRef(null);
 
-    // Global Chat Listener
+    // Keep refs in sync
+    useEffect(() => {
+        conversationsRef.current = conversations;
+    }, [conversations]);
+
+    useEffect(() => {
+        activeRoomIdRef.current = activeRoomId;
+    }, [activeRoomId]);
+
+
+    useEffect(() => {
+        dispatch(fetchNotifications());
+    }, [dispatch]);
+
+    // Global Chat Listener - Essential for real-time updates across the app
     useEffect(() => {
         if (!user?.id) return;
 
+        let isMounted = true;
         const listeners = [];
         const startTime = Date.now();
 
-        const setupChatListener = async () => {
+        const initializeChatSub = async () => {
             try {
-                const ChatService = (await import("../../services/chat/ChatService")).default;
-                const FirebaseChatService = (await import("../../services/chat/FirebaseChatService")).default;
+                // Populate Redux if empty
+                if (conversationsRef.current.length === 0) {
+                    const response = await ChatService.getMyChatRooms();
+                    if (isMounted) dispatch(setConversations(response.data));
+                }
 
-                const response = await ChatService.getMyChatRooms();
-                const rooms = response.data || [];
+                const currentRooms = conversationsRef.current.length > 0
+                    ? conversationsRef.current
+                    : (await ChatService.getMyChatRooms()).data;
 
-                rooms.forEach((room) => {
+                currentRooms.forEach((room) => {
                     const unsub = FirebaseChatService.subscribeToMessages(
                         room.firebaseRoomKey,
                         (newMsg) => {
-                            const isNew = newMsg.timestamp && newMsg.timestamp > startTime - 10000;
-                            const isNotMe = newMsg.senderId !== user.id;
+                            if (!isMounted) return;
 
-                            if (isNew && isNotMe) {
-                                setUnreadChatCount((prev) => prev + 1);
+                            const latestConvs = conversationsRef.current;
+                            const idx = latestConvs.findIndex(c => c.firebaseRoomKey === room.firebaseRoomKey);
+                            if (idx === -1) return;
+
+                            const oldRoom = latestConvs[idx];
+
+                            // Prevent old messages
+                            if (oldRoom.lastMessageTimestamp && newMsg.timestamp <= oldRoom.lastMessageTimestamp) {
+                                return;
+                            }
+
+                            const isNewer = !oldRoom.lastMessageTimestamp || newMsg.timestamp > oldRoom.lastMessageTimestamp;
+                            const isActiveRoom = activeRoomIdRef.current === oldRoom.id;
+                            const isFromMe = newMsg.senderId == user.id;
+
+                            let nextUnread = oldRoom.unreadCount || 0;
+                            if (isNewer && !isActiveRoom && !isFromMe) {
+                                nextUnread += 1;
+                            }
+
+                            // Build preview text
+                            let prefix = "";
+                            if (isFromMe) {
+                                prefix = "Bạn: ";
+                            } else if (room.type === "GROUP") {
+                                const sender = room.members?.find(m => m.id == newMsg.senderId);
+                                const nameLabel = sender?.fullName || newMsg.senderName || "Unknown";
+                                prefix = `${nameLabel.trim().split(' ').pop()}: `;
+                            }
+
+                            let body = newMsg.type === "image" ? "[Hình ảnh]" : (newMsg.text || newMsg.content || "Tin nhắn mới");
+                            let preview = `${prefix}${body}`;
+
+                            // Check history clear
+                            if (oldRoom.clientClearedAt && newMsg.timestamp <= new Date(oldRoom.clientClearedAt).getTime()) {
+                                preview = "Chưa có tin nhắn";
+                            }
+
+                            const updated = {
+                                ...oldRoom,
+                                lastMessageVisible: preview,
+                                lastMessageTimestamp: newMsg.timestamp,
+                                unreadCount: isActiveRoom ? 0 : nextUnread
+                            };
+
+                            if (isNewer) {
+                                // Move to top
+                                const others = latestConvs.filter(c => c.id !== oldRoom.id);
+                                dispatch(setConversations([updated, ...others]));
+                            } else {
+                                dispatch(updateConversation(updated));
                             }
                         }
                     );
                     listeners.push(unsub);
                 });
             } catch (err) {
-                console.error("Global chat listener failed:", err);
+                console.error("Chat init error:", err);
             }
         };
 
-        setupChatListener();
+        initializeChatSub();
 
         return () => {
+            isMounted = false;
             listeners.forEach(u => u());
         };
-    }, [user?.id]);
-
-    useEffect(() => {
-        dispatch(fetchNotifications());
-    }, [dispatch]);
+    }, [user?.id, conversations.length]); // Re-subscribe if new rooms are added (e.g. new group created)
 
     // Close dropdowns when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (notificationRef.current && !notificationRef.current.contains(event.target)) {
                 setShowNotifications(false);
+            }
+            if (chatDropdownRef.current && !chatDropdownRef.current.contains(event.target)) {
+                setShowChatDropdown(false);
             }
             if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
                 setShowUserMenu(false);
@@ -239,7 +314,7 @@ const UserNavbar = () => {
                         <MessageCircle size={20} weight="fill" />
                         {unreadChatCount > 0 && (
                             <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-background-main">
-                                {unreadChatCount > 99 ? '99+' : unreadCount}
+                                {unreadChatCount > 99 ? '99+' : unreadChatCount}
                             </span>
                         )}
                     </button>

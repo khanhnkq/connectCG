@@ -8,97 +8,20 @@ import FirebaseChatService from '../../services/chat/FirebaseChatService';
 export default function ChatDropdown({ onClose }) {
     const navigate = useNavigate();
     const { user } = useSelector((state) => state.auth);
-    const [conversations, setConversations] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const conversations = useSelector((state) => state.chat.conversations);
+    const [loading, setLoading] = useState(conversations.length === 0);
+
+    // No need for local state or periodic fetching anymore
+    // Redux state is automatically synced by ChatInterface
 
     useEffect(() => {
-        if (!user?.id) return;
-        const fetchRooms = async () => {
-            try {
-                const response = await ChatService.getMyChatRooms();
-                const rooms = response.data || [];
-                setConversations(rooms);
+        if (conversations.length > 0) {
+            setLoading(false);
+        }
+    }, [conversations]);
 
-                // Fetch last messages for these rooms
-                rooms.forEach(async (room) => {
-                    try {
-                        const lastMsg = await FirebaseChatService.getLastMessage(room.firebaseRoomKey);
-                        if (lastMsg) {
-                            setConversations(prev => prev.map(c =>
-                                c.id === room.id
-                                    ? {
-                                        ...c,
-                                        lastMessageVisible: lastMsg.text,
-                                        lastMessageTimestamp: lastMsg.timestamp
-                                    }
-                                    : c
-                            ));
-                        }
-                    } catch (e) {
-                        console.error("Failed to fetch last msg for", room.id);
-                    }
-                });
-
-            } catch (error) {
-                console.error("Failed to load chat rooms", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchRooms();
-    }, [user?.id]);
-
-    // Realtime subscription (Simplified for dropdown - mostly for unread and ordering)
-    useEffect(() => {
-        if (conversations.length === 0) return;
-
-        const listeners = [];
-        const startTime = Date.now();
-
-        conversations.forEach((room) => {
-            const unsub = FirebaseChatService.subscribeToMessages(
-                room.firebaseRoomKey,
-                (newMsg) => {
-                    // Re-order and update preview
-                    setConversations((prev) => {
-                        const index = prev.findIndex(c => c.firebaseRoomKey === room.firebaseRoomKey);
-                        if (index === -1) return prev;
-
-                        const updatedList = [...prev];
-                        const oldRoom = updatedList[index];
-
-                        // Update logic
-                        const isNewMessage = newMsg.timestamp && newMsg.timestamp > startTime - 3000;
-                        const isNotMe = newMsg.senderId !== user.id;
-
-                        let newUnread = oldRoom.unreadCount || 0;
-                        if (isNewMessage && isNotMe) {
-                            newUnread += 1;
-                        }
-
-                        const updatedRoom = {
-                            ...oldRoom,
-                            lastMessageVisible: newMsg.text,
-                            lastMessageTimestamp: newMsg.timestamp,
-                            unreadCount: newUnread
-                        };
-
-                        // Move to top if new message
-                        if (newMsg.timestamp > (oldRoom.lastMessageTimestamp || 0)) {
-                            updatedList.splice(index, 1);
-                            return [updatedRoom, ...updatedList];
-                        } else {
-                            updatedList[index] = updatedRoom;
-                            return updatedList;
-                        }
-                    });
-                }
-            );
-            listeners.push(unsub);
-        });
-
-        return () => listeners.forEach(u => u());
-    }, [conversations.length]); // Re-subscribe if list changes (initially)
+    // Real-time updates are now handled by ChatInterface and shared via Redux
+    // No need for duplicate subscription logic here
 
     const handleRoomClick = (room) => {
         navigate('/dashboard/chat', { state: { selectedRoomKey: room.firebaseRoomKey } });
@@ -120,14 +43,14 @@ export default function ChatDropdown({ onClose }) {
                 <div className="flex gap-2">
                     <button
                         className="text-text-secondary hover:text-primary transition-colors text-xs font-semibold"
-                        onClick={() => { navigate('/dashboard/chat'); onClose(); }}
+                        onClick={() => { navigate('/dashboard/chat', { state: { clearSelection: true } }); onClose(); }}
                     >
                         Xem tất cả
                     </button>
                 </div>
             </div>
 
-            <div className="overflow-y-auto flex-1 p-2 space-y-1">
+            <div className="overflow-y-auto flex-1 p-2 space-y-1 custom-scrollbar">
                 {conversations.length === 0 ? (
                     <div className="p-8 text-center text-text-secondary flex flex-col items-center gap-2">
                         <MessageSquare size={32} className="opacity-20" />
@@ -147,9 +70,7 @@ export default function ChatDropdown({ onClose }) {
                                     className="size-12 rounded-full object-cover border border-border-main"
                                 />
                                 {room.unreadCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-background-main shadow-sm">
-                                        {room.unreadCount}
-                                    </span>
+                                    <span className="absolute top-0 right-0 size-3 bg-red-500 rounded-full border-2 border-background-main shadow-sm"></span>
                                 )}
                             </div>
                             <div className="flex-1 min-w-0">
@@ -157,7 +78,7 @@ export default function ChatDropdown({ onClose }) {
                                     <h4 className={`text-sm truncate pr-2 ${room.unreadCount > 0 ? 'font-bold text-text-main' : 'font-medium text-text-main'}`}>
                                         {room.name}
                                     </h4>
-                                    {room.lastMessageTimestamp && (
+                                    {room.lastMessageTimestamp > 0 && (
                                         <span className={`text-[10px] shrink-0 ${room.unreadCount > 0 ? 'text-primary font-bold' : 'text-text-secondary'}`}>
                                             {new Date(room.lastMessageTimestamp).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
                                         </span>
@@ -177,7 +98,7 @@ export default function ChatDropdown({ onClose }) {
 
             <div className="p-2 border-t border-border-main text-center sticky bottom-0 bg-background-main">
                 <button
-                    onClick={() => { navigate('/dashboard/chat'); onClose(); }}
+                    onClick={() => { navigate('/dashboard/chat', { state: { clearSelection: true } }); onClose(); }}
                     className="w-full py-1.5 text-xs font-bold text-primary hover:bg-primary/5 rounded-lg transition-colors"
                 >
                     Xem tất cả trong Messenger
