@@ -66,9 +66,13 @@ export default function GroupsManagement() {
       const isLast = response.last !== undefined ? response.last : true;
 
       if (activeTab === "my") {
-        setYourGroups(prev => pageToFetch === 0 ? newData : [...prev, ...newData]);
+        setYourGroups((prev) =>
+          pageToFetch === 0 ? newData : [...prev, ...newData],
+        );
       } else if (activeTab === "discover") {
-        setDiscoverGroups(prev => pageToFetch === 0 ? newData : [...prev, ...newData]);
+        setDiscoverGroups((prev) =>
+          pageToFetch === 0 ? newData : [...prev, ...newData],
+        );
       } else {
         setPendingInvitations(newData);
       }
@@ -91,7 +95,12 @@ export default function GroupsManagement() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loading && !isFetchingMore) {
+        if (
+          entries[0].isIntersecting &&
+          hasMore &&
+          !loading &&
+          !isFetchingMore
+        ) {
           setPage((prev) => {
             const nextPage = prev + 1;
             fetchGroups(nextPage);
@@ -99,7 +108,7 @@ export default function GroupsManagement() {
           });
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     if (loaderRef.current) {
@@ -174,7 +183,7 @@ export default function GroupsManagement() {
         typeof error.response?.data === "string"
           ? error.response.data
           : error.response?.data?.message ||
-          "Không thể thực hiện yêu cầu gia nhập.";
+            "Không thể thực hiện yêu cầu gia nhập.";
       toast.error(errorMsg);
     }
   };
@@ -219,10 +228,11 @@ export default function GroupsManagement() {
     return (
       <div
         key={group.id}
-        className={`bg-card-dark rounded-3xl border overflow-hidden flex flex-col hover:border-primary/30 transition-all group h-full shadow-2xl relative ${isAdmin
-          ? "border-orange-500/50 shadow-orange-500/10"
-          : "border-[#3e2b1d]"
-          }`}
+        className={`bg-white dark:bg-card-dark rounded-3xl border overflow-hidden flex flex-col hover:border-primary/30 transition-all group h-full shadow-md dark:shadow-2xl relative ${
+          isAdmin
+            ? "border-orange-500/50 dark:shadow-orange-500/10"
+            : "border-gray-200 dark:border-[#3e2b1d]"
+        }`}
       >
         {/* Clickable Area: Image & Header - Everyone can now see basic info */}
         <div className="relative h-44 overflow-hidden">
@@ -286,10 +296,10 @@ export default function GroupsManagement() {
             )}
 
           <div className="absolute bottom-4 left-5 right-5 z-20 pointer-events-none">
-            <h4 className="text-text-main font-bold text-xl leading-tight group-hover:text-primary transition-colors line-clamp-1">
+            <h4 className="text-white font-bold text-xl leading-tight group-hover:text-primary transition-colors line-clamp-1">
               {group.name}
             </h4>
-            <p className="text-text-secondary text-xs font-medium italic opacity-80 flex items-center gap-1 mt-1">
+            <p className="text-white/80 text-xs font-medium italic flex items-center gap-1 mt-1">
               <User size={16} />
               {group.ownerFullName || group.ownerName}
             </p>
@@ -297,7 +307,7 @@ export default function GroupsManagement() {
         </div>
 
         {/* Content Area */}
-        <div className="p-6 flex flex-col flex-1 bg-surface-main">
+        <div className="p-6 flex flex-col flex-1 bg-white dark:bg-surface-main">
           <p className="text-text-secondary text-sm mb-6 line-clamp-2 leading-relaxed h-10">
             {group.description || "Chưa có mô tả cho nhóm này."}
           </p>
@@ -387,8 +397,8 @@ export default function GroupsManagement() {
     activeTab === "my"
       ? yourGroups
       : activeTab === "discover"
-        ? discoverGroups
-        : pendingInvitations;
+      ? discoverGroups
+      : pendingInvitations;
 
   return (
     <div className="max-w-7xl mx-auto w-full pb-20 bg-background-main transition-colors duration-300">
@@ -408,16 +418,17 @@ export default function GroupsManagement() {
                   setActiveTab(tab);
                   setSearchQuery("");
                 }}
-                className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all relative ${activeTab === tab
-                  ? "bg-primary text-text-main shadow-lg"
-                  : "text-text-secondary hover:text-primary"
-                  }`}
+                className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all relative ${
+                  activeTab === tab
+                    ? "bg-primary text-text-main shadow-lg"
+                    : "text-text-secondary hover:text-primary"
+                }`}
               >
                 {tab === "my"
                   ? "Của tôi"
                   : tab === "discover"
-                    ? "Khám phá"
-                    : "Lời mời"}
+                  ? "Khám phá"
+                  : "Lời mời"}
                 {tab === "invites" && pendingInvitations.length > 0 && (
                   <span className="absolute -top-1 -right-1 flex h-4 w-4">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
@@ -445,8 +456,8 @@ export default function GroupsManagement() {
                 activeTab === "my"
                   ? "Tìm kiếm nhóm của bạn..."
                   : activeTab === "discover"
-                    ? "Khám phá nhóm mới..."
-                    : "Tìm lời mời..."
+                  ? "Khám phá nhóm mới..."
+                  : "Tìm lời mời..."
               }
             />
           </div>
