@@ -32,6 +32,18 @@ const ChatService = {
     },
     deleteChatRoom: async (roomId) => {
         return axiosClient.delete(`/chat/${roomId}`);
+    },
+
+    removeMember: async (roomId, userId) => {
+        return axiosClient.delete(`/chat/${roomId}/members/${userId}`);
+    },
+
+    markAsRead: async (roomId) => {
+        return axiosClient.put(`/chat/${roomId}/read`);
+    },
+
+    clearHistory: async (roomId) => {
+        return axiosClient.put(`/chat/${roomId}/clear`);
     }
 };
 

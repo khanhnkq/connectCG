@@ -101,20 +101,24 @@ export default function SidebarComponent() {
         const response = await ChatService.getMyChatRooms();
         const rooms = response.data || [];
 
+        // Initialize unread count from backend
+        const initialUnread = rooms.reduce((acc, curr) => acc + (curr.unreadCount || 0), 0);
+        setUnreadChatCount(initialUnread);
+
         rooms.forEach((room) => {
           const unsub = FirebaseChatService.subscribeToMessages(
             room.firebaseRoomKey,
             (newMsg) => {
               // Only count as unread if it's NEW and NOT from me
-              // Increase buffer to 10s to account for slight clock drifts
               const isNew = newMsg.timestamp && newMsg.timestamp > startTime - 10000;
-              const isNotMe = newMsg.senderId !== user.id;
+              const isNotMe = newMsg.senderId != user.id;
 
               if (isNew && isNotMe) {
                 // Show indicator regardless of page (User can clear it by going to Chat)
                 setUnreadChatCount((prev) => prev + 1);
               }
-            }
+            },
+            1 // Only need the latest message for the notification dot
           );
           listeners.push(unsub);
         });
