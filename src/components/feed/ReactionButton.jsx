@@ -1,15 +1,43 @@
 import React, { useState } from "react";
-import { Heart, ThumbsUp } from "lucide-react";
+import { AiOutlineLike } from "react-icons/ai"; // Ant Design Icons cho Like mặc định đẹp hơn
+import {
+  FaHeart,
+  FaRegFaceLaughSquint,
+  FaRegFaceSurprise,
+  FaRegFaceSadTear,
+  FaRegFaceAngry,
+  FaThumbsUp,
+} from "react-icons/fa6";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Danh sách các cảm xúc
 export const REACTION_TYPES = [
-  { id: "LIKE", label: "Like", icon: "👍", color: "text-blue-500" },
-  { id: "LOVE", label: "Love", icon: "❤️", color: "text-red-500" },
-  { id: "HAHA", label: "Haha", icon: "😂", color: "text-yellow-500" },
-  { id: "WOW", label: "Wow", icon: "😮", color: "text-orange-500" },
-  { id: "SAD", label: "Sad", icon: "😢", color: "text-blue-400" },
-  { id: "ANGRY", label: "Angry", icon: "😡", color: "text-red-600" },
+  { id: "LIKE", label: "Like", icon: <FaThumbsUp />, color: "text-blue-500" },
+  { id: "LOVE", label: "Love", icon: <FaHeart />, color: "text-red-500" },
+  {
+    id: "HAHA",
+    label: "Haha",
+    icon: <FaRegFaceLaughSquint />,
+    color: "text-yellow-500",
+  },
+  {
+    id: "WOW",
+    label: "Wow",
+    icon: <FaRegFaceSurprise />,
+    color: "text-orange-500",
+  },
+  {
+    id: "SAD",
+    label: "Sad",
+    icon: <FaRegFaceSadTear />,
+    color: "text-blue-400",
+  },
+  {
+    id: "ANGRY",
+    label: "Angry",
+    icon: <FaRegFaceAngry />,
+    color: "text-red-600",
+  },
 ];
 
 const ReactionButton = ({ currentReaction, onReact }) => {
@@ -60,7 +88,7 @@ const ReactionButton = ({ currentReaction, onReact }) => {
     if (!currentReaction) {
       return (
         <div className="flex items-center gap-2 text-text-secondary group-hover:text-blue-500 transition-colors">
-          <ThumbsUp size={20} />
+          <AiOutlineLike size={20} />
           <span className="text-sm font-medium">Like</span>
         </div>
       );
@@ -114,7 +142,7 @@ const ReactionButton = ({ currentReaction, onReact }) => {
                     onReact(reaction.id);
                     setIsHovering(false);
                   }}
-                  className="text-2xl hover:drop-shadow-lg transition-all px-1"
+                  className={`text-2xl hover:drop-shadow-lg transition-all px-1 ${reaction.color}`}
                   title={reaction.label}
                 >
                   {reaction.icon}
