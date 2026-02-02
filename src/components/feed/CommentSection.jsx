@@ -28,6 +28,31 @@ export default function CommentSection({
   useEffect(() => {
     fetchComments();
   }, [postId]);
+
+  // Listen for realtime comment events (only from OTHER users)
+  useEffect(() => {
+    const handleCommentEvent = (e) => {
+      const { postId: eventPostId, action, comment } = e.detail;
+      // Only process if this event is for our post
+      if (eventPostId !== postId) return;
+
+      // Check if current user triggered this event (avoid double fetch)
+      const currentUserId = user?.id;
+      if (action === "CREATED" && comment) {
+        // Only fetch if comment is from another user
+        if (comment.authorId !== currentUserId) {
+          fetchComments();
+        }
+      } else if (action === "DELETED") {
+        // For delete, we don't have userId in event, so just refresh
+        // This is acceptable since delete is less frequent
+        fetchComments();
+      }
+    };
+    window.addEventListener("commentEvent", handleCommentEvent);
+    return () => window.removeEventListener("commentEvent", handleCommentEvent);
+  }, [postId, user?.id]);
+
   const fetchComments = async () => {
     try {
       setLoading(true);
@@ -39,35 +64,53 @@ export default function CommentSection({
       setLoading(false);
     }
   };
-  // Tạo comment mới
+
+  // Tạo comment mới - add optimistically then refresh
   const handleSubmit = async (content) => {
     try {
-      await commentService.createComment(postId, content);
-      fetchComments(); // Refresh list
+      const res = await commentService.createComment(postId, content);
+      // Add new comment to state immediately (optimistic)
+      if (res.data || res) {
+        setComments((prev) => [...prev, res.data || res]);
+      }
       if (onCommentAdded) onCommentAdded();
     } catch (error) {
       console.error("Error creating comment:", error);
     }
   };
-  // Reply
+
+  // Reply - add optimistically
   const handleReply = async (content, parentId) => {
     try {
       await commentService.createComment(postId, content, parentId);
-      fetchComments();
+      fetchComments(); // Reply structure is complex, just refetch
       if (onCommentAdded) onCommentAdded();
     } catch (error) {
       console.error("Error replying:", error);
     }
   };
-  // Delete
+
+  // Delete - remove optimistically
   const handleDelete = async (commentId) => {
     try {
+      // Optimistic delete
+      setComments((prev) => removeCommentById(prev, commentId));
       await commentService.deleteComment(postId, commentId);
-      fetchComments();
       if (onCommentDeleted) onCommentDeleted();
     } catch (error) {
       console.error("Error deleting comment:", error);
+      fetchComments(); // Revert on error
     }
+  };
+
+  // Helper to remove comment by ID (including nested replies)
+  const removeCommentById = (comments, id) => {
+    return comments
+      .filter((c) => c.id !== id)
+      .map((c) => ({
+        ...c,
+        replies: c.replies ? removeCommentById(c.replies, id) : [],
+      }));
   };
   return (
     <div className="px-4 py-3 border-t border-border-main">
@@ -100,7 +143,7 @@ export default function CommentSection({
           Chưa có bình luận nào. Hãy là người đầu tiên!
         </p>
       ) : (
-        <div className="space-y-1">
+        <div className="max-h-70 overflow-y-auto space-y-1 pr-1 scrollbar-thin scrollbar-thumb-border-main scrollbar-track-transparent">
           {comments.map((comment) => (
             <CommentItem
               key={comment.id}

@@ -27,11 +27,11 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 /* Material Icons configuration */
 .material-symbols-outlined {
-  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
 }
 
 .icon-outline {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
 }
 
 /* Hide scrollbar utility */
@@ -65,7 +65,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 /* Base styles */
 body {
   margin: 0;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--background);
@@ -79,16 +79,16 @@ body {
 
 :root {
   --background: #f8f7f5;
-  --foreground: #221710;
+  --foreground: #0f172a;
   --surface: #ffffff;
-  --border: #e2e8f0;
-  --text-main: #111827;
-  --text-secondary: #4b5563;
-  --text-muted: #94a3b8;
-  
+  --border: #d1d5db;
+  --text-main: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+
   --primary: #f47b25;
   --primary-hover: #ea580c;
-  
+
   --chat-sent: #f47b25;
   --chat-received: #f1f5f9;
   --chat-bg: #ffffff;
@@ -102,13 +102,13 @@ body {
   --text-main: #ffffff;
   --text-secondary: #cba990;
   --text-muted: #684831;
-  
+
   --primary: #f47b25;
   --primary-hover: #ea580c;
 
   --chat-sent: #f47b25;
-  --chat-received: #3A2A20;
-  --chat-bg: #1A120B;
+  --chat-received: #3a2a20;
+  --chat-bg: #1a120b;
 }
 
 /* Custom colors for Tailwind v4 */
