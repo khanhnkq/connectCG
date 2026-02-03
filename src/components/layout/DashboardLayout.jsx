@@ -11,7 +11,7 @@ export default function DashboardLayout() {
 
   return (
     <div className="bg-background-main text-text-main font-display overflow-hidden h-screen flex flex-col w-full animate-in fade-in duration-500">
-      <UserNavbar />
+      <UserNavbar onMenuClick={() => setIsMobileMenuOpen(true)} />
       <div className="flex flex-1 flex-col md:flex-row overflow-hidden relative w-full mb-16 md:mb-0">
         <div className="hidden md:flex h-full">
           <Sidebar />

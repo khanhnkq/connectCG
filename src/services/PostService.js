@@ -16,8 +16,8 @@ const postService = {
     getAuditHomepagePosts() {
         return axiosClient.get('/posts/admin/audit');
     },
-    getPublicHomepagePosts() {
-        return axiosClient.get('/posts');
+    getPublicHomepagePosts(page = 0, size = 10) {
+        return axiosClient.get(`/posts/public/homepage`, { params: { page, size } });
     },
     approvePost(postId) {
         return axiosClient.post(`/posts/${postId}/approve`);

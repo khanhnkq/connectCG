@@ -96,6 +96,18 @@ const ReactionButton = ({ currentReaction, onReact }) => {
     setIsHovering(false);
   };
 
+  const [iconSize, setIconSize] = React.useState(
+    window.innerWidth < 640 ? 32 : 40,
+  );
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      setIconSize(window.innerWidth < 640 ? 32 : 40);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   // Render icon chính
   const getMainIcon = () => {
     if (!currentReaction) {
@@ -114,7 +126,7 @@ const ReactionButton = ({ currentReaction, onReact }) => {
       <div
         className={`flex items-center gap-2 ${reaction.color} font-bold transition-colors`}
       >
-        <div className="transform scale-125">{reaction.icon}</div>
+        <div className="transform scale-100">{reaction.icon}</div>
         <span className="text-sm">{reaction.label}</span>
       </div>
     );
@@ -142,16 +154,16 @@ const ReactionButton = ({ currentReaction, onReact }) => {
             animate={{ opacity: 1, y: -10, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.8 }}
             transition={{ duration: 0.2 }}
-            className="absolute left-1/2 -translate-x-1/2 bottom-full z-50 mb-2"
+            className="absolute left-[-10px] sm:left-1/2 sm:-translate-x-1/2 bottom-full z-50 mb-2"
           >
-            <div className="shadow-2xl rounded-full bg-white p-1">
+            <div className="shadow-2xl rounded-full bg-white p-1 border border-border-main/10">
               <FacebookSelector
                 onSelect={(key) => {
                   // Key trả về thường là 'like', 'love'... -> convert to UPPERCASE
                   onReact(key.toUpperCase());
                   setIsHovering(false);
                 }}
-                iconSize={40} // Kích thước icon động
+                iconSize={iconSize} // Kích thước icon động
               />
             </div>
           </motion.div>
