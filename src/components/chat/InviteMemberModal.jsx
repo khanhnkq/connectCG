@@ -8,7 +8,8 @@ const InviteMemberModal = ({
     selectedInvitees,
     onToggleInvitee,
     onInvite,
-    activeRoomName
+    activeRoomName,
+    isInviting
 }) => {
     if (!show) return null;
 
@@ -43,8 +44,8 @@ const InviteMemberModal = ({
                                 return (
                                     <div
                                         key={friend.id}
-                                        onClick={() => onToggleInvitee(friend)}
-                                        className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${isSelected
+                                        onClick={() => !isInviting && onToggleInvitee(friend)}
+                                        className={`flex items-center gap-3 p-3 rounded-xl transition-all border ${isInviting ? "cursor-not-allowed opacity-70" : "cursor-pointer"} ${isSelected
                                             ? "bg-primary/10 border-primary/50"
                                             : "bg-surface-main border-border-main hover:bg-background-main"
                                             }`}
@@ -83,13 +84,19 @@ const InviteMemberModal = ({
                     <div className="p-6 border-t border-border-main">
                         <button
                             onClick={onInvite}
-                            disabled={selectedInvitees.length === 0}
+                            disabled={selectedInvitees.length === 0 || isInviting}
                             className="w-full py-3 bg-primary hover:bg-orange-600 text-[#231810] font-bold rounded-xl shadow-lg shadow-orange-500/10 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
                         >
-                            <UserPlus size={20} />
-                            {selectedInvitees.length > 0
-                                ? `Mời ${selectedInvitees.length} người`
-                                : "Chọn bạn bè để mời"}
+                            {isInviting ? (
+                                <div className="size-5 border-2 border-[#231810] border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                                <UserPlus size={20} />
+                            )}
+                            {isInviting
+                                ? "Đang mời..."
+                                : selectedInvitees.length > 0
+                                    ? `Mời ${selectedInvitees.length} người`
+                                    : "Chọn bạn bè để mời"}
                         </button>
                     </div>
                 )}

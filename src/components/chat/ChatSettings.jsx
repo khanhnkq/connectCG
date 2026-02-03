@@ -11,7 +11,8 @@ import {
     Flag,
     Info,
     Users,
-    Paperclip
+    Paperclip,
+    Plus
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -25,6 +26,7 @@ const ChatSettings = ({
     onLeaveGroup,
     onDeleteGroup,
     onKickMember,
+    onOpenInvite,
     setShowClearConfirm,
     setShowReportUser,
     setShowLeaveConfirm,
@@ -183,6 +185,13 @@ const ChatSettings = ({
                                 <Users size={16} className="text-primary" />
                                 Thành viên ({activeRoom.members?.length || 0})
                             </h3>
+                            <button
+                                onClick={onOpenInvite}
+                                className="p-1.5 text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                                title="Mời thêm thành viên"
+                            >
+                                <Plus size={18} />
+                            </button>
                         </div>
                         <div className="space-y-3 max-h-60 overflow-y-auto custom-scrollbar pr-2">
                             {activeRoom.members?.map((member) => (
@@ -291,7 +300,7 @@ const ChatSettings = ({
                     </button>
                 </div>
             </div>
-        </aside>
+        </aside >
     );
 };
 

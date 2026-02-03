@@ -4,11 +4,14 @@ const postService = {
     getPostById(id) {
         return axiosClient.get(`/posts/${id}`);
     },
-    getPostsByUserId(userId){
+    getPostsByUserId(userId) {
         return axiosClient.get(`/posts/user/${userId}`)
     },
     deletePost(id) {
         return axiosClient.delete(`/posts/${id}`);
+    },
+    rejectPost(postId, manualStrike = false) {
+        return axiosClient.post(`/posts/${postId}/reject?manualStrike=${manualStrike}`);
     },
     getPendingHomepagePosts() {
         return axiosClient.get('/posts/admin/pending');
@@ -22,20 +25,20 @@ const postService = {
     approvePost(postId) {
         return axiosClient.post(`/posts/${postId}/approve`);
     },
-    createPost(post){
-        return axiosClient.post(`/posts`,post);
+    createPost(post) {
+        return axiosClient.post(`/posts`, post);
     },
     updatePost(id, data) {
-    // data có thể là { content: "...", visibility: "..." }
-    return axiosClient.put(`/posts/${id}`, data); 
+        // data có thể là { content: "...", visibility: "..." }
+        return axiosClient.put(`/posts/${id}`, data);
     },
     reactToPost(postId, reactionType) {
         return axiosClient.post(`/posts/${postId}/react`, { reaction: reactionType });
     },
-    unreactToPost(postId){
+    unreactToPost(postId) {
         return axiosClient.delete(`/posts/${postId}/react`);
     }
-    
+
 };
 
 export default postService;

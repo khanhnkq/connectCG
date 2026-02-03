@@ -132,7 +132,7 @@ const NotificationList = ({ notifications, onMarkAsRead, onDelete, onMarkAllAsRe
 
             {/* Content */}
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-text-main line-clamp-2 leading-relaxed">
+              <p className="text-sm text-text-main leading-relaxed">
                 {notification.content}
               </p>
               <p className="text-xs text-text-secondary mt-1.5 flex items-center gap-1">

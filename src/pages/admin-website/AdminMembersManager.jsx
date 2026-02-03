@@ -58,6 +58,28 @@ const AdminMembersManager = () => {
   }, []);
 
   useEffect(() => {
+    const handleUserUpdate = (event) => {
+      const payload = event.detail;
+      setMembers((prev) =>
+        prev.map((m) =>
+          m.id === payload.userId
+            ? {
+              ...m,
+              violationCount: payload.violationCount,
+              lockedUntil: payload.lockedUntil,
+              permanentLocked: payload.permanentLocked,
+              status: payload.isLocked || payload.permanentLocked ? "Banned" : "Active",
+            }
+            : m
+        )
+      );
+    };
+
+    window.addEventListener("userEvent", handleUserUpdate);
+    return () => window.removeEventListener("userEvent", handleUserUpdate);
+  }, []);
+
+  useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       fetchUsers(pagination.currentPage, searchTerm, roleFilter);
     }, 300); // Debounce name search
@@ -91,6 +113,9 @@ const AdminMembersManager = () => {
               : "Active",
         role: user.role,
         joinedDate: "N/A",
+        violationCount: user.violationCount || 0,
+        lockedUntil: user.lockedUntil,
+        permanentLocked: user.permanentLocked,
       }));
       setMembers(mappedMembers);
       setPagination((prev) => ({
@@ -234,6 +259,7 @@ const AdminMembersManager = () => {
                 <th className="px-6 py-5">STT</th>
                 <th className="px-6 py-5">Thông tin</th>
                 <th className="px-6 py-5">Vai trò</th>
+                <th className="px-6 py-5">Gậy</th>
                 <th className="px-6 py-5">Trạng thái</th>
                 <th className="px-6 py-5 text-right">Thao tác</th>
               </tr>
@@ -266,71 +292,116 @@ const AdminMembersManager = () => {
                   </td>
                   <td className="px-6 py-5">
                     <span
-                      className={`px-2.5 py-1 text-[9px] font-black uppercase rounded-lg border flex items-center gap-1.5 w-fit ${
-                        member.role === "ADMIN"
-                          ? "bg-primary/10 text-primary border-primary/30"
-                          : "bg-zinc-800 text-zinc-400 border-zinc-700"
+                      className={`px-2.5 py-1 text-[9px] font-black uppercase rounded-lg border flex items-center gap-1.5 w-fit ${member.role === "ADMIN"
+                        ? "bg-primary/10 text-primary border-primary/30"
+                        : "bg-zinc-800 text-zinc-400 border-zinc-700"
+                        }`}
+                    >
+                      {member.role === "ADMIN" ? (
+                        <ShieldCheck size={14} />
+                      ) : (
+                        <User size={14} />
+                      )}
+                      {member.role}
+                    </span>
+                  </td>
+                  <td className="px-6 py-5">
+                    <div className="flex items-center gap-1.5">
+                      <ShieldAlert
+                        size={14}
+                        className={
+                          member.violationCount > 0
+                            ? "text-orange-500"
+                            : "text-text-muted"
+                        }
+                      />
+                      <span
+                        className={`font-mono text-sm font-bold ${member.violationCount > 0
+                          ? "text-orange-400"
+                          : "text-text-muted"
                           }`}
                       >
-                        {member.role === "ADMIN" ? (
-                          <ShieldCheck size={14} />
-                        ) : (
-                          <User size={14} />
-                        )}
-                        {member.role}
+                        {member.violationCount}
                       </span>
-                    </td>
-                    <td className="px-6 py-5">
+                    </div>
+                  </td>
+                  <td className="px-6 py-5">
+                    <div className="flex flex-col gap-1">
                       <span
-                        className={`px-3 py-1 text-[10px] font-black uppercase rounded-full border ${member.status === "Active"
+                        className={`px-3 py-1 text-[10px] font-black uppercase rounded-full border w-fit ${member.status === "Active"
                           ? "bg-green-500/10 text-green-400 border-green-500/20"
                           : "bg-red-500/10 text-red-500 border-red-500/20"
                           }`}
                       >
                         {member.status}
                       </span>
-                    </td>
-                    <td className="px-6 py-5 text-right space-x-2">
-                      {member.id !== currentUserId && (
-                        <button
-                          onClick={() =>
-                            handleRoleUpdate(member.id, member.name, member.role)
-                          }
-                          className="p-2 hover:bg-primary/10 rounded-xl text-text-muted hover:text-primary transition-all"
-                          title={
-                            member.role === "USER"
-                              ? "Nâng cấp lên ADMIN"
-                              : "Hạ cấp xuống USER"
-                          }
-                        >
-                          {member.role === "USER" ? (
-                            <UserPlus size={18} />
-                          ) : (
-                            <UserMinus size={18} />
-                          )}
-                        </button>
+                      {member.status === "Banned" &&
+                        member.lockedUntil &&
+                        new Date(member.lockedUntil) > new Date() && (
+                          <span className="text-[9px] text-orange-400/80 font-bold flex items-center gap-1">
+                            <Ban size={10} />
+                            Đến:{" "}
+                            {new Date(member.lockedUntil).toLocaleString(
+                              "vi-VN",
+                              {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              },
+                            )}
+                          </span>
+                        )}
+                      {member.permanentLocked && (
+                        <span className="text-[9px] text-red-500 font-bold flex items-center gap-1 uppercase tracking-tighter">
+                          <ShieldAlert size={10} />
+                          Vĩnh viễn
+                        </span>
                       )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-5 text-right space-x-2">
+                    {member.id !== currentUserId && (
                       <button
-                        onClick={() => toggleStatus(member.id, member.status)}
-                        className="p-2 hover:bg-background-dark rounded-xl text-text-muted hover:text-orange-400 transition-all"
-                        title="Toggle Access"
+                        onClick={() =>
+                          handleRoleUpdate(member.id, member.name, member.role)
+                        }
+                        className="p-2 hover:bg-primary/10 rounded-xl text-text-muted hover:text-primary transition-all"
+                        title={
+                          member.role === "USER"
+                            ? "Nâng cấp lên ADMIN"
+                            : "Hạ cấp xuống USER"
+                        }
                       >
-                        {member.status === "Banned" ? (
-                          <ShieldCheck size={18} />
+                        {member.role === "USER" ? (
+                          <UserPlus size={18} />
                         ) : (
-                          <Ban size={18} />
+                          <UserMinus size={18} />
                         )}
                       </button>
-                      <button
-                        onClick={() => handleDelete(member.id, member.name)}
-                        className="p-2 hover:bg-red-500/10 rounded-xl text-text-muted hover:text-red-400 transition-all"
-                        title="Purge Identity"
-                      >
-                        <UserX size={18} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                    )}
+                    <button
+                      onClick={() => toggleStatus(member.id, member.status)}
+                      className="p-2 hover:bg-background-dark rounded-xl text-text-muted hover:text-orange-400 transition-all"
+                      title="Toggle Access"
+                    >
+                      {member.status === "Banned" ? (
+                        <ShieldCheck size={18} />
+                      ) : (
+                        <Ban size={18} />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => handleDelete(member.id, member.name)}
+                      className="p-2 hover:bg-red-500/10 rounded-xl text-text-muted hover:text-red-400 transition-all"
+                      title="Purge Identity"
+                    >
+                      <UserX size={18} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

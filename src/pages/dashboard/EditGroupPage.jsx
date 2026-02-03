@@ -193,8 +193,8 @@ export default function EditGroupPage() {
                         name="group_name"
                         disabled={isSubmitting}
                         className={`w-full bg-background-main border ${errors.group_name && touched.group_name
-                            ? "border-red-500/50"
-                            : "border-border-main group-focus-within:border-primary/50"
+                          ? "border-red-500/50"
+                          : "border-border-main group-focus-within:border-primary/50"
                           } rounded-2xl py-5 px-6 text-text-main text-base focus:outline-none transition-all shadow-inner placeholder:text-text-muted/20 disabled:opacity-50 disabled:cursor-not-allowed`}
                       />
                       <div className="absolute inset-0 rounded-2xl ring-1 ring-white/5 pointer-events-none group-focus-within:ring-primary/20 transition-all" />
@@ -208,24 +208,34 @@ export default function EditGroupPage() {
 
                   {/* Privacy Selector */}
                   <div className="space-y-3">
-                    <label className="text-[11px] font-black text-primary uppercase tracking-[0.2em] ml-2 flex items-center gap-2">
-                      <Lock size={14} /> Quyền riêng tư
-                    </label>
-                    <div className="grid grid-cols-2 gap-4">
-                      <label className="relative cursor-pointer group">
+                    <div className="flex justify-between items-center ml-2">
+                      <label className="text-[11px] font-black text-primary uppercase tracking-[0.2em] flex items-center gap-2">
+                        <Lock size={14} /> Quyền riêng tư
+                      </label>
+                      <div className="flex items-center gap-1.5 px-3 py-1 bg-orange-500/10 border border-orange-500/20 rounded-full">
+                        <AlertTriangle size={10} className="text-orange-500" />
+                        <span className="text-[9px] font-black text-orange-500 uppercase tracking-wider">
+                          Không thể thay đổi
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 relative">
+                      <div className="absolute inset-0 z-20 cursor-not-allowed" title="Quyền riêng tư không thể thay đổi sau khi tạo nhóm" />
+                      <label className="relative opacity-60">
                         <Field
                           type="radio"
                           name="privacy"
                           value="PUBLIC"
-                          disabled={isSubmitting}
+                          disabled={true}
                           className="sr-only peer"
                         />
-                        <div className={`p-5 rounded-2xl bg-background-main border border-border-main transition-all peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:shadow-[0_0_20px_rgba(255,107,0,0.1)] hover:bg-surface-main ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}>
+                        <div className="p-5 rounded-2xl bg-background-main border border-border-main transition-all peer-checked:border-primary peer-checked:bg-primary/5">
                           <div className="flex items-center gap-3 mb-2">
-                            <div className="size-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                            <div className="size-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-primary">
                               <Globe size={18} />
                             </div>
-                            <span className="text-xs font-black uppercase tracking-widest text-text-main peer-checked:text-text-main">
+                            <span className="text-xs font-black uppercase tracking-widest text-text-main">
                               Công khai
                             </span>
                           </div>
@@ -235,17 +245,17 @@ export default function EditGroupPage() {
                         </div>
                         <div className="absolute top-4 right-4 size-4 rounded-full border-2 border-border-main peer-checked:border-primary peer-checked:after:content-[''] peer-checked:after:absolute peer-checked:after:inset-1 peer-checked:after:bg-primary peer-checked:after:rounded-full" />
                       </label>
-                      <label className="relative cursor-pointer group">
+                      <label className="relative opacity-60">
                         <Field
                           type="radio"
                           name="privacy"
                           value="PRIVATE"
-                          disabled={isSubmitting}
+                          disabled={true}
                           className="sr-only peer"
                         />
-                        <div className={`p-5 rounded-2xl bg-[#120a05] border border-[#2d1f14] transition-all peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:shadow-[0_0_20px_rgba(255,107,0,0.1)] hover:bg-[#1a120b] ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}>
+                        <div className="p-5 rounded-2xl bg-[#120a05] border border-[#2d1f14] transition-all peer-checked:border-primary peer-checked:bg-primary/5">
                           <div className="flex items-center gap-3 mb-2">
-                            <div className="size-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                            <div className="size-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-primary">
                               <ShieldCheck size={18} />
                             </div>
                             <span className="text-xs font-black uppercase tracking-widest text-text-main peer-checked:text-white">
@@ -259,6 +269,9 @@ export default function EditGroupPage() {
                         <div className="absolute top-4 right-4 size-4 rounded-full border-2 border-[#2d1f14] peer-checked:border-primary peer-checked:after:content-[''] peer-checked:after:absolute peer-checked:after:inset-1 peer-checked:after:bg-primary peer-checked:after:rounded-full" />
                       </label>
                     </div>
+                    <p className="text-[10px] text-text-muted italic ml-2 mt-1">
+                      * Vì lý do bảo mật và tránh quá tải hệ thống kiểm duyệt AI, quyền riêng tư của nhóm sẽ được giữ cố định sau khi tạo.
+                    </p>
                   </div>
 
                   {/* Description */}
@@ -280,10 +293,10 @@ export default function EditGroupPage() {
                     <div className="flex justify-end pr-2">
                       <span
                         className={`text-[9px] font-bold tracking-widest uppercase ${values.description
-                            ? values.description.length > 450
-                              ? "text-orange-500"
-                              : "text-text-muted"
+                          ? values.description.length > 450
+                            ? "text-orange-500"
                             : "text-text-muted"
+                          : "text-text-muted"
                           }`}
                       >
                         {values.description?.length || 0} / 500
