@@ -7,7 +7,6 @@ import FriendRequestService from "../../services/friend/FriendRequestService";
 import ConfirmModal from "../../components/common/ConfirmModal";
 import toast from "react-hot-toast";
 
-import CitySelect from "../../components/common/CitySelect";
 import ChatService from "../../services/chat/ChatService";
 import MemberFilterSidebar from "./MemberFilterSidebar";
 
@@ -140,12 +139,12 @@ export default function AdvancedMemberSearch() {
         prevMembers.map((member) =>
           member.userId === memberId
             ? {
-              ...member,
-              isFriend: true,
-              requestSent: false,
-              requestId: null,
-              isRequestReceiver: false,
-            }
+                ...member,
+                isFriend: true,
+                requestSent: false,
+                requestId: null,
+                isRequestReceiver: false,
+              }
             : member,
         ),
       );
@@ -167,11 +166,11 @@ export default function AdvancedMemberSearch() {
         prevMembers.map((member) =>
           member.userId === memberId
             ? {
-              ...member,
-              requestSent: false,
-              requestId: null,
-              isRequestReceiver: false,
-            }
+                ...member,
+                requestSent: false,
+                requestId: null,
+                isRequestReceiver: false,
+              }
             : member,
         ),
       );
@@ -217,7 +216,9 @@ export default function AdvancedMemberSearch() {
       const response = await ChatService.getOrCreateDirectChat(userId);
       const room = response.data;
       toast.success("Đã kết nối!", { id: tid });
-      navigate("/chat", { state: { selectedRoomKey: room.firebaseRoomKey } });
+      navigate("/dashboard/chat", {
+        state: { selectedRoomKey: room.firebaseRoomKey },
+      });
     } catch (error) {
       console.error("Error starting chat:", error);
       toast.error("Không thể tạo cuộc trò chuyện", { id: tid });
@@ -230,7 +231,6 @@ export default function AdvancedMemberSearch() {
     <div className="flex flex-1 overflow-hidden relative bg-background-main">
       <main className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-6 lg:p-8">
         <div className="max-w-[1600px] mx-auto">
-
           {/* Header Section */}
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-text-main flex items-center gap-2">
@@ -245,16 +245,19 @@ export default function AdvancedMemberSearch() {
           </div>
 
           <div className="flex flex-col lg:flex-row gap-8 items-start">
-
             {/* Left Sidebar - Filters */}
             <MemberFilterSidebar
-              keyword={keyword} setKeyword={setKeyword}
-              cityCode={cityCode} setCityCode={(code) => {
+              keyword={keyword}
+              setKeyword={setKeyword}
+              cityCode={cityCode}
+              setCityCode={(code) => {
                 setCityCode(code);
-                setPagination(prev => ({ ...prev, page: 0 }));
+                setPagination((prev) => ({ ...prev, page: 0 }));
               }}
-              maritalStatus={maritalStatus} setMaritalStatus={setMaritalStatus}
-              lookingFor={lookingFor} setLookingFor={setLookingFor}
+              maritalStatus={maritalStatus}
+              setMaritalStatus={setMaritalStatus}
+              lookingFor={lookingFor}
+              setLookingFor={setLookingFor}
               onReset={handleReset}
               className="hidden lg:block"
             />
@@ -268,13 +271,17 @@ export default function AdvancedMemberSearch() {
                 </summary>
                 <div className="mt-4 pt-4 border-t border-border-main">
                   <MemberFilterSidebar
-                    keyword={keyword} setKeyword={setKeyword}
-                    cityCode={cityCode} setCityCode={(code) => {
+                    keyword={keyword}
+                    setKeyword={setKeyword}
+                    cityCode={cityCode}
+                    setCityCode={(code) => {
                       setCityCode(code);
-                      setPagination(prev => ({ ...prev, page: 0 }));
+                      setPagination((prev) => ({ ...prev, page: 0 }));
                     }}
-                    maritalStatus={maritalStatus} setMaritalStatus={setMaritalStatus}
-                    lookingFor={lookingFor} setLookingFor={setLookingFor}
+                    maritalStatus={maritalStatus}
+                    setMaritalStatus={setMaritalStatus}
+                    lookingFor={lookingFor}
+                    setLookingFor={setLookingFor}
                     onReset={handleReset}
                     className="!w-full"
                   />
@@ -287,7 +294,9 @@ export default function AdvancedMemberSearch() {
               {/* Suggestions Section (Small snippet above results) */}
               {suggestions.length > 0 && (
                 <div className="mb-8">
-                  <h2 className="text-lg font-bold text-text-main mb-4">Gợi ý cho bạn</h2>
+                  <h2 className="text-lg font-bold text-text-main mb-4">
+                    Gợi ý cho bạn
+                  </h2>
                   {/* Suggestion Grid... (Simplified for now) */}
                 </div>
               )}
@@ -339,7 +348,11 @@ export default function AdvancedMemberSearch() {
                         />
                         {member.isFriend && (
                           <div className="absolute bottom-0 right-0 bg-green-500 rounded-full p-1 border-2 border-surface-main">
-                            <Check size={10} className="text-white" strokeWidth={4} />
+                            <Check
+                              size={10}
+                              className="text-white"
+                              strokeWidth={4}
+                            />
                           </div>
                         )}
                       </Link>
@@ -356,58 +369,89 @@ export default function AdvancedMemberSearch() {
                         </Link>
                         <div className="flex flex-col gap-1 text-sm text-text-secondary mt-1">
                           {member.cityName && (
-                            <span className="flex items-center gap-1">Sống tại <strong>{member.cityName}</strong></span>
+                            <span className="flex items-center gap-1">
+                              Sống tại <strong>{member.cityName}</strong>
+                            </span>
                           )}
                           {/* Placeholder for mutual friends if available in future */}
-                          <span className="text-text-secondary/70">Thành viên Connect</span>
+                          <span className="text-text-secondary/70">
+                            Thành viên Connect
+                          </span>
                         </div>
                       </div>
 
                       {/* Actions */}
                       <div className="flex-shrink-0 flex flex-col sm:flex-row items-center gap-2">
+                        {/* Always show Message button */}
+                        <button
+                          onClick={() => handleStartChat(member.userId)}
+                          className="px-4 py-2 rounded-lg bg-border-main hover:bg-border-main/80 text-text-main font-semibold text-sm transition-colors flex items-center gap-2"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">
+                            chat
+                          </span>
+                          Nhắn tin
+                        </button>
+
+                        {/* Connection Actions */}
                         {member.isFriend ? (
-                          <button
-                            onClick={() => handleStartChat(member.userId)}
-                            className="px-4 py-2 rounded-lg bg-border-main hover:bg-border-main/80 text-text-main font-semibold text-sm transition-colors flex items-center gap-2"
-                          >
-                            <span className="material-symbols-outlined text-[18px]">chat</span>
-                            Nhắn tin
-                          </button>
+                          <div className="px-4 py-2 rounded-lg bg-green-500/10 text-green-600 font-semibold text-sm flex items-center gap-1">
+                            <Check size={16} />
+                            Bạn bè
+                          </div>
                         ) : member.requestSent ? (
                           member.isRequestReceiver ? (
-                            <>
+                            <div className="flex gap-2">
                               <button
-                                onClick={() => handleAcceptRequest(member.requestId, member.userId)}
+                                onClick={() =>
+                                  handleAcceptRequest(
+                                    member.requestId,
+                                    member.userId,
+                                  )
+                                }
                                 disabled={sendingRequests[member.userId]}
                                 className="px-4 py-2 rounded-lg bg-primary text-white font-semibold text-sm hover:bg-orange-600 transition-colors"
                               >
                                 Chấp nhận
                               </button>
                               <button
-                                onClick={() => handleRejectRequest(member.requestId, member.userId)}
+                                onClick={() =>
+                                  handleRejectRequest(
+                                    member.requestId,
+                                    member.userId,
+                                  )
+                                }
                                 disabled={sendingRequests[member.userId]}
-                                className="px-4 py-2 rounded-lg bg-border-main text-text-main font-semibold text-sm hover:bg-border-main/80 transition-colors"
+                                className="px-4 py-2 rounded-lg bg-background-main text-text-main font-semibold text-sm hover:bg-border-main/50 transition-colors border border-border-main"
                               >
                                 Xóa
                               </button>
-                            </>
+                            </div>
                           ) : (
                             <button
-                              onClick={() => confirmCancelRequest(member.userId)}
+                              onClick={() =>
+                                confirmCancelRequest(member.userId)
+                              }
                               disabled={sendingRequests[member.userId]}
                               className="px-4 py-2 rounded-lg bg-border-main text-text-main font-semibold text-sm hover:bg-border-main/80 transition-colors"
                             >
-                              {sendingRequests[member.userId] ? "Đang xử lý..." : "Hủy lời mời"}
+                              {sendingRequests[member.userId]
+                                ? "Đang xử lý..."
+                                : "Hủy lời mời"}
                             </button>
                           )
                         ) : (
                           <button
-                            onClick={() => handleSendFriendRequest(member.userId)}
+                            onClick={() =>
+                              handleSendFriendRequest(member.userId)
+                            }
                             disabled={sendingRequests[member.userId]}
                             className="px-4 py-2 rounded-lg bg-primary/10 text-primary font-semibold text-sm hover:bg-primary/20 transition-colors flex items-center gap-2"
                           >
                             <UserPlus size={18} />
-                            {sendingRequests[member.userId] ? "Đang gửi..." : "Thêm bạn bè"}
+                            {sendingRequests[member.userId]
+                              ? "Đang gửi..."
+                              : "Thêm bạn bè"}
                           </button>
                         )}
                       </div>
@@ -429,7 +473,6 @@ export default function AdvancedMemberSearch() {
                 </div>
               )}
             </div>
-
           </div>
         </div>
       </main>

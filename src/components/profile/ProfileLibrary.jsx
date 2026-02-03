@@ -73,9 +73,6 @@ const ProfileLibrary = ({ profile, isOwner }) => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <h3 className="text-text-main font-bold text-xl flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-xl">
-            <Images className="text-primary" size={20} />
-          </div>
           {isOwner ? "Thư viện của bạn" : "Thư viện media"}
         </h3>
 
@@ -174,9 +171,6 @@ const ProfileLibrary = ({ profile, isOwner }) => {
         </>
       ) : (
         <div className="text-center py-20 flex flex-col items-center justify-center bg-background-main/50 rounded-2xl border border-dashed border-border-main">
-          <div className="p-4 bg-surface-main rounded-full mb-4 shadow-sm">
-            <Images className="text-text-secondary/50" size={32} />
-          </div>
           <p className="text-text-secondary font-medium">
             {activeFilter === "all"
               ? isOwner

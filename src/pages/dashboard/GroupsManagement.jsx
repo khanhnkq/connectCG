@@ -1,5 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
+import GroupsRightSidebar from "../../components/groups/GroupsRightSidebar";
+
 import {
   ShieldCheck,
   Globe,
@@ -21,6 +23,7 @@ import {
   declineInvitation,
   joinGroup,
   leaveGroup,
+  searchGroups,
 } from "../../services/groups/GroupService";
 import toast from "react-hot-toast";
 
@@ -34,55 +37,61 @@ export default function GroupsManagement() {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Pagination states
-  const [page, setPage] = useState(0);
+  const [, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const loaderRef = React.useRef(null);
 
-  const fetchGroups = async (pageToFetch, isNewTab = false) => {
-    try {
-      if (pageToFetch === 0) setLoading(true);
-      else setIsFetchingMore(true);
+  const fetchGroups = useCallback(
+    async (pageToFetch) => {
+      try {
+        if (pageToFetch === 0) setLoading(true);
+        else setIsFetchingMore(true);
 
-      let response;
-      // Always fetch from backend, filtering happens client-side
-      switch (activeTab) {
-        case "my":
-          response = await findMyGroups(pageToFetch);
-          break;
-        case "discover":
-          response = await findDiscoverGroups(pageToFetch);
-          break;
-        case "invites":
-          response = await findPendingInvitations();
-          break;
+        let response;
+        if (searchQuery.trim()) {
+          response = await searchGroups(searchQuery, pageToFetch);
+        } else {
+          switch (activeTab) {
+            case "my":
+              response = await findMyGroups(pageToFetch);
+              break;
+            case "discover":
+              response = await findDiscoverGroups(pageToFetch);
+              break;
+            case "invites":
+              response = await findPendingInvitations(); // Invites might not be paginated yet, but let's assume it returns a list or adapt
+              break;
+          }
+        }
+
+        // Handle paginated response (Spring Page object has 'content', 'last', 'totalPages')
+        const newData = response.content || response;
+        const isLast = response.last !== undefined ? response.last : true;
+
+        if (activeTab === "my") {
+          setYourGroups((prev) =>
+            pageToFetch === 0 ? newData : [...prev, ...newData],
+          );
+        } else if (activeTab === "discover") {
+          setDiscoverGroups((prev) =>
+            pageToFetch === 0 ? newData : [...prev, ...newData],
+          );
+        } else {
+          setPendingInvitations(newData);
+        }
+
+        setHasMore(!isLast);
+      } catch (error) {
+        console.error("Failed to fetch groups:", error);
+        toast.error("Không thể tải danh sách nhóm.");
+      } finally {
+        setLoading(false);
+        setIsFetchingMore(false);
       }
-
-      // Handle paginated response (Spring Page object has 'content', 'last', 'totalPages')
-      const newData = response.content || response;
-      const isLast = response.last !== undefined ? response.last : true;
-
-      if (activeTab === "my") {
-        setYourGroups((prev) =>
-          pageToFetch === 0 ? newData : [...prev, ...newData],
-        );
-      } else if (activeTab === "discover") {
-        setDiscoverGroups((prev) =>
-          pageToFetch === 0 ? newData : [...prev, ...newData],
-        );
-      } else {
-        setPendingInvitations(newData);
-      }
-
-      setHasMore(!isLast);
-    } catch (error) {
-      console.error("Failed to fetch groups:", error);
-      toast.error("Không thể tải danh sách nhóm.");
-    } finally {
-      setLoading(false);
-      setIsFetchingMore(false);
-    }
-  };
+    },
+    [activeTab, searchQuery],
+  );
 
   useEffect(() => {
     setPage(0);
@@ -127,8 +136,8 @@ export default function GroupsManagement() {
       if (Number(userId) !== Number(currentUserId)) return;
 
       if (action === "INVITED") {
-        setPendingInvitations(prev => {
-          if (prev.some(g => g.id === groupId)) return prev;
+        setPendingInvitations((prev) => {
+          if (prev.some((g) => g.id === groupId)) return prev;
           // Note: In a real app we'd fetch the group DTO if member object is just a membership
           // But here let's trigger a refresh of invitations to be safe and lazy
           fetchGroups(0);
@@ -146,8 +155,9 @@ export default function GroupsManagement() {
     };
 
     window.addEventListener("membershipEvent", handleMembershipEvent);
-    return () => window.removeEventListener("membershipEvent", handleMembershipEvent);
-  }, []);
+    return () =>
+      window.removeEventListener("membershipEvent", handleMembershipEvent);
+  }, [fetchGroups]);
 
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
@@ -214,7 +224,7 @@ export default function GroupsManagement() {
         typeof error.response?.data === "string"
           ? error.response.data
           : error.response?.data?.message ||
-          "Không thể thực hiện yêu cầu gia nhập.";
+            "Không thể thực hiện yêu cầu gia nhập.";
       toast.error(errorMsg);
     }
   };
@@ -434,131 +444,156 @@ export default function GroupsManagement() {
     : [];
 
   return (
-    <div className="max-w-7xl mx-auto w-full pb-20 bg-background-main transition-colors duration-300">
-      {/* Header */}
-      <div className="sticky top-0 z-50 bg-background-main/95 backdrop-blur-xl border-b border-border-main p-4 flex flex-col md:flex-row justify-between items-center px-4 md:px-8 gap-4 md:gap-0">
-        <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 w-full md:w-auto">
-          <h2 className="text-2xl font-extrabold text-text-main tracking-tight">
-            Community Hub
-          </h2>
+    <div className="flex w-full relative items-start transition-colors duration-300">
+      <div className="flex-1 w-full bg-background-main min-h-screen">
+        {/* Header */}
+        <div className="sticky top-0 z-30 bg-background-main/95 backdrop-blur-xl border-b border-border-main p-4 flex flex-col md:flex-row justify-between items-center px-4 md:px-8 gap-4 md:gap-0">
+          <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 w-full md:w-auto">
+            <h2 className="text-2xl font-extrabold text-text-main tracking-tight">
+              Community Hub
+            </h2>
 
-          {/* Tabs */}
-          <div className="flex bg-surface-main p-1 rounded-2xl border border-border-main">
-            {["my", "discover", "invites"].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => {
-                  setActiveTab(tab);
-                  setSearchQuery("");
-                }}
-                className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all relative ${activeTab === tab
-                  ? "bg-primary text-text-main shadow-lg"
-                  : "text-text-secondary hover:text-primary"
+            {/* Tabs */}
+            <div className="flex bg-surface-main p-1 rounded-2xl border border-border-main">
+              {["my", "discover", "invites"].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => {
+                    setActiveTab(tab);
+                    setSearchQuery("");
+                  }}
+                  className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all relative ${
+                    activeTab === tab
+                      ? "bg-primary text-text-main shadow-lg"
+                      : "text-text-secondary hover:text-primary"
                   }`}
-              >
-                {tab === "my"
-                  ? "Của tôi"
-                  : tab === "discover"
+                >
+                  {tab === "my"
+                    ? "Của tôi"
+                    : tab === "discover"
                     ? "Khám phá"
                     : "Lời mời"}
-                {tab === "invites" && pendingInvitations.length > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-4 w-4">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 text-[10px] items-center justify-center text-white font-bold">
-                      {pendingInvitations.length}
+                  {tab === "invites" && pendingInvitations.length > 0 && (
+                    <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 text-[10px] items-center justify-center text-white font-bold">
+                        {pendingInvitations.length}
+                      </span>
                     </span>
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-          <div className="relative w-full md:w-80 group">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-text-secondary group-focus-within:text-primary transition-colors">
-              <Search size={18} />
+                  )}
+                </button>
+              ))}
             </div>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={handleSearch}
-              className="block w-full pl-11 pr-4 py-2.5 border border-border-main rounded-2xl bg-surface-main text-text-main placeholder-text-secondary/50 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all text-xs font-medium"
-              placeholder={
-                activeTab === "my"
-                  ? "Tìm kiếm nhóm của bạn..."
-                  : activeTab === "discover"
+          </div>
+
+          <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+            {/* Search Bar - Hidden on XL screens as it moves to sidebar */}
+            <div className="relative w-full md:w-80 group xl:hidden">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-text-secondary group-focus-within:text-primary transition-colors">
+                <Search size={18} />
+              </div>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={handleSearch}
+                className="block w-full pl-11 pr-4 py-2.5 border border-border-main rounded-2xl bg-surface-main text-text-main placeholder-text-secondary/50 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all text-xs font-medium"
+                placeholder={
+                  activeTab === "my"
+                    ? "Tìm kiếm nhóm của bạn..."
+                    : activeTab === "discover"
                     ? "Khám phá nhóm mới..."
                     : "Tìm lời mời..."
-              }
-            />
+                }
+              />
+            </div>
+            <Link
+              to="/dashboard/groups/create"
+              className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-primary text-text-main hover:bg-orange-600 transition-all font-black text-xs uppercase tracking-widest shadow-lg shadow-orange-500/20 active:scale-95 group"
+            >
+              <Plus
+                size={18}
+                className="group-hover:rotate-90 transition-transform"
+              />
+              Tạo nhóm
+            </Link>
           </div>
-          <Link
-            to="/dashboard/groups/create"
-            className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-primary text-text-main hover:bg-orange-600 transition-all font-black text-xs uppercase tracking-widest shadow-lg shadow-orange-500/20 active:scale-95 group"
-          >
-            <Plus
-              size={18}
-              className="group-hover:rotate-90 transition-transform"
-            />
-            Tạo nhóm
-          </Link>
+        </div>
+
+        <div className="px-4 md:px-8 py-6 md:py-10">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-24">
+              <div className="size-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4" />
+              <p className="text-text-secondary animate-pulse text-sm font-bold uppercase tracking-widest">
+                Đang tải dữ liệu...
+              </p>
+            </div>
+          ) : (
+            <>
+              {searchQuery.trim() !== "" && (
+                <div className="mb-8">
+                  <h3 className="text-sm font-black text-primary uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                    <Search size={18} />
+                    Tìm thấy {displayedGroups.length} nhóm{" "}
+                    {activeTab === "my" ? "của bạn" : "để khám phá"} cho "
+                    {searchQuery}"
+                  </h3>
+                </div>
+              )}
+
+              {displayedGroups.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {displayedGroups.map((group) => renderGroupCard(group))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-24 bg-surface-main rounded-[3rem] border border-dashed border-border-main">
+                  <Users
+                    size={60}
+                    className="text-text-muted mb-4 opacity-20"
+                  />
+                  <p className="text-text-secondary font-medium">
+                    Không tìm thấy nhóm nào phù hợp.
+                  </p>
+                  {searchQuery.trim() !== "" && (
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="mt-4 text-primary text-xs font-black uppercase tracking-widest hover:underline"
+                    >
+                      Xóa tìm kiếm
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Loading / End of List Indicator */}
+              <div ref={loaderRef} className="py-10 flex justify-center w-full">
+                {isFetchingMore ? (
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="size-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary animate-pulse">
+                      Đang tải thêm...
+                    </span>
+                  </div>
+                ) : !hasMore && displayedGroups.length > 0 ? (
+                  <div className="flex flex-col items-center gap-2 opacity-30">
+                    <div className="h-px w-20 bg-border-main" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">
+                      Bạn đã xem hết tất cả
+                    </span>
+                    <div className="h-px w-20 bg-border-main" />
+                  </div>
+                ) : null}
+              </div>
+            </>
+          )}
         </div>
       </div>
 
-      <div className="px-4 md:px-8 py-6 md:py-10">
-        {searchQuery.trim() !== "" && (
-          <div className="mb-8">
-            <h3 className="text-sm font-black text-primary uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-              <Search size={18} />
-              Tìm thấy {displayedGroups.length} nhóm{" "}
-              {activeTab === "my" ? "của bạn" : "để khám phá"} cho "
-              {searchQuery}"
-            </h3>
-          </div>
-        )}
-
-        {displayedGroups.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {displayedGroups.map((group) => renderGroupCard(group))}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-24 bg-surface-main rounded-[3rem] border border-dashed border-border-main">
-            <Users size={60} className="text-text-muted mb-4 opacity-20" />
-            <p className="text-text-secondary font-medium">
-              Không tìm thấy nhóm nào phù hợp.
-            </p>
-            {searchQuery.trim() !== "" && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="mt-4 text-primary text-xs font-black uppercase tracking-widest hover:underline"
-              >
-                Xóa tìm kiếm
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Loading / End of List Indicator */}
-        <div ref={loaderRef} className="py-10 flex justify-center w-full">
-          {isFetchingMore ? (
-            <div className="flex flex-col items-center gap-3">
-              <div className="size-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary animate-pulse">
-                Đang tải thêm...
-              </span>
-            </div>
-          ) : !hasMore && displayedGroups.length > 0 ? (
-            <div className="flex flex-col items-center gap-2 opacity-30">
-              <div className="h-px w-20 bg-border-main" />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">
-                Bạn đã xem hết tất cả
-              </span>
-              <div className="h-px w-20 bg-border-main" />
-            </div>
-          ) : null}
-        </div>
-      </div>
+      <GroupsRightSidebar
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        activeTab={activeTab}
+        displayedGroupsLength={displayedGroups.length}
+      />
     </div>
   );
 }
