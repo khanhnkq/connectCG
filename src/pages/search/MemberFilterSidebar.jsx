@@ -18,7 +18,7 @@ const MemberFilterSidebar = ({
     <aside
       className={`w-full lg:w-[280px] flex-shrink-0 space-y-6 ${className}`}
     >
-      <div className="bg-surface-main rounded-2xl border border-border-main p-5 shadow-sm sticky top-4">
+      <div className="bg-surface-main rounded-2xl border border-border-main p-5 shadow-sm sticky top-20">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-bold text-text-main flex items-center gap-2">
             <Filter size={18} className="text-primary" />
