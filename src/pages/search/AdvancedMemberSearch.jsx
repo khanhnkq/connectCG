@@ -293,6 +293,7 @@ export default function AdvancedMemberSearch() {
               )}
 
               {/* Results Grid */}
+              {/* Results List (Facebook Style) */}
               {loading && pagination.page === 0 ? (
                 <div className="flex items-center justify-center py-20">
                   <Loader2 className="animate-spin text-primary h-8 w-8" />
@@ -302,105 +303,113 @@ export default function AdvancedMemberSearch() {
                   <div className="mx-auto w-16 h-16 bg-background-main rounded-full flex items-center justify-center mb-4">
                     <Search className="text-text-secondary h-8 w-8" />
                   </div>
-                  <h3 className="text-lg font-bold text-text-main mb-2">Không tìm thấy kết quả</h3>
+                  <h3 className="text-lg font-bold text-text-main mb-2">
+                    Không tìm thấy kết quả
+                  </h3>
                   <p className="text-text-secondary max-w-md mx-auto">
-                    Thử diều chỉnh bộ lọc hoặc từ khóa tìm kiếm của bạn để thấy nhiều kết quả hơn.
+                    Thử diều chỉnh bộ lọc hoặc từ khóa tìm kiếm của bạn để thấy
+                    nhiều kết quả hơn.
                   </p>
-                  <button onClick={handleReset} className="mt-6 text-primary font-medium hover:underline">
+                  <button
+                    onClick={handleReset}
+                    className="mt-6 text-primary font-medium hover:underline"
+                  >
                     Xóa bộ lọc
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <div className="flex flex-col gap-4">
                   {members.map((member) => (
                     <article
                       key={member.userId}
-                      className="flex flex-col bg-surface-main rounded-xl overflow-hidden border border-border-main hover:border-primary/50 transition-all shadow-sm hover:shadow-md group"
+                      className="flex items-center gap-4 p-4 bg-surface-main rounded-xl border border-border-main hover:border-border-main/80 transition-all shadow-sm"
                     >
-                      <div className="h-56 w-full overflow-hidden relative">
-                        <Link
-                          to={`/dashboard/member/${member.userId}`}
-                          className="block w-full h-full"
-                        >
-                          <img
-                            src={
-                              member.avatarUrl ||
-                              "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                            }
-                            alt={member.fullName}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                          />
-                        </Link>
-
-                        {/* Status Badge Overlay (Optional) */}
+                      {/* Avatar */}
+                      <Link
+                        to={`/dashboard/member/${member.userId}`}
+                        className="flex-shrink-0 relative"
+                      >
+                        <img
+                          src={
+                            member.avatarUrl ||
+                            "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                          }
+                          alt={member.fullName}
+                          className="w-20 h-20 rounded-full object-cover border border-border-main"
+                        />
                         {member.isFriend && (
-                          <div className="absolute top-3 right-3 bg-green-500/90 backdrop-blur text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm">
-                            BẠN BÈ
+                          <div className="absolute bottom-0 right-0 bg-green-500 rounded-full p-1 border-2 border-surface-main">
+                            <Check size={10} className="text-white" strokeWidth={4} />
                           </div>
                         )}
+                      </Link>
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <Link
+                          to={`/dashboard/member/${member.userId}`}
+                          className="block"
+                        >
+                          <h3 className="text-text-main font-bold text-lg hover:underline truncate">
+                            {member.fullName}
+                          </h3>
+                        </Link>
+                        <div className="flex flex-col gap-1 text-sm text-text-secondary mt-1">
+                          {member.cityName && (
+                            <span className="flex items-center gap-1">Sống tại <strong>{member.cityName}</strong></span>
+                          )}
+                          {/* Placeholder for mutual friends if available in future */}
+                          <span className="text-text-secondary/70">Thành viên Connect</span>
+                        </div>
                       </div>
 
-                      <div className="p-4 flex flex-col flex-1">
-                        <h3 className="text-text-main font-bold text-lg leading-tight mb-1 truncate">
-                          <Link
-                            to={`/dashboard/member/${member.userId}`}
-                            className="hover:text-primary transition-colors"
+                      {/* Actions */}
+                      <div className="flex-shrink-0 flex flex-col sm:flex-row items-center gap-2">
+                        {member.isFriend ? (
+                          <button
+                            onClick={() => handleStartChat(member.userId)}
+                            className="px-4 py-2 rounded-lg bg-border-main hover:bg-border-main/80 text-text-main font-semibold text-sm transition-colors flex items-center gap-2"
                           >
-                            {member.fullName}
-                          </Link>
-                        </h3>
-                        <div className="flex items-center gap-1.5 text-text-secondary text-sm mb-3">
-                          <span className="material-symbols-outlined text-[16px]">location_on</span>
-                          <span className="truncate">{member.cityName || "Chưa cập nhật"}</span>
-                        </div>
-
-                        <div className="mt-auto pt-4 border-t border-border-main flex flex-col gap-2">
-                          {member.isFriend ? (
-                            <button
-                              onClick={() => handleStartChat(member.userId)}
-                              className="w-full py-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary font-bold text-sm transition-colors flex items-center justify-center gap-2"
-                            >
-                              <span className="material-symbols-outlined text-sm">chat</span>
-                              Nhắn tin
-                            </button>
-                          ) : member.requestSent ? (
-                            member.isRequestReceiver ? (
-                              <div className="grid grid-cols-2 gap-2">
-                                <button
-                                  onClick={() => handleAcceptRequest(member.requestId, member.userId)}
-                                  disabled={sendingRequests[member.userId]}
-                                  className="py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-orange-600 transition-colors"
-                                >
-                                  Chấp nhận
-                                </button>
-                                <button
-                                  onClick={() => handleRejectRequest(member.requestId, member.userId)}
-                                  disabled={sendingRequests[member.userId]}
-                                  className="py-2 rounded-lg bg-background-main text-text-main font-bold text-sm border border-border-main hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-colors"
-                                >
-                                  Từ chối
-                                </button>
-                              </div>
-                            ) : (
+                            <span className="material-symbols-outlined text-[18px]">chat</span>
+                            Nhắn tin
+                          </button>
+                        ) : member.requestSent ? (
+                          member.isRequestReceiver ? (
+                            <>
                               <button
-                                onClick={() => confirmCancelRequest(member.userId)}
+                                onClick={() => handleAcceptRequest(member.requestId, member.userId)}
                                 disabled={sendingRequests[member.userId]}
-                                className="w-full py-2 rounded-lg bg-background-main text-text-secondary font-bold text-sm border border-border-main hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-colors"
+                                className="px-4 py-2 rounded-lg bg-primary text-white font-semibold text-sm hover:bg-orange-600 transition-colors"
                               >
-                                {sendingRequests[member.userId] ? "Đang xử lý..." : "Hủy lời mời"}
+                                Chấp nhận
                               </button>
-                            )
+                              <button
+                                onClick={() => handleRejectRequest(member.requestId, member.userId)}
+                                disabled={sendingRequests[member.userId]}
+                                className="px-4 py-2 rounded-lg bg-border-main text-text-main font-semibold text-sm hover:bg-border-main/80 transition-colors"
+                              >
+                                Xóa
+                              </button>
+                            </>
                           ) : (
                             <button
-                              onClick={() => handleSendFriendRequest(member.userId)}
+                              onClick={() => confirmCancelRequest(member.userId)}
                               disabled={sendingRequests[member.userId]}
-                              className="w-full py-2 rounded-lg bg-surface-main text-text-main font-bold text-sm border border-border-main hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2 shadow-sm"
+                              className="px-4 py-2 rounded-lg bg-border-main text-text-main font-semibold text-sm hover:bg-border-main/80 transition-colors"
                             >
-                              <UserPlus size={16} />
-                              {sendingRequests[member.userId] ? "Đang gửi..." : "Kết bạn"}
+                              {sendingRequests[member.userId] ? "Đang xử lý..." : "Hủy lời mời"}
                             </button>
-                          )}
-                        </div>
+                          )
+                        ) : (
+                          <button
+                            onClick={() => handleSendFriendRequest(member.userId)}
+                            disabled={sendingRequests[member.userId]}
+                            className="px-4 py-2 rounded-lg bg-primary/10 text-primary font-semibold text-sm hover:bg-primary/20 transition-colors flex items-center gap-2"
+                          >
+                            <UserPlus size={18} />
+                            {sendingRequests[member.userId] ? "Đang gửi..." : "Thêm bạn bè"}
+                          </button>
+                        )}
                       </div>
                     </article>
                   ))}

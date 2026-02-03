@@ -236,8 +236,8 @@ const UserNavbar = () => {
         <div className="relative" ref={chatDropdownRef}>
           <button
             className={`p-2.5 rounded-full transition-colors relative flex items-center justify-center w-10 h-10 ${showChatDropdown
-                ? "bg-primary/20 text-primary"
-                : "bg-[#E4E6EB] dark:bg-[#3A3B3C] text-text-main hover:bg-[#D8DADF] dark:hover:bg-[#4E4F50]"
+              ? "bg-primary/20 text-primary"
+              : "bg-[#E4E6EB] dark:bg-[#3A3B3C] text-text-main hover:bg-[#D8DADF] dark:hover:bg-[#4E4F50]"
               }`}
             onClick={() => {
               setShowChatDropdown(!showChatDropdown);
@@ -263,8 +263,8 @@ const UserNavbar = () => {
         <div className="relative" ref={notificationRef}>
           <button
             className={`p-2.5 rounded-full transition-colors relative flex items-center justify-center w-10 h-10 ${showNotifications
-                ? "bg-primary/20 text-primary"
-                : "bg-[#E4E6EB] dark:bg-[#3A3B3C] text-text-main hover:bg-[#D8DADF] dark:hover:bg-[#4E4F50]"
+              ? "bg-primary/20 text-primary"
+              : "bg-[#E4E6EB] dark:bg-[#3A3B3C] text-text-main hover:bg-[#D8DADF] dark:hover:bg-[#4E4F50]"
               }`}
             onClick={() => {
               setShowNotifications(!showNotifications);
@@ -301,8 +301,8 @@ const UserNavbar = () => {
               setShowChatDropdown(false);
             }}
             className={`flex items-center gap-1.5 p-1 rounded-full transition-all duration-200 border ml-1 ${showUserMenu
-                ? "bg-primary/10 border-primary/30"
-                : "bg-[#E4E6EB] dark:bg-[#3A3B3C] border-transparent hover:bg-[#D8DADF] dark:hover:bg-[#4E4F50]"
+              ? "bg-primary/10 border-primary/30"
+              : "bg-[#E4E6EB] dark:bg-[#3A3B3C] border-transparent hover:bg-[#D8DADF] dark:hover:bg-[#4E4F50]"
               }`}
           >
             <div className="bg-gradient-to-tr from-primary to-orange-400 p-[2px] rounded-full">

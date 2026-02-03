@@ -85,16 +85,18 @@ export default function FriendsPage() {
         }
     }, [searchParams, setSearchParams]);
 
-    // Fetch data based on view mode
+    // Fetch data on mount
     useEffect(() => {
-        if (viewMode === 'ALL') {
+        const loadAllData = async () => {
+            // Parallel fetch for counts
             fetchFriends();
-        } else if (viewMode === 'REQUESTS') {
             fetchRequests();
-        } else if (viewMode === 'SUGGESTIONS') {
-            fetchSuggestions();
-        }
-    }, [viewMode]);
+            if (suggestions.length === 0) {
+                fetchSuggestions();
+            }
+        };
+        loadAllData();
+    }, []); // Run once on mount
 
     // Fetch full profile when activeItem changes
     useEffect(() => {
