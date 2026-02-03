@@ -26,6 +26,7 @@ import ReportModal from "../report/ReportModal";
 import reportService from "../../services/ReportService";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
+import AutoplayVideo from "../common/AutoplayVideo";
 
 // --- HELPER 1: Format thời gian ---
 const formatTime = (dateString) => {
@@ -42,7 +43,7 @@ const formatTime = (dateString) => {
 };
 
 // --- HELPER MỚI CHUẨN ---
-const MediaGallery = ({ mediaItems, onMediaClick }) => {
+const MediaGallery = ({ mediaItems, onMediaClick, isPaused, setIsPaused }) => {
   if (!mediaItems || mediaItems.length === 0) return null;
 
   // Hàm render 1 media item
@@ -59,14 +60,17 @@ const MediaGallery = ({ mediaItems, onMediaClick }) => {
 
     return (
       <div
-        key={index} // Quan trọng: phải có key
+        key={index}
         className={`relative overflow-hidden bg-black cursor-pointer group w-full h-full ${className}`}
         onClick={() => onMediaClick(index)}
       >
         {isVideo ? (
-          <video
+          <AutoplayVideo
             src={item.url}
-            className="w-full h-full object-cover pointer-events-none"
+            className="w-full h-full"
+            onClick={() => onMediaClick(index)}
+            manuallyPaused={isPaused}
+            setManuallyPaused={setIsPaused}
           />
         ) : (
           <img
@@ -85,20 +89,6 @@ const MediaGallery = ({ mediaItems, onMediaClick }) => {
             <span className="text-white text-3xl font-bold">
               +{overlayCount}
             </span>
-          </div>
-        )}
-
-        {/* Nút Play nếu là video */}
-        {isVideo && !showOverlay && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="bg-black/40 backdrop-blur-sm p-3 rounded-full border border-white/20 shadow-lg">
-              <svg
-                className="w-6 h-6 text-white fill-white"
-                viewBox="0 0 24 24"
-              >
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            </div>
           </div>
         )}
       </div>
@@ -258,6 +248,7 @@ export default function PostCard({
   const [localReaction, setLocalReaction] = useState(data.currentUserReaction);
   const [localReactCount, setLocalReactCount] = useState(data.reactCount);
   const [localCommentCount, setLocalCommentCount] = useState(data.commentCount);
+  const [videoPaused, setVideoPaused] = useState(false);
 
   // Sync prop changes to local state
   useEffect(() => {
@@ -497,6 +488,8 @@ export default function PostCard({
           <MediaGallery
             mediaItems={data.mediaItems}
             onMediaClick={(index) => setLightboxIndex(index)}
+            isPaused={videoPaused}
+            setIsPaused={setVideoPaused}
           />
         </div>
       )}
@@ -579,6 +572,8 @@ export default function PostCard({
         <ImageLightbox
           mediaItems={data.mediaItems}
           initialIndex={lightboxIndex}
+          isPaused={videoPaused}
+          onTogglePause={setVideoPaused}
           onClose={() => setLightboxIndex(-1)}
         />
       )}
