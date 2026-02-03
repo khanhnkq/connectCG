@@ -147,13 +147,6 @@ export default function Newsfeed() {
               })
             )}
 
-            {loading && (
-              <div className="text-center py-4 text-text-secondary">
-                <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                <span className="ml-2">Loading more...</span>
-              </div>
-            )}
-
             {!hasMore && posts.length > 0 && (
               <div className="text-center py-8 text-text-secondary/70">
                 <p className="text-sm">Bạn đã xem hết bài viết.</p>
