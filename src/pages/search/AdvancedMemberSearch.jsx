@@ -216,7 +216,9 @@ export default function AdvancedMemberSearch() {
       const response = await ChatService.getOrCreateDirectChat(userId);
       const room = response.data;
       toast.success("Đã kết nối!", { id: tid });
-      navigate("/chat", { state: { selectedRoomKey: room.firebaseRoomKey } });
+      navigate("/dashboard/chat", {
+        state: { selectedRoomKey: room.firebaseRoomKey },
+      });
     } catch (error) {
       console.error("Error starting chat:", error);
       toast.error("Không thể tạo cuộc trò chuyện", { id: tid });
@@ -380,19 +382,26 @@ export default function AdvancedMemberSearch() {
 
                       {/* Actions */}
                       <div className="flex-shrink-0 flex flex-col sm:flex-row items-center gap-2">
+                        {/* Always show Message button */}
+                        <button
+                          onClick={() => handleStartChat(member.userId)}
+                          className="px-4 py-2 rounded-lg bg-border-main hover:bg-border-main/80 text-text-main font-semibold text-sm transition-colors flex items-center gap-2"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">
+                            chat
+                          </span>
+                          Nhắn tin
+                        </button>
+
+                        {/* Connection Actions */}
                         {member.isFriend ? (
-                          <button
-                            onClick={() => handleStartChat(member.userId)}
-                            className="px-4 py-2 rounded-lg bg-border-main hover:bg-border-main/80 text-text-main font-semibold text-sm transition-colors flex items-center gap-2"
-                          >
-                            <span className="material-symbols-outlined text-[18px]">
-                              chat
-                            </span>
-                            Nhắn tin
-                          </button>
+                          <div className="px-4 py-2 rounded-lg bg-green-500/10 text-green-600 font-semibold text-sm flex items-center gap-1">
+                            <Check size={16} />
+                            Bạn bè
+                          </div>
                         ) : member.requestSent ? (
                           member.isRequestReceiver ? (
-                            <>
+                            <div className="flex gap-2">
                               <button
                                 onClick={() =>
                                   handleAcceptRequest(
@@ -413,11 +422,11 @@ export default function AdvancedMemberSearch() {
                                   )
                                 }
                                 disabled={sendingRequests[member.userId]}
-                                className="px-4 py-2 rounded-lg bg-border-main text-text-main font-semibold text-sm hover:bg-border-main/80 transition-colors"
+                                className="px-4 py-2 rounded-lg bg-background-main text-text-main font-semibold text-sm hover:bg-border-main/50 transition-colors border border-border-main"
                               >
                                 Xóa
                               </button>
-                            </>
+                            </div>
                           ) : (
                             <button
                               onClick={() =>
