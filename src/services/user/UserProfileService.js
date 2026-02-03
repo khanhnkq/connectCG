@@ -22,6 +22,14 @@ const UserProfileService = {
     
     updateProfileInfo: (data) => {
         return axiosClient.put('/v1/users/profile', data);
+    },
+
+    getAllHobbies: () => {
+        return axiosClient.get('/hobbies');
+    },
+
+    updateUserHobbies: (hobbyIds) => {
+        return axiosClient.put('/v1/users/hobbies', hobbyIds);
     }
 };
 
