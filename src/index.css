@@ -1,65 +1,14 @@
 @import "tailwindcss";
 @variant dark (&:where(.dark, .dark *));
 
-/* Custom scrollbar for webkit */
-::-webkit-scrollbar {
-  width: 8px;
+/* Hide all scrollbars globally */
+*::-webkit-scrollbar {
+  display: none !important;
 }
 
-::-webkit-scrollbar-track {
-  background: var(--background);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
-}
-
-/* Date picker icon color adjustment for dark mode */
-input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(0.8) sepia(0.2) saturate(0.5) hue-rotate(350deg);
-  cursor: pointer;
-}
-
-/* Material Icons configuration */
-.material-symbols-outlined {
-  font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
-}
-
-.icon-outline {
-  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
-}
-
-/* Hide scrollbar utility */
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-/* Custom scrollbar for specific elements */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: var(--background);
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 10px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+* {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
 }
 
 /* Base styles */

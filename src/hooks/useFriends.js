@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 import FriendService from '../services/friend/FriendService';
@@ -12,7 +12,7 @@ export function useFriends(userId = null) {
     const [friends, setFriends] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchFriends = async () => {
+    const fetchFriends = useCallback(async () => {
         setIsLoading(true);
         try {
             let response;
@@ -43,7 +43,7 @@ export function useFriends(userId = null) {
                     });
 
                     // Also fetch sent requests
-                    const currentUserId = user?.id || user?.userId || user?.sub;
+                    // const currentUserId = user?.id || user?.userId || user?.sub; // Unused
 
                     // Enrich friends data with request info
                     mappedFriends = mappedFriends.map(friend => {
@@ -75,18 +75,18 @@ export function useFriends(userId = null) {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [userId, user]);
 
-    const updateLocalFriendsCount = (increment) => {
+    const updateLocalFriendsCount = useCallback((increment) => {
         const currentUserId = user?.id || user?.userId || user?.sub;
         if (currentUserId && (!userId || userId === currentUserId) && profile) {
             // Only update if viewing own profile
             const newCount = Math.max(0, (profile.friendsCount || 0) + increment);
             dispatch(updateFriendsCount(newCount));
         }
-    };
+    }, [user, userId, profile, dispatch]);
 
-    const handleUnfriend = async (friendId) => {
+    const handleUnfriend = useCallback(async (friendId) => {
         const tid = toast.loading("Đang xử lý...");
         try {
             await FriendService.unfriend(friendId);
@@ -99,17 +99,17 @@ export function useFriends(userId = null) {
             toast.error("Không thể hủy kết bạn", { id: tid });
             return false;
         }
-    };
+    }, [updateLocalFriendsCount]);
 
-    const updateFriendStatus = (friendId, newStatus) => {
+    const updateFriendStatus = useCallback((friendId, newStatus) => {
         setFriends(prev =>
             prev.map(f => f.id === friendId ? { ...f, relationshipStatus: newStatus } : f)
         );
-    };
+    }, []);
 
     useEffect(() => {
         fetchFriends();
-    }, [userId]);
+    }, [fetchFriends]);
 
     return {
         friends,
@@ -122,13 +122,13 @@ export function useFriends(userId = null) {
 
 export function useFriendRequests() {
     const dispatch = useDispatch();
-    const { user } = useSelector((state) => state.auth);
+    // const { user } = useSelector((state) => state.auth); // Unused
     const { profile } = useSelector((state) => state.user);
     const [requests, setRequests] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [processingRequests, setProcessingRequests] = useState({});
 
-    const fetchRequests = async () => {
+    const fetchRequests = useCallback(async () => {
         setIsLoading(true);
         try {
             const response = await FriendRequestService.getPendingRequests(0, 100);
@@ -140,16 +140,16 @@ export function useFriendRequests() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
 
-    const updateLocalFriendsCount = (increment) => {
+    const updateLocalFriendsCount = useCallback((increment) => {
         if (profile) {
             const newCount = Math.max(0, (profile.friendsCount || 0) + increment);
             dispatch(updateFriendsCount(newCount));
         }
-    };
+    }, [profile, dispatch]);
 
-    const handleAcceptRequest = async (request) => {
+    const handleAcceptRequest = useCallback(async (request) => {
         setProcessingRequests(prev => ({ ...prev, [request.requestId]: 'accepting' }));
         try {
             await FriendRequestService.acceptRequest(request.requestId);
@@ -164,9 +164,9 @@ export function useFriendRequests() {
         } finally {
             setProcessingRequests(prev => ({ ...prev, [request.requestId]: null }));
         }
-    };
+    }, [updateLocalFriendsCount]);
 
-    const handleRejectRequest = async (request) => {
+    const handleRejectRequest = useCallback(async (request) => {
         if (!window.confirm("Bạn muốn từ chối lời mời này?")) return false;
 
         setProcessingRequests(prev => ({ ...prev, [request.requestId]: 'rejecting' }));
@@ -183,11 +183,11 @@ export function useFriendRequests() {
         } finally {
             setProcessingRequests(prev => ({ ...prev, [request.requestId]: null }));
         }
-    };
+    }, []);
 
     useEffect(() => {
         fetchRequests();
-    }, []);
+    }, [fetchRequests]);
 
     return {
         requests,
