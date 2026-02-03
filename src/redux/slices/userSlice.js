@@ -68,6 +68,12 @@ const userSlice = createSlice({
                 state.profile.friendsCount = action.payload;
                 localStorage.setItem('userProfile', JSON.stringify(state.profile));
             }
+        },
+        updatePostsCount: (state, action) => {
+             if (state.profile) {
+                 state.profile.postsCount = action.payload;
+                 localStorage.setItem('userProfile', JSON.stringify(state.profile));
+             }
         }
     },
     extraReducers: (builder) => {
@@ -117,5 +123,5 @@ const userSlice = createSlice({
     }
 });
 
-export const { clearProfile, updateFriendsCount } = userSlice.actions;
+export const { clearProfile, updateFriendsCount, updatePostsCount } = userSlice.actions;
 export default userSlice.reducer;

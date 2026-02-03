@@ -32,8 +32,10 @@ export default function Newsfeed() {
   useEffect(() => {
     const handlePostEvent = (e) => {
       const { action, post, postId } = e.detail;
-
-      // Get current user ID from localStorage
+      console.log("===== WS postEvent received =====");
+      console.log("action:", action);
+      console.log("post:", post);
+      console.log("=================================");
       const userStr = localStorage.getItem("user");
       const currentUserId = userStr ? JSON.parse(userStr).id : null;
 
