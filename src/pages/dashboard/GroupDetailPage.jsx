@@ -459,6 +459,16 @@ const GroupDetailPage = () => {
     }
   };
 
+  const handleRejectPost = async (p) => {
+    try {
+      await rejectPost(group.id, p.id);
+      toast.success("Đã từ chối bài viết");
+    } catch (error) {
+      console.error("Reject post failed:", error);
+      toast.error("Từ chối bài viết thất bại");
+    }
+  };
+
   const handleBanMember = (member) => {
     setMemberToBan(member);
     setShowBanModal(true);
@@ -527,10 +537,10 @@ const GroupDetailPage = () => {
   const handleActionPost = async (postId, action) => {
     try {
       if (action === "approve") {
-        await approvePost(group.id, postId);
+        await approvePost(id, postId);
         toast.success("Đã duyệt bài viết!");
       } else {
-        await rejectPost(group.id, postId);
+        await rejectPost(id, postId, false);
         toast.success("Đã xóa bài viết!");
       }
       // Refresh data
@@ -817,8 +827,12 @@ const GroupDetailPage = () => {
                               return exists ? prev : [newPost, ...prev];
                             });
                             toast.success("Đăng bài viết thành công!");
+                          } else if (newPost.status === "PENDING") {
+                            toast.success("Bài viết đã được gửi và đang chờ quản trị viên phê duyệt.", {
+                              duration: 5000,
+                              icon: "⏳",
+                            });
                           }
-                          // Removed redundant PENDING toast as backend handles it via notifications
                         }}
                       />
                     ) : (
@@ -942,16 +956,8 @@ const GroupDetailPage = () => {
                                   : "Thành viên"}
                             </span>
                           </div>
-                          <p className="text-xs text-text-secondary mt-0.5 italic flex items-center gap-2">
-                            <span>Đã gia nhập: {new Date(member.joinedAt).toLocaleDateString()}</span>
-                            {member.violationCount > 0 && (
-                              <>
-                                <span className="size-1 bg-white/20 rounded-full"></span>
-                                <span className="text-red-500 font-bold">
-                                  Vi phạm: {member.violationCount} gậy
-                                </span>
-                              </>
-                            )}
+                          <p className="text-xs text-text-secondary mt-0.5 italic">
+                            Đã gia nhập: {new Date(member.joinedAt).toLocaleDateString()}
                           </p>
                         </div>
                       </div>
@@ -1104,14 +1110,13 @@ const GroupDetailPage = () => {
                               onClick={() =>
                                 handleActionPost(post.id, "reject")
                               }
-                              className="px-5 py-2.5 bg-red-500/10 text-red-500 border border-red-500/20 font-black rounded-xl text-xs uppercase tracking-widest transition-all hover:bg-red-500/20"
+                              className="px-5 py-2.5 bg-white/5 text-text-secondary border border-white/10 font-black rounded-xl text-[10px] uppercase tracking-widest transition-all hover:bg-white/10 hover:text-text-main"
                             >
-                              Xóa bỏ
+                              Từ chối
                             </button>
                           </div>
                         </div>
 
-                        {/* Post Content */}
                         <div className="p-6 space-y-4">
                           <div className="text-text-main leading-relaxed whitespace-pre-wrap">
                             {post.content}

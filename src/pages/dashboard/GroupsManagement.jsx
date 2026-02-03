@@ -45,20 +45,17 @@ export default function GroupsManagement() {
       else setIsFetchingMore(true);
 
       let response;
-      if (searchQuery.trim()) {
-        response = await searchGroups(searchQuery, pageToFetch);
-      } else {
-        switch (activeTab) {
-          case "my":
-            response = await findMyGroups(pageToFetch);
-            break;
-          case "discover":
-            response = await findDiscoverGroups(pageToFetch);
-            break;
-          case "invites":
-            response = await findPendingInvitations(); // Invites might not be paginated yet, but let's assume it returns a list or adapt
-            break;
-        }
+      // Always fetch from backend, filtering happens client-side
+      switch (activeTab) {
+        case "my":
+          response = await findMyGroups(pageToFetch);
+          break;
+        case "discover":
+          response = await findDiscoverGroups(pageToFetch);
+          break;
+        case "invites":
+          response = await findPendingInvitations();
+          break;
       }
 
       // Handle paginated response (Spring Page object has 'content', 'last', 'totalPages')
@@ -90,7 +87,7 @@ export default function GroupsManagement() {
   useEffect(() => {
     setPage(0);
     fetchGroups(0, true);
-  }, [activeTab, searchQuery]);
+  }, [activeTab]); // Only refetch when changing tabs, not on search
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -116,7 +113,7 @@ export default function GroupsManagement() {
     }
 
     return () => observer.disconnect();
-  }, [hasMore, loading, isFetchingMore, activeTab, searchQuery]);
+  }, [hasMore, loading, isFetchingMore, activeTab]); // Removed searchQuery
 
   // Real-time synchronization for groups
   useEffect(() => {
@@ -165,8 +162,8 @@ export default function GroupsManagement() {
         findMyGroups(),
         findPendingInvitations(),
       ]);
-      setYourGroups(myGroupsData);
-      setPendingInvitations(invitationsData);
+      setYourGroups(myGroupsData.content || myGroupsData);
+      setPendingInvitations(invitationsData.content || invitationsData);
     } catch {
       toast.error("Không thể chấp nhận lời mời.");
     }
@@ -201,7 +198,7 @@ export default function GroupsManagement() {
         );
         // Refresh myGroups để thêm nhóm mới vào
         const myGroupsData = await findMyGroups();
-        setYourGroups(myGroupsData);
+        setYourGroups(myGroupsData.content || myGroupsData);
       } else {
         toast.success("Đã gửi yêu cầu gia nhập nhóm!");
         // Cập nhật state cho nhóm Private
@@ -263,8 +260,8 @@ export default function GroupsManagement() {
       <div
         key={group.id}
         className={`bg-white dark:bg-card-dark rounded-3xl border overflow-hidden flex flex-col hover:border-primary/30 transition-all group h-full shadow-md dark:shadow-2xl relative ${isAdmin
-            ? "border-orange-500/50 dark:shadow-orange-500/10"
-            : "border-gray-200 dark:border-[#3e2b1d]"
+          ? "border-orange-500/50 dark:shadow-orange-500/10"
+          : "border-gray-200 dark:border-[#3e2b1d]"
           }`}
       >
         {/* Clickable Area: Image & Header - Everyone can now see basic info */}
@@ -426,12 +423,15 @@ export default function GroupsManagement() {
     );
   };
 
-  const displayedGroups =
-    activeTab === "my"
-      ? yourGroups
-      : activeTab === "discover"
-        ? discoverGroups
-        : pendingInvitations;
+  const activeGroups = activeTab === "my"
+    ? yourGroups
+    : activeTab === "discover"
+      ? discoverGroups
+      : pendingInvitations;
+
+  const displayedGroups = Array.isArray(activeGroups)
+    ? filteredGroups(activeGroups)
+    : [];
 
   return (
     <div className="max-w-7xl mx-auto w-full pb-20 bg-background-main transition-colors duration-300">
@@ -452,8 +452,8 @@ export default function GroupsManagement() {
                   setSearchQuery("");
                 }}
                 className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all relative ${activeTab === tab
-                    ? "bg-primary text-text-main shadow-lg"
-                    : "text-text-secondary hover:text-primary"
+                  ? "bg-primary text-text-main shadow-lg"
+                  : "text-text-secondary hover:text-primary"
                   }`}
               >
                 {tab === "my"
