@@ -421,7 +421,7 @@ const AdminReportsManagement = () => {
                 subtext: res.data.email,
               };
             })
-            .catch(() => {}),
+            .catch(() => { }),
         );
       }
     });
@@ -515,7 +515,7 @@ const AdminReportsManagement = () => {
 
   const onBanUser = async (userId, reportsOrId) => {
     if (!userId) {
-      toast.error("User ID is missing!");
+      toast.error("Không tìm thấy ID người dùng!");
       return;
     }
 
@@ -629,21 +629,19 @@ const AdminReportsManagement = () => {
           <div className="flex bg-surface border border-border/50 p-1 rounded-xl">
             <button
               onClick={() => setFilterStatus("PENDING")}
-              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                filterStatus === "PENDING"
-                  ? "bg-primary text-black"
-                  : "text-text-muted hover:text-text-main"
-              }`}
+              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${filterStatus === "PENDING"
+                ? "bg-primary text-black"
+                : "text-text-muted hover:text-text-main"
+                }`}
             >
               Chờ xử lý
             </button>
             <button
               onClick={() => setFilterStatus("RESOLVED")}
-              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                filterStatus === "RESOLVED"
-                  ? "bg-green-500 text-white"
-                  : "text-text-muted hover:text-text-main"
-              }`}
+              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${filterStatus === "RESOLVED"
+                ? "bg-green-500 text-white"
+                : "text-text-muted hover:text-text-main"
+                }`}
             >
               Đã giải quyết
             </button>
@@ -675,11 +673,10 @@ const AdminReportsManagement = () => {
             <button
               key={key}
               onClick={() => setActiveTab(key)}
-              className={`pb-3 text-sm font-bold transition-all ${
-                activeTab === key
-                  ? "text-primary border-b-2 border-primary"
-                  : "text-text-muted hover:text-text-main"
-              }`}
+              className={`pb-3 text-sm font-bold transition-all ${activeTab === key
+                ? "text-primary border-b-2 border-primary"
+                : "text-text-muted hover:text-text-main"
+                }`}
             >
               {label}
             </button>
@@ -720,9 +717,9 @@ const AdminReportsManagement = () => {
           violationHistory={
             detailModal.report
               ? getViolationHistory(
-                  detailModal.report.targetId,
-                  detailModal.report.targetType,
-                )
+                detailModal.report.targetId,
+                detailModal.report.targetType,
+              )
               : []
           }
           onResolve={handleResolveReport}
@@ -785,8 +782,8 @@ const AdminReportsManagement = () => {
           onAction={(group) => {
             confirmAction(
               () => onDeleteGroup(group.id, inspectingReports),
-              "Delete Group?",
-              `Are you sure you want to delete ${group.name}?`,
+              "Xóa nhóm?",
+              `Bạn có chắc muốn xóa nhóm ${group.name}?`,
             );
           }}
         />

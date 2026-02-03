@@ -11,15 +11,52 @@ import {
   MoreVertical,
   Check,
   X,
+  Search,
 } from "lucide-react";
 import FriendRequestService from "../../services/friend/FriendRequestService";
 import ConfirmModal from "../common/ConfirmModal";
 import toast from "react-hot-toast";
 import { useFriends } from "../../hooks/useFriends";
 
+import { useRef, useEffect, useCallback } from "react";
+// ... other imports
+
 const ProfileFriends = ({ profile, isOwner }) => {
   const navigate = useNavigate();
-  const { friends, isLoading, handleUnfriend, updateFriendStatus } = useFriends(profile?.userId);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Use the refactored hook
+  const {
+    friends,
+    isLoading,
+    hasMore,
+    loadMore,
+    updateFilter,
+    handleUnfriend,
+    updateFriendStatus
+  } = useFriends(profile?.userId, { name: "" });
+
+  // Debounce search update
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      updateFilter({ name: searchTerm });
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, updateFilter]);
+
+  // Infinite Scroll Observer
+  const observer = useRef();
+  const lastFriendElementRef = useCallback(node => {
+    if (isLoading) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        loadMore();
+      }
+    });
+    if (node) observer.current.observe(node);
+  }, [isLoading, hasMore, loadMore]);
 
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
@@ -103,7 +140,7 @@ const ProfileFriends = ({ profile, isOwner }) => {
     <div className="bg-surface-main rounded-2xl border border-border-main shadow-sm overflow-hidden">
       {/* Header */}
       <div className="p-6 border-b border-border-main bg-gradient-to-r from-surface-main to-background-main">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-xl">
               <Users className="text-primary" size={24} />
@@ -117,25 +154,33 @@ const ProfileFriends = ({ profile, isOwner }) => {
               </p>
             </div>
           </div>
+
+          <div className="relative w-full sm:w-64">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-4 w-4 text-text-secondary" />
+            </div>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="block w-full pl-10 pr-3 py-2 border border-border-main rounded-xl leading-5 bg-background-main text-text-main placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-all"
+              placeholder="Tìm kiếm bạn bè..."
+            />
+          </div>
         </div>
       </div>
 
       {/* Content */}
       <div className="p-6">
-        {isLoading ? (
-          <div className="flex justify-center py-16">
-            <div className="flex flex-col items-center gap-3">
-              <Loader2 className="text-primary animate-spin" size={40} />
-              <p className="text-text-secondary text-sm">Đang tải...</p>
-            </div>
-          </div>
-        ) : friends.length > 0 ? (
+        {friends.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {friends.map((friend) => (
+            {friends.map((friend, index) => (
               <div
                 key={friend.id}
+                ref={index === friends.length - 1 ? lastFriendElementRef : null}
                 className="group relative bg-background-main hover:bg-surface-main rounded-2xl border border-border-main hover:border-primary/30 transition-all duration-300 overflow-hidden"
               >
+                {/* ... (Keep existing card content) ... */}
                 {/* Card Content */}
                 <div className="p-4">
                   {/* Avatar & Info */}
@@ -239,26 +284,47 @@ const ProfileFriends = ({ profile, isOwner }) => {
             ))}
           </div>
         ) : (
-          <div className="text-center py-20 flex flex-col items-center justify-center">
-            <div className="size-20 rounded-full bg-background-main border-2 border-border-main flex items-center justify-center mb-4">
-              <UserSearch className="text-text-secondary/30" size={40} />
+          !isLoading && (
+            <div className="text-center py-20 flex flex-col items-center justify-center">
+              {/* Empty State Logic */}
+              <div className="size-20 rounded-full bg-background-main border-2 border-border-main flex items-center justify-center mb-4">
+                <UserSearch className="text-text-secondary/30" size={40} />
+              </div>
+              <h4 className="text-text-main font-bold text-lg mb-2">
+                {searchTerm ? "Không tìm thấy kết quả" : (isOwner ? "Chưa có bạn bè" : "Người dùng chưa có bạn bè")}
+              </h4>
+              <p className="text-text-secondary text-sm mb-4 max-w-xs">
+                {searchTerm
+                  ? `Không tìm thấy bạn bè nào khớp với "${searchTerm}"`
+                  : (isOwner ? "Hãy bắt đầu kết nối với những người bạn mới!" : "Người dùng này chưa kết bạn với ai.")}
+              </p>
+              {isOwner && !searchTerm && (
+                <button
+                  onClick={() => navigate("/dashboard/friends")}
+                  className="px-6 py-2.5 bg-primary hover:bg-orange-600 text-text-main font-bold rounded-xl transition-all"
+                >
+                  Tìm kiếm bạn bè
+                </button>
+              )}
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm("")}
+                  className="px-6 py-2.5 bg-surface-main border border-border-main hover:bg-surface-hover text-text-main font-bold rounded-xl transition-all"
+                >
+                  Xóa tìm kiếm
+                </button>
+              )}
             </div>
-            <h4 className="text-text-main font-bold text-lg mb-2">
-              {isOwner ? "Chưa có bạn bè" : "Người dùng chưa có bạn bè"}
-            </h4>
-            <p className="text-text-secondary text-sm mb-4 max-w-xs">
-              {isOwner
-                ? "Hãy bắt đầu kết nối với những người bạn mới!"
-                : "Người dùng này chưa kết bạn với ai."}
-            </p>
-            {isOwner && (
-              <button
-                onClick={() => navigate("/dashboard/friends")}
-                className="px-6 py-2.5 bg-primary hover:bg-orange-600 text-text-main font-bold rounded-xl transition-all"
-              >
-                Tìm kiếm bạn bè
-              </button>
-            )}
+          )
+        )}
+
+        {/* Loading Indicator for Infinite Scroll */}
+        {isLoading && (
+          <div className="flex justify-center py-8">
+            <div className="flex flex-col items-center gap-3">
+              <Loader2 className="text-primary animate-spin" size={32} />
+              <p className="text-text-secondary text-xs">Đang tải thêm...</p>
+            </div>
           </div>
         )}
       </div>

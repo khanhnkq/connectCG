@@ -16,6 +16,8 @@ export default function FriendsListPanel({
   onRejectRequest,
   onAddFriend,
   onDismissSuggestion,
+  onLoadMore,
+  hasMore
 }) {
   const getTitle = () => {
     if (viewMode === "ALL") return "Danh sách bạn bè";
@@ -32,9 +34,8 @@ export default function FriendsListPanel({
 
   return (
     <div
-      className={`${
-        activeItem ? "hidden xl:flex" : "flex"
-      } w-full md:w-80 lg:w-96 flex-col border-r border-border-main bg-surface-main shrink-0`}
+      className={`${activeItem ? "hidden xl:flex" : "flex"
+        } w-full md:w-80 lg:w-96 flex-col border-r border-border-main bg-surface-main shrink-0`}
     >
       {/* Header */}
       <div className="p-4 md:p-5 border-b border-border-main bg-gradient-to-b from-surface-main to-background-main sticky top-0 z-10 backdrop-blur-md">
@@ -44,8 +45,8 @@ export default function FriendsListPanel({
               {viewMode === "ALL"
                 ? "group"
                 : viewMode === "REQUESTS"
-                ? "person_add"
-                : "person_search"}
+                  ? "person_add"
+                  : "person_search"}
             </span>
             {getTitle()}
           </h2>
@@ -73,11 +74,10 @@ export default function FriendsListPanel({
                 setViewMode(tab.id);
                 setActiveItem(null);
               }}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all border ${
-                viewMode === tab.id
-                  ? "bg-primary/10 text-primary border-primary/30"
-                  : "text-text-secondary border-transparent hover:bg-background-main"
-              }`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all border ${viewMode === tab.id
+                ? "bg-primary/10 text-primary border-primary/30"
+                : "text-text-secondary border-transparent hover:bg-background-main"
+                }`}
             >
               <span className="material-symbols-outlined text-[18px]">
                 {tab.icon}
@@ -127,40 +127,57 @@ export default function FriendsListPanel({
             <p className="text-text-secondary text-sm">Đang tải...</p>
           </div>
         ) : displayedList.length > 0 ? (
-          displayedList.map((item) => {
+          displayedList.map((item, index) => {
+            const isLast = index === displayedList.length - 1;
+            const refProps = isLast && onLoadMore && hasMore ? {
+              ref: (node) => {
+                if (isLoading) return;
+                if (window.friendsObserver) window.friendsObserver.disconnect();
+                window.friendsObserver = new IntersectionObserver(entries => {
+                  if (entries[0].isIntersecting && hasMore) {
+                    onLoadMore();
+                  }
+                });
+                if (node) window.friendsObserver.observe(node);
+              }
+            } : {};
+
             if (viewMode === "REQUESTS") {
               return (
-                <FriendRequestItem
-                  key={item.requestId}
-                  request={item}
-                  isActive={activeItem?.requestId === item.requestId}
-                  onClick={() => setActiveItem(item)}
-                  onAccept={onAcceptRequest}
-                  onReject={onRejectRequest}
-                  isProcessing={processingRequests[item.requestId]}
-                />
+                <div key={item.requestId} {...refProps}>
+                  <FriendRequestItem
+                    request={item}
+                    isActive={activeItem?.requestId === item.requestId}
+                    onClick={() => setActiveItem(item)}
+                    onAccept={onAcceptRequest}
+                    onReject={onRejectRequest}
+                    isProcessing={processingRequests[item.requestId]}
+                  />
+                </div>
               );
             } else if (viewMode === "SUGGESTIONS") {
               return (
-                <FriendSuggestionItem
-                  key={item.userId}
-                  suggestion={item}
-                  isActive={activeItem?.userId === item.userId}
-                  onClick={() => setActiveItem(item)}
-                  onAddFriend={onAddFriend}
-                  onDismiss={onDismissSuggestion}
-                  isProcessing={processingRequests[item.userId]}
-                />
+                <div key={item.userId} {...refProps}>
+                  <FriendSuggestionItem
+                    suggestion={item}
+                    isActive={activeItem?.userId === item.userId}
+                    onClick={() => setActiveItem(item)}
+                    onAddFriend={onAddFriend}
+                    onDismiss={onDismissSuggestion}
+                    isProcessing={processingRequests[item.userId]}
+                  />
+                </div>
               );
             } else {
               return (
-                <FriendListItem
-                  key={item.id}
-                  item={item}
-                  isActive={activeItem?.id === item.id}
-                  onClick={() => setActiveItem(item)}
-                  viewMode={viewMode}
-                />
+                <div key={item.id} {...refProps}>
+                  <FriendListItem
+                    item={item}
+                    isActive={activeItem?.id === item.id}
+                    onClick={() => setActiveItem(item)}
+                    viewMode={viewMode}
+                  />
+                </div>
               );
             }
           })

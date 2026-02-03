@@ -60,7 +60,6 @@ export default function Login() {
     email: "",
     password: "",
   };
-
   useEffect(() => {
     const errorMsg = localStorage.getItem("loginError");
     if (errorMsg) {
@@ -73,8 +72,8 @@ export default function Login() {
     console.log("Login:", values);
     try {
       const resultAction = await dispatch(loginUser(values)).unwrap();
-      const userName = resultAction.user?.username;
-      toast.success(`Đăng nhập thành công! Chào mừng ${userName}`);
+      const displayName = resultAction.user?.fullName || resultAction.user?.username;
+      toast.success(`Đăng nhập thành công! Chào mừng ${displayName}`);
       if (resultAction.hasProfile) {
         navigate("/dashboard/feed");
       } else {
@@ -188,11 +187,10 @@ export default function Login() {
                       type="text"
                       name="email"
                       id="email"
-                      className={`form-input w-full rounded-xl text-text-main focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${
-                        errors.email && touched.email
-                          ? "border-red-500"
-                          : "border-border-main"
-                      } bg-surface-main h-14 px-4 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
+                      className={`form-input w-full rounded-xl text-text-main focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${errors.email && touched.email
+                        ? "border-red-500"
+                        : "border-border-main"
+                        } bg-surface-main h-14 px-4 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
                       placeholder="VD: alex@example.com"
                     />
                     {errors.email && touched.email && (
@@ -223,11 +221,10 @@ export default function Login() {
                         type={showPassword ? "text" : "password"}
                         name="password"
                         id="password"
-                        className={`form-input w-full rounded-xl text-text-main focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${
-                          errors.password && touched.password
-                            ? "border-red-500"
-                            : "border-border-main"
-                        } bg-surface-main h-14 pl-4 pr-12 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
+                        className={`form-input w-full rounded-xl text-text-main focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${errors.password && touched.password
+                          ? "border-red-500"
+                          : "border-border-main"
+                          } bg-surface-main h-14 pl-4 pr-12 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
                         placeholder="Nhập mật khẩu của bạn"
                       />
                       <button

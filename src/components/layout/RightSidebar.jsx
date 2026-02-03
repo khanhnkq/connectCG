@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Search, UserPlus } from "lucide-react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -18,6 +18,23 @@ export default function RightSidebar() {
   const [hasMore, setHasMore] = useState(true);
   const loadingRef = useRef(false);
   const onlineUserIds = useSelector(selectOnlineUserIds);
+
+  // Sorting: Online first, then Alphabetical (A-Z)
+  const sortedFriends = useMemo(() => {
+    return [...friends].sort((a, b) => {
+      // 1. Priority: Online status
+      const isAOnline = onlineUserIds.includes(a.id);
+      const isBOnline = onlineUserIds.includes(b.id);
+
+      if (isAOnline && !isBOnline) return -1;
+      if (!isAOnline && isBOnline) return 1;
+
+      // 2. Priority: Name Alphabetical
+      const nameA = (a.fullName || a.username || "").toLowerCase();
+      const nameB = (b.fullName || b.username || "").toLowerCase();
+      return nameA.localeCompare(nameB);
+    });
+  }, [friends, onlineUserIds]);
 
   const fetchFriends = useCallback(async (currentPage, currentSearchTerm) => {
     // Allow re-fetch if searching (debounce handles frequency),
@@ -158,10 +175,9 @@ export default function RightSidebar() {
                   <div
                     className="size-11 rounded-full bg-cover bg-center border border-transparent group-hover:border-primary transition-all"
                     style={{
-                      backgroundImage: `url("${
-                        suggestion.avatarUrl ||
+                      backgroundImage: `url("${suggestion.avatarUrl ||
                         "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                      }")`,
+                        }")`,
                     }}
                   ></div>
                   <div className="flex flex-col">
@@ -203,7 +219,7 @@ export default function RightSidebar() {
         {/* Friends List - Scrollable Container */}
         <div className="flex-1 overflow-y-auto" onScroll={handleScroll}>
           <div className="flex flex-col gap-2 pb-20">
-            {friends.map((friend) => (
+            {sortedFriends.map((friend) => (
               <Link
                 to={`/dashboard/member/${friend.id}`}
                 key={friend.id}
@@ -213,10 +229,9 @@ export default function RightSidebar() {
                   <div
                     className="size-10 rounded-full bg-cover bg-center ring-2 ring-transparent group-hover:ring-primary/50 transition-all"
                     style={{
-                      backgroundImage: `url("${
-                        friend.avatarUrl ||
+                      backgroundImage: `url("${friend.avatarUrl ||
                         "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                      }")`,
+                        }")`,
                     }}
                   ></div>
                   {onlineUserIds.includes(friend.id) && (
