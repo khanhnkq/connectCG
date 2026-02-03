@@ -12,29 +12,31 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 
-const InfoItem = ({ icon: Icon, label, value, delay }) => (
-  <motion.div
-    initial={{ opacity: 0, x: -20 }}
-    animate={{ opacity: 1, x: 0 }}
-    transition={{ delay }}
-    className="group relative flex items-center justify-between p-4 rounded-2xl bg-surface-main/40 hover:bg-primary/5 border border-border-main/50 hover:border-primary/20 transition-all duration-300"
-  >
-    <div className="flex items-center gap-4">
-      <div className="size-10 rounded-xl bg-background-main border border-border-main flex items-center justify-center group-hover:scale-110 group-hover:bg-primary/10 transition-all duration-300">
-        <Icon
-          className="text-text-secondary group-hover:text-primary transition-colors"
-          size={20}
-        />
+const InfoItem = ({ icon: Icon, label, value, delay }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay }}
+      className="group relative flex items-center justify-between p-4 rounded-2xl bg-surface-main/40 hover:bg-primary/5 border border-border-main/50 hover:border-primary/20 transition-all duration-300"
+    >
+      <div className="flex items-center gap-4">
+        <div className="size-10 rounded-xl bg-background-main border border-border-main flex items-center justify-center group-hover:scale-110 group-hover:bg-primary/10 transition-all duration-300">
+          <Icon
+            className="text-text-secondary group-hover:text-primary transition-colors"
+            size={20}
+          />
+        </div>
+        <span className="text-text-secondary font-medium text-sm group-hover:text-text-main transition-colors">
+          {label}
+        </span>
       </div>
-      <span className="text-text-secondary font-medium text-sm group-hover:text-text-main transition-colors">
-        {label}
+      <span className="text-text-main font-bold text-sm bg-background-main/50 px-3 py-1.5 rounded-lg border border-border-main/30 shadow-sm group-hover:border-primary/10 transition-all">
+        {value}
       </span>
-    </div>
-    <span className="text-text-main font-bold text-sm bg-background-main/50 px-3 py-1.5 rounded-lg border border-border-main/30 shadow-sm group-hover:border-primary/10 transition-all">
-      {value}
-    </span>
-  </motion.div>
-);
+    </motion.div>
+  );
+};
 
 const ProfileAbout = ({ profile, isOwner }) => {
   const infoGroups = [
@@ -103,31 +105,9 @@ const ProfileAbout = ({ profile, isOwner }) => {
         <div className="flex justify-between items-center mb-10">
           <div className="flex flex-col gap-1">
             <h3 className="text-text-main font-black text-2xl flex items-center gap-3 tracking-tight">
-              <div className="p-2 bg-primary/10 rounded-xl">
-                <Sparkles className="text-primary" size={24} />
-              </div>
               {isOwner ? "Chi tiết về bạn" : "Thông tin chi tiết"}
             </h3>
-            <p className="text-text-secondary text-sm font-medium opacity-70 ml-12">
-              Khám phá những thông tin cơ bản và sở thích cá nhân
-            </p>
           </div>
-
-          {isOwner && (
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="group flex items-center gap-2 px-5 py-2.5 bg-background-main hover:bg-primary border border-border-main hover:border-primary rounded-2xl transition-all duration-300 shadow-sm"
-            >
-              <Pencil
-                size={18}
-                className="text-primary group-hover:text-[#231810]"
-              />
-              <span className="text-text-main group-hover:text-[#231810] font-bold text-sm">
-                Chỉnh sửa
-              </span>
-            </motion.button>
-          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
