@@ -1,11 +1,9 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, Users, UsersRound, MessageCircle, Menu } from "lucide-react";
-import { motion } from "framer-motion";
-import { useSelector } from "react-redux";
+import { Home, Users, UsersRound, MessageCircle } from "lucide-react";
 import useChatRooms from "../../pages/chat/hooks/useChatRooms";
 
-export default function MobileBottomNav({ onMenuClick }) {
+export default function MobileBottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -42,12 +40,6 @@ export default function MobileBottomNav({ onMenuClick }) {
       onClick: () => navigate("/dashboard/chat"),
       badge: totalUnreadChatCount,
     },
-    {
-      icon: Menu,
-      label: "Menu",
-      path: "#menu",
-      onClick: onMenuClick, // Trigger drawer
-    },
   ];
 
   return (
@@ -70,11 +62,7 @@ export default function MobileBottomNav({ onMenuClick }) {
             >
               <div className="relative p-1.5 rounded-xl">
                 {active && (
-                  <motion.div
-                    layoutId="mobile-nav-active"
-                    className="absolute inset-0 bg-primary/10 rounded-xl"
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  />
+                  <div className="absolute inset-0 bg-primary/10 rounded-xl" />
                 )}
 
                 <Icon

@@ -103,42 +103,113 @@ export default function SidebarComponent() {
             <div className="my-2 border-t border-border-main/50" />
 
             {/* Managed Groups */}
-            {managedGroups.length > 0 && (
-              <div className="mb-2">
-                {open ? (
-                  <button
-                    onClick={() => setShowManaged(!showManaged)}
-                    className="flex items-center justify-between w-full px-2 py-2 text-xs font-bold text-text-secondary uppercase tracking-wider hover:text-primary transition-colors mb-1 group"
-                  >
-                    <span className="flex items-center gap-2">
-                      <ShieldCheck size={14} className="text-primary" />
-                      Quản lý nhóm
-                    </span>
-                    {showManaged ? (
+            <div className="mb-2">
+              {open ? (
+                <button
+                  onClick={() =>
+                    managedGroups.length > 0 && setShowManaged(!showManaged)
+                  }
+                  className={`flex items-center justify-between w-full px-2 py-2 text-xs font-bold text-text-secondary uppercase tracking-wider transition-colors mb-1 group ${
+                    managedGroups.length > 0
+                      ? "hover:text-primary cursor-pointer"
+                      : "cursor-default"
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    <ShieldCheck size={14} className="text-primary" />
+                    Quản lý nhóm
+                  </span>
+                  {managedGroups.length > 0 &&
+                    (showManaged ? (
                       <ChevronDown size={14} />
                     ) : (
                       <ChevronRight size={14} />
-                    )}
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setShowManaged(!showManaged)}
-                    className="flex items-center justify-center w-full py-2 hover:bg-surface-main/50 rounded-md transition-colors"
-                    title="Quản lý nhóm"
-                  >
-                    <ShieldCheck size={18} className="text-primary" />
-                  </button>
-                )}
+                    ))}
+                </button>
+              ) : (
+                <button
+                  className="flex items-center justify-center w-full py-2 hover:bg-surface-main/50 rounded-md transition-colors"
+                  title="Quản lý nhóm"
+                >
+                  <ShieldCheck size={18} className="text-primary" />
+                </button>
+              )}
 
-                {showManaged &&
-                  managedGroups.map((group) => (
-                    <SidebarLink
-                      key={group.id}
-                      link={{
-                        label: group.name,
-                        href: `/dashboard/groups/${group.id}`,
-                        icon: (
-                          <div className="relative">
+              {showManaged &&
+                (managedGroups.length > 0
+                  ? managedGroups.map((group) => (
+                      <SidebarLink
+                        key={group.id}
+                        link={{
+                          label: group.name,
+                          href: `/dashboard/groups/${group.id}`,
+                          icon: (
+                            <div className="relative">
+                              <img
+                                src={
+                                  group.image ||
+                                  "https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=1000"
+                                }
+                                alt={group.name}
+                                className="h-6 w-6 !rounded-lg object-cover flex-shrink-0 border border-border-main"
+                              />
+                              <div className="absolute -bottom-1 -right-1 bg-primary rounded-full p-[2px] border border-background-main">
+                                <ShieldCheck size={8} className="text-white" />
+                              </div>
+                            </div>
+                          ),
+                        }}
+                      />
+                    ))
+                  : open && (
+                      <div className="px-8 py-2 text-[10px] text-text-secondary italic">
+                        Chưa quản lý nhóm nào
+                      </div>
+                    ))}
+            </div>
+
+            {/* Joined Groups */}
+            <div className="mb-2">
+              {open ? (
+                <button
+                  onClick={() =>
+                    joinedGroups.length > 0 && setShowJoined(!showJoined)
+                  }
+                  className={`flex items-center justify-between w-full px-2 py-2 text-xs font-bold text-text-secondary uppercase tracking-wider transition-colors mb-1 group ${
+                    joinedGroups.length > 0
+                      ? "hover:text-primary cursor-pointer"
+                      : "cursor-default"
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    <Users2 size={14} className="text-primary" />
+                    Nhóm tham gia
+                  </span>
+                  {joinedGroups.length > 0 &&
+                    (showJoined ? (
+                      <ChevronDown size={14} />
+                    ) : (
+                      <ChevronRight size={14} />
+                    ))}
+                </button>
+              ) : (
+                <button
+                  className="flex items-center justify-center w-full py-2 hover:bg-surface-main/50 rounded-md transition-colors"
+                  title="Nhóm tham gia"
+                >
+                  <Users2 size={18} className="text-primary" />
+                </button>
+              )}
+
+              {showJoined &&
+                (joinedGroups.length > 0
+                  ? joinedGroups.map((group) => (
+                      <SidebarLink
+                        key={group.id}
+                        link={{
+                          label: group.name,
+                          href: `/dashboard/groups/${group.id}`,
+                          icon: (
                             <img
                               src={
                                 group.image ||
@@ -147,67 +218,16 @@ export default function SidebarComponent() {
                               alt={group.name}
                               className="h-6 w-6 !rounded-lg object-cover flex-shrink-0 border border-border-main"
                             />
-                            <div className="absolute -bottom-1 -right-1 bg-primary rounded-full p-[2px] border border-background-main">
-                              <ShieldCheck size={8} className="text-white" />
-                            </div>
-                          </div>
-                        ),
-                      }}
-                    />
-                  ))}
-              </div>
-            )}
-
-            {/* Joined Groups */}
-            {joinedGroups.length > 0 && (
-              <div className="mb-2">
-                {open ? (
-                  <button
-                    onClick={() => setShowJoined(!showJoined)}
-                    className="flex items-center justify-between w-full px-2 py-2 text-xs font-bold text-text-secondary uppercase tracking-wider hover:text-primary transition-colors mb-1 group"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Users2 size={14} className="text-primary" />
-                      Nhóm tham gia
-                    </span>
-                    {showJoined ? (
-                      <ChevronDown size={14} />
-                    ) : (
-                      <ChevronRight size={14} />
-                    )}
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setShowJoined(!showJoined)}
-                    className="flex items-center justify-center w-full py-2 hover:bg-surface-main/50 rounded-md transition-colors"
-                    title="Nhóm tham gia"
-                  >
-                    <Users2 size={18} className="text-primary" />
-                  </button>
-                )}
-
-                {showJoined &&
-                  joinedGroups.map((group) => (
-                    <SidebarLink
-                      key={group.id}
-                      link={{
-                        label: group.name,
-                        href: `/dashboard/groups/${group.id}`,
-                        icon: (
-                          <img
-                            src={
-                              group.image ||
-                              "https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=1000"
-                            }
-                            alt={group.name}
-                            className="h-6 w-6 !rounded-lg object-cover flex-shrink-0 border border-border-main"
-                          />
-                        ),
-                      }}
-                    />
-                  ))}
-              </div>
-            )}
+                          ),
+                        }}
+                      />
+                    ))
+                  : open && (
+                      <div className="px-8 py-2 text-[10px] text-text-secondary italic">
+                        Chưa tham gia nhóm nào
+                      </div>
+                    ))}
+            </div>
           </div>
         </div>
       </SidebarBody>

@@ -273,7 +273,7 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
                     className="fixed inset-0 z-20 cursor-default"
                     onClick={() => setShowVisibilityMenu(false)}
                   ></div>
-                  <div className="absolute top-full left-0 mt-2 w-40 bg-surface-main border border-border-main rounded-md shadow-xl z-30 overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-100">
+                  <div className="absolute top-full left-0 mt-2 w-40 bg-surface-main border border-border-main rounded-lg shadow-xl z-30 overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-100">
                     {["PUBLIC", "FRIENDS", "PRIVATE"].map((vis) => (
                       <button
                         key={vis}
@@ -312,7 +312,7 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
             formik.isSubmitting ||
             (!formik.values.content.trim() && formik.values.media.length === 0)
           }
-          className="bg-primary hover:bg-primary-hover text-[#231810] font-bold text-sm px-4 py-1.5 md:px-6 md:py-2 rounded-md transition-all shadow-sm md:shadow-md shadow-primary/20 disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed"
+          className="bg-primary hover:bg-primary-hover text-[#231810] font-bold text-sm px-4 py-1.5 md:px-6 md:py-2 rounded-lg transition-all shadow-sm md:shadow-md shadow-primary/20 disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed"
         >
           Đăng
         </button>

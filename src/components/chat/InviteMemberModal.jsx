@@ -1,5 +1,5 @@
-import React from 'react';
-import { X, UserX, Check, UserPlus } from 'lucide-react';
+import React from "react";
+import { X, UserX, Check, UserPlus } from "lucide-react";
 
 const InviteMemberModal = ({
     show,
@@ -11,7 +11,7 @@ const InviteMemberModal = ({
     activeRoomName,
     isInviting
 }) => {
-    if (!show) return null;
+  if (!show) return null;
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
@@ -99,10 +99,41 @@ const InviteMemberModal = ({
                                     : "Chọn bạn bè để mời"}
                         </button>
                     </div>
-                )}
+                    <div
+                      className={`size-5 rounded border-2 flex items-center justify-center transition-all ${
+                        isSelected
+                          ? "bg-primary border-primary"
+                          : "border-border-main"
+                      }`}
+                    >
+                      {isSelected && (
+                        <Check size={16} className="text-[#231810]" />
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
+          )}
         </div>
-    );
+
+        {friends.length > 0 && (
+          <div className="p-6 border-t border-border-main">
+            <button
+              onClick={onInvite}
+              disabled={selectedInvitees.length === 0}
+              className="w-full py-3 bg-primary hover:bg-orange-600 text-[#231810] font-bold rounded-xl shadow-lg shadow-orange-500/10 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
+            >
+              <UserPlus size={20} />
+              {selectedInvitees.length > 0
+                ? `Mời ${selectedInvitees.length} người`
+                : "Chọn bạn bè để mời"}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default InviteMemberModal;

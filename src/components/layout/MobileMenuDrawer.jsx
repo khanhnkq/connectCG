@@ -141,9 +141,6 @@ export default function MobileMenuDrawer({ isOpen, onClose }) {
                   <h3 className="font-bold text-text-main truncate">
                     {userProfile?.fullName || user?.username}
                   </h3>
-                  <p className="text-xs text-text-secondary">
-                    Xem trang cá nhân
-                  </p>
                 </div>
               </Link>
 

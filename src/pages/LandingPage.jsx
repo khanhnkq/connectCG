@@ -33,19 +33,19 @@ export default function LandingPage() {
               className="text-sm font-bold text-text-secondary hover:text-text-main transition-colors"
               href="#"
             >
-              Our Story
+              Câu Chuyện
             </a>
             <a
               className="text-sm font-bold text-text-secondary hover:text-text-main transition-colors"
               href="#"
             >
-              Community
+              Cộng Đồng
             </a>
             <a
               className="text-sm font-bold text-text-secondary hover:text-text-main transition-colors"
               href="#"
             >
-              Safety
+              An Toàn
             </a>
           </div>
           <div className="flex items-center gap-3">
@@ -53,13 +53,13 @@ export default function LandingPage() {
               to="/login"
               className="hidden sm:block text-text-main hover:text-primary font-bold px-5 py-2.5 transition-colors text-sm border border-primary/30 hover:border-primary rounded-full"
             >
-              Member Log In
+              Đăng Nhập
             </Link>
             <Link
               to="/registration/step-1"
               className="bg-primary hover:bg-primary-hover text-white font-bold px-6 py-2.5 rounded-full transition-all shadow-lg shadow-primary/20 text-sm hover:scale-105 active:scale-95"
             >
-              Join Community
+              Tham Gia Ngay
             </Link>
           </div>
         </div>
@@ -80,23 +80,23 @@ export default function LandingPage() {
           <div className="flex flex-col justify-center items-start pt-10">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-primary text-xs font-bold uppercase tracking-widest mb-6 backdrop-blur-sm">
               <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              Now Live Globally
+              Đã Có Mặt Toàn Cầu
             </div>
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] mb-6 drop-shadow-lg">
-              Connect, Share, and{" "}
-              <span className="text-primary block mt-2">Find Your People</span>
+              Kết Nối, Chia Sẻ và
+              <span className="text-primary block mt-2">Tìm Bạn Bè</span>
             </h1>
             <p className="text-lg md:text-xl text-text-secondary mb-8 max-w-xl leading-relaxed font-medium drop-shadow-md">
-              Experience a new way to socialize. Connect with thousands of
-              like-minded individuals in a safe, premium environment designed
-              for authentic relationships.
+              Trải nghiệm phong cách mạng xã hội mới. Kết nối với hàng ngàn
+              người cùng chí hướng trong môi trường an toàn, cao cấp giúp xây
+              dựng những mối quan hệ chân thực.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
               <Link
                 to="/registration/step-1"
                 className="bg-primary hover:bg-primary-hover text-white text-base font-bold px-8 py-4 rounded-full transition-all transform hover:-translate-y-1 shadow-xl shadow-primary/25 flex items-center justify-center gap-2"
               >
-                Join the Community
+                Tham Gia Cộng Đồng
                 <ArrowRight size={20} />
               </Link>
               <Link
@@ -104,7 +104,7 @@ export default function LandingPage() {
                 className="bg-black/20 backdrop-blur-sm border border-primary/50 hover:border-primary text-primary hover:bg-primary/10 text-base font-bold px-8 py-4 rounded-full transition-all flex items-center justify-center gap-2"
               >
                 <LogIn size={20} />
-                Member Log In
+                Đăng Nhập
               </Link>
             </div>
             <div className="mt-12 flex items-center gap-4 p-4 rounded-2xl bg-surface-main/5 border border-border-main backdrop-blur-sm">
@@ -141,8 +141,8 @@ export default function LandingPage() {
                   ))}
                 </div>
                 <p className="text-sm font-medium text-gray-300">
-                  <span className="text-white font-bold">10k+</span> members
-                  joined this week
+                  <span className="text-white font-bold">10k+</span> thành viên
+                  mới tuần này
                 </p>
               </div>
             </div>
@@ -157,33 +157,33 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-3xl md:text-5xl font-extrabold mb-6 tracking-tight text-white">
-              Everything you need to{" "}
-              <span className="text-primary">connect</span>
+              Mọi thứ bạn cần để <span className="text-primary">kết nối</span>
             </h2>
             <p className="text-text-secondary text-lg leading-relaxed">
-              Our platform provides premium tools to help you express yourself,
-              discover new friends, and build relationships that last.
+              Nền tảng của chúng tôi cung cấp các công cụ cao cấp giúp bạn thể
+              hiện bản thân, khám phá bạn bè mới và xây dựng những mối quan hệ
+              bền vững.
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             {[
               {
                 iconPath: <Search className="text-primary" size={32} />,
-                title: "Advanced Matchmaking",
+                title: "Ghép Đôi Thông Minh",
                 description:
-                  "Filter matches by interests, location, and lifestyle. Our smart algorithm helps you find exactly who you're looking for without the noise.",
+                  "Lọc đối tượng theo sở thích, vị trí và lối sống. Thuật toán của chúng tôi giúp bạn tìm đúng người bạn cần mà không bị nhiễu.",
               },
               {
                 iconPath: <Sparkles className="text-primary" size={32} />,
-                title: "Express Yourself",
+                title: "Thể Hiện Bản Thân",
                 description:
-                  "Create a stunning profile with photo galleries and a personal diary. Post updates, share moments, and let your true personality shine.",
+                  "Tạo hồ sơ ấn tượng với thư viện ảnh và nhật ký cá nhân. Cập nhật trạng thái, chia sẻ khoảnh khắc và để cá tính của bạn tỏa sáng.",
               },
               {
                 iconPath: <Gift className="text-primary" size={32} />,
-                title: "Virtual Gifts",
+                title: "Quà Tặng Ảo",
                 description:
-                  "Break the ice instantly. Send thoughtful virtual gifts to show appreciation and start meaningful conversations with a gesture of kindness.",
+                  "Phá băng ngay lập tức. Gửi quà tặng ảo ý nghĩa để thể hiện sự cảm mến và bắt đầu cuộc trò chuyện đầy thiện cảm.",
               },
             ].map((feature, index) => (
               <div
@@ -211,14 +211,15 @@ export default function LandingPage() {
           <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold mb-3 text-white">
-                Recent Members
+                Thành Viên Mới
               </h2>
               <p className="text-text-secondary">
-                Join thousands of people active right now. Connect instantly.
+                Tham gia cùng hàng ngàn người đang hoạt động. Kết nối ngay lập
+                tức.
               </p>
             </div>
             <button className="text-primary font-bold hover:text-white transition-colors flex items-center gap-1 group">
-              View all members{" "}
+              Xem tất cả thành viên{" "}
               <ArrowRight
                 className="group-hover:translate-x-1 transition-transform"
                 size={20}
@@ -256,17 +257,17 @@ export default function LandingPage() {
                   <Lock size={32} />
                 </div>
                 <h3 className="text-2xl font-bold text-text-main mb-2">
-                  Join to View Profiles
+                  Tham gia để xem hồ sơ
                 </h3>
                 <p className="text-text-secondary text-sm mb-6 leading-relaxed">
-                  Sign up for free to see full profiles, photos, and connect
-                  with members near you.
+                  Đăng ký miễn phí để xem đầy đủ hồ sơ, hình ảnh và kết nối với
+                  thành viên gần bạn.
                 </p>
                 <Link
                   to="/registration/step-1"
                   className="block w-full bg-primary hover:bg-primary-hover text-white font-bold py-4 rounded-full transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40"
                 >
-                  Create Free Account
+                  Tạo Tài Khoản Miễn Phí
                 </Link>
               </div>
             </div>
@@ -290,8 +291,8 @@ export default function LandingPage() {
                 </span>
               </div>
               <p className="text-gray-500 text-sm leading-relaxed mb-6">
-                The premium social network designed for meaningful connections
-                and real friendships. Join the conversation today.
+                Mạng xã hội cao cấp dành cho những kết nối ý nghĩa và tình bạn
+                chân thực. Tham gia cuộc trò chuyện ngay hôm nay.
               </p>
               <div className="flex gap-3">
                 <a
@@ -317,7 +318,7 @@ export default function LandingPage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-12 sm:gap-20">
               <div>
                 <h4 className="text-text-main font-bold mb-6 text-sm uppercase tracking-wider">
-                  Company
+                  Công Ty
                 </h4>
                 <ul className="flex flex-col gap-3 text-sm text-gray-400">
                   <li>
@@ -325,7 +326,7 @@ export default function LandingPage() {
                       className="hover:text-primary transition-colors"
                       href="#"
                     >
-                      About Us
+                      Về Chúng Tôi
                     </a>
                   </li>
                   <li>
@@ -333,7 +334,7 @@ export default function LandingPage() {
                       className="hover:text-primary transition-colors"
                       href="#"
                     >
-                      Careers
+                      Tuyển Dụng
                     </a>
                   </li>
                   <li>
@@ -341,7 +342,7 @@ export default function LandingPage() {
                       className="hover:text-primary transition-colors"
                       href="#"
                     >
-                      Press
+                      Báo Chí
                     </a>
                   </li>
                   <li>
@@ -349,14 +350,14 @@ export default function LandingPage() {
                       className="hover:text-primary transition-colors"
                       href="#"
                     >
-                      Contact
+                      Liên Hệ
                     </a>
                   </li>
                 </ul>
               </div>
               <div>
                 <h4 className="text-text-main font-bold mb-6 text-sm uppercase tracking-wider">
-                  Resources
+                  Tài Nguyên
                 </h4>
                 <ul className="flex flex-col gap-3 text-sm text-gray-400">
                   <li>
@@ -364,7 +365,7 @@ export default function LandingPage() {
                       className="hover:text-primary transition-colors"
                       href="#"
                     >
-                      Safety Tips
+                      Mẹo An Toàn
                     </a>
                   </li>
                   <li>
@@ -372,7 +373,7 @@ export default function LandingPage() {
                       className="hover:text-primary transition-colors"
                       href="#"
                     >
-                      Community Guidelines
+                      Quy Tắc Cộng Đồng
                     </a>
                   </li>
                   <li>
@@ -380,7 +381,7 @@ export default function LandingPage() {
                       className="hover:text-primary transition-colors"
                       href="#"
                     >
-                      Success Stories
+                      Câu Chuyện Thành Công
                     </a>
                   </li>
                   <li>
@@ -388,14 +389,14 @@ export default function LandingPage() {
                       className="hover:text-primary transition-colors"
                       href="#"
                     >
-                      Help Center
+                      Trung Tâm Trợ Giúp
                     </a>
                   </li>
                 </ul>
               </div>
               <div>
                 <h4 className="text-text-main font-bold mb-6 text-sm uppercase tracking-wider">
-                  Legal
+                  Pháp Lý
                 </h4>
                 <ul className="flex flex-col gap-3 text-sm text-gray-400">
                   <li>
@@ -403,7 +404,7 @@ export default function LandingPage() {
                       className="hover:text-primary transition-colors"
                       href="#"
                     >
-                      Privacy Policy
+                      Chính Sách Riêng Tư
                     </a>
                   </li>
                   <li>
@@ -411,7 +412,7 @@ export default function LandingPage() {
                       className="hover:text-primary transition-colors"
                       href="#"
                     >
-                      Terms of Service
+                      Điều Khoản Dịch Vụ
                     </a>
                   </li>
                   <li>
@@ -419,7 +420,7 @@ export default function LandingPage() {
                       className="hover:text-primary transition-colors"
                       href="#"
                     >
-                      Cookie Policy
+                      Chính Sách Cookie
                     </a>
                   </li>
                 </ul>
@@ -427,7 +428,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="border-t border-border-main pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-text-muted font-medium">
-            <p>© 2023 Connect Social Inc. All rights reserved.</p>
+            <p>© 2023 Connect Social Inc. Bảo lưu mọi quyền.</p>
             <div className="flex gap-6">
               <a className="hover:text-gray-400 transition-colors" href="#">
                 English (US)

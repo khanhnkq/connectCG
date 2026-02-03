@@ -111,14 +111,14 @@ const MediaGallery = ({ mediaItems, onMediaClick }) => {
     <div className="w-full overflow-hidden">
       {/* TRƯỜNG HỢP 1 ẢNH */}
       {count === 1 && (
-        <div className="w-full flex justify-center max-h-[600px]">
-          {renderItem(mediaItems[0], 0, "")}
+        <div className="w-full h-full aspect-[3/2]">
+          {renderItem(mediaItems[0], 0, "w-full h-full")}
         </div>
       )}
 
       {/* TRƯỜNG HỢP 2 ẢNH */}
       {count === 2 && (
-        <div className="grid grid-cols-2 gap-1 h-[300px] sm:h-[400px]">
+        <div className="grid grid-cols-2 gap-1 aspect-[3/2]">
           {renderItem(mediaItems[0], 0)}
           {renderItem(mediaItems[1], 1)}
         </div>
@@ -126,7 +126,7 @@ const MediaGallery = ({ mediaItems, onMediaClick }) => {
 
       {/* TRƯỜNG HỢP 3 ẢNH */}
       {count === 3 && (
-        <div className="grid grid-cols-2 grid-rows-2 gap-1 h-[300px] sm:h-[400px]">
+        <div className="grid grid-cols-2 grid-rows-2 gap-1 aspect-[3/2]">
           <div className="row-span-2 relative">
             {renderItem(mediaItems[0], 0, "absolute inset-0 w-full h-full")}
           </div>
@@ -141,7 +141,7 @@ const MediaGallery = ({ mediaItems, onMediaClick }) => {
 
       {/* TRƯỜNG HỢP 4+ ẢNH */}
       {count >= 4 && (
-        <div className="grid grid-cols-2 grid-rows-2 gap-1 h-[300px] sm:h-[400px]">
+        <div className="grid grid-cols-2 grid-rows-2 gap-1 aspect-[3/2]">
           <div className="relative">
             {renderItem(mediaItems[0], 0, "absolute inset-0 w-full h-full")}
           </div>
@@ -190,6 +190,7 @@ export default function PostCard({
   // Edit mode state
   const [isEditing, setIsEditing] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const reportReasons = [
     "Spam hoặc lừa đảo",
@@ -348,28 +349,30 @@ export default function PostCard({
       }`}
     >
       {/* HEADER */}
-      <div className="p-3 md:p-4 flex justify-between items-start">
+      <div className="p-3 md:p-4 flex justify-between items-start border-b border-border-main/30 mb-2">
         <div className="flex gap-3">
           <div
-            className="bg-center bg-no-repeat bg-cover rounded-full size-10 cursor-pointer ring-1 ring-border-main hover:ring-primary transition-all"
+            className="bg-center bg-no-repeat bg-cover rounded-full size-10 flex-shrink-0 cursor-pointer ring-1 ring-border-main hover:ring-primary transition-all"
             style={{ backgroundImage: `url("${data.author.avatar}")` }}
           ></div>
-          <div className="flex flex-col justify-center">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col justify-center min-w-0">
+            <div className="flex flex-wrap items-baseline gap-x-1 gap-y-0.5 min-w-0 pr-2">
               <Link
                 to={`/dashboard/member/${data.author.id}`}
-                className="text-text-main font-bold text-base hover:underline transition-all"
+                className="text-text-main font-bold text-base hover:underline transition-all truncate max-w-[140px] sm:max-w-[200px]"
+                title={data.author.name}
               >
                 {data.author.name}
               </Link>
               {data.groupId && data.groupName && (
-                <div className="flex items-baseline gap-1">
-                  <span className="text-text-secondary font-normal text-sm">
+                <div className="flex items-baseline gap-1 min-w-0">
+                  <span className="text-text-secondary font-normal text-xs whitespace-nowrap">
                     đăng ở
                   </span>
                   <Link
                     to={`/dashboard/groups/${data.groupId}`}
-                    className="text-primary font-bold text-sm sm:text-base hover:underline transition-all"
+                    className="text-primary font-bold text-sm hover:underline transition-all truncate max-w-[120px] sm:max-w-[180px]"
+                    title={data.groupName}
                   >
                     {data.groupName}
                   </Link>
@@ -468,9 +471,21 @@ export default function PostCard({
           />
         ) : (
           data.content && (
-            <p className="text-text-main whitespace-pre-wrap text-[15px] leading-relaxed break-words">
-              {data.content}
-            </p>
+            <div className="relative">
+              <p className="text-text-main whitespace-pre-wrap text-[15px] leading-relaxed break-words">
+                {isExpanded || data.content.length <= 100
+                  ? data.content
+                  : `${data.content.substring(0, 100)}...`}
+              </p>
+              {data.content.length > 100 && (
+                <button
+                  onClick={() => setIsExpanded(!isExpanded)}
+                  className="text-primary hover:underline font-bold text-sm mt-1"
+                >
+                  {isExpanded ? "Ẩn bớt" : "Xem thêm"}
+                </button>
+              )}
+            </div>
           )
         )}
       </div>
@@ -497,14 +512,14 @@ export default function PostCard({
                   <img
                     src={REACTION_ASSETS.LIKE}
                     alt="Like"
-                    className="w-4 h-4 -mr-1 border border-white rounded-full bg-white relative z-30 object-cover"
+                    className="w-[18px] h-[18px] border border-white rounded-full bg-white relative z-30 object-cover flex-shrink-0"
                   />
                   {/* Hiện thêm tim nếu > 1 reaction (giả lập) */}
                   {localReactCount > 1 && (
                     <img
                       src={REACTION_ASSETS.LOVE}
                       alt="Love"
-                      className="w-4 h-4 -mr-1 border border-white rounded-full bg-white relative z-20 object-cover"
+                      className="w-[18px] h-[18px] -mr-1.5 border border-white rounded-full bg-white relative z-20 object-cover flex-shrink-0"
                     />
                   )}
                   {/* Hiện thêm Haha nếu > 5 reaction (giả lập cho vui mắt) */}
@@ -512,7 +527,7 @@ export default function PostCard({
                     <img
                       src={REACTION_ASSETS.HAHA}
                       alt="Haha"
-                      className="w-4 h-4 border border-white rounded-full bg-white relative z-10 object-cover"
+                      className="w-[18px] h-[18px] -mr-1.5 border border-white rounded-full bg-white relative z-10 object-cover flex-shrink-0"
                     />
                   )}
                 </div>
@@ -581,15 +596,7 @@ export default function PostCard({
         }}
         user={data.author}
       />
-      {showComments && (
-        <CommentSection
-          postId={data.id}
-          onCommentAdded={() => setLocalCommentCount((prev) => prev + 1)}
-          onCommentDeleted={() =>
-            setLocalCommentCount((prev) => Math.max(0, prev - 1))
-          }
-        />
-      )}
+      {showComments && <CommentSection postId={data.id} />}
     </article>
   );
 }
