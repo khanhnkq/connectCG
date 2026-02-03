@@ -22,6 +22,7 @@ const ReportDetailModal = ({
         type: actionType,
         targetId: report.targetId,
         reports: report.reports,
+        groupId: report.groupId,
       });
     }
   };
@@ -63,11 +64,10 @@ const ReportDetailModal = ({
 
                     {/* Target Header */}
                     <div
-                      className={`flex items-center gap-4 mb-6 relative z-10 ${
-                        report.targetType === "USER"
+                      className={`flex items-center gap-4 mb-6 relative z-10 ${report.targetType === "USER"
                           ? "cursor-pointer hover:bg-background/20 p-2 -m-2 rounded-lg transition-colors"
                           : ""
-                      }`}
+                        }`}
                       onClick={() =>
                         report.targetType === "USER" &&
                         onReporterClick &&
@@ -77,24 +77,24 @@ const ReportDetailModal = ({
                       {(targetData.avatar ||
                         targetData.currentAvatarUrl ||
                         targetData.image) && (
-                        <div className="relative">
-                          <img
-                            src={
-                              targetData.avatar ||
-                              targetData.currentAvatarUrl ||
-                              targetData.image
-                            }
-                            className="w-16 h-16 rounded-xl object-cover bg-background border-2 border-border shadow-lg"
-                            alt=""
-                          />
-                          {report.targetType === "USER" &&
-                            targetData.locked && (
-                              <div className="absolute -bottom-2 -right-2 bg-red-500 text-white p-1 rounded-full shadow-lg border-2 border-[#1e1e1e]">
-                                <Lock size={12} />
-                              </div>
-                            )}
-                        </div>
-                      )}
+                          <div className="relative">
+                            <img
+                              src={
+                                targetData.avatar ||
+                                targetData.currentAvatarUrl ||
+                                targetData.image
+                              }
+                              className="w-16 h-16 rounded-xl object-cover bg-background border-2 border-border shadow-lg"
+                              alt=""
+                            />
+                            {report.targetType === "USER" &&
+                              targetData.locked && (
+                                <div className="absolute -bottom-2 -right-2 bg-red-500 text-white p-1 rounded-full shadow-lg border-2 border-[#1e1e1e]">
+                                  <Lock size={12} />
+                                </div>
+                              )}
+                          </div>
+                        )}
                       <div>
                         <h3 className="text-xl font-bold text-text-main">
                           {targetData.fullName ||
@@ -177,12 +177,12 @@ const ReportDetailModal = ({
                           {targetData.media?.some(
                             (m) => m.type === "VIDEO",
                           ) && (
-                            <div className="mt-2 text-xs text-text-muted flex items-center gap-1">
-                              <span className="bg-white/10 px-2 py-0.5 rounded">
-                                Có đính kèm video
-                              </span>
-                            </div>
-                          )}
+                              <div className="mt-2 text-xs text-text-muted flex items-center gap-1">
+                                <span className="bg-white/10 px-2 py-0.5 rounded">
+                                  Có đính kèm video
+                                </span>
+                              </div>
+                            )}
                         </div>
                       </div>
                     )}

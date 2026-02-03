@@ -17,6 +17,7 @@ import {
   deleteGroup,
   getGroupPosts,
   findAllGroup,
+  rejectPost,
 } from "../../services/groups/GroupService";
 import toast from "react-hot-toast";
 import GroupInspectorModal from "../../components/admin/GroupInspectorModal";
@@ -568,9 +569,21 @@ const AdminReportsManagement = () => {
     }
   };
 
-  const onDeletePost = async (postId, reportsOrId) => {
+  const onDeletePost = async (postId, reportsOrId, groupId) => {
     try {
-      await postService.deletePost(postId);
+      // Try standard delete first
+      try {
+        await postService.deletePost(postId);
+      } catch (err) {
+        // If standard delete fails and we have a groupId, try rejectPost (remove from group)
+        if (groupId) {
+          console.warn("Standard delete failed, attempting group reject...", err);
+          await rejectPost(groupId, postId);
+        } else {
+          throw err; // Re-throw if no fallback available
+        }
+      }
+
       toast.success(`Đã xóa bài viết #${postId}`);
 
       setTargetMetadata((prev) => ({
@@ -586,7 +599,9 @@ const AdminReportsManagement = () => {
       if (reportsOrId) await handleResolveReport(reportsOrId);
       else fetchReports();
     } catch (error) {
-      toast.error("Lỗi khi xóa bài viết");
+      console.error("Delete post error:", error);
+      const msg = error.response?.data?.message || "Lỗi khi xóa bài viết";
+      toast.error(msg);
     }
   };
 
@@ -607,7 +622,7 @@ const AdminReportsManagement = () => {
     <AdminLayout
       title="Quản lý báo cáo"
       activeTab="Reports"
-      brandName="AdminPanel"
+      brandName="Social Admin"
     >
       <div className="p-8 space-y-6 relative min-h-screen">
         {/* HEADER */}
@@ -733,7 +748,7 @@ const AdminReportsManagement = () => {
               );
             } else if (action.type === "DELETE_POST") {
               confirmAction(
-                () => onDeletePost(action.targetId, action.reports),
+                () => onDeletePost(action.targetId, action.reports, action.groupId),
                 "Xóa bài viết",
                 "Xác nhận xóa bài viết này?",
               );
