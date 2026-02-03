@@ -41,6 +41,15 @@ export const loginUser = createAsyncThunk('auth/loginUser', async ({ email, pass
         console.error("Token decode failed:", e);
       }
     }
+
+    // [FIX] Merge thông tin từ API response (JwtResponse) vào user object
+    if (data.user) {
+      if (data.fullName) data.user.fullName = data.fullName;
+      if (data.username) data.user.username = data.username;
+
+      // Cập nhật lại user vào localStorage để lưu fullName cho các lần sau
+      localStorage.setItem('user', JSON.stringify(data.user));
+    }
     return data;
   } catch (error) {
     if (error.response && error.response.data) {
@@ -146,8 +155,8 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(createProfile.fulfilled, (state) => {
-    state.hasProfile = true;
-    localStorage.setItem('hasProfile', 'true');
+        state.hasProfile = true;
+        localStorage.setItem('hasProfile', 'true');
       })
       .addCase(registerUser.fulfilled, (state) => {
         state.loading = false;

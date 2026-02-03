@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Search, UserPlus } from "lucide-react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -18,6 +18,23 @@ export default function RightSidebar() {
   const [hasMore, setHasMore] = useState(true);
   const loadingRef = useRef(false);
   const onlineUserIds = useSelector(selectOnlineUserIds);
+
+  // Sorting: Online first, then Alphabetical (A-Z)
+  const sortedFriends = useMemo(() => {
+    return [...friends].sort((a, b) => {
+      // 1. Priority: Online status
+      const isAOnline = onlineUserIds.includes(a.id);
+      const isBOnline = onlineUserIds.includes(b.id);
+
+      if (isAOnline && !isBOnline) return -1;
+      if (!isAOnline && isBOnline) return 1;
+
+      // 2. Priority: Name Alphabetical
+      const nameA = (a.fullName || a.username || "").toLowerCase();
+      const nameB = (b.fullName || b.username || "").toLowerCase();
+      return nameA.localeCompare(nameB);
+    });
+  }, [friends, onlineUserIds]);
 
   const fetchFriends = useCallback(
     async (currentPage, currentSearchTerm) => {
@@ -206,7 +223,7 @@ export default function RightSidebar() {
           onScroll={handleScroll}
         >
           <div className="flex flex-col gap-2 pb-20">
-            {friends.map((friend) => (
+            {sortedFriends.map((friend) => (
               <Link
                 to={`/dashboard/member/${friend.id}`}
                 key={friend.id}

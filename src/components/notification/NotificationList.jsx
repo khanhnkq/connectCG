@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { Trash2, Check, CheckCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import ConfirmModal from "../common/ConfirmModal"; // Import ConfirmModal
 
 const timeAgo = (dateString) => {
   const date = new Date(dateString);
@@ -23,6 +24,10 @@ const timeAgo = (dateString) => {
 
 const NotificationList = ({ notifications, onMarkAsRead, onDelete, onMarkAllAsRead }) => {
   const navigate = useNavigate();
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    id: null,
+  });
 
   const handleClick = (notification) => {
     if (!notification.isRead) {
@@ -50,10 +55,18 @@ const NotificationList = ({ notifications, onMarkAsRead, onDelete, onMarkAllAsRe
     }
   };
 
-  const handleDelete = (e, id) => {
+  const handleDeleteClick = (e, id) => {
     e.stopPropagation();
-    if (window.confirm("Bạn có chắc muốn xóa thông báo này?")) {
-      onDelete(id);
+    setConfirmModal({
+      isOpen: true,
+      id: id,
+    });
+  };
+
+  const handleConfirmDelete = () => {
+    if (confirmModal.id) {
+      onDelete(confirmModal.id);
+      setConfirmModal({ isOpen: false, id: null });
     }
   };
 
@@ -91,6 +104,15 @@ const NotificationList = ({ notifications, onMarkAsRead, onDelete, onMarkAllAsRe
 
   return (
     <div className="w-full bg-surface-main border border-border-main shadow-lg mt-2 overflow-hidden">
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title="Xóa thông báo"
+        message="Bạn có chắc chắn muốn xóa thông báo này không?"
+        confirmText="Xóa"
+        cancelText="Hủy"
+        onConfirm={handleConfirmDelete}
+        onClose={() => setConfirmModal({ isOpen: false, id: null })}
+      />
       {/* Header */}
       <div className="p-4 border-b border-border-main flex items-center justify-between bg-gradient-to-r from-surface-main to-background-main">
         <div>
@@ -153,7 +175,7 @@ const NotificationList = ({ notifications, onMarkAsRead, onDelete, onMarkAllAsRe
                 </button>
               )}
               <button
-                onClick={(e) => handleDelete(e, notification.id)}
+                onClick={(e) => handleDeleteClick(e, notification.id)}
                 className="p-1.5 hover:bg-red-500/20 text-text-secondary hover:text-red-500 rounded-lg transition-all"
                 title="Xóa thông báo"
               >

@@ -32,34 +32,12 @@ import { ThemeProvider } from "./context/ThemeContext";
 
 import GroupDeletedModal from "./components/common/GroupDeletedModal";
 
+import { toastConfig } from "./config/toastConfig";
+
 function App() {
   return (
     <ThemeProvider>
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          duration: 3000,
-          style: {
-            background: "var(--surface)",
-            color: "var(--text-main)",
-            border: "1px solid var(--border)",
-            borderRadius: "12px",
-            padding: "12px 16px",
-          },
-          success: {
-            iconTheme: {
-              primary: "#10b981",
-              secondary: "#fff",
-            },
-          },
-          error: {
-            iconTheme: {
-              primary: "#ef4444",
-              secondary: "#fff",
-            },
-          },
-        }}
-      />
+      <Toaster {...toastConfig} />
       <WebSocketProvider>
         <GroupDeletedModal />
         <Routes>
