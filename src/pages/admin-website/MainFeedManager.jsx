@@ -22,9 +22,18 @@ const MainFeedManager = () => {
     message: "",
     onConfirm: null,
   });
+  const [giveStrike, setGiveStrike] = useState(false);
 
   useEffect(() => {
     fetchPosts();
+  }, [activeTab]);
+
+  useEffect(() => {
+    const handlePostEvent = (e) => {
+      fetchPosts();
+    };
+    window.addEventListener("postEvent", handlePostEvent);
+    return () => window.removeEventListener("postEvent", handlePostEvent);
   }, [activeTab]);
 
   const fetchPosts = async () => {
@@ -54,18 +63,24 @@ const MainFeedManager = () => {
   };
 
   const handleDelete = (id) => {
+    setGiveStrike(false); // Reset checkbox
     setConfirmConfig({
       isOpen: true,
       title: "Xác nhận xóa bài viết?",
       message:
-        "Bài viết này sẽ bị xóa vĩnh viễn khỏi hệ thống. Bạn có chắc chắn muốn tiếp tục?",
+        "Bạn có thể chọn xóa thường hoặc xóa kèm theo cảnh cáo (Strike) cho người dùng.",
       onConfirm: async () => {
         try {
-          await postService.deletePost(id);
+          if (giveStrike) {
+            await postService.rejectPost(id, true);
+            toast.success("Đã xóa và gửi cảnh cáo cho người dùng!");
+          } else {
+            await postService.deletePost(id);
+            toast.success("Đã xóa bài viết thành công");
+          }
           setPosts(posts.filter((p) => p.id !== id));
-          toast.success("Đã xóa bài viết thành công");
         } catch (error) {
-          toast.error("Lỗi dữ liệu: Không thể xóa bài viết");
+          toast.error("Lỗi dữ liệu: Không thể xử lý bài viết");
         }
         setConfirmConfig({ ...confirmConfig, isOpen: false });
       },
@@ -97,22 +112,20 @@ const MainFeedManager = () => {
           <div className="flex bg-background/50 p-1.5 rounded-2xl border border-border/30">
             <button
               onClick={() => setActiveTab("pending")}
-              className={`px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${
-                activeTab === "pending"
-                  ? "bg-red-500 text-white shadow-lg"
-                  : "text-text-muted hover:text-text-main"
-              }`}
+              className={`px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${activeTab === "pending"
+                ? "bg-red-500 text-white shadow-lg"
+                : "text-text-muted hover:text-text-main"
+                }`}
             >
               <Shield size={14} />
               Chờ Duyệt
             </button>
             <button
               onClick={() => setActiveTab("audit")}
-              className={`px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${
-                activeTab === "audit"
-                  ? "bg-orange-500 text-white shadow-lg"
-                  : "text-text-muted hover:text-text-main"
-              }`}
+              className={`px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${activeTab === "audit"
+                ? "bg-orange-500 text-white shadow-lg"
+                : "text-text-muted hover:text-text-main"
+                }`}
             >
               <AlertTriangle size={14} />
               Kiểm Tra Lại
@@ -127,7 +140,7 @@ const MainFeedManager = () => {
               <tr>
                 <th className="px-6 py-5">Người đăng</th>
                 <th className="px-6 py-5">Nội dung</th>
-                <th className="px-6 py-5">AI Status</th>
+                <th className="px-6 py-5">Lý do AI</th>
                 {activeTab === "audit" && (
                   <th className="px-6 py-5 text-orange-400">Người duyệt</th>
                 )}
@@ -178,6 +191,20 @@ const MainFeedManager = () => {
                           <span className="text-[9px] text-text-muted opacity-60 italic">
                             {post.visibility}
                           </span>
+                          {(post.userViolationCount > 0 || post.authorLockedUntil) && (
+                            <div className="flex items-center gap-1.5 mt-1">
+                              <span className={`text-[9px] font-black ${post.userViolationCount >= 8 ? "text-red-500" :
+                                  post.userViolationCount >= 5 ? "text-orange-500" : "text-yellow-500"
+                                }`}>
+                                {post.userViolationCount}/8 Strikes
+                              </span>
+                              {post.authorLockedUntil && new Date(post.authorLockedUntil) > new Date() && (
+                                <span className="text-[9px] bg-red-500/10 text-red-500 px-1 rounded font-bold uppercase">
+                                  Locked
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </td>
@@ -187,15 +214,21 @@ const MainFeedManager = () => {
                       </p>
                     </td>
                     <td className="px-6 py-5">
-                      <span
-                        className={`px-2 py-0.5 text-[9px] font-black uppercase rounded border ${
-                          post.aiStatus === "TOXIC"
+                      <div className="flex flex-col gap-1">
+                        <span
+                          className={`px-2 py-0.5 text-[9px] font-black uppercase rounded border w-fit ${post.aiStatus === "TOXIC"
                             ? "bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/40"
                             : "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20"
-                        }`}
-                      >
-                        {post.aiStatus}
-                      </span>
+                            }`}
+                        >
+                          {post.aiStatus}
+                        </span>
+                        {post.aiReason && (
+                          <span className="text-[10px] text-text-muted italic max-w-[150px] truncate">
+                            {post.aiReason}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     {activeTab === "audit" && (
                       <td className="px-6 py-5">
@@ -239,7 +272,23 @@ const MainFeedManager = () => {
           onConfirm={confirmConfig.onConfirm}
           onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
           confirmText="Xác nhận Xóa"
-        />
+        >
+          <div className="flex items-center gap-2 p-3 bg-red-500/5 rounded-xl border border-red-500/10">
+            <input
+              type="checkbox"
+              id="giveStrike"
+              checked={giveStrike}
+              onChange={(e) => setGiveStrike(e.target.checked)}
+              className="size-4 accent-red-500 cursor-pointer"
+            />
+            <label
+              htmlFor="giveStrike"
+              className="text-xs font-bold text-red-500 cursor-pointer select-none"
+            >
+              Kèm theo Cảnh cáo (Strike) cho người dùng
+            </label>
+          </div>
+        </ConfirmModal>
       </div>
     </AdminLayout>
   );

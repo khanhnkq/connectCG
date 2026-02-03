@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import FriendService from "../../services/friend/FriendService";
 import toast from "react-hot-toast";
 
-export default function InviteMemberModal({ isOpen, onClose, onInvite, existingMemberIds = [] }) {
+export default function InviteMemberModal({ isOpen, onClose, onInvite, existingMemberIds = [], bannedUserIds = [] }) {
   const [friends, setFriends] = useState([]);
   const [selectedFriends, setSelectedFriends] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -47,7 +47,8 @@ export default function InviteMemberModal({ isOpen, onClose, onInvite, existingM
   const filteredFriends = friends.filter((friend) => {
     const nameMatch = (friend.fullName || "").toLowerCase().includes(searchTerm.toLowerCase());
     const isAlreadyMember = existingMemberIds.includes(friend.id);
-    return nameMatch && !isAlreadyMember;
+    const isBanned = bannedUserIds.includes(friend.id);
+    return nameMatch && !isAlreadyMember && !isBanned;
   });
 
   if (!isOpen) return null;
@@ -95,8 +96,8 @@ export default function InviteMemberModal({ isOpen, onClose, onInvite, existingM
                 key={friend.id}
                 onClick={() => toggleSelection(friend.id)}
                 className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all border ${selectedFriends.includes(friend.id)
-                    ? "bg-primary/10 border-primary/50"
-                    : "hover:bg-background-main border-transparent"
+                  ? "bg-primary/10 border-primary/50"
+                  : "hover:bg-background-main border-transparent"
                   }`}
               >
                 <div className="flex items-center gap-3">
@@ -111,8 +112,8 @@ export default function InviteMemberModal({ isOpen, onClose, onInvite, existingM
                   <div>
                     <p
                       className={`font-bold text-sm ${selectedFriends.includes(friend.id)
-                          ? "text-primary"
-                          : "text-text-main"
+                        ? "text-primary"
+                        : "text-text-main"
                         }`}
                     >
                       {friend.fullName}
@@ -121,8 +122,8 @@ export default function InviteMemberModal({ isOpen, onClose, onInvite, existingM
                 </div>
                 <div
                   className={`size-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedFriends.includes(friend.id)
-                      ? "bg-primary border-primary"
-                      : "border-text-secondary"
+                    ? "bg-primary border-primary"
+                    : "border-text-secondary"
                     }`}
                 >
                   {selectedFriends.includes(friend.id) && (

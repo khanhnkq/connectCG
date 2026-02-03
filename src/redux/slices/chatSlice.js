@@ -71,6 +71,13 @@ const chatSlice = createSlice({
         clearConversations: (state) => {
             state.conversations = [];
             state.error = null;
+        },
+        removeConversation: (state, action) => {
+            const conversationId = action.payload;
+            state.conversations = state.conversations.filter(c => c.id !== conversationId);
+            if (state.activeRoomId === conversationId) {
+                state.activeRoomId = null;
+            }
         }
     },
     extraReducers: (builder) => {
@@ -91,7 +98,8 @@ export const {
     clearUnreadCount,
     setLoading,
     setError,
-    clearConversations
+    clearConversations,
+    removeConversation
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

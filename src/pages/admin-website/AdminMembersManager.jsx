@@ -91,6 +91,9 @@ const AdminMembersManager = () => {
               : "Active",
         role: user.role,
         joinedDate: "N/A",
+        violationCount: user.violationCount || 0,
+        lockedUntil: user.lockedUntil,
+        permanentLocked: user.permanentLocked || false,
       }));
       setMembers(mappedMembers);
       setPagination((prev) => ({
@@ -105,6 +108,39 @@ const AdminMembersManager = () => {
       setLoading(false);
     }
   };
+
+  // 3. Listen for Realtime User Events (Strikes/Locks)
+  useEffect(() => {
+    const handleUserEvent = (e) => {
+      const payload = e.detail;
+      // Update specific user in the list if they exist
+      setMembers((prev) =>
+        prev.map((member) => {
+          if (member.id === payload.userId) {
+            return {
+              ...member,
+              violationCount: payload.violationCount,
+              lockedUntil: payload.lockedUntil,
+              permanentLocked: payload.permanentLocked,
+              status: payload.permanentLocked
+                ? "Banned (Perm)"
+                : payload.lockedUntil &&
+                  new Date(payload.lockedUntil) > new Date()
+                  ? "Locked (Temp)"
+                  : member.status,
+            };
+          }
+          return member;
+        }),
+      );
+
+      // If it's a major strike update, maybe refresh the whole list to be safe
+      // fetchUsers(pagination.currentPage, searchTerm, roleFilter);
+    };
+
+    window.addEventListener("userEvent", handleUserEvent);
+    return () => window.removeEventListener("userEvent", handleUserEvent);
+  }, [pagination.currentPage, searchTerm, roleFilter]);
 
   const handleRoleUpdate = (userId, userName, currentRole) => {
     const newRole = currentRole === "USER" ? "ADMIN" : "USER";
@@ -141,8 +177,8 @@ const AdminMembersManager = () => {
       isOpen: true,
       title: `${actionLabel} tài khoản?`,
       message: `Bạn có chắc muốn ${actionLabel.toLowerCase()} người dùng này? Họ sẽ ${currentStatus === "Active"
-        ? "không thể truy cập"
-        : "có thể truy cập lại"
+          ? "không thể truy cập"
+          : "có thể truy cập lại"
         } vào hệ thống.`,
       type: currentStatus === "Active" ? "danger" : "info",
       onConfirm: async () => {
@@ -234,6 +270,7 @@ const AdminMembersManager = () => {
                 <th className="px-6 py-5">STT</th>
                 <th className="px-6 py-5">Thông tin</th>
                 <th className="px-6 py-5">Vai trò</th>
+                <th className="px-6 py-5 text-center">Strikes</th>
                 <th className="px-6 py-5">Trạng thái</th>
                 <th className="px-6 py-5 text-right">Thao tác</th>
               </tr>
@@ -267,8 +304,8 @@ const AdminMembersManager = () => {
                   <td className="px-6 py-5">
                     <span
                       className={`px-2.5 py-1 text-[9px] font-black uppercase rounded-lg border flex items-center gap-1.5 w-fit ${member.role === "ADMIN"
-                        ? "bg-primary/10 text-primary border-primary/30"
-                        : "bg-surface-main/10 text-text-muted border-border"
+                          ? "bg-primary/10 text-primary border-primary/30"
+                          : "bg-surface-main/10 text-text-muted border-border"
                         }`}
                     >
                       {member.role === "ADMIN" ? (
@@ -279,19 +316,45 @@ const AdminMembersManager = () => {
                       {member.role}
                     </span>
                   </td>
+                  <td className="px-6 py-5 text-center">
+                    <div className="flex flex-col items-center">
+                      <span
+                        className={`text-sm font-black ${member.violationCount >= 8
+                            ? "text-red-500"
+                            : member.violationCount >= 5
+                              ? "text-orange-500"
+                              : member.violationCount > 0
+                                ? "text-yellow-500"
+                                : "text-text-muted opacity-30"
+                          }`}
+                      >
+                        {member.violationCount}/8
+                      </span>
+                      {member.permanentLocked && (
+                        <span className="text-[8px] text-red-500 font-black uppercase tracking-tighter">
+                          Vĩnh viễn
+                        </span>
+                      )}
+                    </div>
+                  </td>
                   <td className="px-6 py-5">
-                    <span
-                      className={`px-3 py-1 text-[10px] font-black uppercase rounded-full border ${member.status === "Active"
-                        ? "bg-green-500/10 text-green-400 border-green-500/20"
-                        : "bg-red-500/10 text-red-500 border-red-500/20"
-                        }`}
-                    >
-                      {member.status === "Active"
-                        ? "Hoạt động"
-                        : member.status === "Banned"
-                          ? "Đã khóa"
-                          : "Đã xóa"}
-                    </span>
+                    <div className="flex flex-col">
+                      <span
+                        className={`px-3 py-1 text-[10px] font-black uppercase rounded-full border w-fit ${member.status === "Active"
+                            ? "bg-green-500/10 text-green-400 border-green-500/20"
+                            : "bg-red-500/10 text-red-500 border-red-500/20"
+                          }`}
+                      >
+                        {member.status}
+                      </span>
+                      {member.lockedUntil &&
+                        new Date(member.lockedUntil) > new Date() && (
+                          <span className="text-[10px] text-orange-400 font-bold mt-1">
+                            Mở vào:{" "}
+                            {new Date(member.lockedUntil).toLocaleDateString()}
+                          </span>
+                        )}
+                    </div>
                   </td>
                   <td className="px-6 py-5 text-right space-x-2">
                     {member.id !== currentUserId && (
