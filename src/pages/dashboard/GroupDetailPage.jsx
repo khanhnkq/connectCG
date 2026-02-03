@@ -17,6 +17,7 @@ import {
   History,
   Key,
   MessageSquare,
+  UserMinus,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import PostComposer from "../../components/feed/PostComposer";
@@ -134,9 +135,10 @@ const GroupDetailPage = () => {
         });
       }
 
-      // Check if current user is admin (Group Owner OR Group Admin OR System Admin)
       const userInfo = getUserInfoFromToken();
-      const userStr = localStorage.getItem("user"); // Fallback to localStorage user object if needed
+      const userStr = localStorage.getItem("user");
+      const membership = groupData.currentUserStatus;
+      const role = groupData.currentUserRole;
 
       let currentUserId = null;
 
@@ -148,46 +150,66 @@ const GroupDetailPage = () => {
         const userData = JSON.parse(userStr);
         currentUserId = userData.id;
       }
+      let effectiveIsAdmin = false;
       if (currentUserId) {
-        // Check Group management rights: Owner OR Group Admin
-        if (
-          groupData.ownerId === currentUserId ||
-          groupData.currentUserRole === "ADMIN"
-        ) {
-          setIsAdmin(true);
+        const isOwner = Number(groupData.ownerId) === Number(currentUserId);
+        const isGroupAdmin = groupData.currentUserRole === "ADMIN";
 
-          // Admin capabilities: Fetch pending lists
-          try {
-            const requests = await getPendingRequests(id);
-            setMemberRequests(requests);
-            const pPosts = await getPendingPosts(id);
-            setPendingPosts(pPosts);
-          } catch {
-            console.log(
-              "Not authorized to fetch pending items (or handled by API)",
-            );
-          }
+        if (membership === "ACCEPTED") {
+          effectiveIsAdmin = isGroupAdmin || isOwner;
+          setIsAdmin(effectiveIsAdmin);
+        } else if (isOwner) {
+          effectiveIsAdmin = true;
+          setIsAdmin(true);
         } else {
           setIsAdmin(false);
         }
       }
 
+      // Fetch pending items if Admin - Use effectiveIsAdmin local variable
+      // because state update isAdmin is asynchronous
+      if (effectiveIsAdmin) {
+        try {
+          const requests = await getPendingRequests(id);
+          setMemberRequests(requests);
+          const pPosts = await getPendingPosts(id);
+          setPendingPosts(pPosts);
+        } catch (e) {
+          console.log("No pending data access");
+        }
+      }
+
+      const canViewContent =
+        groupData.privacy === "PUBLIC" ||
+        membership === "ACCEPTED" ||
+        Number(groupData.ownerId) === Number(currentUserId);
+
       // Fetch approved posts for the feed with its own catch
-      try {
-        const posts = await getGroupPosts(id);
-        setApprovedPosts(posts);
-      } catch (postError) {
-        console.error("Failed to fetch posts:", postError);
-        setApprovedPosts([]);
+      if (canViewContent) {
+        try {
+          const posts = await getGroupPosts(id);
+          setApprovedPosts(posts);
+        } catch (postError) {
+          if (postError.response?.status !== 403) {
+            console.error("Failed to fetch posts:", postError);
+          } else {
+            setApprovedPosts([]);
+          }
+        }
       }
 
       // Fetch members list with its own catch
-      try {
-        const membersData = await getGroupMembers(id);
-        setMembers(membersData);
-      } catch (memberError) {
-        console.error("Failed to fetch members:", memberError);
-        setMembers([]);
+      if (canViewContent) {
+        try {
+          const membersData = await getGroupMembers(id);
+          setMembers(membersData);
+        } catch (memberError) {
+          if (memberError.response?.status !== 403) {
+            console.error("Failed to fetch members:", memberError);
+          } else {
+            setMembers([]);
+          }
+        }
       }
     } catch (error) {
       console.error("Failed to fetch group:", error);
@@ -442,10 +464,14 @@ const GroupDetailPage = () => {
     setShowBanModal(true);
   };
 
-  const handleUpdateRole = async (targetUserId, targetUsername, newRole) => {
+  const handleUpdateRole = async (targetUserId, targetUsername, targetFullName, newRole) => {
     if (newRole !== "OWNER") return;
 
-    setMemberToTransfer({ userId: targetUserId, username: targetUsername });
+    setMemberToTransfer({
+      userId: targetUserId,
+      username: targetUsername,
+      fullName: targetFullName
+    });
     setShowTransferConfirmModal(true);
   };
 
@@ -454,7 +480,7 @@ const GroupDetailPage = () => {
     try {
       await updateGroupMemberRole(group.id, memberToTransfer.userId, "OWNER");
       toast.success(
-        `Đã chuyển quyền quản trị cho ${memberToTransfer.fullName}`,
+        `Đã chuyển quyền quản trị cho ${memberToTransfer.fullName || memberToTransfer.username}`,
       );
       setShowTransferConfirmModal(false);
       setMemberToTransfer(null);
@@ -940,6 +966,7 @@ const GroupDetailPage = () => {
                                 onClick={() =>
                                   handleUpdateRole(
                                     member.userId,
+                                    member.username,
                                     member.fullName,
                                     "OWNER",
                                   )
