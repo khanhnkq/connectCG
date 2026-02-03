@@ -56,7 +56,7 @@ const ProfileAbout = ({ profile, isOwner }) => {
           icon: Search,
           label: "Tìm kiếm",
           value:
-            { LOVE: "Tình yêu", FRIENDS: "Bạn bè", NETWORKING: "Kết nối" }[
+            { LOVE: "Hẹn hò", FRIENDS: "Kết bạn", NETWORKING: "Networking" }[
               profile?.lookingFor
             ] || "Chưa cập nhật",
         },
@@ -76,8 +76,8 @@ const ProfileAbout = ({ profile, isOwner }) => {
             {
               SINGLE: "Độc thân",
               MARRIED: "Đã kết hôn",
-              DIVORCED: "Ly hôn",
-              WIDOWED: "Góa",
+              DIVORCED: "Đã ly hôn",
+              WIDOWED: "Đã góa",
             }[profile?.maritalStatus] || "Chưa cập nhật",
         },
         {

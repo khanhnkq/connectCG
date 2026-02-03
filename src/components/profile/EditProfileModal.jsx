@@ -14,10 +14,10 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
   // Validation Schema
   const validationSchema = Yup.object({
     fullName: Yup.string().required("Họ tên không được để trống"),
-    bio: Yup.string().max(50, "Tiểu sử tối đa 50 ký tự"),
+    bio: Yup.string().max(255, "Tiểu sử tối đa 255 ký tự"),
     occupation: Yup.string().max(100, "Nghề nghiệp tối đa 100 ký tự"),
     maritalStatus: Yup.string().oneOf(
-      ["SINGLE", "MARRIED", "DIVORCED", "WIDOWED", "DATING", "COMPLICATED"],
+      ["SINGLE", "MARRIED", "DIVORCED", "WIDOWED"],
       "Tình trạng không hợp lệ",
     ),
     lookingFor: Yup.string(),
@@ -35,7 +35,7 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
       bio: profile?.bio || "",
       occupation: profile?.occupation || "",
       maritalStatus: profile?.maritalStatus || "SINGLE",
-      lookingFor: profile?.lookingFor || "FRIENDSHIP",
+      lookingFor: profile?.lookingFor || "FRIENDS",
       gender: profile?.gender || "MALE",
       dateOfBirth: profile?.dateOfBirth || "",
       city: profile?.cityCode
@@ -168,7 +168,7 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
               } rounded-lg px-4 py-3 text-text-main placeholder:text-text-muted focus:outline-none focus:border-primary transition-colors resize-none`}
             ></textarea>
             <div className="flex justify-end text-xs text-text-secondary">
-              {formik.values.bio.length}/50
+              {formik.values.bio.length}/255
             </div>
             {formik.touched.bio && formik.errors.bio && (
               <p className="text-red-500 text-xs">{formik.errors.bio}</p>
@@ -205,9 +205,9 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
                 className="w-full bg-background-main border border-border-main rounded-xl px-4 py-3 text-text-main focus:outline-none focus:border-primary appearance-none cursor-pointer"
               >
                 <option value="SINGLE">Độc thân</option>
-                <option value="DATING">Đang hẹn hò</option>
                 <option value="MARRIED">Đã kết hôn</option>
                 <option value="DIVORCED">Đã ly hôn</option>
+                <option value="WIDOWED">Đã góa</option>
               </select>
             </div>
           </div>
@@ -224,9 +224,8 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
               onChange={formik.handleChange}
               className="w-full bg-[#342418] border border-[#493222] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary appearance-none cursor-pointer"
             >
-              <option value="FRIENDSHIP">Kết bạn</option>
-              <option value="DATING">Hẹn hò</option>
-              <option value="CHAT">Trò chuyện</option>
+              <option value="FRIENDS">Kết bạn</option>
+              <option value="LOVE">Hẹn hò</option>
               <option value="NETWORKING">Networking</option>
             </select>
           </div>
