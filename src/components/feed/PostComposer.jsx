@@ -79,12 +79,9 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
 
         // 3. Xử lý phản hồi
         if (createdPost.status === "PENDING") {
-          toast.error("Bài đăng của bạn đã đang chờ được duyệt.");
+          // We rely on the backend WebSocket notification which is more descriptive (AI reason)
+          // No redundant toast here to avoid 2 notifications at once
         } else {
-          // Chỉ hiện alert nếu KHÔNG phải là post trong group (vì GroupDetailPage sẽ handle toast riêng)
-          // Hoặc cứ alert chung cũng được, nhưng user flow bên Group đang plan là handle ở parent.
-          // Tuy nhiên để an toàn và nhất quán với code cũ, ta vẫn giữ alert hoặc custom lại.
-          // Tạm thời giữ nguyên alert nếu không có onPostCreated, hoặc để parent handle.
           if (!onPostCreated) {
             toast.success("Đã đăng bài viết!");
           }
@@ -169,18 +166,16 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
       {formik.values.media.length > 0 && (
         <div className="mb-4 animate-in fade-in zoom-in duration-200">
           <div
-            className={`grid gap-2 ${
-              formik.values.media.length === 1 ? "grid-cols-1" : "grid-cols-2"
-            }`}
+            className={`grid gap-2 ${formik.values.media.length === 1 ? "grid-cols-1" : "grid-cols-2"
+              }`}
           >
             {formik.values.media.map((file, index) => (
               <div
                 key={index}
-                className={`relative rounded-md overflow-hidden border border-border-main group/media bg-black/5 ${
-                  formik.values.media.length === 3 && index === 0
-                    ? "col-span-2 aspect-[2/1]"
-                    : "aspect-video"
-                }`}
+                className={`relative rounded-md overflow-hidden border border-border-main group/media bg-black/5 ${formik.values.media.length === 3 && index === 0
+                  ? "col-span-2 aspect-[2/1]"
+                  : "aspect-video"
+                  }`}
               >
                 {file.type.startsWith("image/") ? (
                   <img
@@ -287,11 +282,10 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
                           formik.setFieldValue("visibility", vis);
                           setShowVisibilityMenu(false);
                         }}
-                        className={`flex items-center gap-2.5 px-3 py-2.5 text-sm w-full text-left transition-colors ${
-                          formik.values.visibility === vis
-                            ? "bg-primary/10 text-primary font-medium"
-                            : "hover:bg-background-main text-text-main"
-                        }`}
+                        className={`flex items-center gap-2.5 px-3 py-2.5 text-sm w-full text-left transition-colors ${formik.values.visibility === vis
+                          ? "bg-primary/10 text-primary font-medium"
+                          : "hover:bg-background-main text-text-main"
+                          }`}
                       >
                         {(() => {
                           const Icon = visibilityIcons[vis];
@@ -300,8 +294,8 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
                         {vis === "PUBLIC"
                           ? "Công khai"
                           : vis === "FRIENDS"
-                          ? "Bạn bè"
-                          : "Riêng tư"}
+                            ? "Bạn bè"
+                            : "Riêng tư"}
                       </button>
                     ))}
                   </div>

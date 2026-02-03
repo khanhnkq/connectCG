@@ -14,6 +14,10 @@ import {
   userCameOnline,
   userWentOffline,
 } from "../redux/slices/onlineUsersSlice";
+import {
+  updateConversation,
+  removeConversation,
+} from "../redux/slices/chatSlice";
 
 import userService from "../services/UserService";
 
@@ -116,19 +120,11 @@ export const WebSocketProvider = ({ children }) => {
             );
           } else if (payload.type === "WARNING") {
             dispatch(addNotification(payload));
-            toast(payload.content, { icon: "⚠️" });
-          } else if (payload.type === "REPORT_SUBMITTED") {
-            // Admin receives notification about new report
-            dispatch(addNotification(payload));
-            toast(payload.content, { icon: "🚨", duration: 5000 });
-          } else if (payload.type === "REPORT_UPDATED") {
-            // User receives notification about their report status
-            dispatch(addNotification(payload));
-            toast.success(payload.content, { duration: 5000 });
+            toast(payload.content, { icon: "⚠️", duration: 6000 });
           } else {
             // General notification
             dispatch(addNotification(payload));
-            toast(payload.content, { icon: "🔔" });
+            toast(payload.content, { icon: "🔔", duration: 6000 });
           }
         } catch (e) {
           console.error("Error parsing notification:", e);
@@ -145,6 +141,18 @@ export const WebSocketProvider = ({ children }) => {
           );
         } catch (e) {
           console.error("Error parsing post event:", e);
+        }
+      });
+
+      client.subscribe("/topic/users", (message) => {
+        try {
+          const payload = JSON.parse(message.body);
+          // payload = { action: "UPDATED", userId, violationCount, lockedUntil, permanentLocked, isLocked }
+          window.dispatchEvent(
+            new CustomEvent("userEvent", { detail: payload }),
+          );
+        } catch (e) {
+          console.error("Error parsing user event:", e);
         }
       });
 
@@ -174,17 +182,40 @@ export const WebSocketProvider = ({ children }) => {
         }
       });
 
+      // Group Membership Realtime Channel
+      client.subscribe("/topic/groups/membership", (message) => {
+        try {
+          const payload = JSON.parse(message.body);
+          // payload = { action, groupId, userId, member }
+          window.dispatchEvent(
+            new CustomEvent("membershipEvent", { detail: payload }),
+          );
+        } catch (e) {
+          console.error("Error parsing membership event:", e);
+        }
+      });
+
       // Chat Realtime Channel (System signals like unread counts)
       client.subscribe("/user/queue/chat", (message) => {
         try {
           const payload = JSON.parse(message.body);
           // payload = { type, roomId, firebaseRoomKey, lastMessageAt, unreadCount }
           if (payload.type === "CHAT_UPDATE") {
-            dispatch(updateConversation({
-              id: payload.roomId,
-              lastMessageAt: payload.lastMessageAt,
-              unreadCount: payload.unreadCount
-            }));
+            dispatch(
+              updateConversation({
+                id: payload.roomId,
+                ...payload.data,
+              })
+            );
+          } else if (payload.type === "CHAT_REMOVE") {
+            dispatch(removeConversation(payload.roomId));
+
+            if (payload.reason === "KICKED") {
+              toast.error("Bạn đã bị mời ra khỏi phòng chat này.");
+            } else if (payload.reason === "DELETED") {
+              toast.error("Phòng chat này đã bị giải tán.");
+            }
+            // For "LEFT", we don't show an extra toast since the user initiated it
           }
         } catch (e) {
           console.error("Error parsing chat event:", e);

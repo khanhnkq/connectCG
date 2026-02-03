@@ -96,6 +96,8 @@ export default function ChatInterface() {
 
   const [activeTab, setActiveTab] = useState("DIRECT"); // "DIRECT" | "GROUP"
   const [kickMemberData, setKickMemberData] = useState(null);
+  const [isInviting, setIsInviting] = useState(false);
+  const [isConfirmLoading, setIsConfirmLoading] = useState(false);
 
   const emojis = [
     "😊",
@@ -117,6 +119,16 @@ export default function ChatInterface() {
     "❌",
     "💯",
   ];
+
+  // Sync activeRoom with Redux conversations when they update (via WebSocket)
+  useEffect(() => {
+    if (activeRoom) {
+      const updatedRoom = conversations.find((c) => c.id === activeRoom.id);
+      if (updatedRoom && updatedRoom !== activeRoom) {
+        setActiveRoom(updatedRoom);
+      }
+    }
+  }, [conversations, activeRoom]);
 
   const handleCreateGroup = async () => {
     if (selectedMembers.length < 1) {
@@ -172,6 +184,7 @@ export default function ChatInterface() {
     if (!selectedInvitees || selectedInvitees.length === 0 || !activeRoom)
       return;
 
+    setIsInviting(true);
     const tid = toast.loading(
       `Đang mời ${selectedInvitees.length} thành viên...`,
     );
@@ -193,6 +206,8 @@ export default function ChatInterface() {
       toast.error(error.response?.data?.message || "Lỗi khi mời thành viên", {
         id: tid,
       });
+    } finally {
+      setIsInviting(false);
     }
   };
 
@@ -430,7 +445,7 @@ export default function ChatInterface() {
   };
 
   const handleClearHistory = async () => {
-    setShowClearConfirm(false);
+    setIsConfirmLoading(true);
     const tid = toast.loading("Đang xóa lịch sử...");
     try {
       await ChatService.clearHistory(activeRoom.id);
@@ -455,9 +470,12 @@ export default function ChatInterface() {
       );
 
       fetchRooms(); // Refresh list to get fresh data
+      setShowClearConfirm(false);
     } catch (err) {
       console.error(err);
       toast.error("Không thể xóa lịch sử", { id: tid });
+    } finally {
+      setIsConfirmLoading(false);
     }
   };
 
@@ -468,6 +486,7 @@ export default function ChatInterface() {
 
   const confirmKickMember = async () => {
     if (!activeRoom || !kickMemberData) return;
+    setIsConfirmLoading(true);
     try {
       if (
         kickMemberData.role === "Member" ||
@@ -492,38 +511,46 @@ export default function ChatInterface() {
     } catch (error) {
       console.error(error);
       toast.error("Thao tác thất bại");
+    } finally {
+      setIsConfirmLoading(false);
     }
   };
 
   const handleLeaveGroup = async () => {
-    setShowLeaveConfirm(false);
+    setIsConfirmLoading(true);
     const tid = toast.loading("Đang rời nhóm...");
     try {
       await ChatService.leaveGroup(activeRoom.id);
       toast.success("Đã rời nhóm", { id: tid });
       setActiveRoom(null);
+      setShowLeaveConfirm(false);
       navigate("/dashboard/chat", { state: { noAutoSelect: true } });
       fetchRooms();
     } catch (error) {
       console.error(error);
       toast.error("Lỗi khi rời nhóm", { id: tid });
+    } finally {
+      setIsConfirmLoading(false);
     }
   };
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleDeleteGroup = async () => {
-    setShowDeleteConfirm(false);
+    setIsConfirmLoading(true);
     const tid = toast.loading("Đang giải tán nhóm...");
     try {
       await ChatService.deleteChatRoom(activeRoom.id);
       toast.success("Đã giải tán nhóm thành công", { id: tid });
       setActiveRoom(null);
+      setShowDeleteConfirm(false);
       navigate("/dashboard/chat", { state: { noAutoSelect: true } });
       fetchRooms();
     } catch (error) {
       console.error(error);
       toast.error("Lỗi khi giải tán nhóm", { id: tid });
+    } finally {
+      setIsConfirmLoading(false);
     }
   };
 
@@ -593,7 +620,7 @@ export default function ChatInterface() {
           onUpdateAvatar={handleUpdateAvatar}
           onRenameRoom={handleRenameName}
           onKickMember={handleKickMember}
-          onInviteMember={handleOpenInviteModal}
+          onOpenInvite={handleOpenInviteModal}
           setShowClearConfirm={setShowClearConfirm}
           setShowReportUser={setShowReportUser}
           setShowLeaveConfirm={setShowLeaveConfirm}
@@ -619,6 +646,7 @@ export default function ChatInterface() {
         cancelText="Hủy"
         onConfirm={handleClearHistory}
         onClose={() => setShowClearConfirm(false)}
+        isLoading={isConfirmLoading}
       />
 
       {/* Leave Group Modal */}
@@ -631,6 +659,7 @@ export default function ChatInterface() {
         cancelText="Hủy"
         onConfirm={handleLeaveGroup}
         onClose={() => setShowLeaveConfirm(false)}
+        isLoading={isConfirmLoading}
       />
 
       {/* Delete Group Modal */}
@@ -643,6 +672,7 @@ export default function ChatInterface() {
         cancelText="Hủy"
         onConfirm={handleDeleteGroup}
         onClose={() => setShowDeleteConfirm(false)}
+        isLoading={isConfirmLoading}
       />
 
       {/* Kick Member Confirm Modal */}
@@ -655,6 +685,7 @@ export default function ChatInterface() {
         cancelText="Hủy"
         onConfirm={confirmKickMember}
         onClose={() => setKickMemberData(null)}
+        isLoading={isConfirmLoading}
       />
 
       <ReportModal
@@ -752,6 +783,7 @@ export default function ChatInterface() {
         onToggleInvitee={toggleInvitee}
         onInvite={handleInviteMember}
         activeRoomName={activeRoom?.name}
+        isInviting={isInviting}
       />
     </>
   );

@@ -142,3 +142,13 @@ export const rejectPost = async (groupId, postId) => {
     const res = await axiosClient.post(`${URL_GROUP}/${groupId}/posts/${postId}/reject`);
     return res.data;
 };
+
+export const getBannedMembers = async (groupId) => {
+    const res = await axiosClient.get(`${URL_GROUP}/${groupId}/members/banned`);
+    return res.data;
+};
+
+export const unbanMember = async (groupId, userId) => {
+    const res = await axiosClient.post(`${URL_GROUP}/${groupId}/members/${userId}/unban`);
+    return res.data;
+};

@@ -142,7 +142,7 @@ const NotificationList = ({
 
             {/* Content */}
             <div className="flex-1 min-w-0">
-              <p className="text-[12px] text-text-main line-clamp-2 leading-relaxed">
+              <p className="text-sm text-text-main leading-relaxed">
                 {notification.content}
               </p>
               <p className="text-[10px] text-text-secondary mt-1 flex items-center gap-1">

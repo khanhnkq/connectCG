@@ -62,6 +62,13 @@ const chatSlice = createSlice({
                 state.conversations[index].unreadCount = 0;
             }
         },
+        removeConversation: (state, action) => {
+            const roomId = action.payload;
+            state.conversations = state.conversations.filter(c => c.id !== roomId);
+            if (state.activeRoomId === roomId) {
+                state.activeRoomId = null;
+            }
+        },
         setLoading: (state, action) => {
             state.loading = action.payload;
         },
@@ -89,6 +96,7 @@ export const {
     updateConversation,
     updateConversations,
     clearUnreadCount,
+    removeConversation,
     setLoading,
     setError,
     clearConversations

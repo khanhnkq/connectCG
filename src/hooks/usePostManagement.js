@@ -9,6 +9,7 @@ export const usePostManagement = (initialPosts = [], onDeleteSuccess = null) => 
     isOpen: false,
     postId: null,
   });
+  const [isConfirmLoading, setIsConfirmLoading] = useState(false);
 
   const handleDeletePost = (postId) => {
     setDeleteModal({ isOpen: true, postId });
@@ -18,17 +19,17 @@ export const usePostManagement = (initialPosts = [], onDeleteSuccess = null) => 
     const { postId } = deleteModal;
     if (!postId) return;
 
+    setIsConfirmLoading(true);
     try {
       await postService.deletePost(postId);
       setPosts((prev) => prev.filter((p) => p.id !== postId));
       toast.success("Xóa bài viết thành công");
-      // Trigger callback if provided
-      if (onDeleteSuccess) onDeleteSuccess(postId);
+      setDeleteModal({ isOpen: false, postId: null });
     } catch (error) {
       console.error("Xóa bài viết thất bại:", error);
       toast.error("Xóa bài viết thất bại");
     } finally {
-      setDeleteModal({ isOpen: false, postId: null });
+      setIsConfirmLoading(false);
     }
   };
 
@@ -53,5 +54,6 @@ export const usePostManagement = (initialPosts = [], onDeleteSuccess = null) => 
     handleDeletePost,
     confirmDelete,
     handleUpdatePost,
+    isConfirmLoading,
   };
 };
