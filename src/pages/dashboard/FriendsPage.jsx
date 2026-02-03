@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import ChatService from "../../services/chat/ChatService";
@@ -35,8 +35,12 @@ export default function FriendsPage() {
     friends,
     isLoading: friendsLoading,
     handleUnfriend,
-    fetchFriends,
-  } = useFriends();
+    // fetchFriends, // Removed implicit fetch, managed by hook internal effect/loadMore
+    hasMore: friendsHasMore,
+    loadMore: loadMoreFriends,
+    updateFilter: updateFriendsFilter
+  } = useFriends(null, { name: "" }); // Pass empty initial filter
+
   const {
     requests,
     isLoading: requestsLoading,
@@ -46,8 +50,18 @@ export default function FriendsPage() {
     fetchRequests,
   } = useFriendRequests();
 
+  // Debounce search for Friends view
+  useEffect(() => {
+    if (viewMode === "ALL") {
+      const delayDebounceFn = setTimeout(() => {
+        updateFriendsFilter({ name: searchTerm });
+      }, 500);
+      return () => clearTimeout(delayDebounceFn);
+    }
+  }, [searchTerm, viewMode, updateFriendsFilter]);
+
   // Fetch Suggestions
-  const fetchSuggestions = async () => {
+  const fetchSuggestions = useCallback(async () => {
     setSuggestionsLoading(true);
     try {
       const response = await FriendSuggestionService.getSuggestions(0, 50);
@@ -58,46 +72,28 @@ export default function FriendsPage() {
       }));
       setSuggestions(formattedSuggestions);
     } catch (error) {
-      console.error("Error fetching suggestions:", error);
       toast.error("Không thể tải danh sách gợi ý");
     } finally {
       setSuggestionsLoading(false);
     }
-  };
+  }, []);
 
-  // Fetch suggestions when switching to SUGGESTIONS view
+  // Fetch suggestions on mount to show count in sidebar
   useEffect(() => {
-    if (viewMode === "SUGGESTIONS" && suggestions.length === 0) {
-      fetchSuggestions();
-    }
-  }, [viewMode, suggestions.length]);
+    fetchSuggestions();
+  }, [fetchSuggestions]);
 
-  // Handle URL query parameter for tab
+  // Fetch data based on view mode (Removed fetchFriends call since hook handles it)
   useEffect(() => {
-    const tab = searchParams.get("tab");
-    if (tab === "suggestions") {
-      setViewMode("SUGGESTIONS");
-      // Remove query param after setting viewMode
-      setSearchParams({});
-    } else if (tab === "requests") {
-      setViewMode("REQUESTS");
-      setSearchParams({});
-    } else if (tab === "all") {
-      setViewMode("ALL");
-      setSearchParams({});
-    }
-  }, [searchParams, setSearchParams]);
-
-  // Fetch data based on view mode
-  useEffect(() => {
-    if (viewMode === "ALL") {
-      fetchFriends();
-    } else if (viewMode === "REQUESTS") {
+    // if (viewMode === "ALL") {
+    // fetchFriends(); // Hook handles this on filter change or mount
+    // } else 
+    if (viewMode === "REQUESTS") {
       fetchRequests();
     } else if (viewMode === "SUGGESTIONS") {
       fetchSuggestions();
     }
-  }, [viewMode, fetchFriends, fetchRequests]);
+  }, [viewMode, fetchRequests, fetchSuggestions]);
 
   // Fetch full profile when activeItem changes
   useEffect(() => {
@@ -123,7 +119,6 @@ export default function FriendsPage() {
 
         setActiveProfileTab("about");
       } catch (error) {
-        console.error("Error fetching profile:", error);
         // Fallback to activeItem data if fetch fails
         setFullProfile(activeItem);
       } finally {
@@ -145,7 +140,6 @@ export default function FriendsPage() {
         state: { selectedRoomKey: room.firebaseRoomKey },
       });
     } catch (error) {
-      console.error("Error starting chat:", error);
       toast.error("Lỗi khi kết nối", { id: tid });
     }
   };
@@ -161,7 +155,7 @@ export default function FriendsPage() {
     setProcessingSuggestions((prev) => ({ ...prev, [id]: "adding" }));
     const tid = toast.loading("Đang gửi lời mời...");
     try {
-      await FriendRequestService.sendFriendRequest(id);
+      await FriendRequestService.sendRequest(id);
       toast.success("Đã gửi lời mời kết bạn!", { id: tid });
 
       // Remove from suggestions list visually
@@ -171,8 +165,7 @@ export default function FriendsPage() {
         setActiveItem(null);
       }
     } catch (error) {
-      console.error("Error sending friend request:", error);
-      toast.error(error.response?.data?.message || "Lỗi khi gửi lời mời", {
+      toast.error("Lỗi khi gửi lời mời", {
         id: tid,
       });
     } finally {
@@ -195,7 +188,6 @@ export default function FriendsPage() {
         setActiveItem(null);
       }
     } catch (error) {
-      console.error("Error dismissing suggestion:", error);
       toast.error("Lỗi khi ẩn gợi ý");
     } finally {
       setProcessingSuggestions((prev) => {
@@ -222,13 +214,17 @@ export default function FriendsPage() {
 
   // Filter Logic
   const getDisplayedList = () => {
+    if (viewMode === "ALL") {
+      return friends; // Already filtered by server
+    }
+
     let list = [];
-    if (viewMode === "ALL") list = friends;
-    else if (viewMode === "SUGGESTIONS") list = suggestions;
+    if (viewMode === "SUGGESTIONS") list = suggestions;
     else if (viewMode === "REQUESTS") list = requests;
 
     if (!list) return [];
 
+    // Client-side filtering for Requests and Suggestions
     return list.filter((item) => {
       if (viewMode === "REQUESTS") {
         const name = item.senderFullName || item.senderUsername || "";
@@ -272,8 +268,8 @@ export default function FriendsPage() {
           viewMode === "ALL"
             ? friendsLoading
             : viewMode === "REQUESTS"
-            ? requestsLoading
-            : suggestionsLoading
+              ? requestsLoading
+              : suggestionsLoading
         }
         processingRequests={
           viewMode === "SUGGESTIONS"
@@ -284,12 +280,13 @@ export default function FriendsPage() {
         onRejectRequest={handleRejectRequestWrapper}
         onAddFriend={handleAddFriend}
         onDismissSuggestion={handleDismissSuggestion}
+        onLoadMore={viewMode === "ALL" ? loadMoreFriends : null}
+        hasMore={viewMode === "ALL" ? friendsHasMore : false}
       />
 
       <div
-        className={`${
-          activeItem ? "flex" : "hidden"
-        } xl:flex flex-1 flex-col bg-background-secondary relative border-l border-border-main`}
+        className={`${activeItem ? "flex" : "hidden"
+          } xl:flex flex-1 flex-col bg-background-secondary relative border-l border-border-main`}
       >
         <FriendProfileDetail
           activeItem={activeItem}

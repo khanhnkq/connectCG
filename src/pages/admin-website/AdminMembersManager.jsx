@@ -379,7 +379,7 @@ const AdminMembersManager = () => {
                     <button
                       onClick={() => toggleStatus(member.id, member.status)}
                       className="p-2 hover:bg-background rounded-xl text-text-muted hover:text-orange-400 transition-all"
-                      title="Toggle Access"
+                      title="Khóa/Mở khóa tài khoản"
                     >
                       {member.status === "Banned" ? (
                         <ShieldCheck size={18} />
@@ -390,7 +390,7 @@ const AdminMembersManager = () => {
                     <button
                       onClick={() => handleDelete(member.id, member.name)}
                       className="p-2 hover:bg-red-500/10 rounded-xl text-text-muted hover:text-red-400 transition-all"
-                      title="Purge Identity"
+                      title="Xóa vĩnh viễn"
                     >
                       <UserX size={18} />
                     </button>

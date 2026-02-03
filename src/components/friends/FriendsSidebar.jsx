@@ -30,11 +30,9 @@ export default function FriendsSidebar({ viewMode, setViewMode, setActiveItem, f
                 >
                     <span className="material-symbols-outlined">person_add</span>
                     <span className="font-medium hidden lg:block">Lời mời kết bạn</span>
-                    {requestsCount > 0 && (
-                        <span className="ml-auto bg-primary text-white font-bold px-2 py-0.5 rounded text-xs hidden lg:block">
-                            {requestsCount}
-                        </span>
-                    )}
+                    <span className={`ml-auto px-2 py-0.5 rounded text-xs hidden lg:block ${requestsCount > 0 ? 'bg-primary text-white font-bold' : 'bg-background-main text-text-main'}`}>
+                        {requestsCount}
+                    </span>
                 </button>
 
                 <button

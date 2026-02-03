@@ -27,7 +27,6 @@ export default function Newsfeed() {
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const [userAvatar, setUserAvatar] = useState("");
-  const [isFetchingInfo, setIsFetchingInfo] = useState(true); // Loading for avatar/initial data
 
   // Ref for intersection observer
   const observer = React.useRef();
@@ -59,8 +58,6 @@ export default function Newsfeed() {
         }
       } catch (error) {
         console.error("Failed to fetch user avatar", error);
-      } finally {
-        setIsFetchingInfo(false);
       }
     };
     fetchCurrentUserAvatar();
@@ -95,7 +92,7 @@ export default function Newsfeed() {
     };
 
     fetchPosts();
-  }, [page, setPosts, loading]);
+  }, [page, setPosts]);
 
   const handlePostCreated = (newPost) => {
     if (newPost.status === "APPROVED") {

@@ -1,5 +1,6 @@
 import { AlertCircle, AlertTriangle, HelpCircle } from "lucide-react";
 import React from "react";
+import { createPortal } from "react-dom";
 
 const ConfirmModal = ({
   isOpen,
@@ -34,8 +35,9 @@ const ConfirmModal = ({
 
   const theme = themes[type] || themes.danger;
 
-  return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+  // Use createPortal to render modal outside of parent containers (e.g. Dropdowns with transforms)
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
       <div className="bg-surface-main w-full max-w-md rounded-3xl border border-border-main shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
         <div className="p-8 text-center space-y-6">
           <div
@@ -68,7 +70,8 @@ const ConfirmModal = ({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

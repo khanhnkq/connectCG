@@ -57,9 +57,7 @@ const NotificationList = ({
 
   const handleDelete = (e, id) => {
     e.stopPropagation();
-    if (window.confirm("Bạn có chắc muốn xóa thông báo này?")) {
-      onDelete(id);
-    }
+    onDelete(id);
   };
 
   const handleMarkAsRead = (e, id) => {
@@ -125,9 +123,8 @@ const NotificationList = ({
         {notifications.map((notification) => (
           <div
             key={notification.id}
-            className={`flex items-start gap-2 p-2.5 border-b border-border-main cursor-pointer hover:bg-background-main transition-all group ${
-              !notification.isRead ? "bg-primary/5" : ""
-            }`}
+            className={`flex items-start gap-2 p-2.5 border-b border-border-main cursor-pointer hover:bg-background-main transition-all group ${!notification.isRead ? "bg-primary/5" : ""
+              }`}
             onClick={() => handleClick(notification)}
           >
             {/* Avatar */}

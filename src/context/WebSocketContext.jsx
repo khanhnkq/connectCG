@@ -64,7 +64,7 @@ export const WebSocketProvider = ({ children }) => {
     });
 
     client.onConnect = () => {
-      console.log("✅ WS connected");
+      console.log("✅ Kết nối WebSocket thành công");
 
       // Fetch initial online users
       // Fetch initial online users
@@ -85,15 +85,16 @@ export const WebSocketProvider = ({ children }) => {
             dispatch(userWentOffline(payload.userId));
           }
         } catch (e) {
-          console.error("Error parsing status:", e);
+          console.error("Lỗi phân tích trạng thái:", e);
         }
       });
 
+      // --- Kênh 2: Bảo mật & Quản lý tài khoản (Khóa/Xóa) ---
       client.subscribe("/user/queue/errors", (message) => {
         const payload = JSON.parse(message.body);
 
         if (payload.type === "LOCK" || payload.type === "DELETE") {
-          console.warn("🚫 Account disabled:", payload.message);
+          console.warn("🚫 Tài khoản bị vô hiệu hóa:", payload.message);
           const msg =
             payload.message || "Tài khoản của bạn đã bị khóa hoặc xóa.";
           localStorage.clear();
@@ -103,16 +104,17 @@ export const WebSocketProvider = ({ children }) => {
         }
       });
 
+      // --- Kênh 3: Hệ thống thông báo cá nhân ---
       client.subscribe("/user/queue/notifications", (message) => {
         try {
           const payload = JSON.parse(message.body);
           // TungNotificationDTO structure: { type, content, actorName, ... }
 
           if (payload.type === "GROUP_DELETED") {
-            console.log("🔔 Received GROUP_DELETED event:", payload);
+            console.log("🔔 Nhận sự kiện GROUP_DELETED:", payload);
             dispatch(addNotification(payload));
 
-            // Check if user is currently viewing this group
+
             const currentPath = window.location.pathname;
             if (currentPath.includes(`/groups/${payload.targetId}`)) {
               dispatch(setGroupDeletionAlert(payload));
@@ -145,7 +147,7 @@ export const WebSocketProvider = ({ children }) => {
             toast(payload.content, { icon: "🔔" });
           }
         } catch (e) {
-          console.error("Error parsing notification:", e);
+          console.error("Lỗi phân tích thông báo:", e);
         }
       });
 
@@ -158,24 +160,24 @@ export const WebSocketProvider = ({ children }) => {
             new CustomEvent("postEvent", { detail: payload }),
           );
         } catch (e) {
-          console.error("Error parsing post event:", e);
+          console.error("Lỗi phân tích sự kiện bài viết:", e);
         }
       });
 
-      // Reaction Realtime Channel
+      // --- Kênh 5: Sự kiện Cảm xúc (Reaction) ---
       client.subscribe("/topic/reactions", (message) => {
         try {
           const payload = JSON.parse(message.body);
-          // payload = { action, postId, userId, reactionType, newReactCount }
+          // Dispatch custom event để các component khác lắng nghe
           window.dispatchEvent(
             new CustomEvent("reactionEvent", { detail: payload }),
           );
         } catch (e) {
-          console.error("Error parsing reaction event:", e);
+          console.error("Lỗi phân tích sự kiện cảm xúc:", e);
         }
       });
 
-      // Comment Realtime Channel
+      // --- Kênh 6: Sự kiện Bình luận (Comment) ---
       client.subscribe("/topic/comments", (message) => {
         try {
           const payload = JSON.parse(message.body);
@@ -184,15 +186,14 @@ export const WebSocketProvider = ({ children }) => {
             new CustomEvent("commentEvent", { detail: payload }),
           );
         } catch (e) {
-          console.error("Error parsing comment event:", e);
+          console.error("Lỗi phân tích sự kiện bình luận:", e);
         }
       });
 
-      // Chat Realtime Channel (System signals like unread counts)
+      // --- Kênh 7: Tín hiệu Chat (Metadata: Unread count, Last message) ---
       client.subscribe("/user/queue/chat", (message) => {
         try {
           const payload = JSON.parse(message.body);
-          // payload = { type, roomId, firebaseRoomKey, lastMessageAt, unreadCount }
           if (payload.type === "CHAT_UPDATE") {
             dispatch(
               updateConversation({
@@ -205,7 +206,7 @@ export const WebSocketProvider = ({ children }) => {
             dispatch(removeConversation(payload.roomId));
           }
         } catch (e) {
-          console.error("Error parsing chat event:", e);
+          console.error("Lỗi phân tích sự kiện chat:", e);
         }
       });
 
@@ -237,7 +238,7 @@ export const WebSocketProvider = ({ children }) => {
     };
 
     client.onStompError = (frame) => {
-      console.error("❌ STOMP error:", frame.headers["message"]);
+      console.error("❌ Lỗi STOMP:", frame.headers["message"]);
     };
 
     client.activate();
