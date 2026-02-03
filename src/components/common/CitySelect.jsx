@@ -73,7 +73,7 @@ const CitySelect = ({
       )}
       <div
         className={`relative transition-all duration-200 ${
-          isOpen ? "shadow-lg" : ""
+          isOpen ? "shadow-lg z-50" : ""
         }`}
       >
         <input
