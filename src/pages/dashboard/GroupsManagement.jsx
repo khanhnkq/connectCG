@@ -405,6 +405,10 @@ export default function GroupsManagement() {
       {/* Header */}
       <div className="sticky top-0 z-50 bg-background-main/95 backdrop-blur-xl border-b border-border-main p-4 flex flex-col md:flex-row justify-between items-center px-4 md:px-8 gap-4 md:gap-0">
         <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 w-full md:w-auto">
+          <h2 className="text-2xl font-extrabold text-text-main tracking-tight">
+            Community Hub
+          </h2>
+
           {/* Tabs */}
           <div className="flex bg-surface-main p-1 rounded-2xl border border-border-main">
             {["my", "discover", "invites"].map((tab) => (
