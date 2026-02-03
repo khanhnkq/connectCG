@@ -215,7 +215,7 @@ export default function Step2() {
           <h2 className="text-4xl md:text-5xl font-extrabold leading-tight mb-4 tracking-tight text-white">
             Tìm kiếm những kết nối ý nghĩa dành riêng cho bạn.
           </h2>
-          <p className="text-text-secondary text-lg leading-relaxed max-w-md">
+          <p className="text-gray-300 text-lg leading-relaxed max-w-md">
             Tham gia cộng đồng hàng triệu người đã tìm thấy một nửa hoàn hảo của
             mình. Bắt đầu hành trình của bạn ngay hôm nay.
           </p>
@@ -294,7 +294,7 @@ export default function Step2() {
                       htmlFor="fullName"
                       className="text-white text-base font-medium"
                     >
-                      Họ và tên
+                      Họ và tên <span className="text-red-500">*</span>
                     </label>
                     <Field
                       disabled={isSubmitting}
@@ -321,7 +321,7 @@ export default function Step2() {
                       htmlFor="dateOfBirth"
                       className="text-white text-base font-medium"
                     >
-                      Ngày sinh
+                      Ngày sinh <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
                       <Field
@@ -349,7 +349,7 @@ export default function Step2() {
                       htmlFor="occupation"
                       className="text-white text-base font-medium"
                     >
-                      Nghề nghiệp
+                      Nghề nghiệp <span className="text-red-500">*</span>
                     </label>
                     <Field
                       disabled={isSubmitting}
@@ -373,7 +373,7 @@ export default function Step2() {
                   {/* Gender */}
                   <div className="flex flex-col gap-3">
                     <span className="text-white text-base font-medium">
-                      Giới tính
+                      Giới tính <span className="text-red-500">*</span>
                     </span>
                     <div className="grid grid-cols-3 gap-3">
                       {genderOptions.map((option) => (
@@ -424,7 +424,8 @@ export default function Step2() {
                   {/* Marital Status */}
                   <div className="flex flex-col gap-3">
                     <span className="text-white text-base font-medium">
-                      Tình trạng hôn nhân
+                      Tình trạng hôn nhân{" "}
+                      <span className="text-red-500">*</span>
                     </span>
                     <div className="grid grid-cols-3 gap-3">
                       {maritalStatusOptions.map((status) => (
@@ -467,7 +468,8 @@ export default function Step2() {
                   {/* Purpose */}
                   <div className="flex flex-col gap-3">
                     <span className="text-white text-base font-medium">
-                      Tại sao bạn tham gia?
+                      Tại sao bạn tham gia?{" "}
+                      <span className="text-red-500">*</span>
                     </span>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       {purposeOptions.map((option) => (
@@ -523,7 +525,7 @@ export default function Step2() {
                   {/* Hobbies */}
                   <div className="flex flex-col gap-3">
                     <span className="text-white text-base font-medium">
-                      Sở thích của bạn
+                      Sở thích của bạn <span className="text-red-500">*</span>
                     </span>
                     <p className="text-text-secondary text-sm -mt-1">
                       Chọn ít nhất 1 sở thích
@@ -601,7 +603,11 @@ export default function Step2() {
                   {/* City */}
                   <CitySelect
                     disabled={isSubmitting}
-                    label="Thành phố"
+                    label={
+                      <span>
+                        Thành phố <span className="text-red-500">*</span>
+                      </span>
+                    }
                     value={values.city}
                     onChange={(newCity) => setFieldValue("city", newCity)}
                     error={errors.city && touched.city ? errors.city : null}

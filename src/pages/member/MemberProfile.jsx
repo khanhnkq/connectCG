@@ -10,6 +10,11 @@ import {
   MapPin,
   Lock,
   ChevronLeft,
+  Search,
+  LayoutDashboard,
+  User,
+  Image,
+  Users,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -20,7 +25,7 @@ import FriendRequestService from "../../services/friend/FriendRequestService";
 import UserProfileService from "../../services/user/UserProfileService";
 import ChatService from "../../services/chat/ChatService";
 import ProfileAbout from "../../components/profile/ProfileAbout";
-import ProfilePhotos from "../../components/profile/ProfilePhotos";
+import ProfileLibrary from "../../components/profile/ProfileLibrary";
 import ProfileHobbies from "../../components/profile/ProfileHobbies";
 import ProfileFriends from "../../components/profile/ProfileFriends";
 import ReportModal from "../../components/report/ReportModal";
@@ -78,10 +83,12 @@ export default function MemberProfile() {
   const handleStartChat = async () => {
     const tid = toast.loading("Đang mở cuộc trò chuyện...");
     try {
-      const response = await ChatService.getOrCreateDirectChat(profile.id);
+      const response = await ChatService.getOrCreateDirectChat(profile.userId);
       const room = response.data;
       toast.success("Đã kết nối!", { id: tid });
-      navigate("/chat", { state: { selectedRoomKey: room.firebaseRoomKey } });
+      navigate("/dashboard/chat", {
+        state: { selectedRoomKey: room.firebaseRoomKey },
+      });
     } catch (error) {
       console.error("Error starting chat:", error);
       toast.error("Không thể tạo cuộc trò chuyện", { id: tid });
@@ -300,6 +307,10 @@ export default function MemberProfile() {
                     }}
                   ></div>
                 </div>
+                <div
+                  className="absolute bottom-2 md:bottom-4 right-2 md:right-4 size-5 md:size-6 bg-green-500 border-4 border-surface-main rounded-full"
+                  title="Online"
+                ></div>
               </div>
               <div className="flex-1 w-full flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
                 <div className="mb-2 md:mb-4">
@@ -307,8 +318,11 @@ export default function MemberProfile() {
                     {profile?.fullName || profile?.username}
                   </h1>
                   <p className="text-text-secondary font-medium text-sm flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span>
+                    Đang hoạt động
+                    <span className="text-text-secondary/50">•</span>
                     <span className="text-text-secondary/80">
-                      {profile?.city?.name || "Vị trí ẩn"}
+                      {profile?.city?.name || profile?.cityName || "Vị trí ẩn"}
                     </span>
                   </p>
                   <div className="flex gap-4 mt-3 text-sm text-text-secondary">
@@ -330,7 +344,7 @@ export default function MemberProfile() {
                   {user && profile.userId === user.id ? (
                     <button
                       onClick={() => navigate("/dashboard/my-profile")}
-                      className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-surface-main hover:bg-primary/20 text-text-main hover:text-primary font-bold px-6 py-3 rounded-xl transition-all border border-border-main"
+                      className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-surface-main hover:bg-primary/20 text-text-main hover:text-primary text-sm font-bold px-4 py-2 rounded-lg transition-all border border-border-main"
                     >
                       <span>Chỉnh sửa hồ sơ</span>
                     </button>
@@ -339,10 +353,10 @@ export default function MemberProfile() {
                       {profile.relationshipStatus === "FRIEND" ? (
                         <button
                           onClick={confirmUnfriend}
-                          className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-surface-main text-primary border border-primary/30 font-bold px-6 py-3 rounded-xl transition-all hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/50"
+                          className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-surface-main text-primary border border-primary/30 text-sm font-bold px-4 py-2 rounded-lg transition-all hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/50"
                           title="Click để hủy kết bạn"
                         >
-                          <UserMinus size={20} />
+                          <UserMinus size={18} />
                           Đã là bạn bè
                         </button>
                       ) : profile.relationshipStatus === "PENDING" &&
@@ -350,105 +364,115 @@ export default function MemberProfile() {
                         <div className="flex gap-3 w-full md:w-auto flex-1 md:flex-none">
                           <button
                             onClick={confirmAcceptRequest}
-                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-primary hover:bg-orange-600 text-[#231810] font-bold px-6 py-3 rounded-xl transition-all shadow-lg shadow-orange-500/20"
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-primary hover:bg-orange-600 text-[#231810] text-sm font-bold px-4 py-2 rounded-lg transition-all shadow-md shadow-orange-500/10"
                           >
-                            <MailCheck size={20} />
+                            <MailCheck size={18} />
                             Chấp nhận
                           </button>
                           <button
                             onClick={confirmRejectRequest}
-                            className="flex-1 flex items-center justify-center gap-2 bg-surface-main hover:bg-red-500/20 text-text-main hover:text-red-500 font-bold px-6 py-3 rounded-xl transition-all border border-border-main hover:border-red-500/50"
+                            className="flex-1 flex items-center justify-center gap-2 bg-surface-main hover:bg-red-500/20 text-text-main hover:text-red-500 text-sm font-bold px-4 py-2 rounded-lg transition-all border border-border-main hover:border-red-500/50"
                           >
-                            <UserX size={20} />
+                            <UserX size={18} />
                             Từ chối
                           </button>
                         </div>
                       ) : profile.relationshipStatus === "PENDING" ? (
                         <button
                           onClick={confirmCancelRequest}
-                          className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-surface-main text-text-secondary border border-primary/30 font-bold px-6 py-3 rounded-xl transition-all hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/50"
+                          className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-surface-main text-text-secondary border border-primary/30 text-sm font-bold px-4 py-2 rounded-lg transition-all hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/50"
                         >
-                          <UserMinus size={20} />
+                          <UserMinus size={18} />
                           Thu hồi lời mời
                         </button>
                       ) : (
                         <button
                           onClick={handleSendFriendRequest}
-                          className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-primary hover:bg-orange-600 text-[#231810] font-bold px-6 py-3 rounded-xl transition-all shadow-lg shadow-orange-500/20"
+                          className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-primary hover:bg-orange-600 text-[#231810] text-sm font-bold px-4 py-2 rounded-lg transition-all shadow-md shadow-orange-500/10"
                         >
-                          <UserPlus size={20} />
+                          <UserPlus size={18} />
                           Kết bạn
                         </button>
                       )}
                       <button
                         onClick={handleStartChat}
-                        className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-surface-main hover:bg-primary/20 text-text-main hover:text-primary font-bold px-4 py-3 rounded-xl transition-all border border-border-main"
+                        className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-surface-main hover:bg-primary/20 text-text-main hover:text-primary text-sm font-bold px-4 py-2 rounded-lg transition-all border border-border-main"
                       >
-                        <Mail size={20} />
+                        <Mail size={18} />
                         Nhắn tin
                       </button>
                       <button
                         onClick={() => setShowReportModal(true)}
-                        className="flex items-center justify-center gap-2 bg-surface-main hover:bg-red-500/10 text-text-secondary hover:text-red-500 font-bold px-4 py-3 rounded-xl transition-all border border-border-main"
+                        className="flex items-center justify-center gap-2 bg-surface-main hover:bg-red-500/10 text-text-secondary hover:text-red-500 text-sm font-bold px-3 py-2 rounded-lg transition-all border border-border-main"
                         title="Báo cáo người dùng"
                       >
-                        <AlertTriangle size={20} />
+                        <AlertTriangle size={18} />
                       </button>
                     </>
                   )}
                 </div>
               </div>
             </div>
-            <div className="flex gap-1 overflow-x-auto pb-1 border-t border-border-main pt-2 scrollbar-hide">
+            <div className="flex justify-center sm:justify-start gap-1 overflow-x-auto pb-1 border-t border-border-main pt-2 scrollbar-hide">
               <button
                 onClick={() => setActiveTab("timeline")}
-                className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${
+                className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 font-bold transition-all whitespace-nowrap min-w-[60px] sm:min-w-0 ${
                   activeTab === "timeline"
                     ? "text-primary border-b-2 border-primary"
                     : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
                 }`}
               >
-                Dòng thời gian
+                <LayoutDashboard size={20} />
+                <span className="hidden sm:inline">Dòng thời gian</span>
               </button>
               <button
                 onClick={() => setActiveTab("about")}
-                className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${
+                className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 font-bold transition-all whitespace-nowrap min-w-[60px] sm:min-w-0 ${
                   activeTab === "about"
                     ? "text-primary border-b-2 border-primary"
                     : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
                 }`}
               >
-                Giới thiệu
+                <User size={20} />
+                <span className="hidden sm:inline">Giới thiệu</span>
               </button>
               <button
                 onClick={() => setActiveTab("photos")}
-                className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${
+                className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 font-bold transition-all whitespace-nowrap min-w-[60px] sm:min-w-0 ${
                   activeTab === "photos"
                     ? "text-primary border-b-2 border-primary"
                     : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
                 }`}
               >
-                Ảnh
+                <Image size={20} />
+                <span className="hidden sm:inline">Thư viện</span>
               </button>
               <button
                 onClick={() => setActiveTab("hobbies")}
-                className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${
+                className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 font-bold transition-all whitespace-nowrap min-w-[60px] sm:min-w-0 ${
                   activeTab === "hobbies"
                     ? "text-primary border-b-2 border-primary"
-                    : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
+                    : "text-text-secondary hover:text-white hover:bg-[#493222]/50 rounded-t-lg"
                 }`}
               >
-                Sở thích
+                <Heart size={20} />
+                <span className="hidden sm:inline">Sở thích</span>
               </button>
               <button
                 onClick={() => setActiveTab("friends")}
-                className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${
+                className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 font-bold transition-all whitespace-nowrap min-w-[60px] sm:min-w-0 ${
                   activeTab === "friends"
                     ? "text-primary border-b-2 border-primary"
-                    : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
+                    : "text-text-secondary hover:text-white hover:bg-[#493222]/50 rounded-t-lg"
                 }`}
               >
-                Bạn bè ({profile?.friendsCount || 0})
+                <Users size={20} />
+                <span className="hidden sm:inline">
+                  Bạn bè ({profile?.friendsCount || 0})
+                </span>
+                <span className="sm:hidden font-bold">
+                  ({profile?.friendsCount || 0})
+                </span>
               </button>
             </div>
           </div>
@@ -486,7 +510,25 @@ export default function MemberProfile() {
                     <span>
                       Tình trạng:{" "}
                       <strong className="text-text-main">
-                        {profile?.maritalStatus || "Chưa cập nhật"}
+                        {{
+                          SINGLE: "Độc thân",
+                          MARRIED: "Đã kết hôn",
+                          DIVORCED: "Ly hôn",
+                          WIDOWED: "Góa",
+                        }[profile?.maritalStatus] || "Chưa cập nhật"}
+                      </strong>
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 text-text-secondary text-sm">
+                    <Search size={20} />
+                    <span>
+                      Tìm kiếm:{" "}
+                      <strong className="text-text-main">
+                        {{
+                          LOVE: "Tình yêu",
+                          FRIENDS: "Bạn bè",
+                          NETWORKING: "Kết nối",
+                        }[profile?.lookingFor] || "Chưa cập nhật"}
                       </strong>
                     </span>
                   </div>
@@ -495,7 +537,9 @@ export default function MemberProfile() {
                     <span>
                       Đến từ:{" "}
                       <strong className="text-text-main">
-                        {profile?.city?.name || "Chưa cập nhật"}
+                        {profile?.city?.name ||
+                          profile?.cityName ||
+                          "Chưa cập nhật"}
                       </strong>
                     </span>
                   </div>
@@ -555,7 +599,7 @@ export default function MemberProfile() {
             )}
 
             {activeTab === "photos" && (
-              <ProfilePhotos profile={profile} isOwner={false} />
+              <ProfileLibrary profile={profile} isOwner={false} />
             )}
 
             {activeTab === "hobbies" && (

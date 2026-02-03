@@ -1,12 +1,12 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Search, UserPlus } from "lucide-react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import FriendService from "../../services/friend/FriendService";
 import FriendSuggestionService from "../../services/FriendSuggestionService";
 import FriendRequestService from "../../services/friend/FriendRequestService";
-import { useSelector } from 'react-redux';
-import { selectOnlineUserIds } from '../../redux/slices/onlineUsersSlice';
+import { useSelector } from "react-redux";
+import { selectOnlineUserIds } from "../../redux/slices/onlineUsersSlice";
 
 export default function RightSidebar() {
   const [friends, setFriends] = useState([]);
@@ -19,58 +19,36 @@ export default function RightSidebar() {
   const loadingRef = useRef(false);
   const onlineUserIds = useSelector(selectOnlineUserIds);
 
-  // Sorting: Online first, then Alphabetical (A-Z)
-  const sortedFriends = useMemo(() => {
-    return [...friends].sort((a, b) => {
-      // 1. Priority: Online status
-      const isAOnline = onlineUserIds.includes(a.id);
-      const isBOnline = onlineUserIds.includes(b.id);
+  const fetchFriends = useCallback(async (currentPage, currentSearchTerm) => {
+    // Allow re-fetch if searching (debounce handles frequency),
+    // but block immediate duplicate calls if needed.
+    // Actually checking loadingRef prevents parallel calls.
+    if (loadingRef.current) return;
 
-      if (isAOnline && !isBOnline) return -1;
-      if (!isAOnline && isBOnline) return 1;
-
-      // 2. Priority: Name Alphabetical
-      const nameA = (a.fullName || a.username || "").toLowerCase();
-      const nameB = (b.fullName || b.username || "").toLowerCase();
-      return nameA.localeCompare(nameB);
-    });
-  }, [friends, onlineUserIds]);
-
-  const fetchFriends = useCallback(
-    async (currentPage, currentSearchTerm) => {
-      // Allow re-fetch if searching (debounce handles frequency), 
-      // but block immediate duplicate calls if needed. 
-      // Actually checking loadingRef prevents parallel calls.
-      if (loadingRef.current) return;
-
-      loadingRef.current = true;
-      setLoading(true);
-      try {
-        const params = { page: currentPage, size: 20 };
-        if (currentSearchTerm && currentSearchTerm.trim()) {
-          params.name = currentSearchTerm;
-        }
-        const response = await FriendService.getMyFriends(params);
-        const newFriends = response.data.content || [];
-        const totalPages = response.data.totalPages || 0;
-
-        setFriends((prev) =>
-          currentPage === 0
-            ? newFriends
-            : [...prev, ...newFriends],
-        );
-
-        // Update hasMore based on pagination info
-        setHasMore(currentPage + 1 < totalPages);
-      } catch (error) {
-        console.error("Failed to fetch friends", error);
-      } finally {
-        setLoading(false);
-        loadingRef.current = false;
+    loadingRef.current = true;
+    setLoading(true);
+    try {
+      const params = { page: currentPage, size: 20 };
+      if (currentSearchTerm && currentSearchTerm.trim()) {
+        params.name = currentSearchTerm;
       }
-    },
-    [],
-  );
+      const response = await FriendService.getMyFriends(params);
+      const newFriends = response.data.content || [];
+      const totalPages = response.data.totalPages || 0;
+
+      setFriends((prev) =>
+        currentPage === 0 ? newFriends : [...prev, ...newFriends],
+      );
+
+      // Update hasMore based on pagination info
+      setHasMore(currentPage + 1 < totalPages);
+    } catch (error) {
+      console.error("Failed to fetch friends", error);
+    } finally {
+      setLoading(false);
+      loadingRef.current = false;
+    }
+  }, []);
 
   // Fetch suggestions
   const fetchSuggestions = useCallback(async () => {
@@ -121,17 +99,17 @@ export default function RightSidebar() {
       await FriendRequestService.sendRequest(userId);
       toast.success("Đã gửi lời mời kết bạn!", { id: tid });
       // Remove from suggestions
-      setSuggestions(prev => prev.filter(s => s.userId !== userId));
+      setSuggestions((prev) => prev.filter((s) => s.userId !== userId));
     } catch (error) {
       console.error("Error sending friend request:", error);
-      toast.error(error.response?.data?.message || "Lỗi khi gửi lời mời", { id: tid });
+      toast.error(error.response?.data?.message || "Lỗi khi gửi lời mời", {
+        id: tid,
+      });
     }
   };
 
   return (
-    <aside
-      className="w-80 hidden xl:flex flex-col border-l border-border-main bg-background-main p-6 h-screen sticky top-0 shrink-0 z-20 transition-colors duration-300"
-    >
+    <aside className="w-80 hidden xl:flex flex-col border-l border-border-main bg-background-main p-6 h-[calc(100vh-64px)] sticky top-0 shrink-0 z-30 transition-colors duration-300">
       <div className="mb-8 group">
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -179,14 +157,19 @@ export default function RightSidebar() {
                 >
                   <div
                     className="size-11 rounded-full bg-cover bg-center border border-transparent group-hover:border-primary transition-all"
-                    style={{ backgroundImage: `url("${suggestion.avatarUrl || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}")` }}
+                    style={{
+                      backgroundImage: `url("${
+                        suggestion.avatarUrl ||
+                        "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                      }")`,
+                    }}
                   ></div>
                   <div className="flex flex-col">
                     <span className="text-text-main text-sm font-bold group-hover:text-primary transition-colors cursor-pointer">
                       {suggestion.fullName || suggestion.username}
                     </span>
                     <span className="text-text-secondary text-xs truncate max-w-[120px]">
-                      {suggestion.description || 'Gợi ý'}
+                      {suggestion.description || "Gợi ý"}
                     </span>
                   </div>
                 </Link>
@@ -218,12 +201,9 @@ export default function RightSidebar() {
         </div>
 
         {/* Friends List - Scrollable Container */}
-        <div
-          className="flex-1 overflow-y-auto"
-          onScroll={handleScroll}
-        >
+        <div className="flex-1 overflow-y-auto" onScroll={handleScroll}>
           <div className="flex flex-col gap-2 pb-20">
-            {sortedFriends.map((friend) => (
+            {friends.map((friend) => (
               <Link
                 to={`/dashboard/member/${friend.id}`}
                 key={friend.id}
@@ -233,9 +213,10 @@ export default function RightSidebar() {
                   <div
                     className="size-10 rounded-full bg-cover bg-center ring-2 ring-transparent group-hover:ring-primary/50 transition-all"
                     style={{
-                      backgroundImage: `url("${friend.avatarUrl ||
+                      backgroundImage: `url("${
+                        friend.avatarUrl ||
                         "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                        }")`,
+                      }")`,
                     }}
                   ></div>
                   {onlineUserIds.includes(friend.id) && (
