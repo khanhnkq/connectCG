@@ -18,7 +18,6 @@ import {
   Key,
   UserMinus,
   MessageSquare,
-  Home,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import PostComposer from "../../components/feed/PostComposer";
@@ -43,8 +42,6 @@ import {
   getGroupPosts,
   acceptInvitation,
   declineInvitation,
-  getBannedMembers,
-  unbanMember,
 } from "../../services/groups/GroupService";
 import InviteMemberModal from "../../components/groups/InviteMemberModal";
 import TransferOwnershipModal from "../../components/groups/TransferOwnershipModal";
@@ -61,20 +58,13 @@ const GroupDetailPage = () => {
 
   const [activeTab, setActiveTab] = useState("Bản tin");
   const [showReportGroup, setShowReportGroup] = useState(false);
-  const [pendingRequests, setPendingRequests] = useState([]);
-  const [bannedMembers, setBannedMembers] = useState([]);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showKickModal, setShowKickModal] = useState(false);
-  const [showTransferModal, setShowTransferModal] = useState(false);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [showTransferConfirmModal, setShowTransferConfirmModal] =
     useState(false);
   const [memberToKick, setMemberToKick] = useState(null);
   const [memberToTransfer, setMemberToTransfer] = useState(null);
-  const [memberToUnban, setMemberToUnban] = useState(null);
-  const [postToAction, setPostToAction] = useState(null); // { id, action: 'approve' | 'reject' }
-  const [requestToAction, setRequestToAction] = useState(null); // { userId, action: 'approve' | 'reject', fullName }
-  const [isConfirmLoading, setIsConfirmLoading] = useState(false);
 
   const [pendingPosts, setPendingPosts] = useState([]);
   const [memberRequests, setMemberRequests] = useState([]);
@@ -88,9 +78,8 @@ const GroupDetailPage = () => {
     deleteModal,
     setDeleteModal,
     handleDeletePost,
-    confirmDelete,
     handleUpdatePost,
-    isConfirmLoading: isPostDeleting,
+    confirmDelete,
   } = usePostManagement();
 
   const [showTransferOwnershipModal, setShowTransferOwnershipModal] =
@@ -151,52 +140,45 @@ const GroupDetailPage = () => {
         const userData = JSON.parse(userStr);
         currentUserId = userData.id;
       }
-      // 3. Determine access rights for content
-      const status = groupData.currentUserStatus;
-      const isGroupAdminLocal = groupData.ownerId === currentUserId || groupData.currentUserRole === "ADMIN";
-      const isSystemAdmin = userInfo?.role === "ADMIN" || (Array.isArray(userInfo?.role) && userInfo.role.includes("ADMIN"));
+      if (currentUserId) {
+        // Check Group management rights: Owner OR Group Admin
+        if (
+          groupData.ownerId === currentUserId ||
+          groupData.currentUserRole === "ADMIN"
+        ) {
+          setIsAdmin(true);
 
-      const hasFullAccess = isGroupAdminLocal || isSystemAdmin;
-      setIsAdmin(hasFullAccess);
-
-      if (hasFullAccess) {
-        // Admin capabilities: Fetch pending lists
-        try {
-          const requests = await getPendingRequests(id);
-          setMemberRequests(requests);
-          const pPosts = await getPendingPosts(id);
-          setPendingPosts(pPosts);
-        } catch (e) {
-          console.log("Admin fetch error (expected if permissions tight):", e);
+          // Admin capabilities: Fetch pending lists
+          try {
+            const requests = await getPendingRequests(id);
+            setMemberRequests(requests);
+            const pPosts = await getPendingPosts(id);
+            setPendingPosts(pPosts);
+          } catch {
+            console.log(
+              "Not authorized to fetch pending items (or handled by API)",
+            );
+          }
+        } else {
+          setIsAdmin(false);
         }
       }
 
-      // 4. Conditional Content Fetching (Posts and Members)
-      const isMember = status === "ACCEPTED";
-      const isPublic = groupData.privacy === "PUBLIC";
-      const isBanned = status === "BANNED";
-      const canViewContent = hasFullAccess || isMember || (isPublic && !isBanned);
-
-      if (canViewContent) {
-        // Fetch approved posts for the feed with its own catch
-        try {
-          const posts = await getGroupPosts(id);
-          setApprovedPosts(posts);
-        } catch (postError) {
-          console.error("Failed to fetch posts:", postError);
-          setApprovedPosts([]);
-        }
-
-        // Fetch members list with its own catch
-        try {
-          const membersData = await getGroupMembers(id);
-          setMembers(membersData);
-        } catch (memberError) {
-          console.error("Failed to fetch members:", memberError);
-          setMembers([]);
-        }
-      } else {
+      // Fetch approved posts for the feed with its own catch
+      try {
+        const posts = await getGroupPosts(id);
+        setApprovedPosts(posts);
+      } catch (postError) {
+        console.error("Failed to fetch posts:", postError);
         setApprovedPosts([]);
+      }
+
+      // Fetch members list with its own catch
+      try {
+        const membersData = await getGroupMembers(id);
+        setMembers(membersData);
+      } catch (memberError) {
+        console.error("Failed to fetch members:", memberError);
         setMembers([]);
       }
     } catch (error) {
@@ -208,106 +190,9 @@ const GroupDetailPage = () => {
     }
   }, [id, navigate]);
 
-  const handleFetchBannedMembers = useCallback(async () => {
-    try {
-      const data = await getBannedMembers(id);
-      setBannedMembers(data);
-    } catch (error) {
-      console.error("Failed to fetch banned members:", error);
-    }
-  }, [id]);
-
   useEffect(() => {
     fetchGroupData();
-    if (isAdmin) {
-      handleFetchBannedMembers();
-    }
-  }, [fetchGroupData, isAdmin, handleFetchBannedMembers]);
-
-  // Real-time synchronization for posts
-  useEffect(() => {
-    const handlePostEvent = (e) => {
-      const { action, post, postId } = e.detail;
-      // If the post belongs to this group
-      if (post && Number(post.groupId) === Number(id)) {
-        if (action === "CREATED") {
-          // If approved, add to newsfeed
-          if (post.status === "APPROVED") {
-            setApprovedPosts((prev) => {
-              if (prev.some((p) => p.id === post.id)) return prev;
-              return [post, ...prev];
-            });
-            // Try removing from pending if it was there
-            setPendingPosts((prev) => prev.filter((p) => p.id !== post.id));
-          } else if (post.status === "PENDING") {
-            // New pending post
-            setPendingPosts((prev) => {
-              if (prev.some((p) => p.id === post.id)) return prev;
-              return [post, ...prev];
-            });
-          }
-        } else if (action === "UPDATED") {
-          if (post.status === "APPROVED") {
-            setApprovedPosts((prev) =>
-              prev.map((p) => (p.id === post.id ? post : p)),
-            );
-          } else if (post.status === "PENDING") {
-            setPendingPosts((prev) =>
-              prev.map((p) => (p.id === post.id ? post : p)),
-            );
-          }
-        }
-      } else if (action === "DELETED" && postId) {
-        setApprovedPosts((prev) => prev.filter((p) => p.id !== postId));
-        setPendingPosts((prev) => prev.filter((p) => p.id !== postId));
-      }
-    };
-
-    window.addEventListener("postEvent", handlePostEvent);
-    return () => window.removeEventListener("postEvent", handlePostEvent);
-  }, [id]);
-
-  // Real-time synchronization for members
-  useEffect(() => {
-    const handleMembershipEvent = (e) => {
-      const { action, groupId, userId, member } = e.detail;
-      if (Number(groupId) !== Number(id)) return;
-
-      if (action === "APPROVED" || action === "JOINED") {
-        if (member) {
-          setMembers((prev) => {
-            if (prev.some((m) => m.userId === member.userId)) return prev;
-            return [...prev, member];
-          });
-        }
-        if (action === "APPROVED") {
-          setMemberRequests((prev) => prev.filter((r) => r.userId !== userId));
-        }
-        setGroup(prev => prev ? { ...prev, memberCount: (prev.memberCount || 0) + 1 } : prev);
-      } else if (action === "REQUESTED") {
-        if (member) {
-          setMemberRequests((prev) => {
-            if (prev.some((r) => r.userId === member.userId)) return prev;
-            return [...prev, member];
-          });
-        }
-      } else if (action === "REJECTED") {
-        setMemberRequests((prev) => prev.filter((r) => r.userId !== userId));
-      } else if (action === "KICKED" || action === "LEFT" || action === "BANNED") {
-        setMembers((prev) => prev.filter((m) => m.userId !== userId));
-        setGroup(prev => prev ? { ...prev, memberCount: Math.max(0, (prev.memberCount || 0) - 1) } : prev);
-
-        // If current user is the one who left/kicked, redirect or refresh status
-        if (Number(userId) === Number(getUserIdFromToken())) {
-          fetchGroupData();
-        }
-      }
-    };
-
-    window.dispatchEvent(new CustomEvent("debug", { detail: "Listener added" }));
-    window.addEventListener("membershipEvent", handleMembershipEvent);
-    return () => window.removeEventListener("membershipEvent", handleMembershipEvent);
-  }, [id, fetchGroupData]);
+  }, [fetchGroupData]);
 
   const handleLeaveGroup = () => {
     if (!group) return;
@@ -322,7 +207,6 @@ const GroupDetailPage = () => {
   };
 
   const confirmLeaveGroup = async () => {
-    setIsConfirmLoading(true);
     try {
       const isRequest = userMembership?.status === "REQUESTED";
       await leaveGroup(id || group.id);
@@ -346,8 +230,6 @@ const GroupDetailPage = () => {
           : null) ||
         "Không thể rời nhóm";
       toast.error(errorMsg);
-    } finally {
-      setIsConfirmLoading(false);
     }
   };
   const handleTransferOwnership = async (selectedMember) => {
@@ -380,7 +262,6 @@ const GroupDetailPage = () => {
   };
 
   const handleJoinGroup = async () => {
-    setIsConfirmLoading(true);
     try {
       await joinGroup(group.id);
       if (group.privacy === "PRIVATE") {
@@ -399,13 +280,10 @@ const GroupDetailPage = () => {
           : null) ||
         "Không thể thực hiện yêu cầu";
       toast.error(errorMsg);
-    } finally {
-      setIsConfirmLoading(false);
     }
   };
 
   const handleAcceptInvite = async () => {
-    setIsConfirmLoading(true);
     try {
       await acceptInvitation(group.id);
       toast.success("Chào mừng bạn gia nhập nhóm!");
@@ -413,13 +291,10 @@ const GroupDetailPage = () => {
     } catch (error) {
       console.error("Failed to accept invite:", error);
       toast.error("Không thể chấp nhận lời mời");
-    } finally {
-      setIsConfirmLoading(false);
     }
   };
 
   const handleDeclineInvite = async () => {
-    setIsConfirmLoading(true);
     try {
       await declineInvitation(group.id);
       toast.success("Đã từ chối lời mời");
@@ -427,8 +302,6 @@ const GroupDetailPage = () => {
     } catch (error) {
       console.error("Failed to decline invite:", error);
       toast.error("Không thể từ chối lời mời");
-    } finally {
-      setIsConfirmLoading(false);
     }
   };
 
@@ -446,7 +319,6 @@ const GroupDetailPage = () => {
 
   const confirmTransferOwnership = async () => {
     if (!memberToTransfer) return;
-    setIsConfirmLoading(true);
     try {
       await updateGroupMemberRole(group.id, memberToTransfer.userId, "OWNER");
       toast.success(
@@ -464,14 +336,11 @@ const GroupDetailPage = () => {
           : null) ||
         "Thao tác thất bại";
       toast.error(errorMsg);
-    } finally {
-      setIsConfirmLoading(false);
     }
   };
 
   const confirmKickMember = async () => {
     if (!memberToKick) return;
-    setIsConfirmLoading(true);
     try {
       await kickMember(group.id, memberToKick.userId);
       toast.success(`Đã mời ${memberToKick.fullName} ra khỏi nhóm`);
@@ -487,37 +356,19 @@ const GroupDetailPage = () => {
           : null) ||
         "Không thể xóa thành viên";
       toast.error(errorMsg);
-    } finally {
-      setIsConfirmLoading(false);
     }
   };
 
-  const handleActionPost = (postId, action) => {
-    if (action === "reject") {
-      setPostToAction({ id: postId, action: "reject" });
-    } else {
-      // For approval, no need for confirm modal unless preferred. User said "Phần Duyệt bài và Duyệt thành viên vẫn đang dùng thông báo mặc định của trình duyệt (window.confirm)"
-      // So I should probably add confirm modal for both if they were using window.confirm.
-      setPostToAction({ id: postId, action: "approve" });
-    }
-  };
-
-  const confirmPostAction = async () => {
-    if (!postToAction) return;
-    const { id: postId, action } = postToAction;
-
-    setIsConfirmLoading(true);
+  const handleActionPost = async (postId, action) => {
     try {
       if (action === "approve") {
-        await approvePost(id, postId);
-        // Toast handled by effect if we rely on WS, but let's keep it here for direct feedback
+        await approvePost(group.id, postId);
         toast.success("Đã duyệt bài viết!");
       } else {
-        await rejectPost(id, postId);
-        toast.success("Đã xóa bài viết và cộng gậy vi phạm!");
+        await rejectPost(group.id, postId);
+        toast.success("Đã xóa bài viết!");
       }
-      setPostToAction(null);
-      // fetchGroupData() will refresh lists, but WS broadcast will also do it.
+      // Refresh data
       fetchGroupData();
     } catch (error) {
       console.error("Action failed:", error);
@@ -528,20 +379,10 @@ const GroupDetailPage = () => {
           : null) ||
         "Thao tác thất bại";
       toast.error(errorMsg);
-    } finally {
-      setIsConfirmLoading(false);
     }
   };
 
-  const handleActionRequest = (userId, fullName, action) => {
-    setRequestToAction({ userId, fullName, action });
-  };
-
-  const confirmRequestAction = async () => {
-    if (!requestToAction) return;
-    const { userId, action } = requestToAction;
-
-    setIsConfirmLoading(true);
+  const handleActionRequest = async (userId, action) => {
     try {
       if (action === "approve") {
         await approveRequest(group.id, userId);
@@ -550,7 +391,7 @@ const GroupDetailPage = () => {
         await rejectRequest(group.id, userId);
         toast.success("Đã từ chối yêu cầu!");
       }
-      setRequestToAction(null);
+      // Refresh data
       fetchGroupData();
     } catch (error) {
       console.error("Action failed:", error);
@@ -561,32 +402,6 @@ const GroupDetailPage = () => {
           : null) ||
         "Thao tác thất bại";
       toast.error(errorMsg);
-    } finally {
-      setIsConfirmLoading(false);
-    }
-  };
-
-
-  useEffect(() => {
-    if (activeTab === "Bị cấm" && isAdmin) {
-      handleFetchBannedMembers();
-    }
-  }, [activeTab, isAdmin, handleFetchBannedMembers]);
-
-  const handleUnbanMember = async (userId) => {
-    setMemberToUnban(userId);
-  };
-
-  const confirmUnbanMember = async () => {
-    if (!memberToUnban) return;
-    try {
-      await unbanMember(id, memberToUnban);
-      toast.success("Đã gỡ lệnh cấm thành công");
-      handleFetchBannedMembers(); // Refresh list
-    } catch (error) {
-      toast.error("Gỡ lệnh cấm thất bại");
-    } finally {
-      setMemberToUnban(null);
     }
   };
 
@@ -700,48 +515,25 @@ const GroupDetailPage = () => {
                 <div className="flex gap-2 flex-1 sm:flex-none">
                   <button
                     onClick={handleAcceptInvite}
-                    disabled={isConfirmLoading}
-                    className="flex-1 sm:flex-none h-10 px-6 rounded-full bg-primary hover:bg-orange-600 text-[#231810] font-black text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50"
+                    className="flex-1 sm:flex-none h-10 px-6 rounded-full bg-primary hover:bg-orange-600 text-[#231810] font-black text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
                   >
-                    {isConfirmLoading ? (
-                      <div className="size-4 border-2 border-[#231810]/20 border-t-[#231810] rounded-full animate-spin" />
-                    ) : (
-                      <CheckCircle2 size={20} />
-                    )}
+                    <CheckCircle2 size={20} />
                     Chấp nhận
                   </button>
                   <button
                     onClick={handleDeclineInvite}
-                    disabled={isConfirmLoading}
-                    className="flex-1 sm:flex-none h-10 px-6 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 backdrop-blur-md font-bold text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="flex-1 sm:flex-none h-10 px-6 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 backdrop-blur-md font-bold text-sm transition-all flex items-center justify-center gap-2"
                   >
-                    {isConfirmLoading ? (
-                      <div className="size-4 border-2 border-red-500/20 border-t-red-500 rounded-full animate-spin" />
-                    ) : (
-                      <UserMinus size={20} />
-                    )}
+                    <UserMinus size={20} />
                     Từ chối
                   </button>
                 </div>
-              ) : userMembership?.status === "BANNED" ? (
-                <button
-                  disabled
-                  className="flex-1 sm:flex-none h-10 px-6 rounded-full bg-zinc-800 text-zinc-500 border border-zinc-700 font-bold text-sm flex items-center justify-center gap-2 cursor-not-allowed"
-                >
-                  <Gavel size={20} />
-                  Đã bị cấm
-                </button>
               ) : (
                 <button
                   onClick={handleJoinGroup}
-                  disabled={isConfirmLoading}
-                  className="flex-1 sm:flex-none h-10 px-6 rounded-full bg-primary hover:bg-orange-600 text-[#231810] font-black text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50"
+                  className="flex-1 sm:flex-none h-10 px-6 rounded-full bg-primary hover:bg-orange-600 text-[#231810] font-black text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
                 >
-                  {isConfirmLoading ? (
-                    <div className="size-4 border-2 border-[#231810]/20 border-t-[#231810] rounded-full animate-spin" />
-                  ) : (
-                    <PlusCircle size={20} />
-                  )}
+                  <PlusCircle size={20} />
                   {group.privacy === "PRIVATE"
                     ? "Yêu cầu tham gia"
                     : "Tham gia nhóm"}
@@ -766,13 +558,12 @@ const GroupDetailPage = () => {
               {[
                 { en: "Feed", vi: "Bản tin" },
                 { en: "Members", vi: "Thành viên" },
-                ...(isAdmin ? [{ en: "Banned", vi: "Bị cấm" }] : []), // Add banned tab
-                { en: "About", vi: "Giới thiệu" },
+                { en: "Photos", vi: "Ảnh" },
                 { en: "Events", vi: "Sự kiện" },
               ]
                 .filter(
                   () =>
-                    (group.privacy === "PUBLIC" && userMembership?.status !== "BANNED") ||
+                    group.privacy === "PUBLIC" ||
                     userMembership?.status === "ACCEPTED" ||
                     isAdmin,
                 )
@@ -780,10 +571,11 @@ const GroupDetailPage = () => {
                   <button
                     key={tab.en}
                     onClick={() => setActiveTab(tab.vi)}
-                    className={`py-4 font-bold text-sm tracking-wide whitespace-nowrap transition-all border-b-2 ${activeTab === tab.vi
-                      ? "text-primary border-primary"
-                      : "text-text-secondary hover:text-text-main border-transparent"
-                      }`}
+                    className={`py-4 font-bold text-sm tracking-wide whitespace-nowrap transition-all border-b-2 ${
+                      activeTab === tab.vi
+                        ? "text-primary border-primary"
+                        : "text-text-secondary hover:text-text-main border-transparent"
+                    }`}
                   >
                     {tab.vi}
                   </button>
@@ -791,10 +583,11 @@ const GroupDetailPage = () => {
               {isAdmin && (
                 <button
                   onClick={() => setActiveTab("Kiểm duyệt")}
-                  className={`py-4 font-black text-sm tracking-widest whitespace-nowrap transition-all border-b-2 flex items-center gap-2 ${activeTab === "Kiểm duyệt"
-                    ? "text-orange-400 border-orange-400"
-                    : "text-text-secondary hover:text-orange-400 border-transparent"
-                    }`}
+                  className={`py-4 font-black text-sm tracking-widest whitespace-nowrap transition-all border-b-2 flex items-center gap-2 ${
+                    activeTab === "Kiểm duyệt"
+                      ? "text-orange-400 border-orange-400"
+                      : "text-text-secondary hover:text-orange-400 border-transparent"
+                  }`}
                 >
                   <Gavel size={18} />
                   KIỂM DUYỆT
@@ -814,41 +607,29 @@ const GroupDetailPage = () => {
           {activeTab === "Bản tin" && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 flex flex-col gap-6">
-                {(group.privacy === "PRIVATE" &&
-                  userMembership?.status !== "ACCEPTED" &&
-                  !isAdmin) || userMembership?.status === "BANNED" ? (
+                {group.privacy === "PRIVATE" &&
+                userMembership?.status !== "ACCEPTED" &&
+                !isAdmin ? (
                   <div className="bg-surface-main rounded-[2.5rem] p-12 border border-border-main text-center space-y-6">
-                    <div className={`size-24 rounded-full flex items-center justify-center mx-auto mb-8 ${userMembership?.status === "BANNED" ? "bg-red-500/10 text-red-500" : "bg-primary/10 text-primary"
-                      }`}>
-                      {userMembership?.status === "BANNED" ? <Gavel size={40} /> : <Lock size={40} />}
+                    <div className="size-24 rounded-full bg-primary/10 flex items-center justify-center text-primary mx-auto mb-8">
+                      <Lock size={40} />
                     </div>
                     <h2 className="text-3xl font-black text-text-main">
-                      {userMembership?.status === "BANNED" ? "Bạn đã bị cấm" : "Đây là nhóm Riêng tư"}
+                      Đây là nhóm Riêng tư
                     </h2>
                     <p className="text-text-secondary max-w-md mx-auto leading-relaxed">
-                      {userMembership?.status === "BANNED"
-                        ? "Bạn đã bị cấm khỏi nhóm này do vi phạm tiêu chuẩn cộng đồng. Bạn không thể xem nội dung hoặc tham gia thảo luận."
-                        : userMembership?.status === "PENDING"
-                          ? "Bạn đã nhận được lời mời tham gia nhóm này. Vui lòng phản hồi lời mời ở phía trên để xem nội dung."
-                          : userMembership?.status === "REQUESTED"
-                            ? "Yêu cầu gia nhập của bạn đang chờ quản trị viên phê duyệt. Nội dung sẽ hiển thị sau khi yêu cầu được chấp nhận."
-                            : "Nội dung và danh sách thành viên của nhóm này đã được ẩn. Vui lòng gia nhập nhóm để tham gia cộng đồng."}
+                      {userMembership?.status === "PENDING"
+                        ? "Bạn đã nhận được lời mời tham gia nhóm này. Vui lòng phản hồi lời mời ở phía trên để xem nội dung."
+                        : userMembership?.status === "REQUESTED"
+                        ? "Yêu cầu gia nhập của bạn đang chờ quản trị viên phê duyệt. Nội dung sẽ hiển thị sau khi yêu cầu được chấp nhận."
+                        : "Nội dung và danh sách thành viên của nhóm này đã được ẩn. Vui lòng gia nhập nhóm để tham gia cộng đồng."}
                     </p>
-                    {(!userMembership?.status) ? (
+                    {!userMembership?.status && (
                       <button
                         onClick={handleJoinGroup}
-                        disabled={isConfirmLoading}
-                        className="px-10 py-4 bg-primary hover:bg-orange-600 text-[#231810] font-black rounded-2xl transition-all shadow-xl shadow-primary/20 uppercase tracking-widest disabled:opacity-50"
+                        className="px-10 py-4 bg-primary hover:bg-orange-600 text-[#231810] font-black rounded-2xl transition-all shadow-xl shadow-primary/20 uppercase tracking-widest"
                       >
-                        {isConfirmLoading ? "Vui lòng đợi..." : "Gửi yêu cầu gia nhập"}
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => navigate("/dashboard/feed")}
-                        className="px-10 py-4 bg-zinc-800 hover:bg-zinc-700 text-white font-black rounded-2xl transition-all shadow-xl border border-zinc-700 uppercase tracking-widest flex items-center justify-center gap-2 mx-auto"
-                      >
-                        <Home size={20} />
-                        Về Trang Chủ
+                        Gửi yêu cầu gia nhập
                       </button>
                     )}
                   </div>
@@ -897,10 +678,9 @@ const GroupDetailPage = () => {
                           </div>
                           <button
                             onClick={handleJoinGroup}
-                            disabled={isConfirmLoading}
-                            className="px-8 py-3 bg-primary hover:bg-orange-600 text-[#231810] font-black rounded-xl transition-all shadow-lg shadow-primary/20 uppercase tracking-widest text-xs disabled:opacity-50"
+                            className="px-8 py-3 bg-primary hover:bg-orange-600 text-[#231810] font-black rounded-xl transition-all shadow-lg shadow-primary/20 uppercase tracking-widest text-xs"
                           >
-                            {isConfirmLoading ? "Đang xử lý..." : "Tham gia ngay"}
+                            Tham gia ngay
                           </button>
                         </div>
                       </div>
@@ -988,30 +768,23 @@ const GroupDetailPage = () => {
                               {member.fullName}
                             </p>
                             <span
-                              className={`px-2 py-0.5 text-[10px] font-black rounded uppercase ${member.role === "ADMIN"
-                                ? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
-                                : "bg-zinc-800 text-zinc-400"
-                                }`}
+                              className={`px-2 py-0.5 text-[10px] font-black rounded uppercase ${
+                                member.role === "ADMIN"
+                                  ? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
+                                  : "bg-zinc-800 text-zinc-400"
+                              }`}
                             >
                               {member.role === "ADMIN"
                                 ? "Quản trị viên"
                                 : member.role === "OWNER"
-                                  ? "Chủ nhóm"
-                                  : "Thành viên"}
+                                ? "Chủ nhóm"
+                                : "Thành viên"}
                             </span>
                           </div>
                           <p className="text-xs text-text-secondary mt-0.5 italic">
                             Đã gia nhập vào{" "}
                             {new Date(member.joinedAt).toLocaleDateString()}
                           </p>
-                          {member.violationCount > 0 && (
-                            <div className="flex items-center gap-1.5 mt-1">
-                              <span className="flex items-center gap-1 px-2 py-0.5 bg-red-500/10 text-red-500 border border-red-500/20 rounded text-[10px] font-bold uppercase">
-                                <Gavel size={10} />
-                                {member.violationCount} gậy vi phạm
-                              </span>
-                            </div>
-                          )}
                         </div>
                       </div>
 
@@ -1057,89 +830,26 @@ const GroupDetailPage = () => {
             </div>
           )}
 
-          {activeTab === "Bị cấm" && isAdmin && (
-            <div className="max-w-3xl mx-auto space-y-6">
-              <div className="flex justify-between items-center px-2">
-                <h3 className="text-xl font-bold text-text-main">
-                  Thành viên bị cấm
-                </h3>
-                <span className="text-sm text-text-secondary">
-                  {bannedMembers.length || 0} thành viên
-                </span>
-              </div>
-              <div className="bg-surface-main border border-border-main rounded-3xl overflow-hidden divide-y divide-border-main">
-                {bannedMembers.length > 0 ? (
-                  bannedMembers.map((member) => (
-                    <div
-                      key={member.userId}
-                      className="p-5 flex items-center justify-between hover:bg-white/5 transition-colors"
-                    >
-                      <div className="flex items-center gap-4">
-                        <img
-                          src={member.avatarUrl}
-                          className="size-12 rounded-full border-2 border-border-main grayscale opacity-70"
-                          alt=""
-                        />
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <p className="font-bold text-text-main line-through decoration-red-500/50 decoration-2">
-                              {member.fullName}
-                            </p>
-                            <span className="px-2 py-0.5 text-[10px] font-black rounded uppercase bg-red-500/10 text-red-500 border border-red-500/20">
-                              BANNED
-                            </span>
-                          </div>
-                          <p className="text-xs text-text-secondary mt-0.5 italic">
-                            Vi phạm lần cuối:{" "}
-                            {member.lastViolationAt
-                              ? new Date(member.lastViolationAt).toLocaleDateString()
-                              : "N/A"}
-                          </p>
-                          <div className="flex items-center gap-1.5 mt-1">
-                            <span className="flex items-center gap-1 px-2 py-0.5 bg-red-500/10 text-red-500 border border-red-500/20 rounded text-[10px] font-bold uppercase">
-                              <Gavel size={10} />
-                              {member.violationCount} gậy vi phạm
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={() => handleUnbanMember(member.userId)}
-                        className="px-4 py-2 bg-green-500/10 hover:bg-green-500/20 text-green-500 border border-green-500/20 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2"
-                      >
-                        <ShieldCheck size={16} />
-                        Gỡ lệnh cấm
-                      </button>
-                    </div>
-                  ))
-                ) : (
-                  <div className="p-10 text-center text-text-secondary">
-                    Chưa có thành viên nào bị cấm.
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
           {activeTab === "Kiểm duyệt" && isAdmin && (
             <div className="max-w-4xl mx-auto space-y-8">
               <div className="flex gap-4 border-b border-border-main">
                 <button
                   onClick={() => setModTab("Bài viết")}
-                  className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${modTab === "Bài viết"
-                    ? "text-primary border-primary"
-                    : "text-text-secondary border-transparent"
-                    }`}
+                  className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${
+                    modTab === "Bài viết"
+                      ? "text-primary border-primary"
+                      : "text-text-secondary border-transparent"
+                  }`}
                 >
                   Bài viết chờ duyệt
                 </button>
                 <button
                   onClick={() => setModTab("Yêu cầu")}
-                  className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${modTab === "Yêu cầu"
-                    ? "text-primary border-primary"
-                    : "text-text-secondary border-transparent"
-                    }`}
+                  className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${
+                    modTab === "Yêu cầu"
+                      ? "text-primary border-primary"
+                      : "text-text-secondary border-transparent"
+                  }`}
                 >
                   Yêu cầu tham gia ({memberRequests.length})
                 </button>
@@ -1201,39 +911,13 @@ const GroupDetailPage = () => {
                             {post.content}
                           </div>
 
-                          {/* AI Moderation Result Badge */}
-                          <div className={`p-4 rounded-2xl border ${post.aiStatus === 'TOXIC'
-                            ? 'bg-red-500/5 border-red-500/20 text-red-500'
-                            : post.aiStatus === 'SUSPICIOUS'
-                              ? 'bg-yellow-500/5 border-yellow-500/20 text-yellow-500'
-                              : 'bg-green-500/5 border-green-500/20 text-green-500'
-                            }`}>
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center gap-2 font-bold text-xs uppercase tracking-wider">
-                                <ShieldCheck size={16} />
-                                Phân tích từ AI: {post.aiStatus || 'CHƯA KIỂM TRA'}
-                              </div>
-                              {post.aiScore !== null && (
-                                <div className="text-xs font-black">
-                                  Độ tin cậy: {(post.aiScore * 100).toFixed(0)}%
-                                </div>
-                              )}
-                            </div>
-                            <p className="text-xs opacity-80 leading-relaxed font-medium">
-                              {post.aiReason || "Không có lý do chi tiết từ AI."}
-                            </p>
-                            <div className="mt-3 flex items-center gap-2 text-[10px] font-bold text-red-400">
-                              <AlertTriangle size={12} />
-                              LƯU Ý: Từ chối bài viết này sẽ tính 1 gậy vi phạm cho tác giả.
-                            </div>
-                          </div>
-
                           {post.images && post.images.length > 0 && (
                             <div
-                              className={`grid gap-2 ${post.images.length === 1
-                                ? "grid-cols-1"
-                                : "grid-cols-2"
-                                }`}
+                              className={`grid gap-2 ${
+                                post.images.length === 1
+                                  ? "grid-cols-1"
+                                  : "grid-cols-2"
+                              }`}
                             >
                               {post.images.map((img, idx) => (
                                 <img
@@ -1260,46 +944,38 @@ const GroupDetailPage = () => {
                     memberRequests.map((request) => (
                       <div
                         key={request.userId}
-                        className="p-6 bg-card-dark border border-[#3e2b1d] rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4"
+                        className="p-6 bg-card-dark border border-[#3e2b1d] rounded-2xl flex items-center justify-between"
                       >
                         <div className="flex items-center gap-4">
                           <img
                             src={request.avatarUrl}
-                            className="size-12 rounded-full border-2 border-primary/20"
+                            className="size-14 rounded-full border-2 border-primary/20"
                             alt=""
                           />
                           <div>
-                            <p className="font-bold text-text-main">
+                            <p className="font-black text-text-main text-lg">
                               {request.fullName}
                             </p>
-                            <p className="text-[10px] text-text-secondary uppercase tracking-widest font-bold">
-                              @{request.username} •{" "}
-                              {new Date(request.joinedAt).toLocaleString()}
+                            <p className="text-xs text-text-secondary mt-1 italic">
+                              Đã yêu cầu vào{" "}
+                              {new Date(request.joinedAt).toLocaleDateString()}
                             </p>
                           </div>
                         </div>
-                        <div className="flex gap-2 w-full md:w-auto">
+                        <div className="flex gap-3">
                           <button
                             onClick={() =>
-                              handleActionRequest(
-                                request.userId,
-                                request.fullName,
-                                "approve",
-                              )
+                              handleActionRequest(request.userId, "approve")
                             }
-                            className="flex-1 md:flex-none h-10 px-6 rounded-xl bg-primary text-[#0f0a06] font-black text-xs uppercase tracking-widest transition-all hover:bg-orange-500 shadow-lg shadow-primary/20"
+                            className="px-6 py-2.5 bg-primary text-text-main font-black rounded-xl text-sm transition-all hover:scale-105"
                           >
-                            Chấp nhận
+                            Phê duyệt
                           </button>
                           <button
                             onClick={() =>
-                              handleActionRequest(
-                                request.userId,
-                                request.fullName,
-                                "reject",
-                              )
+                              handleActionRequest(request.userId, "reject")
                             }
-                            className="flex-1 md:flex-none h-10 px-6 rounded-xl bg-red-500/10 text-red-500 border border-red-500/20 font-black text-xs uppercase tracking-widest transition-all hover:bg-red-500/20"
+                            className="px-6 py-2.5 bg-red-500/10 text-red-500 border border-red-500/20 font-black rounded-xl text-sm transition-all hover:bg-red-500/20"
                           >
                             Từ chối
                           </button>
@@ -1344,108 +1020,134 @@ const GroupDetailPage = () => {
         isOpen={showInviteModal}
         onClose={() => setShowInviteModal(false)}
         onInvite={handleInviteMembers}
-        existingMemberIds={[
-          ...members.map((m) => m.userId),
-          ...bannedMembers.map((m) => m.userId),
-        ]}
+        existingMemberIds={members.map((m) => m.userId)}
       />
 
+      {/* Kick Member Confirmation Modal */}
+      {showKickModal && memberToKick && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-surface-main border border-border-main rounded-3xl p-8 max-w-sm w-full text-center space-y-6 shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div className="size-16 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 mx-auto">
+              <UserMinus size={36} />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-xl font-black text-text-main">
+                Xác nhận xóa thành viên
+              </h2>
+              <p className="text-text-secondary text-sm">
+                Bạn có chắc chắn muốn mời{" "}
+                <span className="text-text-main font-bold">
+                  {memberToKick.fullName}
+                </span>{" "}
+                ra khỏi nhóm không?
+              </p>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => {
+                  setShowKickModal(false);
+                  setMemberToKick(null);
+                }}
+                className="flex-1 py-3 bg-surface-main hover:bg-background-main text-text-main font-bold rounded-xl transition-all text-xs uppercase tracking-widest"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={confirmKickMember}
+                className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl transition-all shadow-lg shadow-red-500/20 text-xs uppercase tracking-widest"
+              >
+                Đồng ý xóa
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showTransferConfirmModal && memberToTransfer && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-surface-main border border-border-main rounded-3xl p-8 max-w-sm w-full text-center space-y-6 shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div className="size-16 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500 mx-auto">
+              <Key size={40} />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-xl font-black text-white">
+                Xác nhận chuyển quyền
+              </h2>
+              <p className="text-text-secondary text-sm leading-relaxed">
+                Bạn có chắc chắn muốn chuyển quyền chủ sở hữu cho{" "}
+                <span className="text-text-main font-bold">
+                  {memberToTransfer.fullName}
+                </span>
+                ?
+              </p>
+              <p className="text-text-secondary text-xs italic">
+                * Bạn sẽ trở thành thành viên thường sau khi chuyển quyền.
+              </p>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => {
+                  setShowTransferConfirmModal(false);
+                  setMemberToTransfer(null);
+                }}
+                className="flex-1 py-3 bg-surface-main hover:bg-background-main text-text-main font-bold rounded-xl transition-all text-xs uppercase tracking-widest"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={confirmTransferOwnership}
+                className="flex-1 py-3 bg-orange-500 hover:bg-orange-600 text-white font-black rounded-xl transition-all shadow-lg shadow-orange-500/20 text-xs uppercase tracking-widest"
+              >
+                Xác nhận
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Leave Group Confirmation Modal */}
+      {showLeaveModal && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#1a120b] border border-[#3e2b1d] rounded-3xl p-8 max-w-sm w-full text-center space-y-6 shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div className="size-16 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 mx-auto">
+              <LogOut size={40} />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-xl font-black text-white">
+                Xác nhận rời nhóm
+              </h2>
+              <p className="text-text-secondary text-sm">
+                Bạn có chắc chắn muốn rời khỏi nhóm{" "}
+                <span className="text-white font-bold">{group.name}</span>{" "}
+                không?
+              </p>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setShowLeaveModal(false)}
+                className="flex-1 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-bold rounded-xl transition-all text-xs uppercase tracking-widest"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={confirmLeaveGroup}
+                className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl transition-all shadow-lg shadow-red-500/20 text-xs uppercase tracking-widest"
+              >
+                Xác nhận rời
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <ConfirmModal
-        isOpen={showKickModal && !!memberToKick}
-        onClose={() => {
-          setShowKickModal(false);
-          setMemberToKick(null);
-        }}
-        onConfirm={confirmKickMember}
-        title="Xác nhận xóa thành viên"
-        message={`Bạn có chắc chắn muốn mời ${memberToKick?.fullName} ra khỏi nhóm không?`}
-        confirmText="Đồng ý xóa"
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, postId: null })}
+        onConfirm={confirmDelete}
+        title="Xóa bài viết"
+        message="Bạn có chắc chắn muốn xóa bài viết này? Hành động này không thể hoàn tác."
+        confirmText="Xóa"
         cancelText="Hủy"
         type="danger"
-        isLoading={isConfirmLoading}
-      />
-
-      <ConfirmModal
-        isOpen={showTransferConfirmModal && !!memberToTransfer}
-        onClose={() => {
-          setShowTransferConfirmModal(false);
-          setMemberToTransfer(null);
-        }}
-        onConfirm={confirmTransferOwnership}
-        title="Xác nhận chuyển quyền"
-        message={`Bạn có chắc chắn muốn chuyển quyền chủ sở hữu cho ${memberToTransfer?.fullName}? * Bạn sẽ trở thành thành viên thường sau khi chuyển quyền.`}
-        confirmText="Xác nhận"
-        cancelText="Hủy"
-        type="warning"
-        isLoading={isConfirmLoading}
-      />
-
-      <ConfirmModal
-        isOpen={showLeaveModal}
-        onClose={() => setShowLeaveModal(false)}
-        onConfirm={confirmLeaveGroup}
-        title="Xác nhận rời nhóm"
-        message={`Bạn có chắc chắn muốn rời khỏi nhóm ${group.name} không?`}
-        confirmText="Xác nhận rời"
-        cancelText="Hủy"
-        type="danger"
-        isLoading={isConfirmLoading}
-      />
-
-      <ConfirmModal
-        isOpen={!!memberToUnban}
-        onClose={() => setMemberToUnban(null)}
-        onConfirm={confirmUnbanMember}
-        title="Xác nhận gỡ lệnh cấm"
-        message="Bạn có chắc chắn muốn gỡ lệnh cấm cho thành viên này?"
-        confirmText="Xác nhận"
-        cancelText="Hủy"
-        type="danger"
-        isLoading={isPostDeleting}
-      />
-
-      {/* Approve/Reject Post Modal */}
-      <ConfirmModal
-        isOpen={!!postToAction}
-        onClose={() => setPostToAction(null)}
-        onConfirm={confirmPostAction}
-        title={
-          postToAction?.action === "approve"
-            ? "Phê duyệt bài viết"
-            : "Từ chối bài viết"
-        }
-        message={
-          postToAction?.action === "approve"
-            ? "Bạn có chắc chắn muốn phê duyệt bài viết này để hiển thị trên bản tin của nhóm?"
-            : "Xóa bài viết này sẽ tính 1 gậy vi phạm cho tác giả. Bạn có chắc chắn muốn từ chối bài viết này?"
-        }
-        confirmText={postToAction?.action === "approve" ? "Duyệt ngay" : "Xóa bài"}
-        cancelText="Hủy"
-        type={postToAction?.action === "approve" ? "warning" : "danger"}
-        isLoading={isConfirmLoading}
-      />
-
-      {/* Approve/Reject Member Request Modal */}
-      <ConfirmModal
-        isOpen={!!requestToAction}
-        onClose={() => setRequestToAction(null)}
-        onConfirm={confirmRequestAction}
-        title={
-          requestToAction?.action === "approve"
-            ? "Chấp nhận thành viên"
-            : "Từ chối yêu cầu"
-        }
-        message={
-          requestToAction?.action === "approve"
-            ? `Bạn có chắc chắn muốn phê duyệt cho ${requestToAction?.fullName} gia nhập cộng đồng?`
-            : `Bạn có chắc chắn muốn từ chối yêu cầu gia nhập của ${requestToAction?.fullName}?`
-        }
-        confirmText={
-          requestToAction?.action === "approve" ? "Chấp nhận" : "Tư chối"
-        }
-        cancelText="Hủy"
-        type={requestToAction?.action === "approve" ? "warning" : "danger"}
-        isLoading={isConfirmLoading}
       />
 
       {/* Transfer Ownership Modal */}

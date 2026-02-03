@@ -10,8 +10,6 @@ const ConfirmModal = ({
   type = "danger",
   confirmText = "Confirm",
   cancelText = "Cancel",
-  isLoading = false,
-  children,
 }) => {
   if (!isOpen) return null;
 
@@ -49,7 +47,6 @@ const ConfirmModal = ({
             <p className="text-sm text-text-secondary leading-relaxed">
               {message}
             </p>
-            {children}
           </div>
           <div className="grid grid-cols-2 gap-4 pt-2">
             <button
@@ -60,13 +57,9 @@ const ConfirmModal = ({
             </button>
             <button
               onClick={onConfirm}
-              disabled={isLoading}
-              className={`py-3.5 rounded-xl text-white font-black shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${theme.button}`}
+              className={`py-3.5 rounded-xl text-white font-black shadow-lg transition-all ${theme.button}`}
             >
-              {isLoading && (
-                <div className="size-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              )}
-              {isLoading ? "Vui lòng đợi..." : confirmText}
+              {confirmText}
             </button>
           </div>
         </div>
