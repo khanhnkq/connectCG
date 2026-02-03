@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   Camera,
@@ -9,6 +9,11 @@ import {
   SlidersHorizontal,
   PlusSquare,
   UserX,
+  LayoutDashboard,
+  User,
+  Image,
+  Users,
+  Search,
 } from "lucide-react";
 
 import PostComposer from "../../components/feed/PostComposer";
@@ -16,9 +21,11 @@ import {
   fetchUserProfile,
   updateUserAvatar,
   updateUserCover,
+  updatePostsCount,
 } from "../../redux/slices/userSlice";
 import ProfileAbout from "../../components/profile/ProfileAbout";
 import ProfilePhotos from "../../components/profile/ProfilePhotos";
+import ProfileLibrary from "../../components/profile/ProfileLibrary";
 import ProfileHobbies from "../../components/profile/ProfileHobbies";
 import ProfileFriends from "../../components/profile/ProfileFriends";
 import { uploadAvatar, uploadCover } from "../../utils/uploadImage";
@@ -50,7 +57,12 @@ export default function UserProfile() {
     handleDeletePost,
     confirmDelete,
     handleUpdatePost,
-  } = usePostManagement();
+  } = usePostManagement([], () => {
+    // Callback on delete success
+    if (profile && profile.postsCount > 0) {
+      dispatch(updatePostsCount(profile.postsCount - 1));
+    }
+  });
 
   // Hidden file inputs
   const avatarInputRef = useRef(null);
@@ -58,23 +70,26 @@ export default function UserProfile() {
 
   const [loadingPosts, setLoadingPosts] = useState(false);
 
-  const fetchPosts = async (userId) => {
-    setLoadingPosts(true);
-    try {
-      const response = await PostService.getPostsByUserId(userId);
-      // Assuming response.data is the array of posts
-      const sortedPosts = (response.data || []).sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-      );
-      setPosts(sortedPosts);
-    } catch (error) {
-      console.error("Error fetching user posts:", error);
-    } finally {
-      setLoadingPosts(false);
-    }
-  };
+  const fetchPosts = useCallback(
+    async (userId) => {
+      setLoadingPosts(true);
+      try {
+        const response = await PostService.getPostsByUserId(userId);
+        // Assuming response.data is the array of posts
+        const sortedPosts = (response.data || []).sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+        );
+        setPosts(sortedPosts);
+      } catch (error) {
+        console.error("Error fetching user posts:", error);
+      } finally {
+        setLoadingPosts(false);
+      }
+    },
+    [setPosts],
+  );
   // Hàm lấy Avatar
-  const fetchCurrentUserAvatar = async () => {
+  const fetchCurrentUserAvatar = useCallback(async () => {
     try {
       // 1. Lấy string JSON từ localStorage
       const userProfileStr = localStorage.getItem("userProfile");
@@ -95,22 +110,26 @@ export default function UserProfile() {
     } catch (error) {
       console.error("Failed to fetch user avatar", error);
     }
-  };
+  }, []);
   const handlePostCreated = (newPost) => {
     // only add if approved (AI check result)
     if (newPost.status === "APPROVED") {
       setPosts((prevPosts) => [newPost, ...prevPosts]);
+      if (profile) {
+        dispatch(updatePostsCount((profile.postsCount || 0) + 1));
+      }
     }
   };
 
   useEffect(() => {
     const userId = user?.id || user?.userId || user?.sub;
-    if (userId && !profile) {
+    if (userId) {
+      // Always fetch fresh profile data
       dispatch(fetchUserProfile(userId));
     }
     fetchPosts(userId);
     fetchCurrentUserAvatar();
-  }, [user, profile, dispatch]);
+  }, [user, dispatch, fetchPosts, fetchCurrentUserAvatar]);
 
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
@@ -282,64 +301,74 @@ export default function UserProfile() {
                   <div className="flex gap-3 mb-4 w-full md:w-auto">
                     <button
                       onClick={() => setIsEditModalOpen(true)}
-                      className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-primary hover:bg-orange-600 text-[#231810] font-bold px-6 py-3 rounded-xl transition-all shadow-lg shadow-orange-500/20"
+                      className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-primary hover:bg-orange-600 text-[#231810] text-sm font-bold px-4 py-2 rounded-lg transition-all shadow-md shadow-orange-500/10"
                     >
-                      <SquarePen size={20} />
+                      <SquarePen size={18} />
                       Chỉnh sửa hồ sơ
                     </button>
                   </div>
                 </div>
               </div>
-              <div className="flex gap-1 overflow-x-auto pb-1 border-t border-border-main pt-2 scrollbar-hide">
+              <div className="flex justify-center sm:justify-start gap-1 overflow-x-auto pb-1 border-t border-border-main pt-2 scrollbar-hide">
                 <button
                   onClick={() => setActiveTab("timeline")}
-                  className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${
+                  className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 font-bold transition-all whitespace-nowrap min-w-[60px] sm:min-w-0 ${
                     activeTab === "timeline"
                       ? "text-primary border-b-2 border-primary"
                       : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
                   }`}
                 >
-                  Dòng thời gian
+                  <LayoutDashboard size={20} />
+                  <span className="hidden sm:inline">Dòng thời gian</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("about")}
-                  className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${
+                  className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 font-bold transition-all whitespace-nowrap min-w-[60px] sm:min-w-0 ${
                     activeTab === "about"
                       ? "text-primary border-b-2 border-primary"
                       : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
                   }`}
                 >
-                  Giới thiệu
+                  <User size={20} />
+                  <span className="hidden sm:inline">Giới thiệu</span>
                 </button>
                 <button
-                  onClick={() => setActiveTab("photos")}
-                  className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${
-                    activeTab === "photos"
+                  onClick={() => setActiveTab("library")}
+                  className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 font-bold transition-all whitespace-nowrap min-w-[60px] sm:min-w-0 ${
+                    activeTab === "library"
                       ? "text-primary border-b-2 border-primary"
                       : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
                   }`}
                 >
-                  Ảnh
+                  <Image size={20} />
+                  <span className="hidden sm:inline">Thư viện</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("hobbies")}
-                  className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${
+                  className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 font-bold transition-all whitespace-nowrap min-w-[60px] sm:min-w-0 ${
                     activeTab === "hobbies"
                       ? "text-primary border-b-2 border-primary"
                       : "text-text-secondary hover:text-white hover:bg-[#493222]/50 rounded-t-lg"
                   }`}
                 >
-                  Sở thích
+                  <Heart size={20} />
+                  <span className="hidden sm:inline">Sở thích</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("friends")}
-                  className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${
+                  className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 font-bold transition-all whitespace-nowrap min-w-[60px] sm:min-w-0 ${
                     activeTab === "friends"
                       ? "text-primary border-b-2 border-primary"
                       : "text-text-secondary hover:text-white hover:bg-[#493222]/50 rounded-t-lg"
                   }`}
                 >
-                  Bạn bè ({profile?.friendsCount || 0})
+                  <Users size={20} />
+                  <span className="hidden sm:inline">
+                    Bạn bè ({profile?.friendsCount || 0})
+                  </span>
+                  <span className="sm:hidden font-bold">
+                    ({profile?.friendsCount || 0})
+                  </span>
                 </button>
               </div>
             </div>
@@ -367,7 +396,7 @@ export default function UserProfile() {
                       <Briefcase size={20} />
                       <span>
                         Nghề nghiệp:{" "}
-                        <strong>
+                        <strong className="text-text-main">
                           {profile?.occupation || "Chưa cập nhật"}
                         </strong>
                       </span>
@@ -376,20 +405,21 @@ export default function UserProfile() {
                       <Heart size={20} />
                       <span>
                         Tình trạng:{" "}
-                        <strong>
+                        <strong className="text-text-main">
                           {{
                             SINGLE: "Độc thân",
                             MARRIED: "Đã kết hôn",
                             DIVORCED: "Ly hôn",
+                            WIDOWED: "Góa",
                           }[profile?.maritalStatus] || "Chưa cập nhật"}
                         </strong>
                       </span>
                     </div>
                     <div className="flex items-center gap-3 text-text-secondary text-sm">
-                      <Heart size={20} />
+                      <Search size={20} />
                       <span>
                         Tìm kiếm:{" "}
-                        <strong>
+                        <strong className="text-text-main">
                           {{
                             LOVE: "Tình yêu",
                             FRIENDS: "Bạn bè",
@@ -474,8 +504,8 @@ export default function UserProfile() {
                 <ProfileAbout profile={profile} isOwner={true} />
               )}
 
-              {activeTab === "photos" && (
-                <ProfilePhotos profile={profile} isOwner={true} />
+              {activeTab === "library" && (
+                <ProfileLibrary profile={profile} isOwner={true} />
               )}
 
               {activeTab === "hobbies" && (

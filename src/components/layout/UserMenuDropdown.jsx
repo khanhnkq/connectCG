@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Settings, Bell, LogOut, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -35,29 +35,12 @@ const DropdownItem = ({ icon, label, onClick, danger }) => {
     </button>
   );
 };
-
 const UserMenuDropdown = ({ isOpen, onClose, onShowNotifications }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const dropdownRef = useRef(null);
 
   const { user } = useSelector((state) => state.auth);
   const { profile: userProfile } = useSelector((state) => state.user);
-
-  // Close on click outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        onClose();
-      }
-    };
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isOpen, onClose]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -69,7 +52,6 @@ const UserMenuDropdown = ({ isOpen, onClose, onShowNotifications }) => {
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          ref={dropdownRef}
           initial={{ opacity: 0, y: 15, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 15, scale: 0.95 }}
@@ -78,7 +60,7 @@ const UserMenuDropdown = ({ isOpen, onClose, onShowNotifications }) => {
         >
           {/* Profile Header */}
           <div
-            className="p-3 mb-2 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+            className="p-3 mb-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
             onClick={() => {
               navigate("/dashboard/my-profile");
               onClose();
@@ -99,21 +81,7 @@ const UserMenuDropdown = ({ isOpen, onClose, onShowNotifications }) => {
                 <p className="font-bold text-gray-900 dark:text-white truncate text-sm">
                   {userProfile?.fullName || user?.username || "Người dùng"}
                 </p>
-                <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
-                  {user?.email || "user@example.com"}
-                </p>
               </div>
-            </div>
-            <div className="mt-2 pt-2 border-t border-gray-200 dark:border-white/10">
-              <p className="text-[11px] font-bold text-primary flex items-center justify-between">
-                Xem trang cá nhân
-                <motion.span
-                  animate={{ x: [0, 3, 0] }}
-                  transition={{ repeat: Infinity, duration: 1.5 }}
-                >
-                  →
-                </motion.span>
-              </p>
             </div>
           </div>
 

@@ -10,6 +10,8 @@ import ConfirmModal from "../../components/common/ConfirmModal";
 
 import { usePostManagement } from "../../hooks/usePostManagement";
 
+import { motion } from "framer-motion";
+
 export default function Newsfeed() {
   const {
     posts,
@@ -21,86 +23,81 @@ export default function Newsfeed() {
     handleUpdatePost,
   } = usePostManagement();
 
-  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [userAvatar, setUserAvatar] = useState("");
+  const [isFetchingInfo, setIsFetchingInfo] = useState(true); // Loading for avatar/initial data
+
+  // Ref for intersection observer
+  const observer = React.useRef();
+  const lastPostElementRef = React.useCallback(
+    (node) => {
+      if (loading) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          setPage((prevPage) => prevPage + 1);
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [loading, hasMore],
+  );
 
   useEffect(() => {
-    fetchPosts();
-    fetchCurrentUserAvatar(); // Gọi hàm lấy avatar
+    const fetchCurrentUserAvatar = async () => {
+      try {
+        const userProfileStr = localStorage.getItem("userProfile");
+        if (userProfileStr) {
+          const userProfile = JSON.parse(userProfileStr);
+          const avatar =
+            userProfile.currentAvatarUrl ||
+            userProfile.avatar ||
+            userProfile.avatarUrl;
+          if (avatar) setUserAvatar(avatar);
+        }
+      } catch (error) {
+        console.error("Failed to fetch user avatar", error);
+      } finally {
+        setIsFetchingInfo(false);
+      }
+    };
+    fetchCurrentUserAvatar();
   }, []);
 
   useEffect(() => {
-    const handlePostEvent = (e) => {
-      const { action, post, postId } = e.detail;
+    const fetchPosts = async () => {
+      try {
+        setLoading(true);
+        // Default size 10
+        const response = await postService.getPublicHomepagePosts(page, 10);
+        const newPosts = response.data.content || response.data; // Handle Page<T> or List<T>
+        const isLast = response.data.last; // Spring Page object has 'last' boolean
 
-      // Get current user ID from localStorage
-      const userStr = localStorage.getItem("user");
-      const currentUserId = userStr ? JSON.parse(userStr).id : null;
-
-      if (action === "CREATED" && post) {
-        // Skip if this is from current user (already added via handlePostCreated)
-        if (post.authorId === currentUserId) return;
-
-        // Thêm bài mới vào đầu danh sách (nếu chưa có)
         setPosts((prev) => {
-          if (prev.some((p) => p.id === post.id)) return prev;
-          return [post, ...prev];
-        });
-      } else if (action === "UPDATED" && post) {
-        // Skip if this is from current user (already updated via handleUpdatePost)
-        if (post.authorId === currentUserId) return;
+          // If page 0, replace. Else append.
+          if (page === 0) return newPosts;
 
-        // Cập nhật bài viết
-        setPosts((prev) => prev.map((p) => (p.id === post.id ? post : p)));
-      } else if (action === "DELETED" && postId) {
-        // For delete, we don't have authorId in event, so always process
-        // This is acceptable since delete already filters by ID
-        setPosts((prev) => prev.filter((p) => p.id !== postId));
+          // Allow duplicates? ideally backend filters them, but let's be safe
+          const existingIds = new Set(prev.map((p) => p.id));
+          const filteredNew = newPosts.filter((p) => !existingIds.has(p.id));
+          return [...prev, ...filteredNew];
+        });
+
+        setHasMore(!isLast && newPosts.length > 0);
+      } catch (error) {
+        console.error("Error fetching newsfeed:", error);
+        toast.error("Failed to load newsfeed posts");
+      } finally {
+        setLoading(false);
       }
     };
-    window.addEventListener("postEvent", handlePostEvent);
-    return () => window.removeEventListener("postEvent", handlePostEvent);
-  }, [setPosts]);
 
-  // Hàm lấy Avatar
-  const fetchCurrentUserAvatar = async () => {
-    try {
-      // 1. Lấy string JSON từ localStorage
-      const userProfileStr = localStorage.getItem("userProfile");
-
-      if (userProfileStr) {
-        // 2. Parse từ String sang Object
-        const userProfile = JSON.parse(userProfileStr);
-        // 3. Lấy avatar (Fallback các trường hợp key có thể khác nhau)
-        const avatar =
-          userProfile.currentAvatarUrl ||
-          userProfile.avatar ||
-          userProfile.avatarUrl;
-
-        if (avatar) {
-          setUserAvatar(avatar);
-        }
-      }
-    } catch (error) {
-      console.error("Failed to fetch user avatar", error);
-    }
-  };
-
-  const fetchPosts = async () => {
-    try {
-      setLoading(true);
-      const response = await postService.getPublicHomepagePosts();
-      setPosts(response.data);
-    } catch (error) {
-      console.error("Error fetching newsfeed:", error);
-      toast.error("Failed to load newsfeed posts");
-    } finally {
-      setLoading(false);
-    }
-  };
+    fetchPosts();
+  }, [page, setPosts, loading]);
 
   const handlePostCreated = (newPost) => {
-    // only add if approved (AI check result)
     if (newPost.status === "APPROVED") {
       setPosts((prevPosts) => [newPost, ...prevPosts]);
     }
@@ -116,23 +113,44 @@ export default function Newsfeed() {
               onPostCreated={handlePostCreated}
             />
 
-            {loading ? (
-              <div className="text-center py-10 text-text-secondary">
-                Loading feed...
-              </div>
-            ) : posts.length === 0 ? (
+            {posts.length === 0 && !loading ? (
               <div className="text-center py-10 text-text-secondary">
                 No posts to show yet.
               </div>
             ) : (
-              posts.map((post) => (
-                <PostCard
-                  key={post.id}
-                  post={post}
-                  onDelete={handleDeletePost} // <--- Thêm dòng này
-                  onUpdate={handleUpdatePost} // <--- Thêm dòng này
-                />
-              ))
+              posts.map((post, index) => {
+                // Trigger load when reaching 3rd post from bottom (if plenty of posts)
+                // or last post (if few posts)
+                const isTrigger =
+                  index === posts.length - 3 ||
+                  (posts.length < 3 && index === posts.length - 1);
+
+                return (
+                  <motion.div
+                    ref={isTrigger ? lastPostElementRef : null}
+                    key={post.id}
+                    initial={{ opacity: 0, y: 50 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{
+                      duration: 0.5,
+                      delay: index < 3 ? index * 0.1 : 0,
+                    }}
+                  >
+                    <PostCard
+                      post={post}
+                      onDelete={handleDeletePost}
+                      onUpdate={handleUpdatePost}
+                    />
+                  </motion.div>
+                );
+              })
+            )}
+
+            {!hasMore && posts.length > 0 && (
+              <div className="text-center py-8 text-text-secondary/70">
+                <p className="text-sm">Bạn đã xem hết bài viết.</p>
+              </div>
             )}
           </div>
         </div>

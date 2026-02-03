@@ -5,8 +5,11 @@ const reportService = {
         return axiosClient.post('/reports', payload);
     },
 
-    getReports() {
-        return axiosClient.get('/reports');
+    getReports(params = {}) {
+        const { page = 0, size = 10, status, targetType } = params;
+        return axiosClient.get('/reports', { 
+            params: { page, size, status, targetType } 
+        });
     },
 
     getReportById(id) {

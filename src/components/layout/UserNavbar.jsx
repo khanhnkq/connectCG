@@ -8,8 +8,9 @@ import {
   UsersRound,
   MessageCircle,
   ChevronDown,
+  Menu,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useSelector, useDispatch } from "react-redux";
 import {
   fetchNotifications,
@@ -25,7 +26,7 @@ import NotificationDropdown from "./NotificationDropdown";
 import ChatDropdownWrapper from "./ChatDropdownWrapper";
 import useChatRooms from "../../pages/chat/hooks/useChatRooms";
 
-const UserNavbar = () => {
+const UserNavbar = ({ onMenuClick }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
@@ -52,11 +53,6 @@ const UserNavbar = () => {
 
     // Initial fetch to populate Redux/unread counts
     fetchRooms();
-
-    const listeners = [];
-    // We don't need a local state listener anymore as Redux is updated by FirebaseChatService 
-    // if implemented correctly, but for now we keep the Firebase subscription logic if it was intended
-    // for just the badge. However, fetchRooms should be the main source of truth on mount.
   }, [user?.id, fetchRooms]);
 
   useEffect(() => {
@@ -66,21 +62,36 @@ const UserNavbar = () => {
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
+      // Check Notifications
       if (
+        showNotifications &&
         notificationRef.current &&
         !notificationRef.current.contains(event.target)
       ) {
         setShowNotifications(false);
       }
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+      // Check User Menu
+      if (
+        showUserMenu &&
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target)
+      ) {
         setShowUserMenu(false);
+      }
+      // Check Chat Dropdown
+      if (
+        showChatDropdown &&
+        chatDropdownRef.current &&
+        !chatDropdownRef.current.contains(event.target)
+      ) {
+        setShowChatDropdown(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [showNotifications, showUserMenu, showChatDropdown]);
 
   const isActive = (path) => location.pathname === path;
 
@@ -146,7 +157,7 @@ const UserNavbar = () => {
     <motion.div
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      className="sticky top-0 z-40 w-full px-4 md:px-6 py-2 bg-background-main/80 backdrop-blur-xl border-b border-border-main flex items-center justify-between"
+      className="sticky top-0 z-50 w-full h-16 px-4 md:px-6 bg-background-main/80 backdrop-blur-xl border-b border-border-main flex items-center justify-between"
     >
       {/* LEFT: Logo & Search */}
       <div className="flex items-center gap-4 flex-1">
@@ -187,6 +198,8 @@ const UserNavbar = () => {
           onClick={() => {
             navigate("/dashboard/feed");
             setShowNotifications(false);
+            setShowChatDropdown(false);
+            setShowUserMenu(false);
           }}
           tooltip="Trang chủ"
         />
@@ -201,6 +214,8 @@ const UserNavbar = () => {
           onClick={() => {
             navigate("/dashboard/friends");
             setShowNotifications(false);
+            setShowChatDropdown(false);
+            setShowUserMenu(false);
           }}
           tooltip="Bạn bè"
         />
@@ -215,6 +230,8 @@ const UserNavbar = () => {
           onClick={() => {
             navigate("/dashboard/groups");
             setShowNotifications(false);
+            setShowChatDropdown(false);
+            setShowUserMenu(false);
           }}
           tooltip="Nhóm"
         />
@@ -230,15 +247,14 @@ const UserNavbar = () => {
           <Search className="h-6 w-6" />
         </button>
 
-        {/* Messenger/Chat */}
-
         {/* Messenger/Chat Dropdown */}
-        <div className="relative" ref={chatDropdownRef}>
+        <div className="hidden md:block relative" ref={chatDropdownRef}>
           <button
-            className={`p-2.5 rounded-full transition-colors relative flex items-center justify-center w-10 h-10 ${showChatDropdown
+            className={`p-2.5 rounded-full transition-colors relative flex items-center justify-center w-10 h-10 ${
+              showChatDropdown
                 ? "bg-primary/20 text-primary"
                 : "bg-[#E4E6EB] dark:bg-[#3A3B3C] text-text-main hover:bg-[#D8DADF] dark:hover:bg-[#4E4F50]"
-              }`}
+            }`}
             onClick={() => {
               setShowChatDropdown(!showChatDropdown);
               setShowNotifications(false);
@@ -262,12 +278,14 @@ const UserNavbar = () => {
         {/* Notifications */}
         <div className="relative" ref={notificationRef}>
           <button
-            className={`p-2.5 rounded-full transition-colors relative flex items-center justify-center w-10 h-10 ${showNotifications
+            className={`p-2.5 rounded-full transition-colors relative flex items-center justify-center w-10 h-10 ${
+              showNotifications
                 ? "bg-primary/20 text-primary"
                 : "bg-[#E4E6EB] dark:bg-[#3A3B3C] text-text-main hover:bg-[#D8DADF] dark:hover:bg-[#4E4F50]"
-              }`}
+            }`}
             onClick={() => {
               setShowNotifications(!showNotifications);
+              setShowChatDropdown(false);
               setShowUserMenu(false);
             }}
           >
@@ -290,20 +308,23 @@ const UserNavbar = () => {
         </div>
 
         {/* Theme Toggle - Animated */}
-        <AnimatedThemeToggler />
+        <div className="hidden md:block">
+          <AnimatedThemeToggler />
+        </div>
 
         {/* User Menu */}
-        <div className="relative" ref={userMenuRef}>
+        <div className="hidden md:block relative" ref={userMenuRef}>
           <button
             onClick={() => {
               setShowUserMenu(!showUserMenu);
               setShowNotifications(false);
               setShowChatDropdown(false);
             }}
-            className={`flex items-center gap-1.5 p-1 rounded-full transition-all duration-200 border ml-1 ${showUserMenu
+            className={`flex items-center gap-1.5 p-1 rounded-full transition-all duration-200 border ml-1 ${
+              showUserMenu
                 ? "bg-primary/10 border-primary/30"
                 : "bg-[#E4E6EB] dark:bg-[#3A3B3C] border-transparent hover:bg-[#D8DADF] dark:hover:bg-[#4E4F50]"
-              }`}
+            }`}
           >
             <div className="bg-gradient-to-tr from-primary to-orange-400 p-[2px] rounded-full">
               <img
@@ -317,8 +338,9 @@ const UserNavbar = () => {
             </div>
             <ChevronDown
               size={14}
-              className={`text-text-secondary transition-transform duration-200 mr-1 ${showUserMenu ? "rotate-180 text-primary" : ""
-                }`}
+              className={`text-text-secondary transition-transform duration-200 mr-1 ${
+                showUserMenu ? "rotate-180 text-primary" : ""
+              }`}
             />
           </button>
 
@@ -328,6 +350,14 @@ const UserNavbar = () => {
             onShowNotifications={() => setShowNotifications(true)}
           />
         </div>
+
+        {/* Mobile Menu Icon */}
+        <button
+          className="md:hidden p-2 rounded-full text-text-secondary hover:bg-surface-main transition-colors"
+          onClick={onMenuClick}
+        >
+          <Menu className="h-6 w-6" />
+        </button>
       </div>
     </motion.div>
   );
@@ -339,10 +369,11 @@ const NavItem = ({ icon, active, onClick, tooltip }) => {
       <button
         onClick={onClick}
         className={`relative flex items-center justify-center p-3 lg:px-10 lg:py-3.5 rounded-xl transition-all duration-300
-                    ${active
-            ? "text-primary bg-primary/5"
-            : "text-text-secondary hover:bg-surface-main hover:text-text-main"
-          }
+                    ${
+                      active
+                        ? "text-primary bg-primary/5"
+                        : "text-text-secondary hover:bg-surface-main hover:text-text-main"
+                    }
                 `}
       >
         {icon}

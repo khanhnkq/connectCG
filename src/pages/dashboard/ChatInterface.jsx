@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, Fragment } from "react";
+import React, { useState, useEffect, useRef, Fragment } from "react";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -49,15 +49,19 @@ import FriendService from "../../services/friend/FriendService";
 import ReportModal from "../../components/report/ReportModal";
 import ConfirmModal from "../../components/common/ConfirmModal";
 import { uploadImage } from "../../utils/uploadImage";
-import { useDispatch } from 'react-redux';
-import { setConversations, updateConversation, clearUnreadCount, setActiveRoomId } from '../../redux/slices/chatSlice';
-import NewChatModal from '../../components/chat/NewChatModal.jsx';
-import InviteMemberModal from '../../components/chat/InviteMemberModal.jsx';
-import ChatSettings from '../../components/chat/ChatSettings.jsx';
-import ChatSidebar from '../../components/chat/ChatSidebar.jsx';
-import ChatWindow from '../../components/chat/ChatWindow.jsx';
-import useChatRooms from '../chat/hooks/useChatRooms';
-import useChatMessages from '../chat/hooks/useChatMessages';
+import { useDispatch } from "react-redux";
+import {
+  setConversations,
+  updateConversation,
+  clearUnreadCount,
+} from "../../redux/slices/chatSlice";
+import NewChatModal from "../../components/chat/NewChatModal.jsx";
+import InviteMemberModal from "../../components/chat/InviteMemberModal.jsx";
+import ChatSettings from "../../components/chat/ChatSettings.jsx";
+import ChatSidebar from "../../components/chat/ChatSidebar.jsx";
+import ChatWindow from "../../components/chat/ChatWindow.jsx";
+import useChatRooms from "../chat/hooks/useChatRooms";
+import useChatMessages from "../chat/hooks/useChatMessages";
 import { fetchUserProfile } from "../../redux/slices/userSlice";
 
 export default function ChatInterface() {
@@ -70,9 +74,8 @@ export default function ChatInterface() {
     conversations,
     isLoading,
     fetchRooms,
-    setIsLoading,
     directUnreadCount,
-    groupUnreadCount
+    groupUnreadCount,
   } = useChatRooms();
   const [activeRoom, setActiveRoom] = useState(null);
   const { messages, setMessages } = useChatMessages(activeRoom);
@@ -87,29 +90,33 @@ export default function ChatInterface() {
   const [showReportUser, setShowReportUser] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
-  const [isEditingName, setIsEditingName] = useState(false);
-  const [tempName, setTempName] = useState("");
-  const chatAvatarInputRef = useRef(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const emojiPickerRef = useRef(null);
+  const [showSettings, setShowSettings] = useState(false);
 
   const [activeTab, setActiveTab] = useState("DIRECT"); // "DIRECT" | "GROUP"
   const [kickMemberData, setKickMemberData] = useState(null);
-  const [isInviting, setIsInviting] = useState(false);
-  const [isConfirmLoading, setIsConfirmLoading] = useState(false);
 
-  const emojis = ["😊", "😂", "🥰", "😍", "😒", "😭", "😘", "😩", "😔", "👍", "❤️", "🔥", "✨", "🎉", "🙏", "✅", "❌", "💯"];
-
-  // Sync activeRoom with Redux conversations when they update (via WebSocket)
-  useEffect(() => {
-    if (activeRoom) {
-      const updatedRoom = conversations.find((c) => c.id === activeRoom.id);
-      if (updatedRoom && updatedRoom !== activeRoom) {
-        setActiveRoom(updatedRoom);
-      }
-    }
-  }, [conversations, activeRoom]);
+  const emojis = [
+    "😊",
+    "😂",
+    "🥰",
+    "😍",
+    "😒",
+    "😭",
+    "😘",
+    "😩",
+    "😔",
+    "👍",
+    "❤️",
+    "🔥",
+    "✨",
+    "🎉",
+    "🙏",
+    "✅",
+    "❌",
+    "💯",
+  ];
 
   const handleCreateGroup = async () => {
     if (selectedMembers.length < 1) {
@@ -133,7 +140,13 @@ export default function ChatInterface() {
       } else {
         // Nếu > 1 người, tạo nhóm
         // Prefer profile fullName, then auth user fullName (if any), then username
-        const name = groupName.trim() || `Nhóm của ${userProfile?.fullName || currentUser?.fullName || currentUser?.username}`;
+        const name =
+          groupName.trim() ||
+          `Nhóm của ${
+            userProfile?.fullName ||
+            currentUser?.fullName ||
+            currentUser?.username
+          }`;
         const response = await ChatService.createGroupChat(
           name,
           selectedMembers.map((f) => f.id),
@@ -159,7 +172,6 @@ export default function ChatInterface() {
     if (!selectedInvitees || selectedInvitees.length === 0 || !activeRoom)
       return;
 
-    setIsInviting(true);
     const tid = toast.loading(
       `Đang mời ${selectedInvitees.length} thành viên...`,
     );
@@ -181,8 +193,6 @@ export default function ChatInterface() {
       toast.error(error.response?.data?.message || "Lỗi khi mời thành viên", {
         id: tid,
       });
-    } finally {
-      setIsInviting(false);
     }
   };
 
@@ -233,7 +243,9 @@ export default function ChatInterface() {
     const clearSelection = location.state?.clearSelection;
 
     if (selectedKey) {
-      const match = conversations.find((r) => r.firebaseRoomKey === selectedKey);
+      const match = conversations.find(
+        (r) => r.firebaseRoomKey === selectedKey,
+      );
       if (match) {
         setActiveRoom(match);
         // Auto switch tab
@@ -268,7 +280,7 @@ export default function ChatInterface() {
     if (!activeRoom || messages.length === 0) return;
 
     const scrollToBottom = (behavior = "auto") => {
-      messagesEndRef.current?.scrollIntoView({ behavior, block: 'end' });
+      messagesEndRef.current?.scrollIntoView({ behavior, block: "end" });
     };
 
     // First attempt
@@ -292,7 +304,10 @@ export default function ChatInterface() {
   // Click outside to close emoji picker
   useEffect(() => {
     function handleClickOutside(event) {
-      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
+      if (
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(event.target)
+      ) {
         setShowEmojiPicker(false);
       }
     }
@@ -330,12 +345,6 @@ export default function ChatInterface() {
     }
   };
 
-  const filteredFriends = friends.filter(
-    (f) =>
-      f.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      f.username?.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
-
   const handleSendMessage = async () => {
     const text = inputText.trim();
     if (!text || !activeRoom) return;
@@ -349,8 +358,13 @@ export default function ChatInterface() {
     try {
       const msgData = {
         senderId: currentUser.id,
-        senderName: userProfile?.fullName || currentUser.fullName || currentUser.username || "Anonymous",
-        senderAvatarUrl: userProfile?.currentAvatarUrl || currentUser.avatarUrl || "",
+        senderName:
+          userProfile?.fullName ||
+          currentUser.fullName ||
+          currentUser.username ||
+          "Anonymous",
+        senderAvatarUrl:
+          userProfile?.currentAvatarUrl || currentUser.avatarUrl || "",
         text: text,
         type: "text",
         timestamp: Date.now(),
@@ -361,8 +375,8 @@ export default function ChatInterface() {
       );
 
       // Update lastMessageAt on Backend
-      ChatService.updateLastMessageAt(activeRoom.firebaseRoomKey).catch(err =>
-        console.error("Error updating last message time:", err)
+      ChatService.updateLastMessageAt(activeRoom.firebaseRoomKey).catch((err) =>
+        console.error("Error updating last message time:", err),
       );
     } catch (error) {
       console.error("Error sending message:", error);
@@ -416,30 +430,34 @@ export default function ChatInterface() {
   };
 
   const handleClearHistory = async () => {
-    setIsConfirmLoading(true);
+    setShowClearConfirm(false);
     const tid = toast.loading("Đang xóa lịch sử...");
     try {
       await ChatService.clearHistory(activeRoom.id);
       toast.success("Đã xóa lịch sử trò chuyện", { id: tid });
 
       const now = new Date().toISOString();
-      setActiveRoom(prev => ({ ...prev, clientClearedAt: now }));
+      setActiveRoom((prev) => ({ ...prev, clientClearedAt: now }));
       setMessages([]); // Clear current view
 
       // Update sidebar immediately
-      setConversations(prev => prev.map(c =>
-        c.id === activeRoom.id
-          ? { ...c, lastMessageVisible: "Chưa có tin nhắn", unreadCount: 0, clientClearedAt: now }
-          : c
-      ));
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === activeRoom.id
+            ? {
+                ...c,
+                lastMessageVisible: "Chưa có tin nhắn",
+                unreadCount: 0,
+                clientClearedAt: now,
+              }
+            : c,
+        ),
+      );
 
       fetchRooms(); // Refresh list to get fresh data
-      setShowClearConfirm(false);
     } catch (err) {
       console.error(err);
       toast.error("Không thể xóa lịch sử", { id: tid });
-    } finally {
-      setIsConfirmLoading(false);
     }
   };
 
@@ -450,9 +468,11 @@ export default function ChatInterface() {
 
   const confirmKickMember = async () => {
     if (!activeRoom || !kickMemberData) return;
-    setIsConfirmLoading(true);
     try {
-      if (kickMemberData.role === "Member" || kickMemberData.role === "MEMBER") {
+      if (
+        kickMemberData.role === "Member" ||
+        kickMemberData.role === "MEMBER"
+      ) {
         await ChatService.removeMember(activeRoom.id, kickMemberData.id);
         toast.success(`Đã xóa ${kickMemberData.fullName} khỏi nhóm`);
       } else {
@@ -462,55 +482,48 @@ export default function ChatInterface() {
       setKickMemberData(null);
       fetchRooms();
       // Update active room members locally
-      setActiveRoom(prev => ({
+      setActiveRoom((prev) => ({
         ...prev,
-        members: kickMemberData.role === "Member" || kickMemberData.role === "MEMBER"
-          ? prev.members.filter(m => m.id !== kickMemberData.id)
-          : [...prev.members, kickMemberData]
+        members:
+          kickMemberData.role === "Member" || kickMemberData.role === "MEMBER"
+            ? prev.members.filter((m) => m.id !== kickMemberData.id)
+            : [...prev.members, kickMemberData],
       }));
     } catch (error) {
       console.error(error);
       toast.error("Thao tác thất bại");
-    } finally {
-      setIsConfirmLoading(false);
     }
   };
 
   const handleLeaveGroup = async () => {
-    setIsConfirmLoading(true);
+    setShowLeaveConfirm(false);
     const tid = toast.loading("Đang rời nhóm...");
     try {
       await ChatService.leaveGroup(activeRoom.id);
       toast.success("Đã rời nhóm", { id: tid });
       setActiveRoom(null);
-      setShowLeaveConfirm(false);
       navigate("/dashboard/chat", { state: { noAutoSelect: true } });
       fetchRooms();
     } catch (error) {
       console.error(error);
       toast.error("Lỗi khi rời nhóm", { id: tid });
-    } finally {
-      setIsConfirmLoading(false);
     }
   };
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleDeleteGroup = async () => {
-    setIsConfirmLoading(true);
+    setShowDeleteConfirm(false);
     const tid = toast.loading("Đang giải tán nhóm...");
     try {
       await ChatService.deleteChatRoom(activeRoom.id);
       toast.success("Đã giải tán nhóm thành công", { id: tid });
       setActiveRoom(null);
-      setShowDeleteConfirm(false);
       navigate("/dashboard/chat", { state: { noAutoSelect: true } });
       fetchRooms();
     } catch (error) {
       console.error(error);
       toast.error("Lỗi khi giải tán nhóm", { id: tid });
-    } finally {
-      setIsConfirmLoading(false);
     }
   };
 
@@ -536,6 +549,7 @@ export default function ChatInterface() {
           groupUnreadCount={groupUnreadCount}
           onSelectRoom={(conv) => {
             setActiveRoom(conv);
+            setShowSettings(false);
             dispatch(clearUnreadCount(conv.id));
           }}
           onOpenNewChat={() => setShowNewChatModal(true)}
@@ -546,8 +560,11 @@ export default function ChatInterface() {
           messages={messages}
           currentUser={{
             ...currentUser,
-            fullName: userProfile?.fullName || currentUser.fullName || currentUser.username,
-            avatarUrl: userProfile?.currentAvatarUrl || currentUser.avatarUrl
+            fullName:
+              userProfile?.fullName ||
+              currentUser.fullName ||
+              currentUser.username,
+            avatarUrl: userProfile?.currentAvatarUrl || currentUser.avatarUrl,
           }}
           messagesEndRef={messagesEndRef}
           inputText={inputText}
@@ -557,23 +574,26 @@ export default function ChatInterface() {
           showEmojiPicker={showEmojiPicker}
           emojiPickerRef={emojiPickerRef}
           emojis={emojis}
+          onBack={() => setActiveRoom(null)}
+          onShowSettings={() => setShowSettings(!showSettings)}
         />
 
         <ChatSettings
+          isOpen={showSettings}
+          onClose={() => setShowSettings(false)}
           activeRoom={activeRoom}
           currentUser={{
             ...currentUser,
-            fullName: userProfile?.fullName || currentUser.fullName || currentUser.username,
-            avatarUrl: userProfile?.currentAvatarUrl || currentUser.avatarUrl
+            fullName:
+              userProfile?.fullName ||
+              currentUser.fullName ||
+              currentUser.username,
+            avatarUrl: userProfile?.currentAvatarUrl || currentUser.avatarUrl,
           }}
           onUpdateAvatar={handleUpdateAvatar}
           onRenameRoom={handleRenameName}
-          onClearHistory={handleClearHistory}
-          onReportUser={() => setShowReportUser(true)}
-          onLeaveGroup={() => setShowLeaveConfirm(true)}
-          onDeleteGroup={() => setShowDeleteConfirm(true)}
           onKickMember={handleKickMember}
-          onOpenInvite={handleOpenInviteModal}
+          onInviteMember={handleOpenInviteModal}
           setShowClearConfirm={setShowClearConfirm}
           setShowReportUser={setShowReportUser}
           setShowLeaveConfirm={setShowLeaveConfirm}
@@ -589,7 +609,8 @@ export default function ChatInterface() {
             Bạn có chắc muốn xóa lịch sử cuộc trò chuyện này?
             <br />
             <span className="text-xs opacity-70 mt-2 block">
-              Lưu ý: Tin nhắn chỉ bị xóa ở phía bạn, người khác vẫn có thể xem được.
+              Lưu ý: Tin nhắn chỉ bị xóa ở phía bạn, người khác vẫn có thể xem
+              được.
             </span>
           </>
         }
@@ -598,7 +619,6 @@ export default function ChatInterface() {
         cancelText="Hủy"
         onConfirm={handleClearHistory}
         onClose={() => setShowClearConfirm(false)}
-        isLoading={isConfirmLoading}
       />
 
       {/* Leave Group Modal */}
@@ -611,7 +631,6 @@ export default function ChatInterface() {
         cancelText="Hủy"
         onConfirm={handleLeaveGroup}
         onClose={() => setShowLeaveConfirm(false)}
-        isLoading={isConfirmLoading}
       />
 
       {/* Delete Group Modal */}
@@ -624,7 +643,6 @@ export default function ChatInterface() {
         cancelText="Hủy"
         onConfirm={handleDeleteGroup}
         onClose={() => setShowDeleteConfirm(false)}
-        isLoading={isConfirmLoading}
       />
 
       {/* Kick Member Confirm Modal */}
@@ -637,7 +655,6 @@ export default function ChatInterface() {
         cancelText="Hủy"
         onConfirm={confirmKickMember}
         onClose={() => setKickMemberData(null)}
-        isLoading={isConfirmLoading}
       />
 
       <ReportModal
@@ -683,7 +700,7 @@ export default function ChatInterface() {
           } catch (err) {
             toast.error(
               err?.response?.data?.message ||
-              "Gửi báo cáo thất bại. Vui lòng thử lại!",
+                "Gửi báo cáo thất bại. Vui lòng thử lại!",
               {
                 id: toastId,
                 style: {
@@ -735,7 +752,6 @@ export default function ChatInterface() {
         onToggleInvitee={toggleInvitee}
         onInvite={handleInviteMember}
         activeRoomName={activeRoom?.name}
-        isInviting={isInviting}
       />
     </>
   );
