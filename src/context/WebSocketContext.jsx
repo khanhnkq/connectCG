@@ -14,6 +14,10 @@ import {
   userCameOnline,
   userWentOffline,
 } from "../redux/slices/onlineUsersSlice";
+import {
+  updateConversation,
+  removeConversation,
+} from "../redux/slices/chatSlice";
 
 import userService from "../services/UserService";
 
@@ -31,20 +35,24 @@ export const WebSocketProvider = ({ children }) => {
     const client = new Client({
       webSocketFactory: () => {
         let url = import.meta.env.VITE_WS_URL;
+        if (!url) return new SockJS("/ws"); // Fallback to relative if env is missing
+
+        url = url.trim();
+        if (url.endsWith("/")) {
+          url = url.slice(0, -1);
+        }
 
         // Force HTTP for localhost to avoid SSL errors
         if (url.includes("localhost") && url.startsWith("https:")) {
           url = url.replace("https:", "http:");
         }
 
-        // Append token to URL for Handshake Interceptor
-        if (token) {
-          // Check if url already has query params
-          url += url.includes("?")
-            ? `&access_token=${token}`
-            : `?access_token=${token}`;
-        }
-        return new SockJS(url);
+        // Standard SockJS with token
+        const finalUrl = url.includes("?")
+          ? `${url}&access_token=${token}`
+          : `${url}?access_token=${token}`;
+
+        return new SockJS(finalUrl);
       },
       connectHeaders: {
         Authorization: `Bearer ${token}`,
@@ -114,9 +122,15 @@ export const WebSocketProvider = ({ children }) => {
               payload.content || "Nhóm của bạn đã bị xóa do vi phạm.",
               { duration: 6000 },
             );
-          } else if (payload.type === "WARNING") {
+          } else if (
+            payload.type === "WARNING" ||
+            payload.type === "AI_STRIKE_WARNING"
+          ) {
             dispatch(addNotification(payload));
-            toast(payload.content, { icon: "⚠️" });
+            toast(payload.content, { icon: "⚠️", duration: 6000 });
+          } else if (payload.type === "AI_STRIKE_BANNED") {
+            dispatch(addNotification(payload));
+            toast.error(payload.content, { icon: "🚫", duration: 8000 });
           } else if (payload.type === "REPORT_SUBMITTED") {
             // Admin receives notification about new report
             dispatch(addNotification(payload));
@@ -180,14 +194,44 @@ export const WebSocketProvider = ({ children }) => {
           const payload = JSON.parse(message.body);
           // payload = { type, roomId, firebaseRoomKey, lastMessageAt, unreadCount }
           if (payload.type === "CHAT_UPDATE") {
-            dispatch(updateConversation({
-              id: payload.roomId,
-              lastMessageAt: payload.lastMessageAt,
-              unreadCount: payload.unreadCount
-            }));
+            dispatch(
+              updateConversation({
+                id: payload.roomId,
+                lastMessageAt: payload.lastMessageAt,
+                unreadCount: payload.unreadCount,
+              }),
+            );
+          } else if (payload.type === "CHAT_REMOVE") {
+            dispatch(removeConversation(payload.roomId));
           }
         } catch (e) {
           console.error("Error parsing chat event:", e);
+        }
+      });
+
+      // User Events Realtime (Strikes, Global status)
+      client.subscribe("/topic/users", (message) => {
+        try {
+          const payload = JSON.parse(message.body);
+          // Dispatch custom event for strike updates
+          window.dispatchEvent(
+            new CustomEvent("userEvent", { detail: payload }),
+          );
+        } catch (e) {
+          console.error("Error parsing user event:", e);
+        }
+      });
+
+      // Group Membership Realtime Channel
+      client.subscribe("/topic/groups/membership", (message) => {
+        try {
+          const payload = JSON.parse(message.body);
+          // payload = { type, groupId, userId, member? }
+          window.dispatchEvent(
+            new CustomEvent("membershipEvent", { detail: payload }),
+          );
+        } catch (e) {
+          console.error("Error parsing membership event:", e);
         }
       });
     };

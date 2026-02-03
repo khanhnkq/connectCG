@@ -109,8 +109,8 @@ export const rejectRequest = async (groupId, userId) => {
     return res.data;
 };
 
-export const kickMember = async (groupId, userId) => {
-    const res = await axiosClient.delete(`${URL_GROUP}/${groupId}/kick/${userId}`);
+export const banMember = async (groupId, userId) => {
+    const res = await axiosClient.post(`${URL_GROUP}/${groupId}/ban/${userId}`);
     return res.data;
 };
 export const transferOwnership = async (groupId, newOwnerId) => {
@@ -140,5 +140,15 @@ export const approvePost = async (groupId, postId) => {
 
 export const rejectPost = async (groupId, postId) => {
     const res = await axiosClient.post(`${URL_GROUP}/${groupId}/posts/${postId}/reject`);
+    return res.data;
+};
+
+export const getBannedMembers = async (groupId) => {
+    const res = await axiosClient.get(`${URL_GROUP}/${groupId}/members/banned`);
+    return res.data;
+};
+
+export const unbanMember = async (groupId, userId) => {
+    const res = await axiosClient.post(`${URL_GROUP}/${groupId}/members/${userId}/unban`);
     return res.data;
 };

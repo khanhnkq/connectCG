@@ -10,6 +10,7 @@ const ConfirmModal = ({
   type = "danger",
   confirmText = "Confirm",
   cancelText = "Cancel",
+  children,
 }) => {
   if (!isOpen) return null;
 
@@ -48,6 +49,9 @@ const ConfirmModal = ({
               {message}
             </p>
           </div>
+
+          {children}
+
           <div className="grid grid-cols-2 gap-4 pt-2">
             <button
               onClick={onClose}

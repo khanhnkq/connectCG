@@ -16,7 +16,6 @@ import {
   Globe,
   History,
   Key,
-  UserMinus,
   MessageSquare,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -33,7 +32,7 @@ import {
   getPendingRequests,
   approveRequest,
   rejectRequest,
-  kickMember,
+  banMember,
   transferOwnership,
   updateGroupMemberRole,
   getPendingPosts,
@@ -42,6 +41,8 @@ import {
   getGroupPosts,
   acceptInvitation,
   declineInvitation,
+  getBannedMembers,
+  unbanMember,
 } from "../../services/groups/GroupService";
 import InviteMemberModal from "../../components/groups/InviteMemberModal";
 import TransferOwnershipModal from "../../components/groups/TransferOwnershipModal";
@@ -59,15 +60,16 @@ const GroupDetailPage = () => {
   const [activeTab, setActiveTab] = useState("Bản tin");
   const [showReportGroup, setShowReportGroup] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
-  const [showKickModal, setShowKickModal] = useState(false);
+  const [showBanModal, setShowBanModal] = useState(false);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [showTransferConfirmModal, setShowTransferConfirmModal] =
     useState(false);
-  const [memberToKick, setMemberToKick] = useState(null);
+  const [memberToBan, setMemberToBan] = useState(null);
   const [memberToTransfer, setMemberToTransfer] = useState(null);
 
   const [pendingPosts, setPendingPosts] = useState([]);
   const [memberRequests, setMemberRequests] = useState([]);
+  const [bannedMembers, setBannedMembers] = useState([]);
   const [modTab, setModTab] = useState("Bài viết");
   const [members, setMembers] = useState([]);
   const [userMembership, setUserMembership] = useState(null); // { userId, status, role }
@@ -118,12 +120,18 @@ const GroupDetailPage = () => {
 
       // Set user membership from the group data directly (includes status/role)
       if (groupData.currentUserStatus) {
+        if (groupData.currentUserStatus === "BANNED") {
+          toast.error("Bạn đã bị cấm khỏi nhóm này do vi phạm quy định.", {
+            duration: 6000,
+            icon: "🚫",
+          });
+          navigate("/dashboard/groups");
+          return;
+        }
         setUserMembership({
           status: groupData.currentUserStatus,
           role: groupData.currentUserRole,
         });
-      } else {
-        setUserMembership(null);
       }
 
       // Check if current user is admin (Group Owner OR Group Admin OR System Admin)
@@ -194,6 +202,131 @@ const GroupDetailPage = () => {
     fetchGroupData();
   }, [fetchGroupData]);
 
+  const fetchBannedMembers = useCallback(async () => {
+    try {
+      const data = await getBannedMembers(id);
+      setBannedMembers(data);
+    } catch (error) {
+      console.error("Lỗi khi tải danh sách bị cấm:", error);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    if (activeTab === "Kiểm duyệt" && isAdmin) {
+      fetchBannedMembers();
+    }
+  }, [activeTab, isAdmin, fetchBannedMembers]);
+
+  const handleUnbanMember = async (userId) => {
+    try {
+      await unbanMember(id, userId);
+      toast.success("Đã gỡ lệnh cấm thành công");
+      setBannedMembers((prev) => prev.filter((m) => m.userId !== userId));
+    } catch (error) {
+      toast.error("Gỡ lệnh cấm thất bại");
+    }
+  };
+
+  // Real-time Membership Events
+  useEffect(() => {
+    const handleMembershipEvent = (e) => {
+      const { action, groupId: eventGroupId, userId, member } = e.detail;
+      if (Number(eventGroupId) !== Number(id)) return;
+
+      const currentUserId = Number(getUserIdFromToken());
+      const targetUserId = Number(userId);
+
+      if (action === "JOINED" || action === "APPROVED") {
+        if (member) {
+          setMembers((prev) => {
+            const exists = prev.some((m) => Number(m.userId) === targetUserId);
+            return exists ? prev : [...prev, member];
+          });
+          // Use fetchGroupData to get the exact memberCount from server
+          fetchGroupData();
+        }
+        setMemberRequests((prev) =>
+          prev.filter((r) => Number(r.userId) !== targetUserId),
+        );
+      } else if (action === "LEFT") {
+        if (targetUserId === currentUserId) {
+          navigate("/dashboard/groups");
+          return;
+        }
+        setMembers((prev) => prev.filter((m) => Number(m.userId) !== targetUserId));
+        fetchGroupData();
+      } else if (action === "REQUESTED") {
+        if (member) {
+          setMemberRequests((prev) => {
+            const exists = prev.some((r) => Number(r.userId) === targetUserId);
+            return exists ? prev : [...prev, member];
+          });
+        }
+      } else if (action === "BANNED") {
+        if (targetUserId === currentUserId) {
+          navigate("/dashboard/groups");
+          return;
+        }
+        setMembers((prev) => prev.filter((m) => Number(m.userId) !== targetUserId));
+        // Refresh everything including memberCount
+        fetchGroupData();
+        fetchBannedMembers();
+      } else if (action === "UNBANNED") {
+        // Just refresh banned list
+        fetchBannedMembers();
+      }
+    };
+
+    window.addEventListener("membershipEvent", handleMembershipEvent);
+    return () =>
+      window.removeEventListener("membershipEvent", handleMembershipEvent);
+  }, [id, activeTab, fetchBannedMembers, navigate]);
+
+  // Real-time Post Events
+  useEffect(() => {
+    const handlePostEvent = (e) => {
+      const { action, post, postId, groupId: eventGroupId } = e.detail;
+
+      // Handle both formats: direct groupId or post.groupId
+      const targetGroupId = eventGroupId || (post && post.groupId);
+      if (Number(targetGroupId) !== Number(id)) return;
+
+      if (action === "CREATED") {
+        if (post.status === "APPROVED") {
+          setApprovedPosts((prev) => {
+            const exists = prev.some((p) => p.id === post.id);
+            return exists ? prev : [post, ...prev];
+          });
+        } else if (post.status === "PENDING" && isAdmin) {
+          setPendingPosts((prev) => {
+            const exists = prev.some((p) => p.id === post.id);
+            return exists ? prev : [post, ...prev];
+          });
+        }
+      } else if (action === "UPDATED") {
+        if (post.status === "APPROVED") {
+          setApprovedPosts((prev) =>
+            prev.map((p) => (p.id === post.id ? post : p)),
+          );
+          // If it was pending and now approved, remove from pending
+          setPendingPosts((prev) => prev.filter((p) => p.id !== post.id));
+        } else if (post.status === "PENDING") {
+          setPendingPosts((prev) =>
+            prev.map((p) => (p.id === post.id ? post : p)),
+          );
+          // If it was approved and now pending (re-moderation), remove from approved
+          setApprovedPosts((prev) => prev.filter((p) => p.id !== post.id));
+        }
+      } else if (action === "DELETED") {
+        setApprovedPosts((prev) => prev.filter((p) => p.id !== postId));
+        setPendingPosts((prev) => prev.filter((p) => p.id !== postId));
+      }
+    };
+
+    window.addEventListener("postEvent", handlePostEvent);
+    return () => window.removeEventListener("postEvent", handlePostEvent);
+  }, [id, isAdmin, setApprovedPosts]);
+
   const handleLeaveGroup = () => {
     if (!group) return;
     const currentUserId = getUserIdFromToken();
@@ -216,7 +349,6 @@ const GroupDetailPage = () => {
       setShowLeaveModal(false);
 
       if (isRequest) {
-        // If it was just a request, we can just refresh data instead of navigating away
         fetchGroupData();
       } else {
         navigate("/dashboard/groups");
@@ -305,9 +437,9 @@ const GroupDetailPage = () => {
     }
   };
 
-  const handleKickMember = (member) => {
-    setMemberToKick(member);
-    setShowKickModal(true);
+  const handleBanMember = (member) => {
+    setMemberToBan(member);
+    setShowBanModal(true);
   };
 
   const handleUpdateRole = async (targetUserId, targetUsername, newRole) => {
@@ -339,22 +471,29 @@ const GroupDetailPage = () => {
     }
   };
 
-  const confirmKickMember = async () => {
-    if (!memberToKick) return;
+  const confirmBanMember = async () => {
+    if (!memberToBan) return;
     try {
-      await kickMember(group.id, memberToKick.userId);
-      toast.success(`Đã mời ${memberToKick.fullName} ra khỏi nhóm`);
-      setShowKickModal(false);
-      setMemberToKick(null);
+      await banMember(group.id, memberToBan.userId);
+      toast.success(`Đã cấm vĩnh viễn ${memberToBan.fullName} khỏi nhóm`);
+      setShowBanModal(false);
+
+      // Optimistic update of list
+      setMembers((prev) =>
+        prev.filter((m) => Number(m.userId) !== Number(memberToBan.userId)),
+      );
+      // Fetch fresh group data for memberCount and updated data
       fetchGroupData();
+      setMemberToBan(null);
+      fetchBannedMembers();
     } catch (error) {
-      console.error("Failed to kick member:", error);
+      console.error("Failed to ban member:", error);
       const errorMsg =
         error.response?.data?.message ||
         (typeof error.response?.data === "string"
           ? error.response.data
           : null) ||
-        "Không thể xóa thành viên";
+        "Không thể cấm thành viên";
       toast.error(errorMsg);
     }
   };
@@ -571,11 +710,10 @@ const GroupDetailPage = () => {
                   <button
                     key={tab.en}
                     onClick={() => setActiveTab(tab.vi)}
-                    className={`py-4 font-bold text-sm tracking-wide whitespace-nowrap transition-all border-b-2 ${
-                      activeTab === tab.vi
-                        ? "text-primary border-primary"
-                        : "text-text-secondary hover:text-text-main border-transparent"
-                    }`}
+                    className={`py-4 font-bold text-sm tracking-wide whitespace-nowrap transition-all border-b-2 ${activeTab === tab.vi
+                      ? "text-primary border-primary"
+                      : "text-text-secondary hover:text-text-main border-transparent"
+                      }`}
                   >
                     {tab.vi}
                   </button>
@@ -583,19 +721,22 @@ const GroupDetailPage = () => {
               {isAdmin && (
                 <button
                   onClick={() => setActiveTab("Kiểm duyệt")}
-                  className={`py-4 font-black text-sm tracking-widest whitespace-nowrap transition-all border-b-2 flex items-center gap-2 ${
-                    activeTab === "Kiểm duyệt"
-                      ? "text-orange-400 border-orange-400"
-                      : "text-text-secondary hover:text-orange-400 border-transparent"
-                  }`}
+                  className={`py-4 font-black text-sm tracking-widest whitespace-nowrap transition-all border-b-2 flex items-center gap-2 ${activeTab === "Kiểm duyệt"
+                    ? "text-orange-400 border-orange-400"
+                    : "text-text-secondary hover:text-orange-400 border-transparent"
+                    }`}
                 >
                   <Gavel size={18} />
                   KIỂM DUYỆT
-                  {(pendingPosts.length > 0 || memberRequests.length > 0) && (
-                    <span className="size-5 bg-orange-500 text-text-main text-[10px] rounded-full flex items-center justify-center">
-                      {pendingPosts.length + memberRequests.length}
-                    </span>
-                  )}
+                  {(pendingPosts.length > 0 ||
+                    memberRequests.length > 0 ||
+                    bannedMembers.length > 0) && (
+                      <span className="size-5 bg-orange-500 text-text-main text-[10px] rounded-full flex items-center justify-center">
+                        {pendingPosts.length +
+                          memberRequests.length +
+                          bannedMembers.length}
+                      </span>
+                    )}
                 </button>
               )}
             </nav>
@@ -608,8 +749,8 @@ const GroupDetailPage = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 flex flex-col gap-6">
                 {group.privacy === "PRIVATE" &&
-                userMembership?.status !== "ACCEPTED" &&
-                !isAdmin ? (
+                  userMembership?.status !== "ACCEPTED" &&
+                  !isAdmin ? (
                   <div className="bg-surface-main rounded-[2.5rem] p-12 border border-border-main text-center space-y-6">
                     <div className="size-24 rounded-full bg-primary/10 flex items-center justify-center text-primary mx-auto mb-8">
                       <Lock size={40} />
@@ -621,8 +762,8 @@ const GroupDetailPage = () => {
                       {userMembership?.status === "PENDING"
                         ? "Bạn đã nhận được lời mời tham gia nhóm này. Vui lòng phản hồi lời mời ở phía trên để xem nội dung."
                         : userMembership?.status === "REQUESTED"
-                        ? "Yêu cầu gia nhập của bạn đang chờ quản trị viên phê duyệt. Nội dung sẽ hiển thị sau khi yêu cầu được chấp nhận."
-                        : "Nội dung và danh sách thành viên của nhóm này đã được ẩn. Vui lòng gia nhập nhóm để tham gia cộng đồng."}
+                          ? "Yêu cầu gia nhập của bạn đang chờ quản trị viên phê duyệt. Nội dung sẽ hiển thị sau khi yêu cầu được chấp nhận."
+                          : "Nội dung và danh sách thành viên của nhóm này đã được ẩn. Vui lòng gia nhập nhóm để tham gia cộng đồng."}
                     </p>
                     {!userMembership?.status && (
                       <button
@@ -645,18 +786,13 @@ const GroupDetailPage = () => {
                         groupId={group.id}
                         onPostCreated={(newPost) => {
                           if (newPost.status === "APPROVED") {
-                            setApprovedPosts((prev) => [newPost, ...prev]);
-                            toast.success("Đăng bài viết thành công!");
-                          } else if (newPost.status === "PENDING") {
-                            toast("Bài viết đang chờ quản trị viên duyệt.", {
-                              icon: "⏳",
-                              style: {
-                                borderRadius: "10px",
-                                background: "#333",
-                                color: "#fff",
-                              },
+                            setApprovedPosts((prev) => {
+                              const exists = prev.some((p) => p.id === newPost.id);
+                              return exists ? prev : [newPost, ...prev];
                             });
+                            toast.success("Đăng bài viết thành công!");
                           }
+                          // Removed redundant PENDING toast as backend handles it via notifications
                         }}
                       />
                     ) : (
@@ -768,32 +904,37 @@ const GroupDetailPage = () => {
                               {member.fullName}
                             </p>
                             <span
-                              className={`px-2 py-0.5 text-[10px] font-black rounded uppercase ${
-                                member.role === "ADMIN"
-                                  ? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
-                                  : "bg-zinc-800 text-zinc-400"
-                              }`}
+                              className={`px-2 py-0.5 text-[10px] font-black rounded uppercase ${member.role === "ADMIN"
+                                ? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
+                                : "bg-zinc-800 text-zinc-400"
+                                }`}
                             >
                               {member.role === "ADMIN"
                                 ? "Quản trị viên"
                                 : member.role === "OWNER"
-                                ? "Chủ nhóm"
-                                : "Thành viên"}
+                                  ? "Chủ nhóm"
+                                  : "Thành viên"}
                             </span>
                           </div>
-                          <p className="text-xs text-text-secondary mt-0.5 italic">
-                            Đã gia nhập vào{" "}
-                            {new Date(member.joinedAt).toLocaleDateString()}
+                          <p className="text-xs text-text-secondary mt-0.5 italic flex items-center gap-2">
+                            <span>Đã gia nhập: {new Date(member.joinedAt).toLocaleDateString()}</span>
+                            {member.violationCount > 0 && (
+                              <>
+                                <span className="size-1 bg-white/20 rounded-full"></span>
+                                <span className="text-red-500 font-bold">
+                                  Vi phạm: {member.violationCount} gậy
+                                </span>
+                              </>
+                            )}
                           </p>
                         </div>
                       </div>
 
                       {/* Role Management Actions */}
                       <div className="flex items-center gap-2">
-                        {/* Only the Owner can transfer ownership to others */}
-                        {Number(getUserIdFromToken()) ===
-                          Number(group.ownerId) &&
-                          member.userId !== Number(getUserIdFromToken()) && (
+                        {/* Owner actions: can transfer or kick/ban anyone except self */}
+                        {Number(getUserIdFromToken()) === Number(group.ownerId) &&
+                          Number(member.userId) !== Number(getUserIdFromToken()) && (
                             <div className="flex gap-1">
                               <button
                                 onClick={() =>
@@ -810,11 +951,27 @@ const GroupDetailPage = () => {
                               </button>
 
                               <button
-                                onClick={() => handleKickMember(member)}
-                                className="p-2 text-red-500/40 hover:text-red-500 transition-colors"
-                                title="Mời ra khỏi nhóm"
+                                onClick={() => handleBanMember(member)}
+                                className="p-2 text-red-700/40 hover:text-red-600 transition-colors"
+                                title="Cấm khỏi nhóm"
                               >
-                                <UserMinus size={20} />
+                                <Gavel size={20} />
+                              </button>
+                            </div>
+                          )}
+
+                        {/* Admin actions (if requester is Admin but not Owner): can kick/ban members */}
+                        {isAdmin &&
+                          Number(getUserIdFromToken()) !== Number(group.ownerId) &&
+                          member.role === "MEMBER" &&
+                          Number(member.userId) !== Number(getUserIdFromToken()) && (
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => handleBanMember(member)}
+                                className="p-2 text-red-700/40 hover:text-red-600 transition-colors"
+                                title="Cấm khỏi nhóm"
+                              >
+                                <Gavel size={20} />
                               </button>
                             </div>
                           )}
@@ -835,23 +992,30 @@ const GroupDetailPage = () => {
               <div className="flex gap-4 border-b border-border-main">
                 <button
                   onClick={() => setModTab("Bài viết")}
-                  className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${
-                    modTab === "Bài viết"
-                      ? "text-primary border-primary"
-                      : "text-text-secondary border-transparent"
-                  }`}
+                  className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${modTab === "Bài viết"
+                    ? "text-primary border-primary"
+                    : "text-text-secondary border-transparent"
+                    }`}
                 >
                   Bài viết chờ duyệt
                 </button>
                 <button
                   onClick={() => setModTab("Yêu cầu")}
-                  className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${
-                    modTab === "Yêu cầu"
-                      ? "text-primary border-primary"
-                      : "text-text-secondary border-transparent"
-                  }`}
+                  className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${modTab === "Yêu cầu"
+                    ? "text-primary border-primary"
+                    : "text-text-secondary border-transparent"
+                    }`}
                 >
                   Yêu cầu tham gia ({memberRequests.length})
+                </button>
+                <button
+                  onClick={() => setModTab("Bị cấm")}
+                  className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${modTab === "Bị cấm"
+                    ? "text-primary border-primary"
+                    : "text-text-secondary border-transparent"
+                    }`}
+                >
+                  Thành viên bị cấm ({bannedMembers.length})
                 </button>
               </div>
 
@@ -884,6 +1048,21 @@ const GroupDetailPage = () => {
                                 {new Date(post.createdAt).toLocaleString()}
                               </p>
                             </div>
+                            {post.aiStatus && (
+                              <div className="flex flex-col gap-1">
+                                <span className={`px-2 py-0.5 text-[10px] font-black uppercase rounded border w-fit ${post.aiStatus === "TOXIC"
+                                  ? "bg-red-500/10 text-red-500 border-red-500/20"
+                                  : "bg-green-500/10 text-green-500 border-green-500/20"
+                                  }`}>
+                                  AI: {post.aiStatus}
+                                </span>
+                                {post.aiReason && (
+                                  <span className="text-[10px] text-text-secondary italic max-w-[200px] truncate">
+                                    {post.aiReason}
+                                  </span>
+                                )}
+                              </div>
+                            )}
                           </div>
                           <div className="flex gap-2">
                             <button
@@ -913,11 +1092,10 @@ const GroupDetailPage = () => {
 
                           {post.images && post.images.length > 0 && (
                             <div
-                              className={`grid gap-2 ${
-                                post.images.length === 1
-                                  ? "grid-cols-1"
-                                  : "grid-cols-2"
-                              }`}
+                              className={`grid gap-2 ${post.images.length === 1
+                                ? "grid-cols-1"
+                                : "grid-cols-2"
+                                }`}
                             >
                               {post.images.map((img, idx) => (
                                 <img
@@ -934,10 +1112,10 @@ const GroupDetailPage = () => {
                     ))
                   )}
                 </div>
-              ) : (
+              ) : modTab === "Yêu cầu" ? (
                 <div className="space-y-4">
                   {memberRequests.length === 0 ? (
-                    <div className="text-center py-20 bg-card-dark rounded-3xl border border-[#3e2b1d] text-text-secondary">
+                    <div className="text-center py-20 bg-card-dark rounded-3xl border border-[#3e2b1d] text-text-secondary font-medium">
                       Không có yêu cầu gia nhập nào.
                     </div>
                   ) : (
@@ -949,16 +1127,15 @@ const GroupDetailPage = () => {
                         <div className="flex items-center gap-4">
                           <img
                             src={request.avatarUrl}
-                            className="size-14 rounded-full border-2 border-primary/20"
+                            className="size-14 rounded-full border-2 border-primary/20 object-cover"
                             alt=""
                           />
                           <div>
                             <p className="font-black text-text-main text-lg">
                               {request.fullName}
                             </p>
-                            <p className="text-xs text-text-secondary mt-1 italic">
-                              Đã yêu cầu vào{" "}
-                              {new Date(request.joinedAt).toLocaleDateString()}
+                            <p className="text-xs text-text-secondary mt-1 font-bold">
+                              Đã yêu cầu gia nhập • {new Date(request.joinedAt).toLocaleDateString()}
                             </p>
                           </div>
                         </div>
@@ -967,7 +1144,7 @@ const GroupDetailPage = () => {
                             onClick={() =>
                               handleActionRequest(request.userId, "approve")
                             }
-                            className="px-6 py-2.5 bg-primary text-text-main font-black rounded-xl text-sm transition-all hover:scale-105"
+                            className="px-6 py-2.5 bg-primary text-[#0f0a06] font-black rounded-xl text-sm transition-all hover:scale-105"
                           >
                             Phê duyệt
                           </button>
@@ -980,6 +1157,43 @@ const GroupDetailPage = () => {
                             Từ chối
                           </button>
                         </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {bannedMembers.length === 0 ? (
+                    <div className="text-center py-20 bg-card-dark rounded-3xl border border-[#3e2b1d] text-text-secondary font-medium">
+                      Không có thành viên nào bị cấm.
+                    </div>
+                  ) : (
+                    bannedMembers.map((member) => (
+                      <div
+                        key={member.userId}
+                        className="p-6 bg-card-dark border border-[#3e2b1d] rounded-2xl flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-4">
+                          <img
+                            src={member.avatarUrl}
+                            className="size-14 rounded-full border-2 border-primary/20 brightness-50 grayscale object-cover"
+                            alt=""
+                          />
+                          <div>
+                            <p className="font-black text-text-main text-lg opacity-60">
+                              {member.fullName}
+                            </p>
+                            <p className="text-xs text-red-500 font-bold mt-1 uppercase tracking-tighter">
+                              Đã bị cấm khỏi nhóm
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleUnbanMember(member.userId)}
+                          className="px-6 py-2.5 bg-green-500/10 text-green-500 border border-green-500/20 font-black rounded-xl text-sm transition-all hover:bg-green-500/20"
+                        >
+                          Gỡ lệnh cấm
+                        </button>
                       </div>
                     ))
                   )}
@@ -1021,124 +1235,57 @@ const GroupDetailPage = () => {
         onClose={() => setShowInviteModal(false)}
         onInvite={handleInviteMembers}
         existingMemberIds={members.map((m) => m.userId)}
+        bannedUserIds={bannedMembers.map((m) => m.userId)}
       />
 
-      {/* Kick Member Confirmation Modal */}
-      {showKickModal && memberToKick && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-surface-main border border-border-main rounded-3xl p-8 max-w-sm w-full text-center space-y-6 shadow-2xl animate-in fade-in zoom-in duration-200">
-            <div className="size-16 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 mx-auto">
-              <UserMinus size={36} />
-            </div>
-            <div className="space-y-2">
-              <h2 className="text-xl font-black text-text-main">
-                Xác nhận xóa thành viên
-              </h2>
-              <p className="text-text-secondary text-sm">
-                Bạn có chắc chắn muốn mời{" "}
-                <span className="text-text-main font-bold">
-                  {memberToKick.fullName}
-                </span>{" "}
-                ra khỏi nhóm không?
-              </p>
-            </div>
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={() => {
-                  setShowKickModal(false);
-                  setMemberToKick(null);
-                }}
-                className="flex-1 py-3 bg-surface-main hover:bg-background-main text-text-main font-bold rounded-xl transition-all text-xs uppercase tracking-widest"
-              >
-                Hủy
-              </button>
-              <button
-                onClick={confirmKickMember}
-                className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl transition-all shadow-lg shadow-red-500/20 text-xs uppercase tracking-widest"
-              >
-                Đồng ý xóa
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {showTransferConfirmModal && memberToTransfer && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-surface-main border border-border-main rounded-3xl p-8 max-w-sm w-full text-center space-y-6 shadow-2xl animate-in fade-in zoom-in duration-200">
-            <div className="size-16 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500 mx-auto">
-              <Key size={40} />
-            </div>
-            <div className="space-y-2">
-              <h2 className="text-xl font-black text-white">
-                Xác nhận chuyển quyền
-              </h2>
-              <p className="text-text-secondary text-sm leading-relaxed">
-                Bạn có chắc chắn muốn chuyển quyền chủ sở hữu cho{" "}
-                <span className="text-text-main font-bold">
-                  {memberToTransfer.fullName}
-                </span>
-                ?
-              </p>
-              <p className="text-text-secondary text-xs italic">
-                * Bạn sẽ trở thành thành viên thường sau khi chuyển quyền.
-              </p>
-            </div>
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={() => {
-                  setShowTransferConfirmModal(false);
-                  setMemberToTransfer(null);
-                }}
-                className="flex-1 py-3 bg-surface-main hover:bg-background-main text-text-main font-bold rounded-xl transition-all text-xs uppercase tracking-widest"
-              >
-                Hủy
-              </button>
-              <button
-                onClick={confirmTransferOwnership}
-                className="flex-1 py-3 bg-orange-500 hover:bg-orange-600 text-white font-black rounded-xl transition-all shadow-lg shadow-orange-500/20 text-xs uppercase tracking-widest"
-              >
-                Xác nhận
-              </button>
+      {
+        showTransferConfirmModal && memberToTransfer && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="bg-surface-main border border-border-main rounded-3xl p-8 max-w-sm w-full text-center space-y-6 shadow-2xl animate-in fade-in zoom-in duration-200">
+              <div className="size-16 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500 mx-auto">
+                <Key size={40} />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-xl font-black text-white">
+                  Xác nhận chuyển quyền
+                </h2>
+                <p className="text-text-secondary text-sm leading-relaxed">
+                  Bạn có chắc chắn muốn chuyển quyền chủ sở hữu cho{" "}
+                  <span className="text-text-main font-bold">
+                    {memberToTransfer.fullName}
+                  </span>
+                  ?
+                </p>
+                <p className="text-text-secondary text-xs italic">
+                  * Bạn sẽ trở thành thành viên thường sau khi chuyển quyền.
+                </p>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => {
+                    setShowTransferConfirmModal(false);
+                    setMemberToTransfer(null);
+                  }}
+                  className="flex-1 py-3 bg-surface-main hover:bg-background-main text-text-main font-bold rounded-xl transition-all text-xs uppercase tracking-widest"
+                >
+                  Hủy
+                </button>
+                <button
+                  onClick={confirmTransferOwnership}
+                  className="flex-1 py-3 bg-orange-500 hover:bg-orange-600 text-white font-black rounded-xl transition-all shadow-lg shadow-orange-500/20 text-xs uppercase tracking-widest"
+                >
+                  Xác nhận
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
-      {/* Leave Group Confirmation Modal */}
-      {showLeaveModal && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#1a120b] border border-[#3e2b1d] rounded-3xl p-8 max-w-sm w-full text-center space-y-6 shadow-2xl animate-in fade-in zoom-in duration-200">
-            <div className="size-16 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 mx-auto">
-              <LogOut size={40} />
-            </div>
-            <div className="space-y-2">
-              <h2 className="text-xl font-black text-white">
-                Xác nhận rời nhóm
-              </h2>
-              <p className="text-text-secondary text-sm">
-                Bạn có chắc chắn muốn rời khỏi nhóm{" "}
-                <span className="text-white font-bold">{group.name}</span>{" "}
-                không?
-              </p>
-            </div>
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={() => setShowLeaveModal(false)}
-                className="flex-1 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-bold rounded-xl transition-all text-xs uppercase tracking-widest"
-              >
-                Hủy
-              </button>
-              <button
-                onClick={confirmLeaveGroup}
-                className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl transition-all shadow-lg shadow-red-500/20 text-xs uppercase tracking-widest"
-              >
-                Xác nhận rời
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
+
+
       <ConfirmModal
         isOpen={deleteModal.isOpen}
         onClose={() => setDeleteModal({ isOpen: false, postId: null })}
@@ -1157,6 +1304,30 @@ const GroupDetailPage = () => {
         members={members}
         currentUserId={getUserIdFromToken()}
         onTransfer={handleTransferOwnership}
+      />
+
+      {/* Ban Member Confirm */}
+      <ConfirmModal
+        isOpen={showBanModal}
+        onClose={() => setShowBanModal(false)}
+        onConfirm={confirmBanMember}
+        title="Cấm thành viên vĩnh viễn"
+        message={`Bạn có chắc chắn muốn cấm ${memberToBan?.fullName} khỏi nhóm không? Người này sẽ không thể nhìn thấy nội dung và không thể gia nhập lại nhóm này.`}
+        confirmText="Xác nhận Cấm"
+        cancelText="Hủy"
+        type="danger"
+      />
+
+      {/* Leave Group Confirm */}
+      <ConfirmModal
+        isOpen={showLeaveModal}
+        onClose={() => setShowLeaveModal(false)}
+        onConfirm={confirmLeaveGroup}
+        title="Rời khỏi nhóm"
+        message={`Bạn có chắc chắn muốn rời khỏi nhóm ${group?.name} không?`}
+        confirmText="Xác nhận Rời"
+        cancelText="Hủy"
+        type="danger"
       />
     </>
   );
