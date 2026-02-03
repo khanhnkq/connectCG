@@ -17,7 +17,7 @@ const postService = {
         return axiosClient.get('/posts/admin/audit');
     },
     getPublicHomepagePosts(page = 0, size = 10) {
-        return axiosClient.get(`/posts/public/homepage`, { params: { page, size } });
+        return axiosClient.get(`/posts`, { params: { page, size } });
     },
     approvePost(postId) {
         return axiosClient.post(`/posts/${postId}/approve`);
