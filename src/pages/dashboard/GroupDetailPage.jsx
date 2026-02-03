@@ -138,7 +138,6 @@ const GroupDetailPage = () => {
       const userInfo = getUserInfoFromToken();
       const userStr = localStorage.getItem("user");
       const membership = groupData.currentUserStatus;
-      const role = groupData.currentUserRole;
 
       let currentUserId = null;
 
@@ -827,12 +826,8 @@ const GroupDetailPage = () => {
                               return exists ? prev : [newPost, ...prev];
                             });
                             toast.success("Đăng bài viết thành công!");
-                          } else if (newPost.status === "PENDING") {
-                            toast.success("Bài viết đã được gửi và đang chờ quản trị viên phê duyệt.", {
-                              duration: 5000,
-                              icon: "⏳",
-                            });
                           }
+                          // Removed redundant toast for PENDING posts as it's handled by global WebSocket notifications
                         }}
                       />
                     ) : (
