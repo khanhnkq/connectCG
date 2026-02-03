@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from "react";
 import CityService from "../../services/CityService"; // Đảm bảo đường dẫn đúng
 
-const CitySelect = ({ value, onChange, error, label = "Tỉnh/Thành phố" }) => {
+const CitySelect = ({
+  value,
+  onChange,
+  error,
+  label = "Tỉnh/Thành phố",
+  className = "",
+}) => {
   const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -59,7 +65,7 @@ const CitySelect = ({ value, onChange, error, label = "Tỉnh/Thành phố" }) =
   };
 
   return (
-    <div className={`relative group ${label ? "mb-4" : "mb-0"}`}>
+    <div className={`relative group ${label ? "mb-4" : "mb-0"} ${className}`}>
       {label && (
         <label className="block text-sm font-medium text-text-main mb-2 font-bold">
           {label}
@@ -89,25 +95,26 @@ const CitySelect = ({ value, onChange, error, label = "Tỉnh/Thành phố" }) =
           onBlur={handleBlur}
           placeholder="Chọn tỉnh/thành phố..."
           disabled={loading}
-          className={`w-full h-12 bg-background-main border ${
+          className={`w-full h-10 bg-background-main border ${
             error ? "border-red-500" : "border-border-main"
           } ${
-            isOpen ? "rounded-t-xl border-b-0" : "rounded-xl"
-          } pl-4 pr-10 text-text-main placeholder-text-secondary/40 focus:outline-none focus:border-primary/50 transition-all z-20 relative flex items-center font-medium`}
+            isOpen ? "rounded-t-lg border-b-0" : "rounded-lg"
+          } pl-4 pr-10 text-text-main placeholder-text-secondary/40 focus:outline-none focus:border-primary/50 transition-all z-20 relative flex items-center font-medium text-sm`}
         />
 
         {/* Arrow Icon */}
         <span
-          className={`absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none material-symbols-outlined transition-transform duration-200 z-30 ${
+          className={`absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none material-symbols-outlined transition-transform duration-200 z-30 ${
             isOpen ? "rotate-180 text-primary" : ""
           }`}
+          style={{ fontSize: "20px" }}
         >
           expand_more
         </span>
 
         {/* Dropdown Menu */}
         {isOpen && (
-          <div className="absolute z-10 w-full left-0 top-full bg-surface-main border border-t-0 border-border-main rounded-b-xl shadow-xl max-h-60 overflow-y-auto animate-in fade-in zoom-in-95 duration-200 origin-top custom-scrollbar">
+          <div className="absolute z-10 w-full left-0 top-full bg-surface-main border border-t-0 border-border-main rounded-b-lg shadow-xl max-h-60 overflow-y-auto animate-in fade-in zoom-in-95 duration-200 origin-top custom-scrollbar">
             {/* Separator line to ensure seamless look but visual separation */}
             <div className="h-[1px] w-full bg-border-main mx-auto opacity-50"></div>
 
@@ -120,7 +127,7 @@ const CitySelect = ({ value, onChange, error, label = "Tỉnh/Thành phố" }) =
                 {filteredCities.map((city) => (
                   <div
                     key={city.code}
-                    className={`px-4 py-2.5 rounded-lg cursor-pointer transition-all flex items-center justify-between group mx-1 my-0.5 ${
+                    className={`px-3 py-2 rounded-md cursor-pointer transition-all flex items-center justify-between group mx-1 my-0.5 text-sm ${
                       value?.code === city.code
                         ? "bg-primary/10 text-primary"
                         : "text-text-secondary hover:bg-background-main hover:text-text-main"
