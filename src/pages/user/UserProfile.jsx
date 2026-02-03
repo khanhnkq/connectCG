@@ -16,9 +16,11 @@ import {
   fetchUserProfile,
   updateUserAvatar,
   updateUserCover,
+  updatePostsCount,
 } from "../../redux/slices/userSlice";
 import ProfileAbout from "../../components/profile/ProfileAbout";
 import ProfilePhotos from "../../components/profile/ProfilePhotos";
+import ProfileLibrary from "../../components/profile/ProfileLibrary";
 import ProfileHobbies from "../../components/profile/ProfileHobbies";
 import ProfileFriends from "../../components/profile/ProfileFriends";
 import { uploadAvatar, uploadCover } from "../../utils/uploadImage";
@@ -50,7 +52,12 @@ export default function UserProfile() {
     handleDeletePost,
     confirmDelete,
     handleUpdatePost,
-  } = usePostManagement();
+  } = usePostManagement([], () => {
+    // Callback on delete success
+    if (profile && profile.postsCount > 0) {
+      dispatch(updatePostsCount(profile.postsCount - 1));
+    }
+  });
 
   // Hidden file inputs
   const avatarInputRef = useRef(null);
@@ -100,17 +107,21 @@ export default function UserProfile() {
     // only add if approved (AI check result)
     if (newPost.status === "APPROVED") {
       setPosts((prevPosts) => [newPost, ...prevPosts]);
+      if (profile) {
+        dispatch(updatePostsCount((profile.postsCount || 0) + 1));
+      }
     }
   };
 
   useEffect(() => {
     const userId = user?.id || user?.userId || user?.sub;
-    if (userId && !profile) {
+    if (userId) {
+      // Always fetch fresh profile data
       dispatch(fetchUserProfile(userId));
     }
     fetchPosts(userId);
     fetchCurrentUserAvatar();
-  }, [user, profile, dispatch]);
+  }, [user, dispatch]);
 
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
@@ -312,14 +323,14 @@ export default function UserProfile() {
                   Giới thiệu
                 </button>
                 <button
-                  onClick={() => setActiveTab("photos")}
+                  onClick={() => setActiveTab("library")}
                   className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${
-                    activeTab === "photos"
+                    activeTab === "library"
                       ? "text-primary border-b-2 border-primary"
                       : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 rounded-t-lg"
                   }`}
                 >
-                  Ảnh
+                  Thư viện
                 </button>
                 <button
                   onClick={() => setActiveTab("hobbies")}
@@ -474,8 +485,8 @@ export default function UserProfile() {
                 <ProfileAbout profile={profile} isOwner={true} />
               )}
 
-              {activeTab === "photos" && (
-                <ProfilePhotos profile={profile} isOwner={true} />
+              {activeTab === "library" && (
+                <ProfileLibrary profile={profile} isOwner={true} />
               )}
 
               {activeTab === "hobbies" && (

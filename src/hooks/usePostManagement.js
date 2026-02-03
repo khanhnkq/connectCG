@@ -3,7 +3,7 @@ import { useState } from "react";
 import postService from "../services/PostService";
 import toast from "react-hot-toast";
 
-export const usePostManagement = (initialPosts = []) => {
+export const usePostManagement = (initialPosts = [], onDeleteSuccess = null) => {
   const [posts, setPosts] = useState(initialPosts);
   const [deleteModal, setDeleteModal] = useState({
     isOpen: false,
@@ -22,6 +22,8 @@ export const usePostManagement = (initialPosts = []) => {
       await postService.deletePost(postId);
       setPosts((prev) => prev.filter((p) => p.id !== postId));
       toast.success("Xóa bài viết thành công");
+      // Trigger callback if provided
+      if (onDeleteSuccess) onDeleteSuccess(postId);
     } catch (error) {
       console.error("Xóa bài viết thất bại:", error);
       toast.error("Xóa bài viết thất bại");

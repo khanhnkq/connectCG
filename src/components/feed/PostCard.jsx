@@ -348,7 +348,7 @@ export default function PostCard({
       }`}
     >
       {/* HEADER */}
-      <div className="p-4 flex justify-between items-start">
+      <div className="p-3 md:p-4 flex justify-between items-start">
         <div className="flex gap-3">
           <div
             className="bg-center bg-no-repeat bg-cover rounded-full size-10 cursor-pointer ring-1 ring-border-main hover:ring-primary transition-all"
@@ -459,7 +459,7 @@ export default function PostCard({
       </div>
 
       {/* CONTENT TEXT OR EDIT FORM */}
-      <div className="px-4 pb-3">
+      <div className="px-3 md:px-4 pb-2 md:pb-3">
         {isEditing ? (
           <PostUpdate
             post={data}
@@ -478,7 +478,7 @@ export default function PostCard({
       {/* MEDIA GALLERY */}
       {/* Hide media when editing because PostUpdate handles preview */}
       {!isEditing && data.mediaItems.length > 0 && (
-        <div className="w-full border-t border-b border-border-main/50 px-4 md:px-0 pb-2 md:pb-0">
+        <div className="w-full border-t border-b border-border-main/50 px-0 pb-0">
           <MediaGallery
             mediaItems={data.mediaItems}
             onMediaClick={(index) => setLightboxIndex(index)}
