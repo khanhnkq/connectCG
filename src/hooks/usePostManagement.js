@@ -3,7 +3,7 @@ import { useState } from "react";
 import postService from "../services/PostService";
 import toast from "react-hot-toast";
 
-export const usePostManagement = (initialPosts = []) => {
+export const usePostManagement = (initialPosts = [], onDeleteSuccess = null) => {
   const [posts, setPosts] = useState(initialPosts);
   const [deleteModal, setDeleteModal] = useState({
     isOpen: false,

@@ -129,7 +129,7 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
   };
 
   return (
-    <div className="bg-surface-main p-4 rounded-lg border border-border-main shadow-sm transition-all duration-300 hover:shadow-md mb-6 relative group/composer">
+    <div className="bg-surface-main p-3 md:p-4 rounded-lg border border-border-main shadow-sm transition-all duration-300 hover:shadow-md mb-4 md:mb-6 relative group/composer">
       {formik.isSubmitting && (
         <div className="absolute inset-0 bg-white/50 dark:bg-black/50 z-20 rounded-lg flex items-center justify-center backdrop-blur-[1px]">
           <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
@@ -137,16 +137,16 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
       )}
 
       {/* --- INPUT AREA --- */}
-      <div className="flex gap-4 mb-4">
+      <div className="flex gap-3 md:gap-4 mb-3 md:mb-4">
         <div
-          className="bg-center bg-no-repeat bg-cover rounded-full size-11 shrink-0 border border-border-main shadow-sm"
+          className="hidden md:block bg-center bg-no-repeat bg-cover rounded-full size-11 shrink-0 border border-border-main shadow-sm"
           style={{ backgroundImage: `url("${userAvatar}")` }}
         ></div>
         <div className="flex-1 pt-1">
           <textarea
             name="content"
             rows={formik.values.content ? 3 : 1}
-            className="w-full bg-transparent border-none focus:ring-0 text-text-main placeholder:text-text-secondary/60 text-lg p-0 resize-none leading-relaxed transition-all duration-200"
+            className="w-full bg-transparent border-none focus:ring-0 text-text-main placeholder:text-text-secondary/60 text-base md:text-lg p-0 resize-none leading-relaxed transition-all duration-200"
             placeholder={`Bạn đang nghĩ gì?`}
             value={formik.values.content}
             onChange={formik.handleChange}
@@ -193,7 +193,7 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
                 <button
                   type="button"
                   onClick={() => removeMedia(index)}
-                  className="absolute top-2 right-2 bg-black/60 hover:bg-red-500 text-white rounded-md p-1.5 backdrop-blur-sm transition-all shadow-sm opacity-0 group-hover/media:opacity-100 scale-90 group-hover/media:scale-100"
+                  className="absolute top-2 right-2 bg-black/60 hover:bg-red-500 text-white rounded-md p-1.5 backdrop-blur-sm transition-all shadow-sm md:opacity-0 group-hover/media:opacity-100 scale-90 group-hover/media:scale-100"
                 >
                   <X size={16} />
                 </button>
@@ -207,9 +207,9 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
       )}
 
       {/* --- ACTIONS BAR --- */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-border-main">
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-border-main">
         {/* Left Actions: Media & Privacy */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 md:gap-2">
           {/* Inputs ẩn */}
           <input
             type="file"
@@ -229,22 +229,24 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
           <button
             type="button"
             onClick={() => imageInputRef.current.click()}
-            className="p-2 rounded-md hover:bg-green-500/10 text-green-600 transition-colors tooltip-trigger"
+            className="flex items-center gap-2 p-2 rounded-md hover:bg-green-500/10 text-green-600 transition-colors tooltip-trigger"
             title="Thêm ảnh"
           >
-            <Image size={22} strokeWidth={2.5} />
+            <Image size={20} strokeWidth={2.5} />
+            <span className="hidden md:inline font-medium text-sm">Ảnh</span>
           </button>
 
           <button
             type="button"
             onClick={() => videoInputRef.current.click()}
-            className="p-2 rounded-md hover:bg-blue-500/10 text-blue-600 transition-colors tooltip-trigger"
+            className="flex items-center gap-2 p-2 rounded-md hover:bg-blue-500/10 text-blue-600 transition-colors tooltip-trigger"
             title="Thêm video"
           >
-            <Video size={22} strokeWidth={2.5} />
+            <Video size={20} strokeWidth={2.5} />
+            <span className="hidden md:inline font-medium text-sm">Video</span>
           </button>
 
-          {!groupId && <div className="h-6 w-px bg-border-main mx-1"></div>}
+          {!groupId && <div className="h-5 w-px bg-border-main mx-1"></div>}
 
           {/* Visibility Dropdown */}
           {!groupId && (
@@ -252,13 +254,15 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
               <button
                 type="button"
                 onClick={() => setShowVisibilityMenu(!showVisibilityMenu)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md hover:bg-background-main text-text-secondary transition-colors text-xs font-semibold bg-background-main/50 border border-transparent hover:border-border-main"
+                className="flex items-center gap-1.5 px-2 py-1.5 md:px-3 rounded-md hover:bg-background-main text-text-secondary transition-colors text-xs font-semibold bg-background-main/50 border border-transparent hover:border-border-main"
               >
                 {(() => {
                   const Icon = visibilityIcons[formik.values.visibility];
                   return <Icon size={14} className="text-text-secondary" />;
                 })()}
-                <span>{formik.values.visibility}</span>
+                <span className="hidden md:inline">
+                  {formik.values.visibility}
+                </span>
                 <ChevronDown size={12} className="opacity-70" />
               </button>
 
@@ -308,7 +312,7 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
             formik.isSubmitting ||
             (!formik.values.content.trim() && formik.values.media.length === 0)
           }
-          className="bg-primary hover:bg-primary-hover text-[#231810] font-bold text-sm px-6 py-2 rounded-md transition-all shadow-md shadow-primary/20 disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed hover:translate-y-[-1px] active:translate-y-[1px]"
+          className="bg-primary hover:bg-primary-hover text-[#231810] font-bold text-sm px-4 py-1.5 md:px-6 md:py-2 rounded-md transition-all shadow-sm md:shadow-md shadow-primary/20 disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed"
         >
           Đăng
         </button>

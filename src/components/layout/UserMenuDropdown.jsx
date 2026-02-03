@@ -78,7 +78,7 @@ const UserMenuDropdown = ({ isOpen, onClose, onShowNotifications }) => {
         >
           {/* Profile Header */}
           <div
-            className="p-3 mb-2 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+            className="p-3 mb-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
             onClick={() => {
               navigate("/dashboard/my-profile");
               onClose();
@@ -100,7 +100,9 @@ const UserMenuDropdown = ({ isOpen, onClose, onShowNotifications }) => {
                   {userProfile?.fullName || user?.username || "Người dùng"}
                 </p>
                 <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
-                  {user?.email || "user@example.com"}
+                  {user?.email ||
+                    (user?.sub && user.sub.includes("@") ? user.sub : "") ||
+                    "user@example.com"}
                 </p>
               </div>
             </div>
