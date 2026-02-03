@@ -87,8 +87,8 @@ const AdminMembersManager = () => {
           user.isDeleted || user.is_deleted
             ? "Deleted"
             : user.isLocked
-            ? "Banned"
-            : "Active",
+              ? "Banned"
+              : "Active",
         role: user.role,
         joinedDate: "N/A",
       }));
@@ -140,11 +140,10 @@ const AdminMembersManager = () => {
     setConfirmConfig({
       isOpen: true,
       title: `${actionLabel} tài khoản?`,
-      message: `Bạn có chắc muốn ${actionLabel.toLowerCase()} người dùng này? Họ sẽ ${
-        currentStatus === "Active"
-          ? "không thể truy cập"
-          : "có thể truy cập lại"
-      } vào hệ thống.`,
+      message: `Bạn có chắc muốn ${actionLabel.toLowerCase()} người dùng này? Họ sẽ ${currentStatus === "Active"
+        ? "không thể truy cập"
+        : "có thể truy cập lại"
+        } vào hệ thống.`,
       type: currentStatus === "Active" ? "danger" : "info",
       onConfirm: async () => {
         try {
@@ -267,11 +266,10 @@ const AdminMembersManager = () => {
                   </td>
                   <td className="px-6 py-5">
                     <span
-                      className={`px-2.5 py-1 text-[9px] font-black uppercase rounded-lg border flex items-center gap-1.5 w-fit ${
-                        member.role === "ADMIN"
-                          ? "bg-primary/10 text-primary border-primary/30"
-                          : "bg-surface-main/10 text-text-muted border-border"
-                      }`}
+                      className={`px-2.5 py-1 text-[9px] font-black uppercase rounded-lg border flex items-center gap-1.5 w-fit ${member.role === "ADMIN"
+                        ? "bg-primary/10 text-primary border-primary/30"
+                        : "bg-surface-main/10 text-text-muted border-border"
+                        }`}
                     >
                       {member.role === "ADMIN" ? (
                         <ShieldCheck size={14} />
@@ -283,13 +281,16 @@ const AdminMembersManager = () => {
                   </td>
                   <td className="px-6 py-5">
                     <span
-                      className={`px-3 py-1 text-[10px] font-black uppercase rounded-full border ${
-                        member.status === "Active"
-                          ? "bg-green-500/10 text-green-400 border-green-500/20"
-                          : "bg-red-500/10 text-red-500 border-red-500/20"
-                      }`}
+                      className={`px-3 py-1 text-[10px] font-black uppercase rounded-full border ${member.status === "Active"
+                        ? "bg-green-500/10 text-green-400 border-green-500/20"
+                        : "bg-red-500/10 text-red-500 border-red-500/20"
+                        }`}
                     >
-                      {member.status}
+                      {member.status === "Active"
+                        ? "Hoạt động"
+                        : member.status === "Banned"
+                          ? "Đã khóa"
+                          : "Đã xóa"}
                     </span>
                   </td>
                   <td className="px-6 py-5 text-right space-x-2">
@@ -315,7 +316,7 @@ const AdminMembersManager = () => {
                     <button
                       onClick={() => toggleStatus(member.id, member.status)}
                       className="p-2 hover:bg-background rounded-xl text-text-muted hover:text-orange-400 transition-all"
-                      title="Toggle Access"
+                      title="Khóa/Mở khóa tài khoản"
                     >
                       {member.status === "Banned" ? (
                         <ShieldCheck size={18} />
@@ -326,7 +327,7 @@ const AdminMembersManager = () => {
                     <button
                       onClick={() => handleDelete(member.id, member.name)}
                       className="p-2 hover:bg-red-500/10 rounded-xl text-text-muted hover:text-red-400 transition-all"
-                      title="Purge Identity"
+                      title="Xóa vĩnh viễn"
                     >
                       <UserX size={18} />
                     </button>

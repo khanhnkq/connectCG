@@ -142,10 +142,9 @@ export default function ChatInterface() {
         // Prefer profile fullName, then auth user fullName (if any), then username
         const name =
           groupName.trim() ||
-          `Nhóm của ${
-            userProfile?.fullName ||
-            currentUser?.fullName ||
-            currentUser?.username
+          `Nhóm của ${userProfile?.fullName ||
+          currentUser?.fullName ||
+          currentUser?.username
           }`;
         const response = await ChatService.createGroupChat(
           name,
@@ -362,7 +361,7 @@ export default function ChatInterface() {
           userProfile?.fullName ||
           currentUser.fullName ||
           currentUser.username ||
-          "Anonymous",
+          "Ẩn danh",
         senderAvatarUrl:
           userProfile?.currentAvatarUrl || currentUser.avatarUrl || "",
         text: text,
@@ -445,11 +444,11 @@ export default function ChatInterface() {
         prev.map((c) =>
           c.id === activeRoom.id
             ? {
-                ...c,
-                lastMessageVisible: "Chưa có tin nhắn",
-                unreadCount: 0,
-                clientClearedAt: now,
-              }
+              ...c,
+              lastMessageVisible: "Chưa có tin nhắn",
+              unreadCount: 0,
+              clientClearedAt: now,
+            }
             : c,
         ),
       );
@@ -700,7 +699,7 @@ export default function ChatInterface() {
           } catch (err) {
             toast.error(
               err?.response?.data?.message ||
-                "Gửi báo cáo thất bại. Vui lòng thử lại!",
+              "Gửi báo cáo thất bại. Vui lòng thử lại!",
               {
                 id: toastId,
                 style: {
