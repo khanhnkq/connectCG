@@ -118,6 +118,40 @@ export default function GroupsManagement() {
     return () => observer.disconnect();
   }, [hasMore, loading, isFetchingMore, activeTab, searchQuery]);
 
+  // Real-time synchronization for groups
+  useEffect(() => {
+    const handleMembershipEvent = (e) => {
+      const { action, groupId, userId, member } = e.detail;
+      const userStr = localStorage.getItem("user");
+      if (!userStr) return;
+      const currentUserId = JSON.parse(userStr).id;
+
+      // Only care if it's about the current user
+      if (Number(userId) !== Number(currentUserId)) return;
+
+      if (action === "INVITED") {
+        setPendingInvitations(prev => {
+          if (prev.some(g => g.id === groupId)) return prev;
+          // Note: In a real app we'd fetch the group DTO if member object is just a membership
+          // But here let's trigger a refresh of invitations to be safe and lazy
+          fetchGroups(0);
+          return prev;
+        });
+      } else if (action === "ACCEPTED" || action === "JOINED" || action === "APPROVED") {
+        // Refresh My Groups and Invitations
+        fetchGroups(0);
+      } else if (action === "KICKED" || action === "LEFT" || action === "BANNED") {
+        setYourGroups(prev => prev.filter(g => g.id !== groupId));
+        setPendingInvitations(prev => prev.filter(g => g.id !== groupId));
+        // If we are in discover, reset status
+        setDiscoverGroups(prev => prev.map(g => g.id === groupId ? { ...g, currentUserStatus: null } : g));
+      }
+    };
+
+    window.addEventListener("membershipEvent", handleMembershipEvent);
+    return () => window.removeEventListener("membershipEvent", handleMembershipEvent);
+  }, []);
+
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
   };
@@ -183,7 +217,7 @@ export default function GroupsManagement() {
         typeof error.response?.data === "string"
           ? error.response.data
           : error.response?.data?.message ||
-            "Không thể thực hiện yêu cầu gia nhập.";
+          "Không thể thực hiện yêu cầu gia nhập.";
       toast.error(errorMsg);
     }
   };
@@ -228,11 +262,10 @@ export default function GroupsManagement() {
     return (
       <div
         key={group.id}
-        className={`bg-white dark:bg-card-dark rounded-3xl border overflow-hidden flex flex-col hover:border-primary/30 transition-all group h-full shadow-md dark:shadow-2xl relative ${
-          isAdmin
+        className={`bg-white dark:bg-card-dark rounded-3xl border overflow-hidden flex flex-col hover:border-primary/30 transition-all group h-full shadow-md dark:shadow-2xl relative ${isAdmin
             ? "border-orange-500/50 dark:shadow-orange-500/10"
             : "border-gray-200 dark:border-[#3e2b1d]"
-        }`}
+          }`}
       >
         {/* Clickable Area: Image & Header - Everyone can now see basic info */}
         <div className="relative h-44 overflow-hidden">
@@ -397,8 +430,8 @@ export default function GroupsManagement() {
     activeTab === "my"
       ? yourGroups
       : activeTab === "discover"
-      ? discoverGroups
-      : pendingInvitations;
+        ? discoverGroups
+        : pendingInvitations;
 
   return (
     <div className="max-w-7xl mx-auto w-full pb-20 bg-background-main transition-colors duration-300">
@@ -418,17 +451,16 @@ export default function GroupsManagement() {
                   setActiveTab(tab);
                   setSearchQuery("");
                 }}
-                className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all relative ${
-                  activeTab === tab
+                className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all relative ${activeTab === tab
                     ? "bg-primary text-text-main shadow-lg"
                     : "text-text-secondary hover:text-primary"
-                }`}
+                  }`}
               >
                 {tab === "my"
                   ? "Của tôi"
                   : tab === "discover"
-                  ? "Khám phá"
-                  : "Lời mời"}
+                    ? "Khám phá"
+                    : "Lời mời"}
                 {tab === "invites" && pendingInvitations.length > 0 && (
                   <span className="absolute -top-1 -right-1 flex h-4 w-4">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
@@ -456,8 +488,8 @@ export default function GroupsManagement() {
                 activeTab === "my"
                   ? "Tìm kiếm nhóm của bạn..."
                   : activeTab === "discover"
-                  ? "Khám phá nhóm mới..."
-                  : "Tìm lời mời..."
+                    ? "Khám phá nhóm mới..."
+                    : "Tìm lời mời..."
               }
             />
           </div>
