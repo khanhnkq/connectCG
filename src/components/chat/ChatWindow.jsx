@@ -18,12 +18,12 @@ const ChatWindow = ({
   emojis,
   onBack,
   onShowSettings,
+  onInviteMember,
 }) => {
   return (
     <div
-      className={`${
-        activeRoom ? "flex" : "hidden"
-      } md:flex flex-1 flex-col bg-chat-bg relative transition-colors duration-300`}
+      className={`${activeRoom ? "flex" : "hidden"
+        } md:flex flex-1 flex-col bg-chat-bg relative transition-colors duration-300`}
     >
       {activeRoom ? (
         <>
@@ -31,6 +31,7 @@ const ChatWindow = ({
             activeRoom={activeRoom}
             onBack={onBack}
             onShowSettings={onShowSettings}
+            onInviteMember={onInviteMember}
           />
 
           <MessageList

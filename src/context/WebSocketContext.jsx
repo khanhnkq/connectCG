@@ -224,6 +224,7 @@ export const WebSocketProvider = ({ children }) => {
             dispatch(
               updateConversation({
                 id: payload.roomId,
+                ...payload.data, // Spread full room data (name, avatar, members) if available
                 lastMessageAt: payload.data?.lastMessageAt,
                 unreadCount: payload.data?.unreadCount,
               }),
