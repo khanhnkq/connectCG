@@ -10,11 +10,11 @@ const postService = {
     deletePost(id) {
         return axiosClient.delete(`/posts/${id}`);
     },
-    getPendingHomepagePosts() {
-        return axiosClient.get('/posts/admin/pending');
+    getPendingHomepagePosts(page = 0, size = 10) {
+        return axiosClient.get('/posts/admin/pending', { params: { page, size } });
     },
-    getAuditHomepagePosts() {
-        return axiosClient.get('/posts/admin/audit');
+    getAuditHomepagePosts(page = 0, size = 10) {
+        return axiosClient.get('/posts/admin/audit', { params: { page, size } });
     },
     getPublicHomepagePosts(page = 0, size = 10) {
         return axiosClient.get(`/posts`, { params: { page, size } });

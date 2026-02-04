@@ -108,7 +108,7 @@ const AdminMembersManager = () => {
     }
   };
 
-  // 3. Listen for Realtime User Events (Strikes/Locks)
+  // 3. Listen for Realtime User Events (Locks)
   useEffect(() => {
     const handleUserEvent = (e) => {
       const payload = e.detail;
@@ -131,7 +131,7 @@ const AdminMembersManager = () => {
         }),
       );
 
-      // If it's a major strike update, maybe refresh the whole list to be safe
+      // If it's a major lock update, maybe refresh the whole list to be safe
       // fetchUsers(pagination.currentPage, searchTerm, roleFilter);
     };
 
