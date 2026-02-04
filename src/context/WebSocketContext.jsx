@@ -195,34 +195,10 @@ export const WebSocketProvider = ({ children }) => {
         try {
           const payload = JSON.parse(message.body);
           if (payload.type === "CHAT_UPDATE") {
-            // Check if user is currently viewing this room
-            // We need to access the store state directly or use a ref if available.
-            // Since we are inside a useEffect/callback closure, we can't easily rely on useSelector updating this closure.
-            // However, useChatRooms/useChatMessages syncs activeRoomId to Redux.
-
-            // NOTE: Ideally import store to get state, but here we can try a simple check if we had access to current state.
-            // A better way given the context is to perhaps dispatch an action that handles the logic, 
-            // OR use a mutable ref for activeRoomId if we were passing it down.
-
-            // ACTUALLY: The best place to fix this is in the Redux reducer.
-            // But let's try to fix it here if we can access the state or if we modify the dispatch payload.
-
-            // Let's modify the updateConversation action to handle "if active, ignore unread".
-            // But updateConversation is generic. 
-
-            // Solution: We will pass the logic to the Redux reducer by not passing 'unreadCount' if it matches active room?
-            // No, we don't have active room id here easily without subscribing to store changes.
-
-            // Let's rely on the Redux store's state. 
-            // We can import 'store' from the store definition if it's exported.
-
-            // Temporary fix: Let's assume we can't easy access store.
-            // We can dispatch a thunk? Or just let the reducer handle it? 
-            // Reducer: `if (state.activeRoomId === action.payload.id) action.payload.unreadCount = 0;`
-
             dispatch(
               updateConversation({
                 id: payload.roomId,
+                ...payload.data, // Spread full room data (name, avatar, members) if available
                 lastMessageAt: payload.data?.lastMessageAt,
                 unreadCount: payload.data?.unreadCount,
               }),

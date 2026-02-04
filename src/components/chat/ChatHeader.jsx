@@ -1,7 +1,7 @@
 import React from "react";
-import { Phone, Video, ArrowLeft, Info } from "lucide-react";
+import { Phone, Video, ArrowLeft, Info, UserPlus } from "lucide-react";
 
-const ChatHeader = ({ activeRoom, onBack, onShowSettings }) => {
+const ChatHeader = ({ activeRoom, onBack, onShowSettings, onInviteMember }) => {
   if (!activeRoom) return null;
 
   return (
@@ -17,10 +17,9 @@ const ChatHeader = ({ activeRoom, onBack, onShowSettings }) => {
           <div
             className="size-11 rounded-full bg-cover bg-center border-2 border-surface-main group-hover/header-avatar:border-primary transition-all duration-300"
             style={{
-              backgroundImage: `url("${
-                activeRoom.avatarUrl ||
+              backgroundImage: `url("${activeRoom.avatarUrl ||
                 "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-              }")`,
+                }")`,
             }}
           ></div>
           <div className="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full border-2 border-background-main" />
@@ -50,6 +49,15 @@ const ChatHeader = ({ activeRoom, onBack, onShowSettings }) => {
         >
           <Video size={24} />
         </button>
+        {activeRoom.type === "GROUP" && (
+          <button
+            onClick={onInviteMember}
+            className="size-10 rounded-full hover:bg-surface-main hover:text-primary flex items-center justify-center transition-all"
+            title="Thêm thành viên"
+          >
+            <UserPlus size={24} />
+          </button>
+        )}
         <button
           onClick={onShowSettings}
           className="size-10 rounded-full hover:bg-surface-main hover:text-primary flex items-center justify-center transition-all md:hidden"
