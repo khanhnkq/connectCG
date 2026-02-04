@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { Search, UserPlus } from "lucide-react";
+import { Search, UserPlus, Utensils, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import FriendService from "../../services/friend/FriendService";
@@ -7,6 +7,32 @@ import FriendSuggestionService from "../../services/FriendSuggestionService";
 import FriendRequestService from "../../services/friend/FriendRequestService";
 import { useSelector } from "react-redux";
 import { selectOnlineUserIds } from "../../redux/slices/onlineUsersSlice";
+import AdBanner from "../common/AdBanner";
+
+const AD_BANNERS = [
+  {
+    backgroundImage:
+      "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+    title: "Đặt",
+    highlight: "Đồ Ăn",
+    subtitle:
+      "Giảm <span class='text-white font-bold'>50%</span> ngay hôm nay!",
+    promoBadge: "Khuyến mãi",
+    onClick: () => toast("Tính năng đặt món đang được phát triển! 🍜"),
+  },
+  {
+    backgroundImage:
+      "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+    title: "Quiz",
+    highlight: "Ken",
+    subtitle:
+      "Nền tảng ôn thi <span class='text-white font-bold'>hiệu quả</span>",
+    promoBadge: "Mới",
+    promoColor: "bg-blue-500",
+    highlightColor: "text-blue-400",
+    href: "https://quizken.vercel.app",
+  },
+];
 
 export default function RightSidebar() {
   const [friends, setFriends] = useState([]);
@@ -175,9 +201,10 @@ export default function RightSidebar() {
                   <div
                     className="size-11 rounded-full bg-cover bg-center border border-transparent group-hover:border-primary transition-all"
                     style={{
-                      backgroundImage: `url("${suggestion.avatarUrl ||
+                      backgroundImage: `url("${
+                        suggestion.avatarUrl ||
                         "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                        }")`,
+                      }")`,
                     }}
                   ></div>
                   <div className="flex flex-col">
@@ -229,9 +256,10 @@ export default function RightSidebar() {
                   <div
                     className="size-10 rounded-full bg-cover bg-center ring-2 ring-transparent group-hover:ring-primary/50 transition-all"
                     style={{
-                      backgroundImage: `url("${friend.avatarUrl ||
+                      backgroundImage: `url("${
+                        friend.avatarUrl ||
                         "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                        }")`,
+                      }")`,
                     }}
                   ></div>
                   {onlineUserIds.includes(friend.id) && (
@@ -243,6 +271,7 @@ export default function RightSidebar() {
                 </span>
               </Link>
             ))}
+
             {loading && (
               <div className="flex justify-center py-2">
                 <div className="size-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
@@ -254,6 +283,15 @@ export default function RightSidebar() {
               </p>
             )}
           </div>
+        </div>
+        <div className="flex flex-col gap-4 mb-6">
+          {AD_BANNERS.map((ad, index) => (
+            <AdBanner
+              key={index}
+              {...ad}
+              onClick={ad.onClick ? ad.onClick : undefined}
+            />
+          ))}
         </div>
       </div>
     </aside>

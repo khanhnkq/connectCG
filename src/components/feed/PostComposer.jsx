@@ -1,6 +1,15 @@
 import { useState, useRef } from "react";
 import { useSelector } from "react-redux";
-import { Image, Video, Globe, Users, Lock, ChevronDown, X, AlertTriangle } from "lucide-react";
+import {
+  Image,
+  Video,
+  Globe,
+  Users,
+  Lock,
+  ChevronDown,
+  X,
+  AlertTriangle,
+} from "lucide-react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import postService from "../../services/PostService";
@@ -130,7 +139,7 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
   };
 
   return (
-    <div className="bg-surface-main p-3 md:p-4 rounded-lg border border-border-main shadow-sm transition-all duration-300 hover:shadow-md mb-4 md:mb-6 relative group/composer">
+    <div className="bg-surface-main p-5 md:p-8 rounded-[2rem] border border-border-main shadow-sm transition-all duration-300 hover:shadow-md mb-4 md:mb-5 relative group/composer">
       {formik.isSubmitting && (
         <div className="absolute inset-0 bg-white/50 dark:bg-black/50 z-20 rounded-lg flex items-center justify-center backdrop-blur-[1px]">
           <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
@@ -138,16 +147,22 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
       )}
 
       {/* --- INPUT AREA --- */}
-      <div className="flex gap-3 md:gap-4 mb-3 md:mb-4">
+      <div className="flex gap-4 md:gap-5 mb-4 md:mb-5">
         <div
-          className="hidden md:block bg-center bg-no-repeat bg-cover rounded-full size-11 shrink-0 border border-border-main shadow-sm"
-          style={{ backgroundImage: `url("${userAvatar}")` }}
+          className="hidden md:block bg-center bg-no-repeat bg-cover rounded-full size-14 shrink-0 border border-border-main shadow-sm"
+          style={{
+            backgroundImage: `url("${
+              userProfile?.currentAvatarUrl ||
+              userAvatar ||
+              "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+            }")`,
+          }}
         ></div>
         <div className="flex-1 pt-1">
           <textarea
             name="content"
-            rows={formik.values.content ? 3 : 1}
-            className="w-full bg-transparent border-none focus:ring-0 text-text-main placeholder:text-text-secondary/60 text-base md:text-lg p-0 resize-none leading-relaxed transition-all duration-200"
+            rows={formik.values.content ? 4 : 1}
+            className="w-full bg-transparent border-none focus:ring-0 text-text-main placeholder:text-text-secondary/60 text-lg md:text-xl p-0 resize-none leading-relaxed transition-all duration-200"
             placeholder={`Bạn đang nghĩ gì?`}
             value={formik.values.content}
             onChange={formik.handleChange}
@@ -167,16 +182,18 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
       {formik.values.media.length > 0 && (
         <div className="mb-4 animate-in fade-in zoom-in duration-200">
           <div
-            className={`grid gap-2 ${formik.values.media.length === 1 ? "grid-cols-1" : "grid-cols-2"
-              }`}
+            className={`grid gap-2 ${
+              formik.values.media.length === 1 ? "grid-cols-1" : "grid-cols-2"
+            }`}
           >
             {formik.values.media.map((file, index) => (
               <div
                 key={index}
-                className={`relative rounded-md overflow-hidden border border-border-main group/media bg-black/5 ${formik.values.media.length === 3 && index === 0
-                  ? "col-span-2 aspect-[2/1]"
-                  : "aspect-video"
-                  }`}
+                className={`relative rounded-md overflow-hidden border border-border-main group/media bg-black/5 ${
+                  formik.values.media.length === 3 && index === 0
+                    ? "col-span-2 aspect-[2/1]"
+                    : "aspect-video"
+                }`}
               >
                 {file.type.startsWith("image/") ? (
                   <img
@@ -283,10 +300,11 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
                           formik.setFieldValue("visibility", vis);
                           setShowVisibilityMenu(false);
                         }}
-                        className={`flex items-center gap-2.5 px-3 py-2.5 text-sm w-full text-left transition-colors ${formik.values.visibility === vis
-                          ? "bg-primary/10 text-primary font-medium"
-                          : "hover:bg-background-main text-text-main"
-                          }`}
+                        className={`flex items-center gap-2.5 px-3 py-2.5 text-sm w-full text-left transition-colors ${
+                          formik.values.visibility === vis
+                            ? "bg-primary/10 text-primary font-medium"
+                            : "hover:bg-background-main text-text-main"
+                        }`}
                       >
                         {(() => {
                           const Icon = visibilityIcons[vis];
@@ -295,8 +313,8 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
                         {vis === "PUBLIC"
                           ? "Công khai"
                           : vis === "FRIENDS"
-                            ? "Bạn bè"
-                            : "Riêng tư"}
+                          ? "Bạn bè"
+                          : "Riêng tư"}
                       </button>
                     ))}
                   </div>

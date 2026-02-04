@@ -9,6 +9,8 @@ import toast from "react-hot-toast";
 import ConfirmModal from "../../components/common/ConfirmModal";
 
 import { usePostManagement } from "../../hooks/usePostManagement";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchUserProfile } from "../../redux/slices/userSlice";
 
 import { motion } from "framer-motion";
 
@@ -26,7 +28,11 @@ export default function Newsfeed() {
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [userAvatar, setUserAvatar] = useState("");
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
+  const { profile: userProfile } = useSelector((state) => state.user);
+
+  const userAvatar = userProfile?.currentAvatarUrl || "";
 
   // Ref for intersection observer
   const observer = React.useRef();
@@ -45,23 +51,11 @@ export default function Newsfeed() {
   );
 
   useEffect(() => {
-    const fetchCurrentUserAvatar = async () => {
-      try {
-        const userProfileStr = localStorage.getItem("userProfile");
-        if (userProfileStr) {
-          const userProfile = JSON.parse(userProfileStr);
-          const avatar =
-            userProfile.currentAvatarUrl ||
-            userProfile.avatar ||
-            userProfile.avatarUrl;
-          if (avatar) setUserAvatar(avatar);
-        }
-      } catch (error) {
-        console.error("Failed to fetch user avatar", error);
-      }
-    };
-    fetchCurrentUserAvatar();
-  }, []);
+    const userId = user?.id || user?.userId || user?.sub;
+    if (userId && !userProfile) {
+      dispatch(fetchUserProfile(userId));
+    }
+  }, [user, userProfile, dispatch]);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -103,8 +97,8 @@ export default function Newsfeed() {
   return (
     <div className="flex w-full relative items-start">
       <div className="flex-1 w-full">
-        <div className="max-w-3xl mx-auto w-full px-6 py-8 pb-20">
-          <div className="flex flex-col gap-6">
+        <div className="max-w-4xl mx-auto w-full px-6 py-8 pb-20">
+          <div className="flex flex-col gap-4">
             <PostComposer
               userAvatar={userAvatar}
               onPostCreated={handlePostCreated}

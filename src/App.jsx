@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Outlet } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { WebSocketProvider } from "./context/WebSocketContext";
 import DashboardLayout from "./components/layout/DashboardLayout";
@@ -20,6 +20,7 @@ import GroupDetailPage from "./pages/dashboard/GroupDetailPage";
 import EditGroupPage from "./pages/dashboard/EditGroupPage";
 import Newsfeed from "./pages/dashboard/Newsfeed";
 import FriendsPage from "./pages/dashboard/FriendsPage";
+import PrivacySettings from "./pages/dashboard/PrivacySettings";
 import AdminGroupsManager from "./pages/admin-website/AdminGroupsManager.jsx";
 import AdminMembersManager from "./pages/admin-website/AdminMembersManager.jsx";
 import MainFeedManager from "./pages/admin-website/MainFeedManager.jsx";
@@ -83,6 +84,7 @@ function App() {
             <Route path="feed" element={<Newsfeed />} />
             <Route path="profile/view" element={<MemberProfile />} />
             <Route path="friends" element={<FriendsPage />} />
+            <Route path="settings/privacy" element={<PrivacySettings />} />
           </Route>
 
           {/* Search Routes - Assuming they share Dashboard layout, if not, keep separate */}
@@ -97,20 +99,20 @@ function App() {
             <Route index element={<AdvancedMemberSearch />} />
           </Route>
 
-          {/* Admin Routes - Protected but no specific layout enforced yet */}
+          {/* Admin Routes - Protected with ADMIN role */}
           <Route
-            path="/admin-website/groups"
-            element={<AdminGroupsManager />}
-          />
-          <Route
-            path="/admin-website/members"
-            element={<AdminMembersManager />}
-          />
-          <Route path="/admin-website/contents" element={<MainFeedManager />} />
-          <Route
-            path="/admin-website/reports"
-            element={<AdminReportsManager />}
-          />
+            path="/admin-website"
+            element={
+              <ProtectedRoute roles={["ADMIN"]}>
+                <Outlet />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="groups" element={<AdminGroupsManager />} />
+            <Route path="members" element={<AdminMembersManager />} />
+            <Route path="contents" element={<MainFeedManager />} />
+            <Route path="reports" element={<AdminReportsManager />} />
+          </Route>
         </Routes>
       </WebSocketProvider>
     </ThemeProvider>

@@ -84,81 +84,63 @@ const Sidebar = ({ brandName = "Quản trị MXH", activeTab = "Groups" }) => {
   ];
 
   return (
-    <aside className="w-72 flex flex-col border-r border-border bg-background">
+    <aside className="w-72 flex flex-col h-full max-h-screen bg-surface-main z-20 transition-all duration-300 overflow-hidden">
       <div className="p-8 flex items-center gap-4">
-        <div className="bg-primary rounded-xl size-10 flex items-center justify-center text-white shadow-lg shadow-primary/20">
-          <Network className="font-bold" size={24} />
+        <div className="bg-primary rounded-2xl size-12 flex items-center justify-center text-[#231810] shadow-xl shadow-primary/20 rotate-3 group-hover:rotate-0 transition-transform">
+          <Network className="font-extrabold" size={28} />
         </div>
         <div className="flex flex-col">
-          <h1 className="text-lg font-bold leading-none tracking-tight text-text-main">
+          <h1 className="text-xl font-extrabold leading-none tracking-tight text-text-main uppercase">
             {brandName}
           </h1>
-          <p className="text-text-muted text-[10px] uppercase tracking-widest mt-1 font-semibold">
-            Cổng quản lý
+          <p className="text-primary text-[10px] uppercase tracking-[0.2em] mt-1.5 font-bold opacity-80">
+            Admin Console
           </p>
         </div>
       </div>
 
-      <nav className="flex-1 px-4 space-y-1.5 mt-2">
+      <nav className="flex-1 px-4 space-y-1.5 mt-2 overflow-y-auto custom-scrollbar">
         {navItems.map((item) => (
           <Link
             key={item.name}
             to={item.path}
-            className={`flex items-center gap-3 px-5 py-3.5 rounded-xl transition-all group ${
+            className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl transition-all font-bold group relative overflow-hidden ${
               activeTab === item.name
-                ? "bg-primary text-white shadow-lg shadow-primary/20"
-                : "text-text-muted hover:bg-surface hover:text-text-main"
+                ? "text-[#231810]"
+                : "text-text-secondary hover:bg-surface-main/50 hover:text-text-main"
             }`}
           >
-            {React.createElement(iconMap[item.icon] || Settings, {
-              size: 22,
-              className: `transition-transform ${
-                activeTab !== item.name ? "group-hover:scale-110" : ""
-              }`,
-              fill: activeTab === item.name ? "currentColor" : "none",
-            })}
-            <span className="text-sm font-semibold">{item.label}</span>
-          </Link>
-        ))}
-
-        <div className="pt-8 px-5 pb-2">
-          <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">
-            Hệ thống
-          </p>
-        </div>
-
-        {systemItems.map((item) => (
-          <Link
-            key={item.name}
-            to={item.path}
-            className={`flex items-center gap-3 px-5 py-3.5 rounded-xl transition-all group ${
-              activeTab === item.name
-                ? "bg-primary text-white shadow-lg shadow-primary/20"
-                : "text-text-muted hover:bg-surface hover:text-text-main"
-            }`}
-          >
-            {React.createElement(iconMap[item.icon] || Settings, {
-              size: 22,
-              className: `transition-transform ${
-                activeTab !== item.name ? "group-hover:scale-110" : ""
-              }`,
-            })}
-            <span className="text-sm font-semibold">{item.label}</span>
+            {activeTab === item.name && (
+              <div className="absolute inset-0 bg-primary shadow-sm shadow-primary/20 z-0" />
+            )}
+            <div className="relative z-10 flex items-center gap-3">
+              {React.createElement(iconMap[item.icon] || Settings, {
+                size: 20,
+                className: `transition-transform duration-300 ${
+                  activeTab !== item.name ? "group-hover:scale-110" : ""
+                }`,
+                fill: activeTab === item.name ? "currentColor" : "none",
+              })}
+              <span className="text-sm">{item.label}</span>
+            </div>
           </Link>
         ))}
       </nav>
 
-      <div className="p-6 border-t border-border space-y-4">
+      <div className="p-6 space-y-4 mt-auto mb-6">
         <Link
           to="/dashboard/feed"
-          className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all font-black text-xs uppercase tracking-widest border border-primary/20"
+          className="flex items-center justify-center gap-2 w-full py-4 rounded-xl bg-background-main hover:bg-primary hover:text-[#231810] transition-all font-bold text-xs uppercase tracking-wider text-text-secondary border border-border-main hover:border-transparent group shadow-sm"
         >
-          <Eye size={18} />
-          Xem trang chủ
+          <Eye
+            size={18}
+            className="group-hover:scale-110 transition-transform"
+          />
+          <span>Về trang chủ</span>
         </Link>
-        <div className="flex items-center gap-4 px-2 py-2 bg-surface rounded-2xl border border-border">
+        <div className="flex items-center gap-3 px-4 py-3 bg-background-main rounded-2xl border border-border-main shadow-sm">
           <div
-            className="bg-center bg-no-repeat aspect-square bg-cover rounded-xl size-10 border-2 border-primary/20"
+            className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-border-main"
             style={{
               backgroundImage: `url("${
                 currentUser?.currentAvatarUrl ||
@@ -167,10 +149,10 @@ const Sidebar = ({ brandName = "Quản trị MXH", activeTab = "Groups" }) => {
             }}
           ></div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold truncate">
+            <p className="text-sm font-bold truncate text-text-main">
               {currentUser?.fullName || currentUser?.username || "Admin"}
             </p>
-            <p className="text-text-muted text-[10px] uppercase font-bold tracking-wider">
+            <p className="text-text-secondary text-[10px] uppercase font-bold tracking-wider">
               {currentUser?.role || "Quản trị viên"}
             </p>
           </div>

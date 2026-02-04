@@ -15,8 +15,17 @@ export default function FriendsPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // UI State
-  const [viewMode, setViewMode] = useState("ALL");
+  // UI State - Use URL as source of truth
+  const viewMode = (searchParams.get("tab") || "all").toUpperCase();
+  const setViewMode = (newMode) => {
+    setSearchParams(
+      (prev) => {
+        prev.set("tab", newMode.toLowerCase());
+        return prev;
+      },
+      { replace: true },
+    );
+  };
   const [activeItem, setActiveItem] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeProfileTab, setActiveProfileTab] = useState("about");
@@ -38,7 +47,7 @@ export default function FriendsPage() {
     // fetchFriends, // Removed implicit fetch, managed by hook internal effect/loadMore
     hasMore: friendsHasMore,
     loadMore: loadMoreFriends,
-    updateFilter: updateFriendsFilter
+    updateFilter: updateFriendsFilter,
   } = useFriends(null, { name: "" }); // Pass empty initial filter
 
   const {
@@ -71,7 +80,7 @@ export default function FriendsPage() {
         type: "SUGGESTION",
       }));
       setSuggestions(formattedSuggestions);
-    } catch (error) {
+    } catch {
       toast.error("Không thể tải danh sách gợi ý");
     } finally {
       setSuggestionsLoading(false);
@@ -87,7 +96,7 @@ export default function FriendsPage() {
   useEffect(() => {
     // if (viewMode === "ALL") {
     // fetchFriends(); // Hook handles this on filter change or mount
-    // } else 
+    // } else
     if (viewMode === "REQUESTS") {
       fetchRequests();
     } else if (viewMode === "SUGGESTIONS") {
@@ -118,7 +127,7 @@ export default function FriendsPage() {
         }
 
         setActiveProfileTab("about");
-      } catch (error) {
+      } catch {
         // Fallback to activeItem data if fetch fails
         setFullProfile(activeItem);
       } finally {
@@ -139,7 +148,7 @@ export default function FriendsPage() {
       navigate("/dashboard/chat", {
         state: { selectedRoomKey: room.firebaseRoomKey },
       });
-    } catch (error) {
+    } catch {
       toast.error("Lỗi khi kết nối", { id: tid });
     }
   };
@@ -164,7 +173,7 @@ export default function FriendsPage() {
       if (activeItem?.userId === id) {
         setActiveItem(null);
       }
-    } catch (error) {
+    } catch {
       toast.error("Lỗi khi gửi lời mời", {
         id: tid,
       });
@@ -187,7 +196,7 @@ export default function FriendsPage() {
       if (activeItem?.userId === id) {
         setActiveItem(null);
       }
-    } catch (error) {
+    } catch {
       toast.error("Lỗi khi ẩn gợi ý");
     } finally {
       setProcessingSuggestions((prev) => {
@@ -268,8 +277,8 @@ export default function FriendsPage() {
           viewMode === "ALL"
             ? friendsLoading
             : viewMode === "REQUESTS"
-              ? requestsLoading
-              : suggestionsLoading
+            ? requestsLoading
+            : suggestionsLoading
         }
         processingRequests={
           viewMode === "SUGGESTIONS"
@@ -285,8 +294,9 @@ export default function FriendsPage() {
       />
 
       <div
-        className={`${activeItem ? "flex" : "hidden"
-          } xl:flex flex-1 flex-col bg-background-secondary relative border-l border-border-main`}
+        className={`${
+          activeItem ? "flex" : "hidden"
+        } xl:flex flex-1 flex-col bg-background-secondary relative border-l border-border-main`}
       >
         <FriendProfileDetail
           activeItem={activeItem}
