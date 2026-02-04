@@ -11,6 +11,7 @@ const useChatMessages = (activeRoom) => {
     useEffect(() => {
         if (!activeRoom?.firebaseRoomKey) {
             setMessages([]);
+            dispatch(setActiveRoomId(null));
             return;
         }
 

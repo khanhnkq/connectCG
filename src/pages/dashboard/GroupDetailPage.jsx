@@ -348,12 +348,15 @@ const GroupDetailPage = () => {
     return () => window.removeEventListener("postEvent", handlePostEvent);
   }, [id, isAdmin, setApprovedPosts]);
 
+  const [isLeavingGroup, setIsLeavingGroup] = useState(false);
+
   const handleLeaveGroup = () => {
     if (!group) return;
     const currentUserId = getUserIdFromToken();
     const userIdNum = Number(currentUserId);
     const ownerIdNum = Number(group.ownerId);
     if (userIdNum && ownerIdNum && userIdNum === ownerIdNum) {
+      setIsLeavingGroup(true); // Flag intent to leave
       setShowTransferOwnershipModal(true);
       return;
     }
@@ -385,17 +388,25 @@ const GroupDetailPage = () => {
       toast.error(errorMsg);
     }
   };
+
   const handleTransferOwnership = async (selectedMember) => {
     try {
-      await transferOwnership(group.id, selectedMember.userId);
+      await transferOwnership(group.id, selectedMember.userId, isLeavingGroup);
       toast.success(
-        `Đã chuyển quyền cho ${selectedMember.fullName} thành công`,
+        isLeavingGroup
+          ? "Đã chuyển quyền và rời nhóm thành công"
+          : `Đã chuyển quyền cho ${selectedMember.fullName} thành công`
       );
       setShowTransferOwnershipModal(false);
-      fetchGroupData(); // Refresh current page instead of navigating away
+
+      if (isLeavingGroup) {
+        navigate("/dashboard/groups");
+      } else {
+        fetchGroupData();
+      }
     } catch (error) {
       console.error("Failed to transfer ownership:", error);
-      const errorMsg = error.response?.data || "Không thể chuyển quyền";
+      const errorMsg = error.response?.data?.message || "Không thể chuyển quyền";
       toast.error(errorMsg);
     }
   };
@@ -487,7 +498,7 @@ const GroupDetailPage = () => {
   const confirmTransferOwnership = async () => {
     if (!memberToTransfer) return;
     try {
-      await updateGroupMemberRole(group.id, memberToTransfer.userId, "OWNER");
+      await transferOwnership(group.id, memberToTransfer.userId);
       toast.success(
         `Đã chuyển quyền quản trị cho ${memberToTransfer.fullName || memberToTransfer.username}`,
       );
@@ -495,7 +506,7 @@ const GroupDetailPage = () => {
       setMemberToTransfer(null);
       fetchGroupData();
     } catch (error) {
-      console.error("Failed to update role:", error);
+      console.error("Failed to transfer ownership:", error);
       const errorMsg =
         error.response?.data?.message ||
         (typeof error.response?.data === "string"
@@ -978,6 +989,8 @@ const GroupDetailPage = () => {
                                 <Key size={20} />
                               </button>
 
+
+
                               <button
                                 onClick={() => handleBanMember(member)}
                                 className="p-2 text-red-700/40 hover:text-red-600 transition-colors"
@@ -1327,7 +1340,10 @@ const GroupDetailPage = () => {
       {/* Transfer Ownership Modal */}
       <TransferOwnershipModal
         isOpen={showTransferOwnershipModal}
-        onClose={() => setShowTransferOwnershipModal(false)}
+        onClose={() => {
+          setShowTransferOwnershipModal(false);
+          setIsLeavingGroup(false);
+        }}
         members={members}
         currentUserId={getUserIdFromToken()}
         onTransfer={handleTransferOwnership}

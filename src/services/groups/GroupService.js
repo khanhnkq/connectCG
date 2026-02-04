@@ -113,8 +113,8 @@ export const banMember = async (groupId, userId) => {
     const res = await axiosClient.post(`${URL_GROUP}/${groupId}/ban/${userId}`);
     return res.data;
 };
-export const transferOwnership = async (groupId, newOwnerId) => {
-    const res = await axiosClient.post(`${URL_GROUP}/${groupId}/transfer-ownership`, { newOwnerId });
+export const transferOwnership = async (groupId, newOwnerId, quit = false) => {
+    const res = await axiosClient.post(`${URL_GROUP}/${groupId}/transfer-ownership`, { newOwnerId, quit });
     return res.data;
 };
 

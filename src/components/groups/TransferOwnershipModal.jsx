@@ -33,12 +33,12 @@ export default function TransferOwnershipModal({
         </div>
 
         <h2 className="text-2xl font-black text-text-main text-center mb-2">
-          Chuyển quyền sở hữu
+          Rời khỏi nhóm
         </h2>
         <p className="text-text-secondary text-sm text-center mb-6">
-          Bạn đang là chủ sở hữu. Sau khi chuyển quyền, bạn sẽ trở thành thành
-          viên thường:
+          Bạn đang là quản trị viên. Trước khi rời nhóm, bạn cần chuyển quyền quản trị cho một thành viên khác.
         </p>
+
 
         {/* Thanh tìm kiếm */}
         <div className="relative mb-4">
@@ -108,8 +108,7 @@ export default function TransferOwnershipModal({
           <p className="text-orange-400 text-xs flex items-start gap-2">
             <Info size={14} className="mt-0.5" />
             <span>
-              Sau khi chuyển quyền, bạn sẽ trở thành{" "}
-              <strong>thành viên thường</strong> của nhóm này.
+              Sau khi chuyển quyền <strong>bạn sẽ rời khỏi nhóm này</strong>.
             </span>
           </p>
         </div>

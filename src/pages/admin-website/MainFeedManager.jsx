@@ -5,6 +5,8 @@ import {
   ShieldCheck,
   CheckCircle2,
   Trash2,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import AdminLayout from "../../components/layout-admin/AdminLayout";
@@ -16,6 +18,12 @@ const MainFeedManager = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("pending"); // 'pending' or 'audit'
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const PAGE_SIZE = 10;
+
   const [confirmConfig, setConfirmConfig] = useState({
     isOpen: false,
     title: "",
@@ -24,25 +32,35 @@ const MainFeedManager = () => {
   });
 
   useEffect(() => {
-    fetchPosts();
+    setCurrentPage(0); // Reset to first page when tab changes
+    fetchPosts(0);
   }, [activeTab]);
 
   useEffect(() => {
+    fetchPosts(currentPage);
+  }, [currentPage]);
+
+  useEffect(() => {
     const handlePostEvent = (e) => {
-      fetchPosts();
+      fetchPosts(currentPage);
     };
     window.addEventListener("postEvent", handlePostEvent);
     return () => window.removeEventListener("postEvent", handlePostEvent);
-  }, [activeTab]);
+  }, [activeTab, currentPage]);
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (page = 0) => {
     try {
       setLoading(true);
       const response =
         activeTab === "pending"
-          ? await postService.getPendingHomepagePosts()
-          : await postService.getAuditHomepagePosts();
-      setPosts(response.data);
+          ? await postService.getPendingHomepagePosts(page, PAGE_SIZE)
+          : await postService.getAuditHomepagePosts(page, PAGE_SIZE);
+
+      const pageData = response.data;
+      setPosts(pageData.content || []);
+      setTotalPages(pageData.totalPages || 0);
+      setTotalElements(pageData.totalElements || 0);
+      setCurrentPage(page);
     } catch (error) {
       console.error("Error fetching homepage posts:", error);
       toast.error("Không thể tải danh sách bài viết");
@@ -247,6 +265,35 @@ const MainFeedManager = () => {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination Controls */}
+        <div className="flex justify-between items-center bg-surface/20 p-6 rounded-2xl border border-border/50">
+          <div className="text-text-muted text-xs font-bold">
+            Hiển thị <span className="text-text-main">{posts.length}</span> trên{" "}
+            <span className="text-text-main">{totalElements}</span> bài viết
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(0, prev - 1))}
+              disabled={currentPage === 0 || loading}
+              className="p-2 bg-background border border-border/50 rounded-lg text-text-muted hover:text-text-main disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <div className="flex items-center px-4 bg-background border border-border/50 rounded-lg text-[10px] font-black text-text-main uppercase tracking-widest">
+              Trang {currentPage + 1} / {totalPages || 1}
+            </div>
+            <button
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1))
+              }
+              disabled={currentPage >= totalPages - 1 || loading}
+              className="p-2 bg-background border border-border/50 rounded-lg text-text-muted hover:text-text-main disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
         </div>
 
         {/* Shared Confirmation Modal */}

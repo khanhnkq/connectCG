@@ -224,7 +224,7 @@ export default function GroupsManagement() {
         typeof error.response?.data === "string"
           ? error.response.data
           : error.response?.data?.message ||
-            "Không thể thực hiện yêu cầu gia nhập.";
+          "Không thể thực hiện yêu cầu gia nhập.";
       toast.error(errorMsg);
     }
   };
@@ -301,7 +301,7 @@ export default function GroupsManagement() {
                 <Lock size={18} className="text-primary" />
               )}
               <span className="text-text-main text-[11px] font-black uppercase tracking-wider">
-                {group.privacy}
+                {group.privacy === "PUBLIC" ? "Công khai" : "Riêng tư"}
               </span>
             </div>
           </div>
@@ -462,17 +462,16 @@ export default function GroupsManagement() {
                     setActiveTab(tab);
                     setSearchQuery("");
                   }}
-                  className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all relative ${
-                    activeTab === tab
+                  className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all relative ${activeTab === tab
                       ? "bg-primary text-text-main shadow-lg"
                       : "text-text-secondary hover:text-primary"
-                  }`}
+                    }`}
                 >
                   {tab === "my"
                     ? "Của tôi"
                     : tab === "discover"
-                    ? "Khám phá"
-                    : "Lời mời"}
+                      ? "Khám phá"
+                      : "Lời mời"}
                   {tab === "invites" && pendingInvitations.length > 0 && (
                     <span className="absolute -top-1 -right-1 flex h-4 w-4">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
@@ -501,8 +500,8 @@ export default function GroupsManagement() {
                   activeTab === "my"
                     ? "Tìm kiếm nhóm của bạn..."
                     : activeTab === "discover"
-                    ? "Khám phá nhóm mới..."
-                    : "Tìm lời mời..."
+                      ? "Khám phá nhóm mới..."
+                      : "Tìm lời mời..."
                 }
               />
             </div>
