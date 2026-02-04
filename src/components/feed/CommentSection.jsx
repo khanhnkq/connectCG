@@ -33,11 +33,6 @@ export default function CommentSection({
   useEffect(() => {
     const handleCommentEvent = (e) => {
       const { postId: eventPostId, action, comment } = e.detail;
-      console.log("🔔 [CommentSection] Event Received:", {
-        action,
-        eventPostId,
-        currentPostId: postId,
-      });
 
       // Only process if this event is for our post (loose equality for string/number match)
       if (eventPostId != postId) return;
@@ -53,9 +48,6 @@ export default function CommentSection({
         );
         // Only fetch if comment is from another user
         if (comment.authorId !== currentUserId) {
-          console.log(
-            "🔔 [CommentSection] Fetching new comments (background)...",
-          );
           fetchComments(true); // true = background fetch
         }
       } else if (action === "DELETED") {
