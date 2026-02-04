@@ -176,7 +176,7 @@ const AdminReportsManagement = () => {
           updatedAt: report.updatedAt || report.updated_at,
           reporterUsername: report.reporterUsername || report.reporter_username,
           status: report.status,
-          groupId: report.groupId,
+          groupId: report.groupId || report.group_id,
           reviewerId: report.reviewerId || report.reviewer_id, // Capture reviewer ID from DB
         };
       }
@@ -419,7 +419,7 @@ const AdminReportsManagement = () => {
                 subtext: res.data.email,
               };
             })
-            .catch(() => {}),
+            .catch(() => { }),
         );
       }
     });
@@ -460,25 +460,37 @@ const AdminReportsManagement = () => {
           if (groupItem.groupId) {
             const groupPosts = await getGroupPosts(groupItem.groupId);
             const foundPost = groupPosts.find(
-              (p) => p.id === groupItem.targetId,
+              (p) => String(p.id) === String(groupItem.targetId),
             );
             if (foundPost) {
               data = foundPost;
               if (!data.userId && foundPost.authorId)
                 data.userId = foundPost.authorId;
             } else {
-              throw new Error("Post not found in group");
+              throw new Error(`Post ${groupItem.targetId} not found in group ${groupItem.groupId}`);
             }
           } else {
+            console.error("Direct fetch failed and no groupId available for fallback", groupItem);
             throw error;
           }
         }
       }
       setDetailModal((prev) => ({ ...prev, targetData: data, loading: false }));
     } catch (error) {
-      console.error(error);
-      toast.error("Không thể tải thông tin chi tiết");
-      setDetailModal((prev) => ({ ...prev, loading: false }));
+      console.error("Failed to fetch detail:", error);
+      console.log("Report Item causing error:", groupItem);
+      // Don't toast error here to avoid spamming if user clicks multiple times or if it's expected
+      // toast.error("Không thể tải thông tin chi tiết gốc");
+
+      // Allow modal to stay open but with error state
+      setDetailModal((prev) => ({
+        ...prev,
+        targetData: {
+          error: true,
+          msg: error.response?.status === 405 ? "API không hỗ trợ lấy chi tiết (405)" : "Không tìm thấy nội dung hoặc lỗi kết nối"
+        },
+        loading: false
+      }));
     }
   };
 
@@ -646,21 +658,19 @@ const AdminReportsManagement = () => {
             <div className="flex bg-background-main p-1 rounded-xl border border-border-main">
               <button
                 onClick={() => setFilterStatus("PENDING")}
-                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                  filterStatus === "PENDING"
-                    ? "bg-primary text-[#231810] shadow-sm"
-                    : "text-text-secondary hover:text-text-main"
-                }`}
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${filterStatus === "PENDING"
+                  ? "bg-primary text-[#231810] shadow-sm"
+                  : "text-text-secondary hover:text-text-main"
+                  }`}
               >
                 Đang chờ
               </button>
               <button
                 onClick={() => setFilterStatus("RESOLVED")}
-                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                  filterStatus === "RESOLVED"
-                    ? "bg-green-500 text-white shadow-sm"
-                    : "text-text-secondary hover:text-text-main"
-                }`}
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${filterStatus === "RESOLVED"
+                  ? "bg-green-500 text-white shadow-sm"
+                  : "text-text-secondary hover:text-text-main"
+                  }`}
               >
                 Đã xong
               </button>
@@ -690,11 +700,10 @@ const AdminReportsManagement = () => {
             <button
               key={key}
               onClick={() => setActiveTab(key)}
-              className={`pb-4 text-xs font-black uppercase tracking-[0.15em] transition-all relative ${
-                activeTab === key
-                  ? "text-primary"
-                  : "text-text-muted hover:text-text-main"
-              }`}
+              className={`pb-4 text-xs font-black uppercase tracking-[0.15em] transition-all relative ${activeTab === key
+                ? "text-primary"
+                : "text-text-muted hover:text-text-main"
+                }`}
             >
               {label}
               {activeTab === key && (
@@ -738,9 +747,9 @@ const AdminReportsManagement = () => {
           violationHistory={
             detailModal.report
               ? getViolationHistory(
-                  detailModal.report.targetId,
-                  detailModal.report.targetType,
-                )
+                detailModal.report.targetId,
+                detailModal.report.targetType,
+              )
               : []
           }
           onResolve={handleResolveReport}

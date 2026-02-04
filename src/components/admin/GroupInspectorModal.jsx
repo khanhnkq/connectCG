@@ -77,9 +77,8 @@ const GroupInspectorModal = ({
         </div>
       ) : (
         <div
-          className={`bg-surface-main w-full ${
-            hasReports ? "max-w-[75rem]" : "max-w-5xl"
-          } h-[85vh] rounded-[2.5rem] shadow-2xl overflow-hidden flex animate-in zoom-in-95 duration-300`}
+          className={`bg-surface-main w-full ${hasReports ? "max-w-[75rem]" : "max-w-5xl"
+            } h-[85vh] rounded-[2.5rem] shadow-2xl overflow-hidden flex animate-in zoom-in-95 duration-300`}
         >
           {/* MAIN CONTENT AREA */}
           <div className="flex-1 flex flex-col min-w-0">
@@ -111,11 +110,10 @@ const GroupInspectorModal = ({
                       {inspectorData.group?.name}
                     </h2>
                     <span
-                      className={`px-3 py-1 text-xs font-black uppercase rounded-lg border backdrop-blur-md ${
-                        inspectorData.group?.privacy === "PUBLIC"
+                      className={`px-3 py-1 text-xs font-black uppercase rounded-lg border backdrop-blur-md ${inspectorData.group?.privacy === "PUBLIC"
                           ? "bg-green-500/20 text-green-400 border-green-500/20"
                           : "bg-orange-500/20 text-orange-400 border-orange-500/20"
-                      }`}
+                        }`}
                     >
                       {inspectorData.group?.privacy === "PUBLIC"
                         ? "CÔNG KHAI"
@@ -145,11 +143,10 @@ const GroupInspectorModal = ({
                         activeTab: tab.id,
                       }))
                     }
-                    className={`py-4 text-sm font-bold uppercase tracking-wider border-b-2 transition-all ${
-                      inspectorData.activeTab === tab.id
+                    className={`py-4 text-sm font-bold uppercase tracking-wider border-b-2 transition-all ${inspectorData.activeTab === tab.id
                         ? "text-primary border-primary"
                         : "text-text-muted border-transparent hover:text-text-main"
-                    }`}
+                      }`}
                   >
                     {tab.label}
                   </button>
@@ -159,9 +156,8 @@ const GroupInspectorModal = ({
               <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-background-main">
                 {inspectorData.activeTab === "overview" && (
                   <div
-                    className={`grid grid-cols-1 ${
-                      hasReports ? "" : "md:grid-cols-2"
-                    } gap-6`}
+                    className={`grid grid-cols-1 ${hasReports ? "" : "md:grid-cols-2"
+                      } gap-6`}
                   >
                     <div className="bg-surface-main p-6 rounded-3xl space-y-4 shadow-sm">
                       <h3 className="text-xl font-bold text-text-main">
@@ -187,8 +183,8 @@ const GroupInspectorModal = ({
                           <span className="text-text-main font-bold text-sm">
                             {inspectorData.group?.createdAt
                               ? new Date(
-                                  inspectorData.group.createdAt,
-                                ).toLocaleDateString()
+                                inspectorData.group.createdAt,
+                              ).toLocaleDateString()
                               : "N/A"}
                           </span>
                         </div>
@@ -254,11 +250,10 @@ const GroupInspectorModal = ({
                             {member.fullName}
                           </p>
                           <span
-                            className={`text-xs font-black uppercase px-2 py-1 rounded ${
-                              member.role === "ADMIN"
+                            className={`text-xs font-black uppercase px-2 py-1 rounded ${member.role === "ADMIN"
                                 ? "bg-orange-500/20 text-orange-400"
                                 : "bg-background-main text-text-secondary border border-border-main"
-                            }`}
+                              }`}
                           >
                             {member.role === "ADMIN"
                               ? "QUẢN TRỊ VIÊN"
@@ -299,11 +294,10 @@ const GroupInspectorModal = ({
                             </div>
                           </div>
                           <span
-                            className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                              post.status === "APPROVED"
+                            className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${post.status === "APPROVED"
                                 ? "bg-green-500/10 text-green-600 border border-green-500/20"
                                 : "bg-yellow-500/10 text-yellow-600 border border-yellow-500/20"
-                            }`}
+                              }`}
                           >
                             {post.status === "APPROVED"
                               ? "ĐÃ DUYỆT"
@@ -313,21 +307,46 @@ const GroupInspectorModal = ({
                         <div className="text-text-main/90 whitespace-pre-wrap text-sm leading-relaxed">
                           {post.content}
                         </div>
-                        {post.images && post.images.length > 0 && (
+                        {/* Media Grid (Images & Videos) */}
+                        {(post.media?.length > 0 || post.images?.length > 0) && (
                           <div className="grid grid-cols-2 gap-2 mt-3">
-                            {post.images.map((img, i) => (
-                              <div
-                                key={i}
-                                className="relative aspect-video rounded-xl overflow-hidden group/img"
-                              >
-                                <img
-                                  src={img}
-                                  className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-110"
-                                  alt=""
-                                />
-                                <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/10 transition-colors" />
-                              </div>
-                            ))}
+                            {post.media?.length > 0
+                              ? post.media.map((m, i) => (
+                                <div
+                                  key={i}
+                                  className="relative aspect-video rounded-xl overflow-hidden group/img bg-black"
+                                >
+                                  {m.type === "VIDEO" ? (
+                                    <video
+                                      src={m.url}
+                                      controls
+                                      className="w-full h-full object-contain"
+                                    />
+                                  ) : (
+                                    <>
+                                      <img
+                                        src={m.url}
+                                        className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-110"
+                                        alt=""
+                                      />
+                                      <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/10 transition-colors" />
+                                    </>
+                                  )}
+                                </div>
+                              ))
+                              : post.images?.map((img, i) => (
+                                <div
+                                  key={i}
+                                  className="relative aspect-video rounded-xl overflow-hidden group/img"
+                                >
+                                  <img
+                                    src={img}
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-110"
+                                    alt=""
+                                  />
+                                  <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/10 transition-colors" />
+                                </div>
+                              ))}
                           </div>
                         )}
                       </div>
@@ -409,7 +428,7 @@ const GroupInspectorModal = ({
                   const reporterStats = reporterStatsGetter
                     ? reporterStatsGetter(report.reporterId)
                     : reports.filter((r) => r.reporterId === report.reporterId)
-                        .length;
+                      .length;
 
                   const isHighRisk = reporterStats > 10;
                   const isMediumRisk = reporterStats > 5;
@@ -449,9 +468,8 @@ const GroupInspectorModal = ({
                           {/* Spam Warning Badge */}
                           {isMediumRisk && (
                             <div
-                              className={`absolute -top-1.5 -right-1.5 size-5 rounded-full flex items-center justify-center border-2 border-[#1e120f] ${
-                                isHighRisk ? "bg-red-500" : "bg-orange-500"
-                              }`}
+                              className={`absolute -top-1.5 -right-1.5 size-5 rounded-full flex items-center justify-center border-2 border-[#1e120f] ${isHighRisk ? "bg-red-500" : "bg-orange-500"
+                                }`}
                               title={`Đã gửi ${reporterStats} báo cáo`}
                             >
                               <span className="material-symbols-outlined text-[14px] text-white leading-none">
@@ -478,11 +496,10 @@ const GroupInspectorModal = ({
                             </p>
                             {reporterStats > 1 && (
                               <span
-                                className={`text-[9px] px-1.5 py-0.5 rounded border ${
-                                  isHighRisk
+                                className={`text-[9px] px-1.5 py-0.5 rounded border ${isHighRisk
                                     ? "bg-red-500/10 text-red-500 border-red-500/20"
                                     : "bg-background text-text-muted border-border"
-                                }`}
+                                  }`}
                               >
                                 {reporterStats} báo cáo
                               </span>

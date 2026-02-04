@@ -60,7 +60,9 @@ export const WebSocketProvider = ({ children }) => {
       debug: (str) => {
         console.log("STOMP:", str);
       },
-      reconnectDelay: 5000,
+      reconnectDelay: 1000,
+      heartbeatIncoming: 4000,
+      heartbeatOutgoing: 4000,
     });
 
     client.onConnect = () => {
@@ -113,7 +115,6 @@ export const WebSocketProvider = ({ children }) => {
           if (payload.type === "GROUP_DELETED") {
             console.log("🔔 Nhận sự kiện GROUP_DELETED:", payload);
             dispatch(addNotification(payload));
-
 
             const currentPath = window.location.pathname;
             if (currentPath.includes(`/groups/${payload.targetId}`)) {

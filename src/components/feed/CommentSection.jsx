@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import commentService from "../../services/CommentService";
 import CommentItem from "./CommentItem";
@@ -27,45 +27,56 @@ export default function CommentSection({
   // Fetch comments
   useEffect(() => {
     fetchComments();
-  }, [postId]);
+  }, [postId]); // fetchComments is stable via useCallback
 
   // Listen for realtime comment events (only from OTHER users)
   useEffect(() => {
     const handleCommentEvent = (e) => {
-      const { postId: eventPostId, action, comment } = e.detail;
-      // Only process if this event is for our post
-      if (eventPostId !== postId) return;
+      const { postId: eventPostId, action, comment, commentId } = e.detail;
 
-      // Check if current user triggered this event (avoid double fetch)
-      const currentUserId = user?.id;
+      // Only process if this event is for our post (loose equality for string/number match)
+      if (eventPostId != postId) return;
+
       if (action === "CREATED" && comment) {
-        // Only fetch if comment is from another user
-        if (comment.authorId !== currentUserId) {
-          fetchComments();
-        }
-      } else if (action === "DELETED") {
-        // For delete, we don't have userId in event, so just refresh
-        // This is acceptable since delete is less frequent
-        fetchComments();
+        setComments((prevComments) => {
+          // 1. Check duplicate (avoid double show)
+          const exists = findComment(prevComments, comment.id);
+          if (exists) return prevComments;
+
+          // 2. Insert comment
+          if (!comment.parentId) {
+            // Root comment: Add to bottom
+            return [...prevComments, comment];
+          } else {
+            // Reply: Find parent and add
+            return addReplyToComment(prevComments, comment.parentId, comment);
+          }
+        });
+      } else if (action === "DELETED" && commentId) {
+        setComments((prevComments) =>
+          removeCommentById(prevComments, commentId),
+        );
       }
     };
     window.addEventListener("commentEvent", handleCommentEvent);
     return () => window.removeEventListener("commentEvent", handleCommentEvent);
-  }, [postId, user?.id]);
+  }, [postId]);
 
-  const fetchComments = async () => {
-    try {
-      setLoading(true);
-      const res = await commentService.getComments(postId);
-      setComments(res.data || res);
-    } catch (error) {
-      console.error("Error fetching comments:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchComments = useCallback(
+    async (isBackground = false) => {
+      try {
+        if (!isBackground) setLoading(true);
+        const res = await commentService.getComments(postId);
+        setComments(res.data || res);
+      } catch (error) {
+        console.error("Error fetching comments:", error);
+      } finally {
+        if (!isBackground) setLoading(false);
+      }
+    },
+    [postId],
+  );
 
-  // Tạo comment mới - add optimistically then refresh
   const handleSubmit = async (content) => {
     try {
       const res = await commentService.createComment(postId, content);
@@ -83,7 +94,7 @@ export default function CommentSection({
   const handleReply = async (content, parentId) => {
     try {
       await commentService.createComment(postId, content, parentId);
-      fetchComments(); // Reply structure is complex, just refetch
+      fetchComments(true); // Reply structure is complex, just refetch in background
       if (onCommentAdded) onCommentAdded();
     } catch (error) {
       console.error("Error replying:", error);
@@ -103,15 +114,6 @@ export default function CommentSection({
     }
   };
 
-  // Helper to remove comment by ID (including nested replies)
-  const removeCommentById = (comments, id) => {
-    return comments
-      .filter((c) => c.id !== id)
-      .map((c) => ({
-        ...c,
-        replies: c.replies ? removeCommentById(c.replies, id) : [],
-      }));
-  };
   return (
     <div className="px-4 py-3 border-t border-border-main">
       {/* Input comment mới */}
@@ -157,3 +159,36 @@ export default function CommentSection({
     </div>
   );
 }
+
+// Helper Functions (Pure)
+const findComment = (list, id) => {
+  for (let c of list) {
+    if (c.id === id) return true;
+    if (c.replies && findComment(c.replies, id)) return true;
+  }
+  return false;
+};
+
+const addReplyToComment = (list, parentId, newComment) => {
+  return list.map((c) => {
+    if (c.id === parentId) {
+      return { ...c, replies: [...(c.replies || []), newComment] };
+    }
+    if (c.replies) {
+      return {
+        ...c,
+        replies: addReplyToComment(c.replies, parentId, newComment),
+      };
+    }
+    return c;
+  });
+};
+
+const removeCommentById = (comments, id) => {
+  return comments
+    .filter((c) => c.id !== id)
+    .map((c) => ({
+      ...c,
+      replies: c.replies ? removeCommentById(c.replies, id) : [],
+    }));
+};
