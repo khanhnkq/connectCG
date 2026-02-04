@@ -278,14 +278,6 @@ export default function Step2() {
                         </div>
                       </label>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="flex items-center gap-2 text-primary hover:text-white text-sm font-bold transition-colors"
-                    >
-                      <Video size={18} />
-                      Chụp từ Webcam
-                    </button>
                   </div>
 
                   {/* Full Name */}
