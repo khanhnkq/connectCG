@@ -97,8 +97,8 @@ export default function Newsfeed() {
   return (
     <div className="flex w-full relative items-start">
       <div className="flex-1 w-full">
-        <div className="max-w-3xl mx-auto w-full px-6 py-8 pb-20">
-          <div className="flex flex-col gap-6">
+        <div className="max-w-4xl mx-auto w-full px-6 py-8 pb-20">
+          <div className="flex flex-col gap-4">
             <PostComposer
               userAvatar={userAvatar}
               onPostCreated={handlePostCreated}

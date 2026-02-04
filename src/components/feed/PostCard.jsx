@@ -335,22 +335,22 @@ export default function PostCard({
 
   return (
     <article
-      className={`bg-surface-main rounded-lg border border-border-main shadow-sm transition-colors duration-300 mb-4 ${
+      className={`bg-surface-main rounded-[2rem] border border-border-main shadow-sm transition-all duration-300 mb-4 ${
         type === "dashboard" ? "shadow-lg" : ""
-      }`}
+      } hover:shadow-md`}
     >
       {/* HEADER */}
-      <div className="p-3 md:p-4 flex justify-between items-start border-b border-border-main/30 mb-2">
-        <div className="flex gap-3">
+      <div className="p-5 md:p-6 flex justify-between items-start border-b border-border-main/20 mb-3">
+        <div className="flex gap-4">
           <div
-            className="bg-center bg-no-repeat bg-cover rounded-full size-10 flex-shrink-0 cursor-pointer ring-1 ring-border-main hover:ring-primary transition-all"
+            className="bg-center bg-no-repeat bg-cover rounded-full size-12 flex-shrink-0 cursor-pointer ring-1 ring-border-main hover:ring-primary transition-all"
             style={{ backgroundImage: `url("${data.author.avatar}")` }}
           ></div>
           <div className="flex flex-col justify-center min-w-0">
             <div className="flex flex-wrap items-baseline gap-x-1 gap-y-0.5 min-w-0 pr-2">
               <Link
                 to={`/dashboard/member/${data.author.id}`}
-                className="text-text-main font-bold text-base hover:underline transition-all truncate max-w-[140px] sm:max-w-[200px]"
+                className="text-text-main font-bold text-lg hover:underline transition-all truncate max-w-[180px] sm:max-w-[240px]"
                 title={data.author.name}
               >
                 {data.author.name}
@@ -453,7 +453,7 @@ export default function PostCard({
       </div>
 
       {/* CONTENT TEXT OR EDIT FORM */}
-      <div className="px-3 md:px-4 pb-2 md:pb-3">
+      <div className="px-5 md:px-8 pb-4 md:pb-6">
         {isEditing ? (
           <PostUpdate
             post={data}
@@ -463,12 +463,12 @@ export default function PostCard({
         ) : (
           data.content && (
             <div className="relative">
-              <p className="text-text-main whitespace-pre-wrap text-[15px] leading-relaxed break-words">
-                {isExpanded || data.content.length <= 100
+              <p className="text-text-main whitespace-pre-wrap text-[17px] leading-relaxed break-words font-medium">
+                {isExpanded || data.content.length <= 150
                   ? data.content
-                  : `${data.content.substring(0, 100)}...`}
+                  : `${data.content.substring(0, 150)}...`}
               </p>
-              {data.content.length > 100 && (
+              {data.content.length > 150 && (
                 <button
                   onClick={() => setIsExpanded(!isExpanded)}
                   className="text-primary hover:underline font-bold text-sm mt-1"

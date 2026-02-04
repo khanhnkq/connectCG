@@ -139,7 +139,7 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
   };
 
   return (
-    <div className="bg-surface-main p-3 md:p-4 rounded-lg border border-border-main shadow-sm transition-all duration-300 hover:shadow-md mb-4 md:mb-6 relative group/composer">
+    <div className="bg-surface-main p-5 md:p-8 rounded-[2rem] border border-border-main shadow-sm transition-all duration-300 hover:shadow-md mb-4 md:mb-5 relative group/composer">
       {formik.isSubmitting && (
         <div className="absolute inset-0 bg-white/50 dark:bg-black/50 z-20 rounded-lg flex items-center justify-center backdrop-blur-[1px]">
           <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
@@ -147,9 +147,9 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
       )}
 
       {/* --- INPUT AREA --- */}
-      <div className="flex gap-3 md:gap-4 mb-3 md:mb-4">
+      <div className="flex gap-4 md:gap-5 mb-4 md:mb-5">
         <div
-          className="hidden md:block bg-center bg-no-repeat bg-cover rounded-full size-11 shrink-0 border border-border-main shadow-sm"
+          className="hidden md:block bg-center bg-no-repeat bg-cover rounded-full size-14 shrink-0 border border-border-main shadow-sm"
           style={{
             backgroundImage: `url("${
               userProfile?.currentAvatarUrl ||
@@ -161,8 +161,8 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
         <div className="flex-1 pt-1">
           <textarea
             name="content"
-            rows={formik.values.content ? 3 : 1}
-            className="w-full bg-transparent border-none focus:ring-0 text-text-main placeholder:text-text-secondary/60 text-base md:text-lg p-0 resize-none leading-relaxed transition-all duration-200"
+            rows={formik.values.content ? 4 : 1}
+            className="w-full bg-transparent border-none focus:ring-0 text-text-main placeholder:text-text-secondary/60 text-lg md:text-xl p-0 resize-none leading-relaxed transition-all duration-200"
             placeholder={`Bạn đang nghĩ gì?`}
             value={formik.values.content}
             onChange={formik.handleChange}

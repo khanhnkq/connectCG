@@ -20,6 +20,7 @@ import GroupDetailPage from "./pages/dashboard/GroupDetailPage";
 import EditGroupPage from "./pages/dashboard/EditGroupPage";
 import Newsfeed from "./pages/dashboard/Newsfeed";
 import FriendsPage from "./pages/dashboard/FriendsPage";
+import PrivacySettings from "./pages/dashboard/PrivacySettings";
 import AdminGroupsManager from "./pages/admin-website/AdminGroupsManager.jsx";
 import AdminMembersManager from "./pages/admin-website/AdminMembersManager.jsx";
 import MainFeedManager from "./pages/admin-website/MainFeedManager.jsx";
@@ -83,6 +84,7 @@ function App() {
             <Route path="feed" element={<Newsfeed />} />
             <Route path="profile/view" element={<MemberProfile />} />
             <Route path="friends" element={<FriendsPage />} />
+            <Route path="settings/privacy" element={<PrivacySettings />} />
           </Route>
 
           {/* Search Routes - Assuming they share Dashboard layout, if not, keep separate */}
