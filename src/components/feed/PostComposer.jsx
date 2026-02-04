@@ -138,6 +138,12 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
     PRIVATE: Lock,
   };
 
+  const visibilityLabels = {
+    PUBLIC: "Công khai",
+    FRIENDS: "Bạn bè",
+    PRIVATE: "Riêng tư",
+  };
+
   return (
     <div className="bg-surface-main p-5 md:p-8 rounded-[2rem] border border-border-main shadow-sm transition-all duration-300 hover:shadow-md mb-4 md:mb-5 relative group/composer">
       {formik.isSubmitting && (
@@ -279,7 +285,7 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
                   return <Icon size={14} className="text-text-secondary" />;
                 })()}
                 <span className="hidden md:inline">
-                  {formik.values.visibility}
+                  {visibilityLabels[formik.values.visibility]}
                 </span>
                 <ChevronDown size={12} className="opacity-70" />
               </button>
