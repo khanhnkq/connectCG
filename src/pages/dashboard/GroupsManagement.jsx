@@ -95,8 +95,8 @@ export default function GroupsManagement() {
 
   useEffect(() => {
     setPage(0);
-    fetchGroups(0);
-  }, [activeTab, searchQuery, fetchGroups]);
+    fetchGroups(0, true);
+  }, [activeTab]); // Only refetch when changing tabs, not on search
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -122,12 +122,12 @@ export default function GroupsManagement() {
     }
 
     return () => observer.disconnect();
-  }, [hasMore, loading, isFetchingMore, activeTab, searchQuery, fetchGroups]);
+  }, [hasMore, loading, isFetchingMore, activeTab]); // Removed searchQuery
 
   // Real-time synchronization for groups
   useEffect(() => {
     const handleMembershipEvent = (e) => {
-      const { action, groupId, userId } = e.detail;
+      const { action, groupId, userId, member } = e.detail;
       const userStr = localStorage.getItem("user");
       if (!userStr) return;
       const currentUserId = JSON.parse(userStr).id;
@@ -143,26 +143,14 @@ export default function GroupsManagement() {
           fetchGroups(0);
           return prev;
         });
-      } else if (
-        action === "ACCEPTED" ||
-        action === "JOINED" ||
-        action === "APPROVED"
-      ) {
+      } else if (action === "ACCEPTED" || action === "JOINED" || action === "APPROVED") {
         // Refresh My Groups and Invitations
         fetchGroups(0);
-      } else if (
-        action === "KICKED" ||
-        action === "LEFT" ||
-        action === "BANNED"
-      ) {
-        setYourGroups((prev) => prev.filter((g) => g.id !== groupId));
-        setPendingInvitations((prev) => prev.filter((g) => g.id !== groupId));
+      } else if (action === "KICKED" || action === "LEFT" || action === "BANNED") {
+        setYourGroups(prev => prev.filter(g => g.id !== groupId));
+        setPendingInvitations(prev => prev.filter(g => g.id !== groupId));
         // If we are in discover, reset status
-        setDiscoverGroups((prev) =>
-          prev.map((g) =>
-            g.id === groupId ? { ...g, currentUserStatus: null } : g,
-          ),
-        );
+        setDiscoverGroups(prev => prev.map(g => g.id === groupId ? { ...g, currentUserStatus: null } : g));
       }
     };
 
@@ -184,8 +172,8 @@ export default function GroupsManagement() {
         findMyGroups(),
         findPendingInvitations(),
       ]);
-      setYourGroups(myGroupsData);
-      setPendingInvitations(invitationsData);
+      setYourGroups(myGroupsData.content || myGroupsData);
+      setPendingInvitations(invitationsData.content || invitationsData);
     } catch {
       toast.error("Không thể chấp nhận lời mời.");
     }
@@ -220,7 +208,7 @@ export default function GroupsManagement() {
         );
         // Refresh myGroups để thêm nhóm mới vào
         const myGroupsData = await findMyGroups();
-        setYourGroups(myGroupsData);
+        setYourGroups(myGroupsData.content || myGroupsData);
       } else {
         toast.success("Đã gửi yêu cầu gia nhập nhóm!");
         // Cập nhật state cho nhóm Private
@@ -274,15 +262,17 @@ export default function GroupsManagement() {
       group.image ||
       "https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=1000";
     const isMember = group.currentUserStatus === "ACCEPTED";
+    const isPending =
+      group.currentUserStatus === "REQUESTED" ||
+      group.currentUserStatus === "PENDING";
 
     return (
       <div
         key={group.id}
-        className={`bg-white dark:bg-card-dark rounded-3xl border overflow-hidden flex flex-col hover:border-primary/30 transition-all group h-full shadow-md dark:shadow-2xl relative ${
-          isAdmin
-            ? "border-orange-500/50 dark:shadow-orange-500/10"
-            : "border-gray-200 dark:border-[#3e2b1d]"
-        }`}
+        className={`bg-white dark:bg-card-dark rounded-3xl border overflow-hidden flex flex-col hover:border-primary/30 transition-all group h-full shadow-md dark:shadow-2xl relative ${isAdmin
+          ? "border-orange-500/50 dark:shadow-orange-500/10"
+          : "border-gray-200 dark:border-[#3e2b1d]"
+          }`}
       >
         {/* Clickable Area: Image & Header - Everyone can now see basic info */}
         <div className="relative h-44 overflow-hidden">
@@ -304,13 +294,13 @@ export default function GroupsManagement() {
                 ADMIN
               </div>
             )}
-            <div className="bg-black/60 backdrop-blur-xl px-3 py-1.5 rounded-xl flex items-center gap-2 border border-white/10 shadow-lg select-none">
+            <div className="bg-black/60 backdrop-blur-xl px-3 py-1.5 rounded-xl flex items-center gap-2 border border-white/10 shadow-lg">
               {group.privacy === "PUBLIC" ? (
-                <Globe size={18} className="text-white" />
+                <Globe size={18} className="text-primary" />
               ) : (
-                <Lock size={18} className="text-white" />
+                <Lock size={18} className="text-primary" />
               )}
-              <span className="text-white text-[11px] font-black uppercase tracking-wider">
+              <span className="text-text-main text-[11px] font-black uppercase tracking-wider">
                 {group.privacy}
               </span>
             </div>
@@ -425,12 +415,33 @@ export default function GroupsManagement() {
     );
   };
 
-  const displayedGroups =
-    activeTab === "my"
-      ? yourGroups
-      : activeTab === "discover"
+  if (loading) {
+    return (
+      <div className="bg-background-main min-h-screen flex items-center justify-center">
+        <div className="size-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  const filteredGroups = (groups) => {
+    if (!searchQuery.trim()) return groups;
+    const query = searchQuery.toLowerCase();
+    return groups.filter(
+      (g) =>
+        g.name?.toLowerCase().includes(query) ||
+        g.description?.toLowerCase().includes(query),
+    );
+  };
+
+  const activeGroups = activeTab === "my"
+    ? yourGroups
+    : activeTab === "discover"
       ? discoverGroups
       : pendingInvitations;
+
+  const displayedGroups = Array.isArray(activeGroups)
+    ? filteredGroups(activeGroups)
+    : [];
 
   return (
     <div className="flex w-full relative items-start transition-colors duration-300">

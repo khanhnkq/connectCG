@@ -21,6 +21,7 @@ const notificationSlice = createSlice({
         error: null,
         unreadCount: 0,
         groupDeletionAlert: null, // Stores payload for group deletion modal { type, content, ... }
+        groupBanAlert: null, // { groupId, groupName, action }
     },
     reducers: {
         addNotification: (state, action) => {
@@ -56,6 +57,12 @@ const notificationSlice = createSlice({
         },
         clearGroupDeletionAlert: (state) => {
             state.groupDeletionAlert = null;
+        },
+        setGroupBanAlert: (state, action) => {
+            state.groupBanAlert = action.payload;
+        },
+        clearGroupBanAlert: (state) => {
+            state.groupBanAlert = null;
         }
     },
     extraReducers: (builder) => {
@@ -77,6 +84,6 @@ const notificationSlice = createSlice({
     },
 });
 
-export const { addNotification, markAsRead, markAllAsRead, deleteNotification, setNotifications, setGroupDeletionAlert, clearGroupDeletionAlert } = notificationSlice.actions;
+export const { addNotification, markAsRead, markAllAsRead, deleteNotification, setNotifications, setGroupDeletionAlert, clearGroupDeletionAlert, setGroupBanAlert, clearGroupBanAlert } = notificationSlice.actions;
 
 export default notificationSlice.reducer;

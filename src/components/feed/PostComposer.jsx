@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
-import { Image, Video, Globe, Users, Lock, ChevronDown, X } from "lucide-react";
+import { useSelector } from "react-redux";
+import { Image, Video, Globe, Users, Lock, ChevronDown, X, AlertTriangle } from "lucide-react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import postService from "../../services/PostService";
@@ -37,6 +38,7 @@ const validationSchema = Yup.object({
 });
 
 export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
+  const { profile: userProfile } = useSelector((state) => state.user);
   const [showVisibilityMenu, setShowVisibilityMenu] = useState(false);
 
   // Refs cho input file ẩn
@@ -51,6 +53,7 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
     },
     validationSchema,
     onSubmit: async (values, { resetForm, setSubmitting }) => {
+      console.log("PostComposer: Submitting post...", values);
       try {
         setSubmitting(true);
 
@@ -171,8 +174,8 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
               <div
                 key={index}
                 className={`relative rounded-md overflow-hidden border border-border-main group/media bg-black/5 ${formik.values.media.length === 3 && index === 0
-                    ? "col-span-2 aspect-[2/1]"
-                    : "aspect-video"
+                  ? "col-span-2 aspect-[2/1]"
+                  : "aspect-video"
                   }`}
               >
                 {file.type.startsWith("image/") ? (
@@ -281,8 +284,8 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
                           setShowVisibilityMenu(false);
                         }}
                         className={`flex items-center gap-2.5 px-3 py-2.5 text-sm w-full text-left transition-colors ${formik.values.visibility === vis
-                            ? "bg-primary/10 text-primary font-medium"
-                            : "hover:bg-background-main text-text-main"
+                          ? "bg-primary/10 text-primary font-medium"
+                          : "hover:bg-background-main text-text-main"
                           }`}
                       >
                         {(() => {

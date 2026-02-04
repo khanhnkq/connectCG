@@ -231,6 +231,20 @@ export const WebSocketProvider = ({ children }) => {
           window.dispatchEvent(
             new CustomEvent("membershipEvent", { detail: payload }),
           );
+
+          // If current user is the one being banned, show the global modal
+          const currentUserId = JSON.parse(
+            localStorage.getItem("userData"),
+          )?.userId;
+          if (payload.action === "BANNED" && payload.userId === currentUserId) {
+            dispatch(
+              setGroupBanAlert({
+                groupId: payload.groupId,
+                groupName: payload.groupName,
+                action: "BANNED",
+              }),
+            );
+          }
         } catch (e) {
           console.error("Error parsing membership event:", e);
         }

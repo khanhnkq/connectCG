@@ -22,7 +22,6 @@ const MainFeedManager = () => {
     message: "",
     onConfirm: null,
   });
-  const [giveStrike, setGiveStrike] = useState(false);
 
   useEffect(() => {
     fetchPosts();
@@ -63,24 +62,18 @@ const MainFeedManager = () => {
   };
 
   const handleDelete = (id) => {
-    setGiveStrike(false); // Reset checkbox
     setConfirmConfig({
       isOpen: true,
-      title: "Xác nhận xóa bài viết?",
-      message:
-        "Bạn có thể chọn xóa thường hoặc xóa kèm theo cảnh cáo (Strike) cho người dùng.",
+      postId: id,
+      title: "Xóa bài viết?",
+      message: "Bạn có chắc chắn muốn xóa bài viết này? Hành động này không thể hoàn tác.",
       onConfirm: async () => {
         try {
-          if (giveStrike) {
-            await postService.rejectPost(id, true);
-            toast.success("Đã xóa và gửi cảnh cáo cho người dùng!");
-          } else {
-            await postService.deletePost(id);
-            toast.success("Đã xóa bài viết thành công");
-          }
+          await postService.deletePost(id);
+          toast.success("Đã xóa bài viết thành công");
           setPosts(posts.filter((p) => p.id !== id));
         } catch (error) {
-          toast.error("Lỗi dữ liệu: Không thể xử lý bài viết");
+          toast.error("Lỗi dữ liệu: Không thể xóa bài viên");
         }
         setConfirmConfig({ ...confirmConfig, isOpen: false });
       },
@@ -191,18 +184,11 @@ const MainFeedManager = () => {
                           <span className="text-[9px] text-text-muted opacity-60 italic">
                             {post.visibility}
                           </span>
-                          {(post.userViolationCount > 0 || post.authorLockedUntil) && (
+                          {post.authorLockedUntil && new Date(post.authorLockedUntil) > new Date() && (
                             <div className="flex items-center gap-1.5 mt-1">
-                              <span className={`text-[9px] font-black ${post.userViolationCount >= 8 ? "text-red-500" :
-                                  post.userViolationCount >= 5 ? "text-orange-500" : "text-yellow-500"
-                                }`}>
-                                {post.userViolationCount}/8 Strikes
+                              <span className="text-[9px] bg-red-500/10 text-red-500 px-1 rounded font-bold uppercase">
+                                Locked
                               </span>
-                              {post.authorLockedUntil && new Date(post.authorLockedUntil) > new Date() && (
-                                <span className="text-[9px] bg-red-500/10 text-red-500 px-1 rounded font-bold uppercase">
-                                  Locked
-                                </span>
-                              )}
                             </div>
                           )}
                         </div>
@@ -272,23 +258,7 @@ const MainFeedManager = () => {
           onConfirm={confirmConfig.onConfirm}
           onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
           confirmText="Xác nhận Xóa"
-        >
-          <div className="flex items-center gap-2 p-3 bg-red-500/5 rounded-xl border border-red-500/10">
-            <input
-              type="checkbox"
-              id="giveStrike"
-              checked={giveStrike}
-              onChange={(e) => setGiveStrike(e.target.checked)}
-              className="size-4 accent-red-500 cursor-pointer"
-            />
-            <label
-              htmlFor="giveStrike"
-              className="text-xs font-bold text-red-500 cursor-pointer select-none"
-            >
-              Kèm theo Cảnh cáo (Strike) cho người dùng
-            </label>
-          </div>
-        </ConfirmModal>
+        />
       </div>
     </AdminLayout>
   );
