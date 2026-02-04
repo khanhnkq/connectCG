@@ -245,7 +245,7 @@ export default function RightSidebar() {
 
         {/* Friends List - Scrollable Container */}
         <div className="flex-1 overflow-y-auto" onScroll={handleScroll}>
-          <div className="flex flex-col gap-2 pb-20">
+          <div className="flex flex-col gap-2 pb-4">
             {sortedFriends.map((friend) => (
               <Link
                 to={`/dashboard/member/${friend.id}`}
@@ -271,27 +271,22 @@ export default function RightSidebar() {
                 </span>
               </Link>
             ))}
-
             {loading && (
               <div className="flex justify-center py-2">
                 <div className="size-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
               </div>
             )}
-            {!loading && friends.length === 0 && (
-              <p className="text-text-secondary text-xs pl-2">
-                Chưa có bạn bè nào đang online
-              </p>
-            )}
           </div>
-        </div>
-        <div className="flex flex-col gap-4 mb-6">
-          {AD_BANNERS.map((ad, index) => (
-            <AdBanner
-              key={index}
-              {...ad}
-              onClick={ad.onClick ? ad.onClick : undefined}
-            />
-          ))}
+
+          <div className="flex flex-col gap-4 mb-6 pt-4">
+            {AD_BANNERS.map((ad, index) => (
+              <AdBanner
+                key={index}
+                {...ad}
+                onClick={ad.onClick ? ad.onClick : undefined}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </aside>
