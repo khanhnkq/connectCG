@@ -42,8 +42,8 @@ const GroupInspectorModal = ({
           findGroupById(groupId).catch((e) => {
             throw e;
           }),
-          getGroupMembers(groupId).catch((e) => []),
-          getGroupPosts(groupId).catch((e) => []),
+          getGroupMembers(groupId).catch(() => []),
+          getGroupPosts(groupId).catch(() => []),
         ]);
         setInspectorData({
           group,
@@ -67,7 +67,7 @@ const GroupInspectorModal = ({
   const hasReports = reports && reports.length > 0;
 
   return (
-    <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-background/95 backdrop-blur-md animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
       {inspectorData.loading ? (
         <div className="flex flex-col items-center gap-4">
           <div className="size-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
@@ -77,8 +77,9 @@ const GroupInspectorModal = ({
         </div>
       ) : (
         <div
-          className={`bg-surface w-full ${hasReports ? "max-w-[75rem]" : "max-w-5xl"
-            } h-[85vh] rounded-[2.5rem] border border-border/50 shadow-2xl overflow-hidden flex animate-in zoom-in-95 duration-300`}
+          className={`bg-surface-main w-full ${
+            hasReports ? "max-w-[75rem]" : "max-w-5xl"
+          } h-[85vh] rounded-[2.5rem] shadow-2xl overflow-hidden flex animate-in zoom-in-95 duration-300`}
         >
           {/* MAIN CONTENT AREA */}
           <div className="flex-1 flex flex-col min-w-0">
@@ -106,21 +107,22 @@ const GroupInspectorModal = ({
               <div className="absolute bottom-6 left-8 right-8 flex items-end justify-between">
                 <div>
                   <div className="flex items-center gap-3 mb-2">
-                    <h2 className="text-3xl font-black text-text-main tracking-tight">
+                    <h2 className="text-3xl font-black text-white tracking-tight drop-shadow-md">
                       {inspectorData.group?.name}
                     </h2>
                     <span
-                      className={`px-2.5 py-1 text-[10px] font-black uppercase rounded-lg border backdrop-blur-md ${inspectorData.group?.privacy === "PUBLIC"
+                      className={`px-3 py-1 text-xs font-black uppercase rounded-lg border backdrop-blur-md ${
+                        inspectorData.group?.privacy === "PUBLIC"
                           ? "bg-green-500/20 text-green-400 border-green-500/20"
                           : "bg-orange-500/20 text-orange-400 border-orange-500/20"
-                        }`}
+                      }`}
                     >
                       {inspectorData.group?.privacy === "PUBLIC"
                         ? "CÔNG KHAI"
                         : "RIÊNG TƯ"}
                     </span>
                   </div>
-                  <p className="text-text-main/80 text-sm max-w-2xl line-clamp-1">
+                  <p className="text-white/90 text-sm max-w-2xl line-clamp-1 font-medium drop-shadow-sm">
                     {inspectorData.group?.description || "Chưa có mô tả."}
                   </p>
                 </div>
@@ -143,30 +145,34 @@ const GroupInspectorModal = ({
                         activeTab: tab.id,
                       }))
                     }
-                    className={`py-4 text-sm font-bold uppercase tracking-wider border-b-2 transition-all ${inspectorData.activeTab === tab.id
+                    className={`py-4 text-sm font-bold uppercase tracking-wider border-b-2 transition-all ${
+                      inspectorData.activeTab === tab.id
                         ? "text-primary border-primary"
                         : "text-text-muted border-transparent hover:text-text-main"
-                      }`}
+                    }`}
                   >
                     {tab.label}
                   </button>
                 ))}
               </div>
 
-              <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-background/30">
+              <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-background-main">
                 {inspectorData.activeTab === "overview" && (
                   <div
-                    className={`grid grid-cols-1 ${hasReports ? "" : "md:grid-cols-2"
-                      } gap-6`}
+                    className={`grid grid-cols-1 ${
+                      hasReports ? "" : "md:grid-cols-2"
+                    } gap-6`}
                   >
-                    <div className="bg-surface p-6 rounded-3xl border border-border/50 space-y-4">
+                    <div className="bg-surface-main p-6 rounded-3xl space-y-4 shadow-sm">
                       <h3 className="text-xl font-bold text-text-main">
                         Thông tin chung
                       </h3>
-                      <div className="space-y-3">
-                        <div className="flex justify-between py-2 border-b border-border/30">
-                          <span className="text-text-muted">Chủ sở hữu</span>
-                          <span className="text-text-main font-bold">
+                      <div className="space-y-4">
+                        <div className="flex justify-between py-3 border-b border-border-main/50">
+                          <span className="text-text-secondary font-medium text-sm">
+                            Chủ sở hữu
+                          </span>
+                          <span className="text-text-main font-bold text-sm">
                             {inspectorData.members.find(
                               (m) => m.userId === inspectorData.group?.ownerId,
                             )?.fullName ||
@@ -174,29 +180,31 @@ const GroupInspectorModal = ({
                               "Không rõ"}
                           </span>
                         </div>
-                        <div className="flex justify-between py-2 border-b border-border/30">
-                          <span className="text-text-muted">Ngày tạo</span>
-                          <span className="text-text-main font-bold">
+                        <div className="flex justify-between py-3 border-b border-border-main/50">
+                          <span className="text-text-secondary font-medium text-sm">
+                            Ngày tạo
+                          </span>
+                          <span className="text-text-main font-bold text-sm">
                             {inspectorData.group?.createdAt
                               ? new Date(
-                                inspectorData.group.createdAt,
-                              ).toLocaleDateString()
+                                  inspectorData.group.createdAt,
+                                ).toLocaleDateString()
                               : "N/A"}
                           </span>
                         </div>
-                        <div className="flex justify-between py-2 border-b border-border/30">
-                          <span className="text-text-muted">
+                        <div className="flex justify-between py-3 border-b border-border-main/50">
+                          <span className="text-text-secondary font-medium text-sm">
                             Số lượng thành viên
                           </span>
-                          <span className="text-text-main font-bold">
+                          <span className="text-text-main font-bold text-sm">
                             {inspectorData.members.length}
                           </span>
                         </div>
-                        <div className="flex justify-between py-2 border-b border-border/30">
-                          <span className="text-text-muted">
+                        <div className="flex justify-between py-3 border-b border-border-main/50">
+                          <span className="text-text-secondary font-medium text-sm">
                             Số lượng bài viết
                           </span>
-                          <span className="text-text-main font-bold">
+                          <span className="text-text-main font-bold text-sm">
                             {inspectorData.posts.length}
                           </span>
                         </div>
@@ -204,7 +212,7 @@ const GroupInspectorModal = ({
                     </div>
 
                     {!hasReports && (
-                      <div className="bg-surface p-6 rounded-3xl border border-border/50 space-y-4 flex flex-col items-center justify-center text-center">
+                      <div className="bg-surface-main p-6 rounded-3xl space-y-4 flex flex-col items-center justify-center text-center shadow-sm">
                         <div className="size-20 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
                           <ShieldCheck size={40} />
                         </div>
@@ -234,7 +242,7 @@ const GroupInspectorModal = ({
                     {inspectorData.members.map((member) => (
                       <div
                         key={member.userId}
-                        className="bg-surface p-4 rounded-2xl border border-border/50 flex items-center gap-3"
+                        className="bg-surface-main p-4 rounded-2xl flex items-center gap-3 shadow-sm"
                       >
                         <img
                           src={member.avatarUrl}
@@ -246,10 +254,11 @@ const GroupInspectorModal = ({
                             {member.fullName}
                           </p>
                           <span
-                            className={`text-[10px] font-black uppercase px-1.5 py-0.5 rounded ${member.role === "ADMIN"
+                            className={`text-xs font-black uppercase px-2 py-1 rounded ${
+                              member.role === "ADMIN"
                                 ? "bg-orange-500/20 text-orange-400"
-                                : "bg-background text-text-muted"
-                              }`}
+                                : "bg-background-main text-text-secondary border border-border-main"
+                            }`}
                           >
                             {member.role === "ADMIN"
                               ? "QUẢN TRỊ VIÊN"
@@ -271,43 +280,53 @@ const GroupInspectorModal = ({
                     {inspectorData.posts.map((post) => (
                       <div
                         key={post.id}
-                        className="bg-surface p-6 rounded-3xl border border-border/50 space-y-4"
+                        className="bg-surface-main p-5 rounded-2xl shadow-sm border border-border-main/40 hover:shadow-md transition-all space-y-4"
                       >
-                        <div className="flex items-center gap-3 border-b border-border/30 pb-4">
-                          <img
-                            src={post.authorAvatar}
-                            className="size-10 rounded-full"
-                            alt=""
-                          />
-                          <div>
-                            <p className="text-text-main font-bold">
-                              {post.authorFullName}
-                            </p>
-                            <p className="text-text-muted text-xs">
-                              {new Date(post.createdAt).toLocaleString()}
-                            </p>
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={post.authorAvatar}
+                              className="size-10 rounded-full"
+                              alt=""
+                            />
+                            <div>
+                              <p className="text-text-main font-bold">
+                                {post.authorFullName}
+                              </p>
+                              <p className="text-text-muted text-xs">
+                                {new Date(post.createdAt).toLocaleString()}
+                              </p>
+                            </div>
                           </div>
                           <span
-                            className={`ml-auto px-2 py-1 rounded-lg text-[10px] font-black uppercase ${post.status === "APPROVED"
-                                ? "bg-green-500/20 text-green-400"
-                                : "bg-yellow-500/20 text-yellow-400"
-                              }`}
+                            className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                              post.status === "APPROVED"
+                                ? "bg-green-500/10 text-green-600 border border-green-500/20"
+                                : "bg-yellow-500/10 text-yellow-600 border border-yellow-500/20"
+                            }`}
                           >
-                            {post.status === "APPROVED" ? "ĐÃ DUYỆT" : "CHỜ DUYỆT"}
+                            {post.status === "APPROVED"
+                              ? "ĐÃ DUYỆT"
+                              : "CHỜ DUYỆT"}
                           </span>
                         </div>
                         <div className="text-text-main/90 whitespace-pre-wrap text-sm leading-relaxed">
                           {post.content}
                         </div>
                         {post.images && post.images.length > 0 && (
-                          <div className="grid grid-cols-2 gap-2 mt-2">
+                          <div className="grid grid-cols-2 gap-2 mt-3">
                             {post.images.map((img, i) => (
-                              <img
+                              <div
                                 key={i}
-                                src={img}
-                                className="rounded-xl w-full h-40 object-cover border border-border/30"
-                                alt=""
-                              />
+                                className="relative aspect-video rounded-xl overflow-hidden group/img"
+                              >
+                                <img
+                                  src={img}
+                                  className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-110"
+                                  alt=""
+                                />
+                                <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/10 transition-colors" />
+                              </div>
                             ))}
                           </div>
                         )}
@@ -330,7 +349,7 @@ const GroupInspectorModal = ({
               {/* Sidebar Header */}
               <div className="p-5 border-b border-border/50 flex items-center justify-between">
                 <h3 className="text-xs font-black uppercase tracking-widest text-text-main flex items-center gap-2">
-                  <span className="material-symbols-outlined text-primary text-sm">
+                  <span className="material-symbols-outlined text-primary text-base">
                     verified_user
                   </span>
                   Chi tiết báo cáo ({reports.length})
@@ -370,7 +389,7 @@ const GroupInspectorModal = ({
                     ))}
                   </div>
                 ) : (
-                  <p className="text-[10px] text-text-muted italic">
+                  <p className="text-xs text-text-secondary italic">
                     Nhóm này chưa có tiền án nào.
                   </p>
                 )}
@@ -390,7 +409,7 @@ const GroupInspectorModal = ({
                   const reporterStats = reporterStatsGetter
                     ? reporterStatsGetter(report.reporterId)
                     : reports.filter((r) => r.reporterId === report.reporterId)
-                      .length;
+                        .length;
 
                   const isHighRisk = reporterStats > 10;
                   const isMediumRisk = reporterStats > 5;
@@ -430,8 +449,9 @@ const GroupInspectorModal = ({
                           {/* Spam Warning Badge */}
                           {isMediumRisk && (
                             <div
-                              className={`absolute -top-1.5 -right-1.5 size-5 rounded-full flex items-center justify-center border-2 border-[#1e120f] ${isHighRisk ? "bg-red-500" : "bg-orange-500"
-                                }`}
+                              className={`absolute -top-1.5 -right-1.5 size-5 rounded-full flex items-center justify-center border-2 border-[#1e120f] ${
+                                isHighRisk ? "bg-red-500" : "bg-orange-500"
+                              }`}
                               title={`Đã gửi ${reporterStats} báo cáo`}
                             >
                               <span className="material-symbols-outlined text-[14px] text-white leading-none">
@@ -458,16 +478,17 @@ const GroupInspectorModal = ({
                             </p>
                             {reporterStats > 1 && (
                               <span
-                                className={`text-[9px] px-1.5 py-0.5 rounded border ${isHighRisk
+                                className={`text-[9px] px-1.5 py-0.5 rounded border ${
+                                  isHighRisk
                                     ? "bg-red-500/10 text-red-500 border-red-500/20"
                                     : "bg-background text-text-muted border-border"
-                                  }`}
+                                }`}
                               >
                                 {reporterStats} báo cáo
                               </span>
                             )}
                           </div>
-                          <span className="text-[10px] text-text-muted shrink-0 ml-2">
+                          <span className="text-xs text-text-secondary shrink-0 ml-2">
                             {new Date(report.createdAt).toLocaleString("vi-VN")}
                           </span>
                         </div>
@@ -502,7 +523,7 @@ const GroupInspectorModal = ({
                       </p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-[10px] text-text-muted uppercase tracking-widest font-bold">
+                      <p className="text-xs text-text-secondary uppercase tracking-widest font-bold">
                         Người thực hiện
                       </p>
                       <div className="flex items-center gap-2">
@@ -517,7 +538,7 @@ const GroupInspectorModal = ({
                   </div>
                 ) : (
                   <>
-                    <p className="text-[10px] text-text-muted text-center uppercase tracking-widest font-bold mb-2">
+                    <p className="text-xs text-text-secondary text-center uppercase tracking-widest font-bold mb-2">
                       Hành động quản trị viên cho Nhóm này
                     </p>
 

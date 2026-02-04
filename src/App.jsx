@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Outlet } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { WebSocketProvider } from "./context/WebSocketContext";
 import DashboardLayout from "./components/layout/DashboardLayout";
@@ -97,20 +97,20 @@ function App() {
             <Route index element={<AdvancedMemberSearch />} />
           </Route>
 
-          {/* Admin Routes - Protected but no specific layout enforced yet */}
+          {/* Admin Routes - Protected with ADMIN role */}
           <Route
-            path="/admin-website/groups"
-            element={<AdminGroupsManager />}
-          />
-          <Route
-            path="/admin-website/members"
-            element={<AdminMembersManager />}
-          />
-          <Route path="/admin-website/contents" element={<MainFeedManager />} />
-          <Route
-            path="/admin-website/reports"
-            element={<AdminReportsManager />}
-          />
+            path="/admin-website"
+            element={
+              <ProtectedRoute roles={["ADMIN"]}>
+                <Outlet />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="groups" element={<AdminGroupsManager />} />
+            <Route path="members" element={<AdminMembersManager />} />
+            <Route path="contents" element={<MainFeedManager />} />
+            <Route path="reports" element={<AdminReportsManager />} />
+          </Route>
         </Routes>
       </WebSocketProvider>
     </ThemeProvider>

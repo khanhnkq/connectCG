@@ -34,6 +34,31 @@ const NotificationList = ({
       onMarkAsRead(notification.id);
     }
 
+    // Handle specific notification types first
+    switch (notification.type) {
+      case "FRIEND_REQUEST":
+        navigate(`/dashboard/friends?tab=requests`);
+        return;
+      case "GROUP_INVITE":
+      case "GROUP_INVITATION":
+        navigate(`/dashboard/groups?tab=invites`);
+        return;
+      case "REPORT_SUBMITTED":
+        // Admin notification
+        navigate(`/admin-website/reports`);
+        return;
+      case "REPORT_UPDATED":
+      case "WARNING":
+      case "AI_STRIKE_WARNING":
+      case "ROLE_CHANGE":
+        navigate(`/dashboard/my-profile`);
+        return;
+      case "GROUP_DELETED":
+        navigate(`/dashboard/groups`);
+        return;
+    }
+
+    // General targetType fallback
     switch (notification.targetType) {
       case "POST":
         navigate(`/dashboard/feed`);
@@ -123,8 +148,9 @@ const NotificationList = ({
         {notifications.map((notification) => (
           <div
             key={notification.id}
-            className={`flex items-start gap-2 p-2.5 border-b border-border-main cursor-pointer hover:bg-background-main transition-all group ${!notification.isRead ? "bg-primary/5" : ""
-              }`}
+            className={`flex items-start gap-2 p-2.5 border-b border-border-main cursor-pointer hover:bg-background-main transition-all group ${
+              !notification.isRead ? "bg-primary/5" : ""
+            }`}
             onClick={() => handleClick(notification)}
           >
             {/* Avatar */}

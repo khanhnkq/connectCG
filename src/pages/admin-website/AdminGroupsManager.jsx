@@ -97,10 +97,10 @@ const AdminGroupsManager = () => {
     >
       <div className="p-8 space-y-8">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-surface/20 p-6 rounded-2xl border border-border/50 shadow-xl">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-surface-main p-6 rounded-2xl border border-border-main shadow-sm">
           <div className="flex items-center gap-3">
             <Users className="text-primary size-8" />
-            <h2 className="text-2xl font-black text-text-main tracking-tight">
+            <h2 className="text-2xl font-extrabold text-text-main tracking-tight">
               Danh sách cộng đồng
             </h2>
           </div>
@@ -109,7 +109,7 @@ const AdminGroupsManager = () => {
               <select
                 value={privacyFilter}
                 onChange={(e) => setPrivacyFilter(e.target.value)}
-                className="w-full bg-background/50 border border-border/50 rounded-xl py-2.5 px-4 text-sm text-text-main focus:outline-none focus:border-primary/50 transition-all appearance-none cursor-pointer"
+                className="w-full bg-background-main rounded-2xl py-3 px-5 text-sm text-text-main focus:outline-none focus:ring-4 focus:ring-primary/5 transition-all appearance-none cursor-pointer font-bold border border-border-main"
               >
                 <option value="">Tất cả quyền riêng tư</option>
                 <option value="public">Công khai (Public)</option>
@@ -124,7 +124,7 @@ const AdminGroupsManager = () => {
                 placeholder="Tìm kiếm nhóm..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-background/50 border border-border/50 rounded-xl py-2.5 pl-10 pr-4 text-sm text-text-main focus:outline-none focus:border-primary/50 transition-all"
+                className="w-full bg-background-main rounded-2xl py-3 pl-12 pr-5 text-sm text-text-main focus:outline-none focus:ring-4 focus:ring-primary/5 transition-all font-medium border border-border-main"
               />
             </div>
           </div>
@@ -147,7 +147,7 @@ const AdminGroupsManager = () => {
             filteredGroups.map((group, index) => (
               <div
                 key={group.id}
-                className="bg-surface border border-border/50 rounded-3xl overflow-hidden group hover:border-primary/30 transition-all shadow-xl"
+                className="bg-surface-main rounded-2xl overflow-hidden group hover:bg-surface-main/80 transition-all shadow-sm hover:shadow-md flex flex-col h-full"
               >
                 <div className="h-44 relative overflow-hidden">
                   <img
@@ -161,10 +161,10 @@ const AdminGroupsManager = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-80"></div>
                   <div className="absolute top-4 right-4 flex gap-2">
                     <span
-                      className={`px-2.5 py-1 text-[9px] font-black uppercase rounded-lg border backdrop-blur-md ${
+                      className={`px-3 py-1.5 text-[10px] font-black uppercase rounded-xl border backdrop-blur-md ${
                         group.privacy?.toLowerCase() === "public"
-                          ? "bg-green-500/20 text-green-400 border-green-500/20"
-                          : "bg-orange-500/20 text-orange-400 border-orange-500/20"
+                          ? "bg-green-500/10 text-green-500 border-green-500/10"
+                          : "bg-orange-500/10 text-orange-500 border-orange-500/10"
                       }`}
                     >
                       {group.privacy?.toLowerCase() === "public"
@@ -191,50 +191,53 @@ const AdminGroupsManager = () => {
                     </div>
                   </div>
                 </div>
-                <div className="p-6 space-y-4">
+                <div className="p-6 space-y-4 flex flex-col flex-1">
                   <div>
                     <div className="flex justify-between items-start">
                       <h4 className="text-xl font-black text-text-main group-hover:text-primary transition-colors">
                         {group.name}
                       </h4>
                     </div>
-                    <p className="text-xs text-text-secondary line-clamp-2 mt-2">
-                      {group.description}
+                    <p className="text-sm text-text-secondary line-clamp-2 mt-3 font-medium leading-relaxed">
+                      {group.description || "Chưa có mô tả"}
                     </p>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-background/30 p-3 rounded-2xl border border-border/30">
-                      <p className="text-[9px] text-text-muted font-black uppercase tracking-widest leading-none mb-1">
+                    <div className="bg-background-main/50 p-4 rounded-2xl border border-border-main/50">
+                      <p className="text-xs text-text-secondary font-bold uppercase tracking-wider mb-1.5">
                         Ngày tạo
                       </p>
-                      <p className="text-[11px] text-text-main font-black">
+                      <p className="text-sm text-text-main font-bold">
                         {group.createdAt
                           ? new Date(group.createdAt).toLocaleDateString()
                           : "N/A"}
                       </p>
                     </div>
-                    <div className="bg-background/30 p-3 rounded-2xl border border-border/30">
-                      <p className="text-[9px] text-text-muted font-black uppercase tracking-widest leading-none mb-1">
+                    <div className="bg-background-main/50 p-4 rounded-2xl border border-border-main/50">
+                      <p className="text-xs text-text-secondary font-bold uppercase tracking-wider mb-1.5">
                         Media ID
                       </p>
-                      <p className="text-[11px] text-text-main font-black">
+                      <p className="text-sm text-text-main font-bold truncate">
                         {group.cover_media_id || "None"}
                       </p>
                     </div>
                   </div>
-                  <div className="pt-4 border-t border-border/30 flex justify-end items-center">
+                  <div className="pt-4 border-t border-border/30 flex justify-end items-center mt-auto">
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleInspect(group)}
-                        className="p-2.5 hover:bg-background rounded-xl text-text-muted hover:text-text-main transition-all border border-transparent hover:border-border"
+                        className="px-4 py-2 bg-surface-main hover:bg-background-main rounded-xl text-text-main transition-all font-bold flex items-center gap-2 shadow-sm hover:shadow-md"
                         title="Xem chi tiết"
                       >
                         <Eye size={18} />
+                        <span className="text-xs uppercase tracking-wider font-bold">
+                          Chi tiết
+                        </span>
                       </button>
 
                       <button
                         onClick={() => handleDeactivate(group.id, group.name)}
-                        className="p-2.5 hover:bg-red-500/10 rounded-xl text-text-muted hover:text-red-400 transition-all"
+                        className="size-10 bg-surface-main hover:bg-red-500 hover:text-white rounded-xl text-red-500 flex items-center justify-center transition-all shadow-sm hover:shadow-md"
                         title="Xóa nhóm"
                       >
                         <Trash2 size={18} />

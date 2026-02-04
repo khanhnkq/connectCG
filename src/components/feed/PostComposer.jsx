@@ -1,6 +1,15 @@
 import { useState, useRef } from "react";
 import { useSelector } from "react-redux";
-import { Image, Video, Globe, Users, Lock, ChevronDown, X, AlertTriangle } from "lucide-react";
+import {
+  Image,
+  Video,
+  Globe,
+  Users,
+  Lock,
+  ChevronDown,
+  X,
+  AlertTriangle,
+} from "lucide-react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import postService from "../../services/PostService";
@@ -141,7 +150,13 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
       <div className="flex gap-3 md:gap-4 mb-3 md:mb-4">
         <div
           className="hidden md:block bg-center bg-no-repeat bg-cover rounded-full size-11 shrink-0 border border-border-main shadow-sm"
-          style={{ backgroundImage: `url("${userAvatar}")` }}
+          style={{
+            backgroundImage: `url("${
+              userProfile?.currentAvatarUrl ||
+              userAvatar ||
+              "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+            }")`,
+          }}
         ></div>
         <div className="flex-1 pt-1">
           <textarea
@@ -167,16 +182,18 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
       {formik.values.media.length > 0 && (
         <div className="mb-4 animate-in fade-in zoom-in duration-200">
           <div
-            className={`grid gap-2 ${formik.values.media.length === 1 ? "grid-cols-1" : "grid-cols-2"
-              }`}
+            className={`grid gap-2 ${
+              formik.values.media.length === 1 ? "grid-cols-1" : "grid-cols-2"
+            }`}
           >
             {formik.values.media.map((file, index) => (
               <div
                 key={index}
-                className={`relative rounded-md overflow-hidden border border-border-main group/media bg-black/5 ${formik.values.media.length === 3 && index === 0
-                  ? "col-span-2 aspect-[2/1]"
-                  : "aspect-video"
-                  }`}
+                className={`relative rounded-md overflow-hidden border border-border-main group/media bg-black/5 ${
+                  formik.values.media.length === 3 && index === 0
+                    ? "col-span-2 aspect-[2/1]"
+                    : "aspect-video"
+                }`}
               >
                 {file.type.startsWith("image/") ? (
                   <img
@@ -283,10 +300,11 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
                           formik.setFieldValue("visibility", vis);
                           setShowVisibilityMenu(false);
                         }}
-                        className={`flex items-center gap-2.5 px-3 py-2.5 text-sm w-full text-left transition-colors ${formik.values.visibility === vis
-                          ? "bg-primary/10 text-primary font-medium"
-                          : "hover:bg-background-main text-text-main"
-                          }`}
+                        className={`flex items-center gap-2.5 px-3 py-2.5 text-sm w-full text-left transition-colors ${
+                          formik.values.visibility === vis
+                            ? "bg-primary/10 text-primary font-medium"
+                            : "hover:bg-background-main text-text-main"
+                        }`}
                       >
                         {(() => {
                           const Icon = visibilityIcons[vis];
@@ -295,8 +313,8 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
                         {vis === "PUBLIC"
                           ? "Công khai"
                           : vis === "FRIENDS"
-                            ? "Bạn bè"
-                            : "Riêng tư"}
+                          ? "Bạn bè"
+                          : "Riêng tư"}
                       </button>
                     ))}
                   </div>

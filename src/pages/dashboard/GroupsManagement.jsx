@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import React, { useEffect, useState, useCallback } from "react";
 import GroupsRightSidebar from "../../components/groups/GroupsRightSidebar";
 
@@ -29,11 +29,14 @@ import toast from "react-hot-toast";
 
 export default function GroupsManagement() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [yourGroups, setYourGroups] = useState([]);
   const [discoverGroups, setDiscoverGroups] = useState([]);
   const [pendingInvitations, setPendingInvitations] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("my"); // 'my', 'discover', 'invites'
+
+  // Get active tab from URL or default to 'my'
+  const activeTab = searchParams.get("tab") || "my";
   const [searchQuery, setSearchQuery] = useState("");
 
   // Pagination states
@@ -98,6 +101,17 @@ export default function GroupsManagement() {
     fetchGroups(0, true);
   }, [activeTab]); // Only refetch when changing tabs, not on search
 
+  const handleTabChange = (newTab) => {
+    setSearchParams(
+      (prev) => {
+        prev.set("tab", newTab);
+        return prev;
+      },
+      { replace: true },
+    );
+    setSearchQuery("");
+  };
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -143,14 +157,26 @@ export default function GroupsManagement() {
           fetchGroups(0);
           return prev;
         });
-      } else if (action === "ACCEPTED" || action === "JOINED" || action === "APPROVED") {
+      } else if (
+        action === "ACCEPTED" ||
+        action === "JOINED" ||
+        action === "APPROVED"
+      ) {
         // Refresh My Groups and Invitations
         fetchGroups(0);
-      } else if (action === "KICKED" || action === "LEFT" || action === "BANNED") {
-        setYourGroups(prev => prev.filter(g => g.id !== groupId));
-        setPendingInvitations(prev => prev.filter(g => g.id !== groupId));
+      } else if (
+        action === "KICKED" ||
+        action === "LEFT" ||
+        action === "BANNED"
+      ) {
+        setYourGroups((prev) => prev.filter((g) => g.id !== groupId));
+        setPendingInvitations((prev) => prev.filter((g) => g.id !== groupId));
         // If we are in discover, reset status
-        setDiscoverGroups(prev => prev.map(g => g.id === groupId ? { ...g, currentUserStatus: null } : g));
+        setDiscoverGroups((prev) =>
+          prev.map((g) =>
+            g.id === groupId ? { ...g, currentUserStatus: null } : g,
+          ),
+        );
       }
     };
 
@@ -224,7 +250,7 @@ export default function GroupsManagement() {
         typeof error.response?.data === "string"
           ? error.response.data
           : error.response?.data?.message ||
-          "Không thể thực hiện yêu cầu gia nhập.";
+            "Không thể thực hiện yêu cầu gia nhập.";
       toast.error(errorMsg);
     }
   };
@@ -269,10 +295,11 @@ export default function GroupsManagement() {
     return (
       <div
         key={group.id}
-        className={`bg-white dark:bg-card-dark rounded-3xl border overflow-hidden flex flex-col hover:border-primary/30 transition-all group h-full shadow-md dark:shadow-2xl relative ${isAdmin
-          ? "border-orange-500/50 dark:shadow-orange-500/10"
-          : "border-gray-200 dark:border-[#3e2b1d]"
-          }`}
+        className={`bg-white dark:bg-card-dark rounded-3xl border overflow-hidden flex flex-col hover:border-primary/30 transition-all group h-full shadow-md dark:shadow-2xl relative ${
+          isAdmin
+            ? "border-orange-500/50 dark:shadow-orange-500/10"
+            : "border-gray-200 dark:border-[#3e2b1d]"
+        }`}
       >
         {/* Clickable Area: Image & Header - Everyone can now see basic info */}
         <div className="relative h-44 overflow-hidden">
@@ -352,7 +379,7 @@ export default function GroupsManagement() {
             {group.description || "Chưa có mô tả cho nhóm này."}
           </p>
 
-          <div className="mt-auto flex gap-3 relative z-30">
+          <div className="mt-auto flex gap-3 relative z-10">
             {activeTab === "invites" ? (
               <>
                 <button
@@ -415,14 +442,6 @@ export default function GroupsManagement() {
     );
   };
 
-  if (loading) {
-    return (
-      <div className="bg-background-main min-h-screen flex items-center justify-center">
-        <div className="size-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-      </div>
-    );
-  }
-
   const filteredGroups = (groups) => {
     if (!searchQuery.trim()) return groups;
     const query = searchQuery.toLowerCase();
@@ -433,9 +452,10 @@ export default function GroupsManagement() {
     );
   };
 
-  const activeGroups = activeTab === "my"
-    ? yourGroups
-    : activeTab === "discover"
+  const activeGroups =
+    activeTab === "my"
+      ? yourGroups
+      : activeTab === "discover"
       ? discoverGroups
       : pendingInvitations;
 
@@ -447,31 +467,25 @@ export default function GroupsManagement() {
     <div className="flex w-full relative items-start transition-colors duration-300">
       <div className="flex-1 w-full bg-background-main min-h-screen">
         {/* Header */}
-        <div className="sticky top-0 z-30 bg-background-main/95 backdrop-blur-xl border-b border-border-main p-4 flex flex-col md:flex-row justify-between items-center px-4 md:px-8 gap-4 md:gap-0">
-          <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 w-full md:w-auto">
-            <h2 className="text-2xl font-extrabold text-text-main tracking-tight">
-              Community Hub
-            </h2>
-
+        <div className="sticky top-0 z-40 bg-background-main/95 backdrop-blur-xl border-b border-border-main p-3 md:p-4 flex flex-col md:flex-row justify-between items-center px-4 md:px-8 gap-3 md:gap-0">
+          <div className="flex flex-col md:flex-row items-center gap-3 md:gap-8 w-full md:w-auto">
             {/* Tabs */}
-            <div className="flex bg-surface-main p-1 rounded-2xl border border-border-main">
+            <div className="flex bg-surface-main p-1 rounded-2xl border border-border-main w-full md:w-auto">
               {["my", "discover", "invites"].map((tab) => (
                 <button
                   key={tab}
-                  onClick={() => {
-                    setActiveTab(tab);
-                    setSearchQuery("");
-                  }}
-                  className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all relative ${activeTab === tab
+                  onClick={() => handleTabChange(tab)}
+                  className={`flex-1 md:flex-none px-4 md:px-6 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all relative ${
+                    activeTab === tab
                       ? "bg-primary text-text-main shadow-lg"
                       : "text-text-secondary hover:text-primary"
-                    }`}
+                  }`}
                 >
                   {tab === "my"
                     ? "Của tôi"
                     : tab === "discover"
-                      ? "Khám phá"
-                      : "Lời mời"}
+                    ? "Khám phá"
+                    : "Lời mời"}
                   {tab === "invites" && pendingInvitations.length > 0 && (
                     <span className="absolute -top-1 -right-1 flex h-4 w-4">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
@@ -485,35 +499,38 @@ export default function GroupsManagement() {
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+          <div className="flex items-center gap-3 w-full md:w-auto">
             {/* Search Bar - Hidden on XL screens as it moves to sidebar */}
-            <div className="relative w-full md:w-80 group xl:hidden">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-text-secondary group-focus-within:text-primary transition-colors">
-                <Search size={18} />
+            <div className="relative flex-1 md:w-80 group xl:hidden">
+              <div className="absolute inset-y-0 left-0 pl-3 md:pl-4 flex items-center pointer-events-none text-text-secondary group-focus-within:text-primary transition-colors">
+                <Search size={16} md:size={18} />
               </div>
               <input
                 type="text"
                 value={searchQuery}
                 onChange={handleSearch}
-                className="block w-full pl-11 pr-4 py-2.5 border border-border-main rounded-2xl bg-surface-main text-text-main placeholder-text-secondary/50 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all text-xs font-medium"
+                className="block w-full pl-9 md:pl-11 pr-4 py-2 md:py-2.5 border border-border-main rounded-2xl bg-surface-main text-text-main placeholder-text-secondary/50 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all text-[10px] md:text-xs font-medium"
                 placeholder={
                   activeTab === "my"
-                    ? "Tìm kiếm nhóm của bạn..."
+                    ? "Tìm nhóm..."
                     : activeTab === "discover"
-                      ? "Khám phá nhóm mới..."
-                      : "Tìm lời mời..."
+                    ? "Tìm nhóm..."
+                    : activeTab === "discover"
+                    ? "Khám phá nhóm mới..."
+                    : "Tìm lời mời..."
                 }
               />
             </div>
             <Link
               to="/dashboard/groups/create"
-              className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-primary text-text-main hover:bg-orange-600 transition-all font-black text-xs uppercase tracking-widest shadow-lg shadow-orange-500/20 active:scale-95 group"
+              className="flex items-center justify-center gap-2 h-9 md:h-auto px-3 md:px-6 py-2 md:py-2.5 rounded-full bg-primary text-text-main hover:bg-orange-600 transition-all font-black text-xs uppercase tracking-widest shadow-lg shadow-orange-500/20 active:scale-95 group shrink-0"
+              title="Tạo nhóm"
             >
               <Plus
                 size={18}
                 className="group-hover:rotate-90 transition-transform"
               />
-              Tạo nhóm
+              <span className="hidden md:inline">Tạo nhóm</span>
             </Link>
           </div>
         </div>

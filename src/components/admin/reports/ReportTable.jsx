@@ -34,30 +34,30 @@ const ReportTable = ({
   const { currentPage, totalPages } = pagination;
 
   return (
-    <div className="bg-surface border border-border rounded-xl overflow-hidden shadow-xl">
+    <div className="bg-surface-main rounded-2xl overflow-hidden shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full text-left">
-          <thead className="bg-background/80 text-xs font-black uppercase text-text-muted tracking-wider border-b border-border">
+          <thead className="bg-background-main text-sm font-extrabold uppercase text-text-secondary tracking-wider">
             <tr>
-              <th className="px-6 py-4">Mục tiêu</th>
-              <th className="px-6 py-4">Người báo cáo</th>
-              <th className="px-6 py-4">Lý do chính</th>
-              <th className="px-6 py-4">Thời gian</th>
-              <th className="px-6 py-4">Trạng thái</th>
-              <th className="px-6 py-4 text-right">Hành động</th>
+              <th className="px-8 py-5">Mục tiêu</th>
+              <th className="px-8 py-5">Người báo cáo</th>
+              <th className="px-8 py-5">Lý do chính</th>
+              <th className="px-8 py-5">Thời gian</th>
+              <th className="px-8 py-5">Trạng thái</th>
+              <th className="px-8 py-5 text-right">Hành động</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border text-sm">
+          <tbody className="divide-y divide-border text-base">
             {reports.map((r) => {
               const isItemDeleted = isDeletedFunc(r);
 
               return (
                 <tr
                   key={`${r.targetType}_${r.targetId}_${r.createdAt}`}
-                  className="hover:bg-background transition-all group"
+                  className="hover:bg-surface-main/60 transition-all group border-b border-border-main/40 last:border-0"
                 >
                   {/* TARGET */}
-                  <td className="px-6 py-4">
+                  <td className="px-8 py-5">
                     <div className="flex items-center gap-3">
                       <div className="shrink-0">
                         {targetMetadata[`${r.targetType}_${r.targetId}`]
@@ -67,12 +67,12 @@ const ReportTable = ({
                               targetMetadata[`${r.targetType}_${r.targetId}`]
                                 .avatar
                             }
-                            className="w-10 h-10 rounded-lg object-cover border border-primary/20 bg-background"
+                            className="w-12 h-12 rounded-xl object-cover bg-background"
                             alt=""
                           />
                         ) : (
-                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0">
-                            <span className="font-black text-primary text-xs">
+                          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                            <span className="font-black text-primary text-base">
                               {r.targetType === "USER"
                                 ? "U"
                                 : r.targetType === "GROUP"
@@ -83,13 +83,16 @@ const ReportTable = ({
                         )}
                       </div>
                       <div className="min-w-0">
-                        <p className="font-bold text-text-main text-sm truncate max-w-[150px]">
+                        <p className="font-bold text-text-main text-base truncate max-w-[200px]">
                           {r.targetType === "USER"
                             ? targetMetadata[`USER_${r.targetId}`]?.name ||
                               "Người dùng"
-                            : `ID: ${r.targetId}`}
+                            : r.targetType === "GROUP"
+                            ? targetMetadata[`GROUP_${r.targetId}`]?.name ||
+                              `Nhóm ${r.targetId}`
+                            : `Post #${r.targetId}`}
                         </p>
-                        <p className="text-[10px] text-text-muted">
+                        <p className="text-xs text-text-muted font-bold mt-0.5">
                           #{r.targetId}
                         </p>
                       </div>
@@ -97,7 +100,7 @@ const ReportTable = ({
                   </td>
 
                   {/* REPORTER */}
-                  <td className="px-6 py-4 font-medium text-text-secondary">
+                  <td className="px-8 py-5 font-bold text-text-secondary">
                     {r.reports.length > 1 ? (
                       <span className="italic text-text-muted">
                         Nhiều người báo cáo
@@ -111,7 +114,7 @@ const ReportTable = ({
                               targetMetadata[`USER_${r.reports[0].reporterId}`]
                                 .avatar
                             }
-                            className="w-8 h-8 rounded-full object-cover border border-border/20"
+                            className="w-10 h-10 rounded-full object-cover"
                             alt=""
                           />
                         ) : (
@@ -137,10 +140,10 @@ const ReportTable = ({
                   </td>
 
                   {/* REASON */}
-                  <td className="px-6 py-4">
+                  <td className="px-8 py-5">
                     {r.reports.length > 1 ? (
-                      <div className="flex flex-col gap-1">
-                        <span className="px-3 py-1 text-[11px] font-bold rounded-lg bg-surface text-text-main border border-border/50 shadow-sm inline-block max-w-[200px] truncate">
+                      <div className="flex flex-col gap-1.5">
+                        <span className="px-4 py-1.5 text-sm font-extrabold rounded-xl bg-surface text-text-main inline-block max-w-[250px] truncate">
                           {r.reason}
                         </span>
                         <span className="text-[10px] text-text-muted">
@@ -148,34 +151,32 @@ const ReportTable = ({
                         </span>
                       </div>
                     ) : (
-                      <span className="px-3 py-1 text-[11px] font-bold rounded-lg bg-surface text-text-main border border-border/50 shadow-sm inline-block max-w-[200px] truncate">
+                      <span className="px-3 py-1 text-[11px] font-extrabold rounded-lg bg-surface text-text-main inline-block max-w-[200px] truncate">
                         {r.reason}
                       </span>
                     )}
                   </td>
 
                   {/* DATE */}
-                  <td className="px-6 py-4 text-text-muted font-mono text-xs">
+                  <td className="px-8 py-5 text-text-muted font-bold text-sm">
                     {r.createdAt
                       ? new Date(r.createdAt).toLocaleDateString("vi-VN")
                       : "-"}
                   </td>
 
                   {/* STATUS */}
-                  <td className="px-6 py-4">
+                  <td className="px-8 py-5">
                     <span
-                      className={`px-3 py-1 rounded-full text-[10px] font-bold border ${
+                      className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider whitespace-nowrap ${
                         statusMap[r.status]?.color || "text-text-main"
-                      } ${statusMap[r.status]?.bg || "bg-gray-500/10"} ${
-                        statusMap[r.status]?.border || "border-gray-500/20"
-                      }`}
+                      } ${statusMap[r.status]?.bg || "bg-gray-500/10"} `}
                     >
                       {statusMap[r.status]?.label || r.status}
                     </span>
                   </td>
 
                   {/* ACTION */}
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-8 py-5 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => onShowDetail(r)}
@@ -202,63 +203,59 @@ const ReportTable = ({
         </table>
 
         {/* PAGINATION CONTROLS */}
+        {/* PAGINATION CONTROLS */}
         {totalPages > 0 && (
-          <div className="flex items-center justify-between px-6 py-4 bg-background/80 border-t border-border/50">
-            <span className="text-sm text-text-muted">
+          <div className="flex justify-between items-center bg-surface-main p-4 border-t border-border-main">
+            <div className="text-text-secondary text-sm font-medium pl-2">
               Hiển thị trang{" "}
               <span className="text-text-main font-bold">
                 {currentPage + 1}
               </span>{" "}
-              trên{" "}
-              <span className="text-text-main font-bold">{totalPages}</span>
-            </span>
-            <div className="flex gap-2">
+              / <span className="text-text-main font-bold">{totalPages}</span>
+            </div>
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => fetchReports(currentPage - 1)}
                 disabled={currentPage === 0}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
-                  currentPage === 0
-                    ? "bg-transparent text-gray-600 border-gray-700 cursor-not-allowed"
-                    : "bg-surface text-text-muted hover:text-text-main border-border hover:border-primary"
-                }`}
+                className="size-10 flex items-center justify-center bg-background-main border border-border-main rounded-xl text-text-secondary hover:text-primary hover:border-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
               >
-                Trước
+                <div className="rotate-180">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="m9 18 6-6-6-6" />
+                  </svg>
+                </div>
               </button>
-              <div className="flex gap-1">
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pNum = i;
-                  if (totalPages > 5) {
-                    if (currentPage < 3) pNum = i;
-                    else if (currentPage >= totalPages - 3)
-                      pNum = totalPages - 5 + i;
-                    else pNum = currentPage - 2 + i;
-                  }
-
-                  return (
-                    <button
-                      key={pNum}
-                      onClick={() => fetchReports(pNum)}
-                      className={`w-8 h-8 rounded-lg text-xs font-bold transition-all border ${
-                        currentPage === pNum
-                          ? "bg-primary text-black border-primary"
-                          : "bg-surface text-text-muted hover:text-text-main border-border hover:border-primary"
-                      }`}
-                    >
-                      {pNum + 1}
-                    </button>
-                  );
-                })}
+              <div className="h-10 px-4 flex items-center justify-center bg-background-main border border-border-main rounded-xl text-sm font-bold text-text-main shadow-sm min-w-[100px]">
+                Trang {currentPage + 1} / {totalPages}
               </div>
               <button
                 onClick={() => fetchReports(currentPage + 1)}
                 disabled={currentPage === totalPages - 1}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
-                  currentPage === totalPages - 1
-                    ? "bg-transparent text-gray-600 border-gray-700 cursor-not-allowed"
-                    : "bg-surface text-text-muted hover:text-text-main border-border hover:border-primary"
-                }`}
+                className="size-10 flex items-center justify-center bg-background-main border border-border-main rounded-xl text-text-secondary hover:text-primary hover:border-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
               >
-                Sau
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="m9 18 6-6-6-6" />
+                </svg>
               </button>
             </div>
           </div>

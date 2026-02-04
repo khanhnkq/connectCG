@@ -54,9 +54,8 @@ const statusMap = {
 };
 
 const AdminReportsManagement = () => {
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("USER");
-  const [filterStatus, setFilterStatus] = useState(""); // "" (all pending) | "RESOLVED"
+  const [filterStatus, setFilterStatus] = useState("PENDING"); // Default to pending
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(false);
   const [sortOrder, setSortOrder] = useState("desc"); // desc (newest) | asc (oldest)
@@ -110,29 +109,32 @@ const AdminReportsManagement = () => {
     type: "danger",
   });
 
-  const fetchReports = async (page = 0) => {
-    setLoading(true);
-    try {
-      const params = {
-        page,
-        size: PAGE_SIZE,
-        targetType: activeTab,
-        status: filterStatus || undefined,
-      };
-      const res = await reportService.getReports(params);
-      // Backend returns Page object with content, totalPages, totalElements
-      const pageData = res.data;
-      setReports(pageData.content || []);
-      setTotalPages(pageData.totalPages || 0);
-      setTotalElements(pageData.totalElements || 0);
-      setCurrentPage(page);
-    } catch (e) {
-      console.error(e);
-      toast.error("Không tải được danh sách báo cáo");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchReports = React.useCallback(
+    async (page = 0) => {
+      setLoading(true);
+      try {
+        const params = {
+          page,
+          size: PAGE_SIZE,
+          targetType: activeTab,
+          status: filterStatus || undefined,
+        };
+        const res = await reportService.getReports(params);
+        // Backend returns Page object with content, totalPages, totalElements
+        const pageData = res.data;
+        setReports(pageData.content || []);
+        setTotalPages(pageData.totalPages || 0);
+        setTotalElements(pageData.totalElements || 0);
+        setCurrentPage(page);
+      } catch (e) {
+        console.error(e);
+        toast.error("Không tải được danh sách báo cáo");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [activeTab, filterStatus],
+  );
 
   // Filter effect: Fetch reports when filters change
   useEffect(() => {
@@ -147,10 +149,10 @@ const AdminReportsManagement = () => {
       // If a new report is submitted, refresh the list
       if (latest.type === "REPORT_SUBMITTED") {
         console.log("🔔 New Report received, refreshing table...");
-        fetchReports(currentPage); // Refresh current page or reset to 0
+        fetchReports(currentPage);
       }
     }
-  }, [notifications]);
+  }, [notifications, fetchReports, currentPage]);
 
   // Client-side filtering is no longer needed as backend handles it
   const filteredReports = reports;
@@ -208,7 +210,7 @@ const AdminReportsManagement = () => {
 
   const activeCount = totalElements;
 
-  // HISTORY LOGIC
+  // History Logic
   const getViolationHistory = (targetId, type) => {
     return reports.filter(
       (r) =>
@@ -216,11 +218,6 @@ const AdminReportsManagement = () => {
         String(r.targetId || r.target_id) === String(targetId) &&
         (r.targetType || r.target_type) === type,
     );
-  };
-
-  // Helper: Get reporter stats (Global)
-  const getReporterStats = (reporterId) => {
-    return reports.filter((r) => r.reporterId === reporterId).length;
   };
 
   // METADATA FETCHING (Names & Avatars)
@@ -422,7 +419,7 @@ const AdminReportsManagement = () => {
                 subtext: res.data.email,
               };
             })
-            .catch(() => { }),
+            .catch(() => {}),
         );
       }
     });
@@ -577,7 +574,10 @@ const AdminReportsManagement = () => {
       } catch (err) {
         // If standard delete fails and we have a groupId, try rejectPost (remove from group)
         if (groupId) {
-          console.warn("Standard delete failed, attempting group reject...", err);
+          console.warn(
+            "Standard delete failed, attempting group reject...",
+            err,
+          );
           await rejectPost(groupId, postId);
         } else {
           throw err; // Re-throw if no fallback available
@@ -626,74 +626,80 @@ const AdminReportsManagement = () => {
     >
       <div className="p-8 space-y-6 relative min-h-screen">
         {/* HEADER */}
-        <div className="flex items-center justify-between">
+        {/* HEADER */}
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 bg-surface-main p-6 rounded-2xl border border-border-main shadow-sm">
           <div>
-            <h2 className="text-2xl font-black text-text-main tracking-tight flex items-center gap-3">
-              Quản lý báo cáo
-              <span className="px-3 py-1 text-xs rounded-full bg-primary/20 text-primary border border-primary/20">
+            <h2 className="text-2xl font-extrabold text-text-main tracking-tight flex items-center gap-3">
+              Báo cáo vi phạm
+              <span className="px-3 py-1 text-xs font-bold rounded-full bg-primary/10 text-primary border border-primary/20">
                 {activeCount}{" "}
-                {filterStatus === "RESOLVED" ? "đã giải quyết" : "đang xử lý"}
+                {filterStatus === "RESOLVED" ? "đã xong" : "cần xử lý"}
               </span>
             </h2>
-            <p className="text-text-muted text-sm mt-1">
+            <p className="text-text-secondary text-sm mt-1 font-medium">
               Kiểm tra và xử lý các báo cáo vi phạm tiêu chuẩn cộng đồng
             </p>
           </div>
 
-          {/* STATUS FILTER */}
-          <div className="flex bg-surface border border-border/50 p-1 rounded-xl">
-            <button
-              onClick={() => setFilterStatus("PENDING")}
-              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${filterStatus === "PENDING"
-                ? "bg-primary text-black"
-                : "text-text-muted hover:text-text-main"
+          <div className="flex items-center gap-3">
+            {/* STATUS FILTER */}
+            <div className="flex bg-background-main p-1 rounded-xl border border-border-main">
+              <button
+                onClick={() => setFilterStatus("PENDING")}
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                  filterStatus === "PENDING"
+                    ? "bg-primary text-[#231810] shadow-sm"
+                    : "text-text-secondary hover:text-text-main"
                 }`}
-            >
-              Chờ xử lý
-            </button>
-            <button
-              onClick={() => setFilterStatus("RESOLVED")}
-              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${filterStatus === "RESOLVED"
-                ? "bg-green-500 text-white"
-                : "text-text-muted hover:text-text-main"
+              >
+                Đang chờ
+              </button>
+              <button
+                onClick={() => setFilterStatus("RESOLVED")}
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                  filterStatus === "RESOLVED"
+                    ? "bg-green-500 text-white shadow-sm"
+                    : "text-text-secondary hover:text-text-main"
                 }`}
+              >
+                Đã xong
+              </button>
+            </div>
+
+            {/* SORT BUTTON */}
+            <button
+              onClick={() =>
+                setSortOrder(sortOrder === "desc" ? "asc" : "desc")
+              }
+              className="px-4 py-2 rounded-xl bg-background-main border border-border-main text-text-secondary hover:text-text-main transition-all font-bold text-xs flex items-center gap-2"
+              title={sortOrder === "desc" ? "Cũ nhất" : "Mới nhất"}
             >
-              Đã giải quyết
+              {sortOrder === "desc" ? (
+                <ArrowDownWideNarrow size={16} />
+              ) : (
+                <ArrowUpNarrowWide size={16} />
+              )}
+              <span>{sortOrder === "desc" ? "Mới" : "Cũ"}</span>
             </button>
           </div>
-
-          {/* SORT BUTTON */}
-          <button
-            onClick={() => setSortOrder(sortOrder === "desc" ? "asc" : "desc")}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-surface border border-border/50 text-text-muted hover:text-text-main transition-all ml-3"
-            title={sortOrder === "desc" ? "Cũ nhất" : "Mới nhất"}
-          >
-            {sortOrder === "desc" ? (
-              <>
-                <ArrowDownWideNarrow size={16} />
-                <span className="text-xs font-bold">Mới nhất</span>
-              </>
-            ) : (
-              <>
-                <ArrowUpNarrowWide size={16} />
-                <span className="text-xs font-bold">Cũ nhất</span>
-              </>
-            )}
-          </button>
         </div>
 
         {/* TABS */}
-        <div className="flex gap-6 border-b border-border/40">
+        <div className="flex gap-10 px-6">
           {Object.entries(TABS).map(([key, label]) => (
             <button
               key={key}
               onClick={() => setActiveTab(key)}
-              className={`pb-3 text-sm font-bold transition-all ${activeTab === key
-                ? "text-primary border-b-2 border-primary"
-                : "text-text-muted hover:text-text-main"
-                }`}
+              className={`pb-4 text-xs font-black uppercase tracking-[0.15em] transition-all relative ${
+                activeTab === key
+                  ? "text-primary"
+                  : "text-text-muted hover:text-text-main"
+              }`}
             >
               {label}
+              {activeTab === key && (
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-full shadow-lg shadow-primary/40" />
+              )}
             </button>
           ))}
         </div>
@@ -732,9 +738,9 @@ const AdminReportsManagement = () => {
           violationHistory={
             detailModal.report
               ? getViolationHistory(
-                detailModal.report.targetId,
-                detailModal.report.targetType,
-              )
+                  detailModal.report.targetId,
+                  detailModal.report.targetType,
+                )
               : []
           }
           onResolve={handleResolveReport}
@@ -748,7 +754,8 @@ const AdminReportsManagement = () => {
               );
             } else if (action.type === "DELETE_POST") {
               confirmAction(
-                () => onDeletePost(action.targetId, action.reports, action.groupId),
+                () =>
+                  onDeletePost(action.targetId, action.reports, action.groupId),
                 "Xóa bài viết",
                 "Xác nhận xóa bài viết này?",
               );

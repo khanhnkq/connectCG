@@ -9,7 +9,7 @@ export default function GroupsRightSidebar({
   displayedGroupsLength,
 }) {
   return (
-    <aside className="w-80 hidden xl:flex flex-col border-l border-border-main bg-background-main p-6 h-[calc(100vh-64px)] sticky top-0 shrink-0 z-30 transition-colors duration-300">
+    <aside className="w-80 hidden xl:flex flex-col border-l border-border-main bg-background-main p-6 h-[calc(100vh-64px)] sticky top-0 shrink-0 z-40 transition-colors duration-300">
       <div className="mb-8 group">
         <label className="text-sm font-bold text-text-secondary mb-2 block uppercase tracking-wider">
           Tìm kiếm nhóm
