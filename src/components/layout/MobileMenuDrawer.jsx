@@ -18,6 +18,8 @@ import { logout } from "../../redux/slices/authSlice"; // ADDED
 // import { toggleTheme } from "../../redux/slices/themeSlice"; // REMOVED (Previous step)
 import { useTheme } from "../../context/ThemeContext";
 import { findMyGroups } from "../../services/groups/GroupService";
+import AdBanner from "../common/AdBanner";
+import { AD_BANNERS } from "../../data/adBanners";
 
 export default function MobileMenuDrawer({ isOpen, onClose }) {
   const navigate = useNavigate();
@@ -34,22 +36,21 @@ export default function MobileMenuDrawer({ isOpen, onClose }) {
   const [showManaged, setShowManaged] = useState(true);
   const [showJoined, setShowJoined] = useState(true);
 
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  // Check Admin Role
-  useEffect(() => {
+  // Check Admin Role (Lazy Initialization)
+  const [isAdmin, setIsAdmin] = useState(() => {
     const token = localStorage.getItem("accessToken");
     if (token) {
       try {
         const payload = token.split(".")[1];
         const decoded = JSON.parse(atob(payload));
         const rolesRaw = decoded.role || "";
-        setIsAdmin(rolesRaw.includes("ROLE_ADMIN"));
-      } catch (error) {
-        setIsAdmin(false);
+        return rolesRaw.includes("ROLE_ADMIN");
+      } catch {
+        return false;
       }
     }
-  }, []);
+    return false;
+  });
 
   // Fetch Groups
   useEffect(() => {
@@ -295,6 +296,17 @@ export default function MobileMenuDrawer({ isOpen, onClose }) {
                   </div>
                   <span className="font-medium">Đăng xuất</span>
                 </button>
+              </div>
+
+              {/* Mobile Ads */}
+              <div className="flex flex-col gap-4 pt-4 border-t border-border-main">
+                {AD_BANNERS.map((ad, index) => (
+                  <AdBanner
+                    key={index}
+                    {...ad}
+                    onClick={ad.onClick ? ad.onClick : undefined}
+                  />
+                ))}
               </div>
             </div>
           </motion.div>
