@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import commentService from "../../services/CommentService";
 import CommentItem from "./CommentItem";
@@ -27,21 +27,21 @@ export default function CommentSection({
   // Fetch comments
   useEffect(() => {
     fetchComments();
-  }, [postId]);
+  }, [postId]); // fetchComments is stable via useCallback
 
   // Listen for realtime comment events (only from OTHER users)
   useEffect(() => {
     const handleCommentEvent = (e) => {
       const { postId: eventPostId, action, comment } = e.detail;
-      // Only process if this event is for our post
-      if (eventPostId !== postId) return;
+      // Only process if this event is for our post (loose equality for string/number match)
+      if (eventPostId != postId) return;
 
       // Check if current user triggered this event (avoid double fetch)
       const currentUserId = user?.id;
       if (action === "CREATED" && comment) {
         // Only fetch if comment is from another user
         if (comment.authorId !== currentUserId) {
-          fetchComments();
+          fetchComments(true); // true = background fetch
         }
       } else if (action === "DELETED") {
         // For delete, we don't have userId in event, so just refresh
@@ -51,19 +51,22 @@ export default function CommentSection({
     };
     window.addEventListener("commentEvent", handleCommentEvent);
     return () => window.removeEventListener("commentEvent", handleCommentEvent);
-  }, [postId, user?.id]);
+  }, [postId, user?.id]); // fetchComments is stable
 
-  const fetchComments = async () => {
-    try {
-      setLoading(true);
-      const res = await commentService.getComments(postId);
-      setComments(res.data || res);
-    } catch (error) {
-      console.error("Error fetching comments:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchComments = useCallback(
+    async (isBackground = false) => {
+      try {
+        if (!isBackground) setLoading(true);
+        const res = await commentService.getComments(postId);
+        setComments(res.data || res);
+      } catch (error) {
+        console.error("Error fetching comments:", error);
+      } finally {
+        if (!isBackground) setLoading(false);
+      }
+    },
+    [postId],
+  );
 
   // Tạo comment mới - add optimistically then refresh
   const handleSubmit = async (content) => {
@@ -83,7 +86,7 @@ export default function CommentSection({
   const handleReply = async (content, parentId) => {
     try {
       await commentService.createComment(postId, content, parentId);
-      fetchComments(); // Reply structure is complex, just refetch
+      fetchComments(true); // Reply structure is complex, just refetch in background
       if (onCommentAdded) onCommentAdded();
     } catch (error) {
       console.error("Error replying:", error);
