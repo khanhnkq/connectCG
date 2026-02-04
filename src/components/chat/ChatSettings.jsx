@@ -63,7 +63,7 @@ const ChatSettings = ({
     <aside
       className={`${
         isOpen ? "flex" : "hidden"
-      } xl:flex fixed xl:static inset-y-0 right-0 w-80 lg:w-96 xl:w-80 flex-col border-l border-border-main bg-background-main overflow-y-auto shrink-0 z-50 transition-all duration-300 shadow-2xl xl:shadow-none animate-in slide-in-from-right duration-300`}
+      } xl:flex fixed xl:static inset-y-0 right-0 w-80 lg:w-96 xl:w-80 flex-col border-l border-border-main bg-background-main overflow-y-auto shrink-0 z-30 transition-all duration-300 shadow-2xl xl:shadow-none animate-in slide-in-from-right duration-300`}
     >
       {/* Mobile Close Button */}
       <div className="xl:hidden absolute top-4 right-4 z-10">
