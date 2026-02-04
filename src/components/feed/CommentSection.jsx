@@ -159,3 +159,36 @@ export default function CommentSection({
     </div>
   );
 }
+
+// Helper Functions (Pure)
+const findComment = (list, id) => {
+  for (let c of list) {
+    if (c.id === id) return true;
+    if (c.replies && findComment(c.replies, id)) return true;
+  }
+  return false;
+};
+
+const addReplyToComment = (list, parentId, newComment) => {
+  return list.map((c) => {
+    if (c.id === parentId) {
+      return { ...c, replies: [...(c.replies || []), newComment] };
+    }
+    if (c.replies) {
+      return {
+        ...c,
+        replies: addReplyToComment(c.replies, parentId, newComment),
+      };
+    }
+    return c;
+  });
+};
+
+const removeCommentById = (comments, id) => {
+  return comments
+    .filter((c) => c.id !== id)
+    .map((c) => ({
+      ...c,
+      replies: c.replies ? removeCommentById(c.replies, id) : [],
+    }));
+};
