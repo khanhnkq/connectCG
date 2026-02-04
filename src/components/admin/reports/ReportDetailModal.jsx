@@ -57,16 +57,17 @@ const ReportDetailModal = ({
                 <h4 className="text-sm font-black text-text-muted uppercase tracking-wider mb-4">
                   Thông tin đối tượng
                 </h4>
-                {targetData ? (
+                {targetData && !targetData.error ? (
                   <div className="bg-background/40 border border-border/50 rounded-2xl p-5 overflow-hidden relative">
-                    {/* Background Pattern */}
+                    {/* ... content ... */}
+
                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
 
                     {/* Target Header */}
                     <div
                       className={`flex items-center gap-4 mb-6 relative z-10 ${report.targetType === "USER"
-                          ? "cursor-pointer hover:bg-background/20 p-2 -m-2 rounded-lg transition-colors"
-                          : ""
+                        ? "cursor-pointer hover:bg-background/20 p-2 -m-2 rounded-lg transition-colors"
+                        : ""
                         }`}
                       onClick={() =>
                         report.targetType === "USER" &&
@@ -161,35 +162,60 @@ const ReportDetailModal = ({
                           <p className="whitespace-pre-wrap italic">
                             "{targetData.content}"
                           </p>
-                          {targetData.images?.length > 0 && (
+                          {/* Media Grid (Images & Videos) */}
+                          {(targetData.media?.length > 0 || targetData.images?.length > 0) && (
                             <div className="mt-3 grid grid-cols-2 gap-2">
-                              {targetData.images.map((img, idx) => (
-                                <img
-                                  key={idx}
-                                  src={img}
-                                  className="rounded-lg w-full h-32 object-cover border border-border"
-                                  alt=""
-                                />
-                              ))}
+                              {/* Priority: Use targetData.media if available (contains type info) */}
+                              {targetData.media?.length > 0
+                                ? targetData.media.map((m, idx) => {
+                                  if (m.type === "VIDEO") {
+                                    return (
+                                      <video
+                                        key={idx}
+                                        src={m.url}
+                                        controls
+                                        className="rounded-lg w-full h-48 object-cover border border-border bg-black"
+                                      />
+                                    );
+                                  }
+                                  return (
+                                    <img
+                                      key={idx}
+                                      src={m.url}
+                                      className="rounded-lg w-full h-48 object-cover border border-border"
+                                      alt=""
+                                    />
+                                  );
+                                })
+                                : /* Fallback: Use targetData.images (assumed images) */
+                                targetData.images?.map((img, idx) => (
+                                  <img
+                                    key={idx}
+                                    src={img}
+                                    className="rounded-lg w-full h-48 object-cover border border-border"
+                                    alt=""
+                                  />
+                                ))}
                             </div>
                           )}
-
-                          {targetData.media?.some(
-                            (m) => m.type === "VIDEO",
-                          ) && (
-                              <div className="mt-2 text-xs text-text-muted flex items-center gap-1">
-                                <span className="bg-white/10 px-2 py-0.5 rounded">
-                                  Có đính kèm video
-                                </span>
-                              </div>
-                            )}
                         </div>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
-                    Không tìm thấy dữ liệu đối tượng (Có thể đã bị xóa)
+                  <div className="p-6 bg-red-500/5 border border-red-500/20 rounded-xl flex flex-col items-center justify-center text-center gap-2 min-h-[200px]">
+                    <ShieldCheck className="size-10 text-red-400 opacity-50 absolute" />
+                    <div className="z-10 relative">
+                      <p className="text-red-500 font-bold mb-1">
+                        {targetData?.error ? "Lỗi truy xuất dữ liệu" : "Dữ liệu không tồn tại"}
+                      </p>
+                      <p className="text-sm text-red-400/80">
+                        {targetData?.msg || "Nội dung gốc có thể đã bị xóa hoặc bạn không có quyền truy cập."}
+                      </p>
+                      <p className="text-xs text-text-muted mt-4 bg-background/50 px-3 py-1 rounded-full">
+                        ID: {report.targetId}
+                      </p>
+                    </div>
                   </div>
                 )}
 
@@ -354,7 +380,7 @@ const ReportDetailModal = ({
           </div>
         )}
       </div>
-    </div>
+    </div >
   );
 };
 
