@@ -141,6 +141,17 @@ export const WebSocketProvider = ({ children }) => {
             // User receives notification about their report status
             dispatch(addNotification(payload));
             toast.success(payload.content, { duration: 5000 });
+          } else if (payload.type === "GROUP_JOIN_REQUEST") {
+            dispatch(addNotification(payload));
+            toast(payload.content, {
+              icon: "👥",
+              duration: 5000,
+              style: {
+                borderRadius: '10px',
+                background: '#333',
+                color: '#fff',
+              },
+            });
           } else {
             // General notification
             dispatch(addNotification(payload));
