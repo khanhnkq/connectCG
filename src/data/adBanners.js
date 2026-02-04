@@ -6,7 +6,8 @@ export const AD_BANNERS = [
       "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
     title: "Đặt",
     highlight: "Đồ Ăn",
-    subtitle: "Giảm <span class='text-white font-bold'>50%</span> ngay hôm nay!",
+    subtitle:
+      "Giảm <span class='text-white font-bold'>50%</span> ngay hôm nay!",
     promoBadge: "Khuyến mãi",
     onClick: () => toast("Tính năng đặt món đang được phát triển! 🍜"),
   },
