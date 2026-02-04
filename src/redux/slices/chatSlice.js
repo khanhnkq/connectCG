@@ -21,6 +21,11 @@ const chatSlice = createSlice({
         },
         updateConversation: (state, action) => {
             const index = state.conversations.findIndex(c => c.id === action.payload.id);
+            // Ignore unread count if we are currently in this room
+            if (state.activeRoomId === action.payload.id && action.payload.unreadCount > 0) {
+                action.payload.unreadCount = 0;
+            }
+
             if (index !== -1) {
                 // Merge and update
                 const updated = { ...state.conversations[index], ...action.payload };
