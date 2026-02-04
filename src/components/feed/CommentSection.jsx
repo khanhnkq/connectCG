@@ -60,7 +60,7 @@ export default function CommentSection({
     };
     window.addEventListener("commentEvent", handleCommentEvent);
     return () => window.removeEventListener("commentEvent", handleCommentEvent);
-  }, [postId, findComment, addReplyToComment, removeCommentById]);
+  }, [postId]);
 
   const fetchComments = useCallback(
     async (isBackground = false) => {
@@ -76,30 +76,6 @@ export default function CommentSection({
     },
     [postId],
   );
-
-  // Recursive to find recursive
-  const findComment = useCallback((list, id) => {
-    for (let c of list) {
-      if (c.id === id) return true;
-      if (c.replies && findComment(c.replies, id)) return true;
-    }
-    return false;
-  }, []);
-
-  const addReplyToComment = (list, parentId, newComment) => {
-    return list.map((c) => {
-      if (c.id === parentId) {
-        return { ...c, replies: [...(c.replies || []), newComment] };
-      }
-      if (c.replies) {
-        return {
-          ...c,
-          replies: addReplyToComment(c.replies, parentId, newComment),
-        };
-      }
-      return c;
-    });
-  };
 
   const handleSubmit = async (content) => {
     try {
@@ -138,15 +114,6 @@ export default function CommentSection({
     }
   };
 
-  // Helper to remove comment by ID (including nested replies)
-  const removeCommentById = useCallback((comments, id) => {
-    return comments
-      .filter((c) => c.id !== id)
-      .map((c) => ({
-        ...c,
-        replies: c.replies ? removeCommentById(c.replies, id) : [],
-      }));
-  }, []);
   return (
     <div className="px-4 py-3 border-t border-border-main">
       {/* Input comment mới */}
