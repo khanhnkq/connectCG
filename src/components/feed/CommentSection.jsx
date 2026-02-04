@@ -32,41 +32,35 @@ export default function CommentSection({
   // Listen for realtime comment events (only from OTHER users)
   useEffect(() => {
     const handleCommentEvent = (e) => {
-      const { postId: eventPostId, action, comment } = e.detail;
-      console.log("🔔 [CommentSection] Event Received:", {
-        action,
-        eventPostId,
-        currentPostId: postId,
-      });
+      const { postId: eventPostId, action, comment, commentId } = e.detail;
 
       // Only process if this event is for our post (loose equality for string/number match)
       if (eventPostId != postId) return;
 
-      // Check if current user triggered this event (avoid double fetch)
-      const currentUserId = user?.id;
       if (action === "CREATED" && comment) {
-        console.log(
-          "🔔 [CommentSection] Created Event from:",
-          comment.authorId,
-          "Current User:",
-          currentUserId,
+        setComments((prevComments) => {
+          // 1. Check duplicate (avoid double show)
+          const exists = findComment(prevComments, comment.id);
+          if (exists) return prevComments;
+
+          // 2. Insert comment
+          if (!comment.parentId) {
+            // Root comment: Add to bottom
+            return [...prevComments, comment];
+          } else {
+            // Reply: Find parent and add
+            return addReplyToComment(prevComments, comment.parentId, comment);
+          }
+        });
+      } else if (action === "DELETED" && commentId) {
+        setComments((prevComments) =>
+          removeCommentById(prevComments, commentId),
         );
-        // Only fetch if comment is from another user
-        if (comment.authorId !== currentUserId) {
-          console.log(
-            "🔔 [CommentSection] Fetching new comments (background)...",
-          );
-          fetchComments(true); // true = background fetch
-        }
-      } else if (action === "DELETED") {
-        // For delete, we don't have userId in event, so just refresh
-        // This is acceptable since delete is less frequent
-        fetchComments();
       }
     };
     window.addEventListener("commentEvent", handleCommentEvent);
     return () => window.removeEventListener("commentEvent", handleCommentEvent);
-  }, [postId, user?.id]); // fetchComments is stable
+  }, [postId, findComment, addReplyToComment, removeCommentById]);
 
   const fetchComments = useCallback(
     async (isBackground = false) => {
@@ -83,7 +77,30 @@ export default function CommentSection({
     [postId],
   );
 
-  // Tạo comment mới - add optimistically then refresh
+  // Recursive to find recursive
+  const findComment = useCallback((list, id) => {
+    for (let c of list) {
+      if (c.id === id) return true;
+      if (c.replies && findComment(c.replies, id)) return true;
+    }
+    return false;
+  }, []);
+
+  const addReplyToComment = (list, parentId, newComment) => {
+    return list.map((c) => {
+      if (c.id === parentId) {
+        return { ...c, replies: [...(c.replies || []), newComment] };
+      }
+      if (c.replies) {
+        return {
+          ...c,
+          replies: addReplyToComment(c.replies, parentId, newComment),
+        };
+      }
+      return c;
+    });
+  };
+
   const handleSubmit = async (content) => {
     try {
       const res = await commentService.createComment(postId, content);
@@ -122,14 +139,14 @@ export default function CommentSection({
   };
 
   // Helper to remove comment by ID (including nested replies)
-  const removeCommentById = (comments, id) => {
+  const removeCommentById = useCallback((comments, id) => {
     return comments
       .filter((c) => c.id !== id)
       .map((c) => ({
         ...c,
         replies: c.replies ? removeCommentById(c.replies, id) : [],
       }));
-  };
+  }, []);
   return (
     <div className="px-4 py-3 border-t border-border-main">
       {/* Input comment mới */}
