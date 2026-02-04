@@ -167,10 +167,14 @@ export default function ChatInterface() {
     }
   };
 
+  const [isInviting, setIsInviting] = useState(false);
+  const [isKicking, setIsKicking] = useState(false);
+
   const handleInviteMember = async () => {
     if (!selectedInvitees || selectedInvitees.length === 0 || !activeRoom)
       return;
 
+    setIsInviting(true);
     const tid = toast.loading(
       `Đang mời ${selectedInvitees.length} thành viên...`,
     );
@@ -192,6 +196,8 @@ export default function ChatInterface() {
       toast.error(error.response?.data?.message || "Lỗi khi mời thành viên", {
         id: tid,
       });
+    } finally {
+      setIsInviting(false);
     }
   };
 
@@ -258,6 +264,26 @@ export default function ChatInterface() {
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location.state, conversations, navigate, location.pathname]);
+
+  // Sync activeRoom with Redux conversations to reflect real-time updates (e.g., new members, name changes)
+  useEffect(() => {
+    if (activeRoom && conversations.length > 0) {
+      const updatedRoom = conversations.find((c) => c.id === activeRoom.id);
+      if (updatedRoom) {
+        // Only update if there are actual changes to avoid loops, 
+        // using JSON stringify for deep comparison or specific fields check
+        // Simplified check: Compare key fields that affect UI
+        const hasChanges =
+          updatedRoom.name !== activeRoom.name ||
+          updatedRoom.avatarUrl !== activeRoom.avatarUrl ||
+          JSON.stringify(updatedRoom.members) !== JSON.stringify(activeRoom.members);
+
+        if (hasChanges) {
+          setActiveRoom(updatedRoom);
+        }
+      }
+    }
+  }, [conversations, activeRoom]);
 
   useEffect(() => {
     fetchRooms();
@@ -467,6 +493,7 @@ export default function ChatInterface() {
 
   const confirmKickMember = async () => {
     if (!activeRoom || !kickMemberData) return;
+    setIsKicking(true);
     try {
       if (
         kickMemberData.role === "Member" ||
@@ -491,6 +518,8 @@ export default function ChatInterface() {
     } catch (error) {
       console.error(error);
       toast.error("Thao tác thất bại");
+    } finally {
+      setIsKicking(false);
     }
   };
 
@@ -575,6 +604,7 @@ export default function ChatInterface() {
           emojis={emojis}
           onBack={() => setActiveRoom(null)}
           onShowSettings={() => setShowSettings(!showSettings)}
+          onInviteMember={handleOpenInviteModal}
         />
 
         <ChatSettings
@@ -751,6 +781,7 @@ export default function ChatInterface() {
         onToggleInvitee={toggleInvitee}
         onInvite={handleInviteMember}
         activeRoomName={activeRoom?.name}
+        isLoading={isInviting}
       />
     </>
   );
