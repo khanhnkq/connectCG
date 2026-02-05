@@ -27,6 +27,7 @@ import reportService from "../../services/ReportService";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import AutoplayVideo from "../common/AutoplayVideo";
+import ShareModal from "./ShareModal";
 
 // --- HELPER 1: Format thời gian ---
 const formatTime = (dateString) => {
@@ -181,6 +182,7 @@ export default function PostCard({
   const [isEditing, setIsEditing] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const reportReasons = [
     "Spam hoặc lừa đảo",
@@ -434,7 +436,13 @@ export default function PostCard({
                   </button>
                 </>
               )}
-              <button className="w-full text-left px-4 py-2.5 text-sm text-text-main hover:bg-background-main flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setShowShareModal(true);
+                  setShowMenu(false);
+                }}
+                className="w-full text-left px-4 py-2.5 text-sm text-text-main hover:bg-background-main flex items-center gap-2"
+              >
                 <Share2 size={16} /> Chia sẻ
               </button>
 
@@ -560,12 +568,22 @@ export default function PostCard({
             <span className="text-sm font-medium">Bình luận</span>
           </button>
 
-          <button className="flex-1 flex items-center justify-center gap-2 py-2 rounded-md hover:bg-background-main text-text-secondary hover:text-green-500 transition-colors">
+          <button
+            onClick={() => setShowShareModal(true)}
+            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-md hover:bg-background-main text-text-secondary hover:text-green-500 transition-colors"
+          >
             <Share2 size={20} />
             <span className="text-sm font-medium">Chia sẻ</span>
           </button>
         </div>
       </div>
+
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        postId={data.id}
+        postContent={data.content}
+      />
 
       {/* LIGHTBOX COMPONENT */}
       {lightboxIndex >= 0 && (
