@@ -266,10 +266,11 @@ const UserNavbar = ({ onMenuClick }) => {
         {/* Messenger/Chat Dropdown */}
         <div className="hidden md:block relative" ref={chatDropdownRef}>
           <button
-            className={`p-2.5 rounded-full transition-colors relative flex items-center justify-center w-10 h-10 ${showChatDropdown
+            className={`p-2.5 rounded-full transition-colors relative flex items-center justify-center w-10 h-10 ${
+              showChatDropdown
                 ? "bg-primary/20 text-primary"
                 : "bg-[#E4E6EB] dark:bg-[#3A3B3C] text-text-main hover:bg-[#D8DADF] dark:hover:bg-[#4E4F50]"
-              }`}
+            }`}
             onClick={() => {
               setShowChatDropdown(!showChatDropdown);
               setShowNotifications(false);
@@ -293,10 +294,11 @@ const UserNavbar = ({ onMenuClick }) => {
         {/* Notifications */}
         <div className="relative" ref={notificationRef}>
           <button
-            className={`p-2.5 rounded-full transition-colors relative flex items-center justify-center w-10 h-10 ${showNotifications
+            className={`p-2.5 rounded-full transition-colors relative flex items-center justify-center w-10 h-10 ${
+              showNotifications
                 ? "bg-primary/20 text-primary"
                 : "bg-[#E4E6EB] dark:bg-[#3A3B3C] text-text-main hover:bg-[#D8DADF] dark:hover:bg-[#4E4F50]"
-              }`}
+            }`}
             onClick={() => {
               setShowNotifications(!showNotifications);
               setShowChatDropdown(false);
@@ -334,10 +336,11 @@ const UserNavbar = ({ onMenuClick }) => {
               setShowNotifications(false);
               setShowChatDropdown(false);
             }}
-            className={`flex items-center gap-1.5 p-1 rounded-full transition-all duration-200 border ml-1 ${showUserMenu
+            className={`flex items-center gap-1.5 p-1 rounded-full transition-all duration-200 border ml-1 ${
+              showUserMenu
                 ? "bg-primary/10 border-primary/30"
                 : "bg-[#E4E6EB] dark:bg-[#3A3B3C] border-transparent hover:bg-[#D8DADF] dark:hover:bg-[#4E4F50]"
-              }`}
+            }`}
           >
             <div className="bg-gradient-to-tr from-primary to-orange-400 p-[2px] rounded-full">
               <img
@@ -351,8 +354,9 @@ const UserNavbar = ({ onMenuClick }) => {
             </div>
             <ChevronDown
               size={14}
-              className={`text-text-secondary transition-transform duration-200 mr-1 ${showUserMenu ? "rotate-180 text-primary" : ""
-                }`}
+              className={`text-text-secondary transition-transform duration-200 mr-1 ${
+                showUserMenu ? "rotate-180 text-primary" : ""
+              }`}
             />
           </button>
 
@@ -392,10 +396,11 @@ const NavItem = ({ icon, active, onClick, tooltip }) => {
       <button
         onClick={onClick}
         className={`relative flex items-center justify-center p-3 lg:px-10 lg:py-3.5 rounded-xl transition-all duration-300
-                    ${active
-            ? "text-primary bg-primary/5"
-            : "text-text-secondary hover:bg-surface-main hover:text-text-main"
-          }
+                    ${
+                      active
+                        ? "text-primary bg-primary/5"
+                        : "text-text-secondary hover:bg-surface-main hover:text-text-main"
+                    }
                 `}
       >
         {icon}

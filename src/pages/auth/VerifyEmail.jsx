@@ -38,12 +38,12 @@ export default function VerifyEmail() {
   }, [token, navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background-dark px-4">
-      <div className="max-w-md w-full bg-surface-dark p-8 rounded-2xl border border-border-dark shadow-xl text-center">
+    <div className="min-h-screen flex items-center justify-center bg-background-main px-4">
+      <div className="max-w-md w-full bg-surface-main p-8 rounded-2xl border border-border-main shadow-xl text-center">
         {status === "loading" && (
           <div className="flex flex-col items-center gap-4">
             <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-            <h2 className="text-xl font-bold text-white">
+            <h2 className="text-xl font-bold text-text-main">
               Đang xác thực email...
             </h2>
           </div>
@@ -54,7 +54,7 @@ export default function VerifyEmail() {
             <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center">
               <CheckCircle2 className="size-10 text-green-500" />
             </div>
-            <h2 className="text-2xl font-bold text-white">
+            <h2 className="text-2xl font-bold text-text-main">
               Xác thực thành công!
             </h2>
             <p className="text-text-secondary">{message}</p>
@@ -69,7 +69,9 @@ export default function VerifyEmail() {
             <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center">
               <AlertCircle className="size-10 text-red-500" />
             </div>
-            <h2 className="text-2xl font-bold text-white">Xác thực thất bại</h2>
+            <h2 className="text-2xl font-bold text-text-main">
+              Xác thực thất bại
+            </h2>
             <p className="text-text-secondary">{message}</p>
             <Link
               to="/login"

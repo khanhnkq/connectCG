@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 export default function TermsOfService() {
   return (
-    <div className="min-h-screen bg-background-dark text-white p-8">
+    <div className="min-h-screen bg-background-main text-text-main p-8">
       <div className="max-w-3xl mx-auto space-y-6">
         <div className="flex justify-between items-center mb-10">
           <Link
@@ -14,11 +14,11 @@ export default function TermsOfService() {
           </Link>
           <div className="flex items-center gap-2">
             <img src="/logo.png" alt="Connect Logo" className="h-8 w-auto" />
-            <span className="text-xl font-bold">Connect</span>
+            <span className="text-xl font-bold text-text-main">Connect</span>
           </div>
         </div>
 
-        <h1 className="text-4xl font-bold border-b border-border-dark pb-4">
+        <h1 className="text-4xl font-bold border-b border-border-main pb-4">
           Điều khoản sử dụng
         </h1>
         <p className="text-text-secondary italic">
@@ -70,7 +70,7 @@ export default function TermsOfService() {
           </p>
         </section>
 
-        <footer className="pt-12 border-t border-border-dark text-center text-text-secondary text-sm">
+        <footer className="pt-12 border-t border-border-main text-center text-text-secondary text-sm">
           <p>&copy; 2026 Connect Team. All rights reserved.</p>
         </footer>
       </div>

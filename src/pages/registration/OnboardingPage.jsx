@@ -194,7 +194,7 @@ export default function Step2() {
   ];
 
   return (
-    <div className="min-h-screen flex w-full bg-background-light dark:bg-background-dark">
+    <div className="min-h-screen flex w-full bg-background-main">
       {/* Left Side: Illustration */}
       <div className="hidden lg:flex w-1/2 relative flex-col justify-end p-12 overflow-hidden">
         <div
@@ -223,9 +223,9 @@ export default function Step2() {
       </div>
 
       {/* Right Side: Form */}
-      <div className="w-full lg:w-1/2 flex flex-col h-screen overflow-y-auto bg-background-dark relative">
+      <div className="w-full lg:w-1/2 flex flex-col h-screen overflow-y-auto bg-background-main relative">
         <div className="w-full p-6 flex justify-between items-center lg:hidden">
-          <div className="flex items-center gap-2 text-white">
+          <div className="flex items-center gap-2 text-text-main">
             <Heart size={24} className="text-primary" fill="currentColor" />
             <span className="text-lg font-bold">Connect</span>
           </div>
@@ -233,7 +233,7 @@ export default function Step2() {
 
         <div className="flex-1 flex flex-col justify-center py-10 px-6 sm:px-12 md:px-20 lg:px-24">
           <div className="max-w-[480px] w-full mx-auto">
-            <h1 className="text-3xl font-bold leading-tight tracking-tight mb-2 text-white">
+            <h1 className="text-3xl font-bold leading-tight tracking-tight mb-2 text-text-main">
               Hãy xác nhận phong cách của bạn
             </h1>
             <p className="text-text-secondary text-base mb-8">
@@ -259,7 +259,7 @@ export default function Step2() {
                           className="hidden"
                           onChange={(e) => handleFileChange(e, setFieldValue)}
                         />
-                        <div className="w-32 h-32 rounded-full bg-surface-dark border-2 border-dashed border-border-dark flex flex-col items-center justify-center transition-all duration-200 group-hover:border-primary group-hover:bg-surface-dark/80 group-hover:shadow-[0_0_20px_rgba(244,123,37,0.15)] overflow-hidden">
+                        <div className="w-32 h-32 rounded-full bg-surface-main border-2 border-dashed border-border-main flex flex-col items-center justify-center transition-all duration-200 group-hover:border-primary group-hover:bg-surface-main/80 group-hover:shadow-[0_0_20px_rgba(244,123,37,0.15)] overflow-hidden">
                           {avatarPreview ? (
                             <img
                               src={avatarPreview}
@@ -273,7 +273,7 @@ export default function Step2() {
                             />
                           )}
                         </div>
-                        <div className="absolute bottom-1 right-1 bg-primary rounded-full p-2 text-white shadow-lg border-2 border-background-dark group-hover:scale-110 transition-transform flex items-center justify-center">
+                        <div className="absolute bottom-1 right-1 bg-primary rounded-full p-2 text-white shadow-lg border-2 border-background-main group-hover:scale-110 transition-transform flex items-center justify-center">
                           <Pencil size={14} />
                         </div>
                       </label>
@@ -284,7 +284,7 @@ export default function Step2() {
                   <div className="flex flex-col gap-2">
                     <label
                       htmlFor="fullName"
-                      className="text-white text-base font-medium"
+                      className="text-text-main text-base font-medium"
                     >
                       Họ và tên <span className="text-red-500">*</span>
                     </label>
@@ -293,11 +293,11 @@ export default function Step2() {
                       type="text"
                       name="fullName"
                       id="fullName"
-                      className={`form-input w-full rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${
+                      className={`form-input w-full rounded-xl text-text-main focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${
                         errors.fullName && touched.fullName
                           ? "border-red-500"
-                          : "border-border-dark"
-                      } bg-surface-dark h-14 px-4 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
+                          : "border-border-main"
+                      } bg-surface-main h-14 px-4 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
                       placeholder="VD: Nguyễn Văn A"
                     />
                     {errors.fullName && touched.fullName && (
@@ -311,7 +311,7 @@ export default function Step2() {
                   <div className="flex flex-col gap-2">
                     <label
                       htmlFor="dateOfBirth"
-                      className="text-white text-base font-medium"
+                      className="text-text-main text-base font-medium"
                     >
                       Ngày sinh <span className="text-red-500">*</span>
                     </label>
@@ -321,11 +321,11 @@ export default function Step2() {
                         type="date"
                         name="dateOfBirth"
                         id="dateOfBirth"
-                        className={`form-input w-full rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${
+                        className={`form-input w-full rounded-xl text-text-main focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${
                           errors.dateOfBirth && touched.dateOfBirth
                             ? "border-red-500"
-                            : "border-border-dark"
-                        } bg-surface-dark h-14 px-4 text-base transition-all duration-200 appearance-none`}
+                            : "border-border-main"
+                        } bg-surface-main h-14 px-4 text-base transition-all duration-200 appearance-none`}
                       />
                     </div>
                     {errors.dateOfBirth && touched.dateOfBirth && (
@@ -339,7 +339,7 @@ export default function Step2() {
                   <div className="flex flex-col gap-2">
                     <label
                       htmlFor="occupation"
-                      className="text-white text-base font-medium"
+                      className="text-text-main text-base font-medium"
                     >
                       Nghề nghiệp <span className="text-red-500">*</span>
                     </label>
@@ -348,11 +348,11 @@ export default function Step2() {
                       type="text"
                       id="occupation"
                       name="occupation"
-                      className={`form-input w-full rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${
+                      className={`form-input w-full rounded-xl text-text-main focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${
                         errors.occupation && touched.occupation
                           ? "border-red-500"
-                          : "border-border-dark"
-                      } bg-surface-dark h-14 px-4 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
+                          : "border-border-main"
+                      } bg-surface-main h-14 px-4 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
                       placeholder="VD: Nhà thiết kế, Giáo viên, Lập trình viên"
                     />
                     {errors.occupation && touched.occupation && (
@@ -364,7 +364,7 @@ export default function Step2() {
 
                   {/* Gender */}
                   <div className="flex flex-col gap-3">
-                    <span className="text-white text-base font-medium">
+                    <span className="text-text-main text-base font-medium">
                       Giới tính <span className="text-red-500">*</span>
                     </span>
                     <div className="grid grid-cols-3 gap-3">
@@ -388,8 +388,8 @@ export default function Step2() {
                             className={`rounded-xl border ${
                               errors.gender && touched.gender
                                 ? "border-red-500"
-                                : "border-border-dark"
-                            } bg-surface-dark p-3 flex flex-col items-center justify-center gap-2 h-20 transition-all duration-200 hover:bg-border-dark peer-checked:border-primary peer-checked:ring-1 peer-checked:ring-primary peer-checked:bg-primary/10`}
+                                : "border-border-main"
+                            } bg-surface-main p-3 flex flex-col items-center justify-center gap-2 h-20 transition-all duration-200 hover:bg-border-main peer-checked:border-primary peer-checked:ring-1 peer-checked:ring-primary peer-checked:bg-primary/10`}
                           >
                             <option.icon
                               size={20}
@@ -399,7 +399,7 @@ export default function Step2() {
                                   : "text-text-secondary"
                               } transition-colors`}
                             />
-                            <span className="text-sm font-medium text-text-secondary peer-checked:text-white transition-colors">
+                            <span className="text-sm font-medium text-text-secondary peer-checked:text-text-main transition-colors">
                               {option.label}
                             </span>
                           </div>
@@ -415,7 +415,7 @@ export default function Step2() {
 
                   {/* Marital Status */}
                   <div className="flex flex-col gap-3">
-                    <span className="text-white text-base font-medium">
+                    <span className="text-text-main text-base font-medium">
                       Tình trạng hôn nhân{" "}
                       <span className="text-red-500">*</span>
                     </span>
@@ -440,10 +440,10 @@ export default function Step2() {
                             className={`rounded-xl border ${
                               errors.maritalStatus && touched.maritalStatus
                                 ? "border-red-500"
-                                : "border-border-dark"
-                            } bg-surface-dark p-3 flex flex-col items-center justify-center h-20 transition-all duration-200 hover:bg-border-dark peer-checked:border-primary peer-checked:ring-1 peer-checked:ring-primary peer-checked:bg-primary/10`}
+                                : "border-border-main"
+                            } bg-surface-main p-3 flex flex-col items-center justify-center h-20 transition-all duration-200 hover:bg-border-main peer-checked:border-primary peer-checked:ring-1 peer-checked:ring-primary peer-checked:bg-primary/10`}
                           >
-                            <span className="text-sm font-medium text-text-secondary peer-checked:text-white transition-colors">
+                            <span className="text-sm font-medium text-text-secondary peer-checked:text-text-main transition-colors">
                               {status.label}
                             </span>
                           </div>
@@ -459,7 +459,7 @@ export default function Step2() {
 
                   {/* Purpose */}
                   <div className="flex flex-col gap-3">
-                    <span className="text-white text-base font-medium">
+                    <span className="text-text-main text-base font-medium">
                       Tại sao bạn tham gia?{" "}
                       <span className="text-red-500">*</span>
                     </span>
@@ -484,8 +484,8 @@ export default function Step2() {
                             className={`rounded-xl border ${
                               errors.purpose && touched.purpose
                                 ? "border-red-500"
-                                : "border-border-dark"
-                            } bg-surface-dark p-4 flex flex-col items-center justify-center gap-3 text-center h-28 transition-all duration-200 hover:bg-border-dark peer-checked:border-primary peer-checked:ring-1 peer-checked:ring-primary peer-checked:bg-primary/10`}
+                                : "border-border-main"
+                            } bg-surface-main p-4 flex flex-col items-center justify-center gap-3 text-center h-28 transition-all duration-200 hover:bg-border-main peer-checked:border-primary peer-checked:ring-1 peer-checked:ring-primary peer-checked:bg-primary/10`}
                           >
                             <option.icon
                               size={24}
@@ -500,7 +500,7 @@ export default function Step2() {
                                   : "none"
                               }
                             />
-                            <span className="text-sm font-medium text-white">
+                            <span className="text-sm font-medium text-text-main">
                               {option.label}
                             </span>
                           </div>
@@ -516,7 +516,7 @@ export default function Step2() {
 
                   {/* Hobbies */}
                   <div className="flex flex-col gap-3">
-                    <span className="text-white text-base font-medium">
+                    <span className="text-text-main text-base font-medium">
                       Sở thích của bạn <span className="text-red-500">*</span>
                     </span>
                     <p className="text-text-secondary text-sm -mt-1">
@@ -556,8 +556,8 @@ export default function Step2() {
                               className={`rounded-xl border ${
                                 errors.hobbies && touched.hobbies
                                   ? "border-red-500"
-                                  : "border-border-dark"
-                              } bg-surface-dark p-3 flex flex-col items-center justify-center gap-2 text-center h-20 transition-all duration-200 hover:bg-border-dark ${
+                                  : "border-border-main"
+                              } bg-surface-main p-3 flex flex-col items-center justify-center gap-2 text-center h-20 transition-all duration-200 hover:bg-border-main ${
                                 isSelected
                                   ? "border-primary ring-1 ring-primary bg-primary/10"
                                   : ""
@@ -574,7 +574,7 @@ export default function Step2() {
                               <span
                                 className={`text-xs font-medium ${
                                   isSelected
-                                    ? "text-white"
+                                    ? "text-text-main"
                                     : "text-text-secondary"
                                 }`}
                               >
