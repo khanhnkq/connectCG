@@ -159,14 +159,7 @@ export default function GroupsManagement() {
         fetchingRef.current = false;
       }
     },
-    [
-      activeTab,
-      debouncedSearchQuery,
-      managedHasMore,
-      joinedHasMore,
-      discoverHasMore,
-      hasMore,
-    ],
+    [activeTab, debouncedSearchQuery],
   );
 
   // Trigger initial load or search
