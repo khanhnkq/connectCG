@@ -284,13 +284,19 @@ export default function UserProfile() {
                       </span>
                     </p>
                     <div className="flex gap-4 mt-3 text-sm text-text-secondary">
-                      <span>
+                      <span
+                        onClick={() => setActiveTab("friends")}
+                        className="cursor-pointer hover:underline transition-all"
+                      >
                         <strong className="text-text-main">
                           {profile?.friendsCount || 0}
                         </strong>{" "}
                         Bạn bè
                       </span>
-                      <span>
+                      <span
+                        onClick={() => setActiveTab("timeline")}
+                        className="cursor-pointer hover:underline transition-all"
+                      >
                         <strong className="text-text-main">
                           {profile?.postsCount || 0}
                         </strong>{" "}
