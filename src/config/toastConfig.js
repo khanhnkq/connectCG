@@ -3,9 +3,9 @@ export const toastConfig = {
     toastOptions: {
         duration: 4000,
         style: {
-            background: "var(--surface)",
-            color: "var(--text-main)",
-            border: "1px solid var(--border)",
+            background: "var(--color-surface-main)",
+            color: "var(--color-text-main)",
+            border: "1px solid var(--color-border-main)",
             borderRadius: "12px",
             padding: "12px 16px",
             boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",

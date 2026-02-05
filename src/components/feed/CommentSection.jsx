@@ -38,9 +38,16 @@ export default function CommentSection({
       if (eventPostId != postId) return;
 
       if (action === "CREATED" && comment) {
+        console.log("WebSocket Comment Event:", comment.id, comment.content);
         setComments((prevComments) => {
           // 1. Check duplicate (avoid double show)
           const exists = findComment(prevComments, comment.id);
+          console.log(
+            "WS Duplicate Check:",
+            exists,
+            "Current count:",
+            prevComments.length,
+          );
           if (exists) return prevComments;
 
           // 2. Insert comment
@@ -85,9 +92,21 @@ export default function CommentSection({
         null,
         imageUrl,
       );
-      // Add new comment to state immediately (optimistic)
-      if (res.data || res) {
-        setComments((prev) => [res.data || res, ...prev]);
+      // Add new comment to state only if not already there (WebSocket might have beaten us)
+      const newComment = res.data || res;
+      console.log("API Comment Response:", newComment.id, newComment.content);
+      if (newComment) {
+        setComments((prev) => {
+          const exists = findComment(prev, newComment.id);
+          console.log(
+            "API Duplicate Check:",
+            exists,
+            "Current count:",
+            prev.length,
+          );
+          if (exists) return prev;
+          return [newComment, ...prev];
+        });
       }
       if (onCommentAdded) onCommentAdded();
     } catch (error) {
@@ -168,7 +187,7 @@ export default function CommentSection({
 // Helper Functions (Pure)
 const findComment = (list, id) => {
   for (let c of list) {
-    if (c.id === id) return true;
+    if (c.id == id) return true; // Loose equality for string/number match
     if (c.replies && findComment(c.replies, id)) return true;
   }
   return false;

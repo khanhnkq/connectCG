@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import CommentInput from "./CommentInput";
+import ImageLightbox from "../common/ImageLightBox";
 
 const formatTime = (dateString) => {
   if (!dateString) return "";
@@ -28,6 +29,7 @@ export default function CommentItem({ comment, onReply, onDelete, depth = 0 }) {
     : authUser;
   const [isReplying, setIsReplying] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
+  const [showLightbox, setShowLightbox] = useState(false);
 
   const handleSubmitReply = async (content, imageUrl = null) => {
     await onReply(content, comment.id, imageUrl);
@@ -63,11 +65,20 @@ export default function CommentItem({ comment, onReply, onDelete, depth = 0 }) {
                   src={comment.imageUrl}
                   alt="comment attachment"
                   className="w-full h-auto object-cover cursor-pointer hover:opacity-95 transition-opacity"
-                  onClick={() => window.open(comment.imageUrl, "_blank")}
+                  onClick={() => setShowLightbox(true)}
                 />
               </div>
             )}
           </div>
+
+          {/* Lightbox */}
+          {showLightbox && (
+            <ImageLightbox
+              mediaItems={[{ url: comment.imageUrl, type: "IMAGE" }]}
+              initialIndex={0}
+              onClose={() => setShowLightbox(false)}
+            />
+          )}
 
           {/* Actions Row */}
           <div className="flex items-center gap-4 mt-1 ml-3 text-xs font-medium text-text-secondary">
