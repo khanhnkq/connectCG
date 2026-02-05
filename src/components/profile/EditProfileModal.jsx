@@ -226,7 +226,7 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
             >
               <option value="FRIENDS">Kết bạn</option>
               <option value="LOVE">Hẹn hò</option>
-              <option value="NETWORKING">Networking</option>
+              <option value="NETWORKING">Kết nối</option>
             </select>
           </div>
 

@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 
+import { formatDate } from "../../utils/dateUtils";
+
 const InfoItem = ({ icon: Icon, label, value, delay }) => {
   return (
     <motion.div
@@ -52,13 +54,13 @@ const ProfileAbout = ({ profile, isOwner }) => {
         {
           icon: Cake,
           label: "Ngày sinh",
-          value: profile?.dateOfBirth || "Chưa cập nhật",
+          value: formatDate(profile?.dateOfBirth),
         },
         {
           icon: Search,
           label: "Tìm kiếm",
           value:
-            { LOVE: "Hẹn hò", FRIENDS: "Kết bạn", NETWORKING: "Networking" }[
+            { LOVE: "Hẹn hò", FRIENDS: "Kết bạn", NETWORKING: "Kết nối" }[
               profile?.lookingFor
             ] || "Chưa cập nhật",
         },
