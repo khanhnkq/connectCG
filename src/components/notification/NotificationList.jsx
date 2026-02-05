@@ -59,14 +59,14 @@ const NotificationList = ({
       case "POST_REACTION":
       case "POST_COMMENT":
       case "COMMENT_REPLY":
-        navigate(`/dashboard/feed`);
+        navigate(`/dashboard/post/${notification.targetId}`);
         return;
     }
 
     // General targetType fallback
     switch (notification.targetType) {
       case "POST":
-        navigate(`/dashboard/feed`);
+        navigate(`/dashboard/post/${notification.targetId}`);
         break;
       case "GROUP":
         navigate(`/dashboard/groups/${notification.targetId}`);

@@ -35,6 +35,8 @@ import GroupDeletedModal from "./components/common/GroupDeletedModal";
 
 import { toastConfig } from "./config/toastConfig";
 
+import PostDetailPage from "./pages/dashboard/PostDetailPage";
+
 function App() {
   return (
     <ThemeProvider>
@@ -82,6 +84,7 @@ function App() {
             <Route path="my-profile" element={<UserProfile />} />
             <Route path="member/:id" element={<MemberProfile />} />
             <Route path="feed" element={<Newsfeed />} />
+            <Route path="post/:id" element={<PostDetailPage />} />
             <Route path="profile/view" element={<MemberProfile />} />
             <Route path="friends" element={<FriendsPage />} />
             <Route path="settings/privacy" element={<PrivacySettings />} />
