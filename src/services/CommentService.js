@@ -4,10 +4,11 @@ const commentService = {
         return axiosClient.get(`/posts/${postId}/comments`);
     },
     
-    createComment(postId, content, parentId = null) {
+    createComment(postId, content, parentId = null, imageUrl = null) {
         return axiosClient.post(`/posts/${postId}/comments`, {
             content,
-            parentId
+            parentId,
+            imageUrl
         });
     },
     
