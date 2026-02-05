@@ -58,6 +58,20 @@ export const findMyGroups = async (page = 0, size = 9) => {
     return res.data;
 };
 
+export const findMyManagedGroups = async (page = 0, size = 9) => {
+    const res = await axiosClient.get(`${URL_GROUP}/my-managed`, {
+        params: { page, size }
+    });
+    return res.data;
+};
+
+export const findMyJoinedGroups = async (page = 0, size = 9) => {
+    const res = await axiosClient.get(`${URL_GROUP}/my-joined`, {
+        params: { page, size }
+    });
+    return res.data;
+};
+
 export const findDiscoverGroups = async (page = 0, size = 9) => {
     const res = await axiosClient.get(`${URL_GROUP}/discover`, {
         params: { page, size }
