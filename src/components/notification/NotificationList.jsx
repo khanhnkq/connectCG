@@ -56,6 +56,11 @@ const NotificationList = ({
       case "GROUP_DELETED":
         navigate(`/dashboard/groups`);
         return;
+      case "POST_REACTION":
+      case "POST_COMMENT":
+      case "COMMENT_REPLY":
+        navigate(`/dashboard/feed`);
+        return;
     }
 
     // General targetType fallback

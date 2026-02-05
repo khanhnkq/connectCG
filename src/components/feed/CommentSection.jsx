@@ -45,8 +45,8 @@ export default function CommentSection({
 
           // 2. Insert comment
           if (!comment.parentId) {
-            // Root comment: Add to bottom
-            return [...prevComments, comment];
+            // Root comment: Add to top
+            return [comment, ...prevComments];
           } else {
             // Reply: Find parent and add
             return addReplyToComment(prevComments, comment.parentId, comment);
@@ -77,12 +77,17 @@ export default function CommentSection({
     [postId],
   );
 
-  const handleSubmit = async (content) => {
+  const handleSubmit = async (content, imageUrl = null) => {
     try {
-      const res = await commentService.createComment(postId, content);
+      const res = await commentService.createComment(
+        postId,
+        content,
+        null,
+        imageUrl,
+      );
       // Add new comment to state immediately (optimistic)
       if (res.data || res) {
-        setComments((prev) => [...prev, res.data || res]);
+        setComments((prev) => [res.data || res, ...prev]);
       }
       if (onCommentAdded) onCommentAdded();
     } catch (error) {
@@ -91,9 +96,9 @@ export default function CommentSection({
   };
 
   // Reply - add optimistically
-  const handleReply = async (content, parentId) => {
+  const handleReply = async (content, parentId, imageUrl = null) => {
     try {
-      await commentService.createComment(postId, content, parentId);
+      await commentService.createComment(postId, content, parentId, imageUrl);
       fetchComments(true); // Reply structure is complex, just refetch in background
       if (onCommentAdded) onCommentAdded();
     } catch (error) {

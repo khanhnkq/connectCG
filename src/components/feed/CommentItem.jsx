@@ -29,8 +29,8 @@ export default function CommentItem({ comment, onReply, onDelete, depth = 0 }) {
   const [isReplying, setIsReplying] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
 
-  const handleSubmitReply = async (content) => {
-    await onReply(content, comment.id);
+  const handleSubmitReply = async (content, imageUrl = null) => {
+    await onReply(content, comment.id, imageUrl);
     setIsReplying(false);
   };
 
@@ -57,6 +57,16 @@ export default function CommentItem({ comment, onReply, onDelete, depth = 0 }) {
             <p className="text-[15px] text-text-main break-words leading-snug mt-0.5">
               {comment.content}
             </p>
+            {comment.imageUrl && (
+              <div className="mt-2 rounded-lg overflow-hidden border border-border-main max-w-[250px]">
+                <img
+                  src={comment.imageUrl}
+                  alt="comment attachment"
+                  className="w-full h-auto object-cover cursor-pointer hover:opacity-95 transition-opacity"
+                  onClick={() => window.open(comment.imageUrl, "_blank")}
+                />
+              </div>
+            )}
           </div>
 
           {/* Actions Row */}
