@@ -1,6 +1,7 @@
 import { User } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import UserProfileService from "../../services/user/UserProfileService";
+import { formatDate } from "../../utils/dateUtils";
 
 const ReporterDetailModal = ({ userId, onClose }) => {
   const [user, setUser] = useState(null);
@@ -110,7 +111,7 @@ const ReporterDetailModal = ({ userId, onClose }) => {
                   />
                   <InfoRow
                     label="Ngày sinh"
-                    value={user.dateOfBirth || "Chưa cập nhật"}
+                    value={formatDate(user.dateOfBirth)}
                   />
                   <InfoRow
                     label="Tìm kiếm"
