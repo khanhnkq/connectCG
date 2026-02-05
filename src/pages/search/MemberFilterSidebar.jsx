@@ -43,7 +43,7 @@ const MemberFilterSidebar = ({
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary h-4 w-4" />
               <input
                 className="w-full h-10 bg-background-main border border-border-main rounded-lg pl-9 pr-3 text-sm text-text-main placeholder-text-secondary/50 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
-                placeholder="Tên, sở thích..."
+                placeholder="Tên"
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
               />
