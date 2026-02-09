@@ -19,6 +19,7 @@ const ChatWindow = ({
   onBack,
   onShowSettings,
   onInviteMember,
+  typingUsers = [],
 }) => {
   return (
     <div
@@ -40,6 +41,19 @@ const ChatWindow = ({
             activeRoom={activeRoom}
             messagesEndRef={messagesEndRef}
           />
+
+          {typingUsers.length > 0 && (
+            <div className="px-6 py-2 bg-transparent text-[11px] text-text-secondary animate-pulse flex items-center gap-2 italic">
+              <div className="flex gap-1">
+                <span className="size-1 bg-text-secondary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                <span className="size-1 bg-text-secondary rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                <span className="size-1 bg-text-secondary rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+              </div>
+              {typingUsers.length === 1
+                ? `${typingUsers[0]} đang nhập...`
+                : `${typingUsers.length} người đang nhập...`}
+            </div>
+          )}
 
           <MessageInput
             inputText={inputText}

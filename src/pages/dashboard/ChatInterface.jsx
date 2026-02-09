@@ -63,6 +63,7 @@ import ChatWindow from "../../components/chat/ChatWindow.jsx";
 import useChatRooms from "../chat/hooks/useChatRooms";
 import useChatMessages from "../chat/hooks/useChatMessages";
 import { fetchUserProfile } from "../../redux/slices/userSlice";
+import { useWebSocket } from "../../context/WebSocketContext";
 
 export default function ChatInterface() {
   const { user: currentUser } = useSelector((state) => state.auth);
@@ -80,6 +81,9 @@ export default function ChatInterface() {
   const [activeRoom, setActiveRoom] = useState(null);
   const { messages, setMessages } = useChatMessages(activeRoom);
   const [inputText, setInputText] = useState("");
+  const [typingUsers, setTypingUsers] = useState({}); // { firebaseRoomKey: [names...] }
+  const typingTimeoutRef = useRef(null);
+  const { stompClient, isConnected } = useWebSocket();
   const [showNewChatModal, setShowNewChatModal] = useState(false);
   const [friends, setFriends] = useState([]);
   const [selectedMembers, setSelectedMembers] = useState([]);
@@ -340,6 +344,77 @@ export default function ChatInterface() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Listen for Typing Events
+  useEffect(() => {
+    if (!stompClient || !isConnected) return;
+
+    const subscriptions = [];
+
+    if (activeRoom) {
+      console.log("== [DEBUG] Subscribing to typing for room:", activeRoom.firebaseRoomKey);
+      const sub = stompClient.subscribe(
+        `/topic/chat/${activeRoom.firebaseRoomKey}/typing`,
+        (message) => {
+          const event = JSON.parse(message.body);
+          console.log("== [DEBUG] Received typing event:", event);
+          if (event.userId === currentUser.id) return;
+
+          setTypingUsers((prev) => {
+            const currentRoomTyping = prev[event.firebaseRoomKey] || [];
+            if (event.typing) {
+              if (!currentRoomTyping.includes(event.fullName)) {
+                return { ...prev, [event.firebaseRoomKey]: [...currentRoomTyping, event.fullName] };
+              }
+            } else {
+              return { ...prev, [event.firebaseRoomKey]: currentRoomTyping.filter(name => name !== event.fullName) };
+            }
+            return prev;
+          });
+        }
+      );
+      subscriptions.push(sub);
+    }
+
+    return () => {
+      subscriptions.forEach(sub => sub.unsubscribe());
+    };
+  }, [stompClient, isConnected, activeRoom, currentUser.id]);
+
+  const emitTyping = (isTyping) => {
+    if (!stompClient || !isConnected || !activeRoom) {
+      console.log("== [DEBUG] Typing emit skipped:", { isConnected, activeRoom: !!activeRoom });
+      return;
+    }
+
+    console.log("== [DEBUG] Emitting typing:", isTyping, "for room:", activeRoom.firebaseRoomKey);
+    stompClient.publish({
+      destination: "/app/chat/typing",
+      body: JSON.stringify({
+        firebaseRoomKey: activeRoom.firebaseRoomKey,
+        userId: currentUser.id,
+        fullName: userProfile?.fullName || currentUser.fullName || currentUser.username,
+        typing: isTyping
+      })
+    });
+  };
+
+  const handleInputChange = (text) => {
+    setInputText(text);
+
+    // Send "Typing" signal
+    if (text.length > 0) {
+      emitTyping(true);
+
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = setTimeout(() => {
+        emitTyping(false);
+      }, 3000);
+    } else {
+      emitTyping(false);
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    }
+  };
+
   // Fetch friends for new chat
   useEffect(() => {
     if (showNewChatModal) {
@@ -596,7 +671,7 @@ export default function ChatInterface() {
           }}
           messagesEndRef={messagesEndRef}
           inputText={inputText}
-          setInputText={setInputText}
+          setInputText={handleInputChange}
           onSendMessage={handleSendMessage}
           onToggleEmojiPicker={() => setShowEmojiPicker(!showEmojiPicker)}
           showEmojiPicker={showEmojiPicker}
@@ -605,6 +680,7 @@ export default function ChatInterface() {
           onBack={() => setActiveRoom(null)}
           onShowSettings={() => setShowSettings(!showSettings)}
           onInviteMember={handleOpenInviteModal}
+          typingUsers={activeRoom ? (typingUsers[activeRoom.firebaseRoomKey] || []) : []}
         />
 
         <ChatSettings

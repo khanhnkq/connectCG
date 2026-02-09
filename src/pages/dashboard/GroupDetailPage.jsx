@@ -116,6 +116,23 @@ const GroupDetailPage = () => {
     return info ? info.id : null;
   };
 
+
+  const sortPosts = (postList) => {
+    return [...postList].sort((a, b) => {
+      // 1. Pinned posts first
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+
+      // 2. Among pinned posts, by pinnedAt DESC
+      if (a.isPinned && b.isPinned) {
+        return new Date(b.pinnedAt) - new Date(a.pinnedAt);
+      }
+
+      // 3. Finally by createdAt DESC
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+  };
+
   const fetchGroupData = useCallback(async () => {
     try {
       const groupData = await findById(id);
@@ -189,7 +206,7 @@ const GroupDetailPage = () => {
       if (canViewContent) {
         try {
           const posts = await getGroupPosts(id);
-          setApprovedPosts(posts);
+          setApprovedPosts(sortPosts(posts));
         } catch (postError) {
           if (postError.response?.status !== 403) {
             console.error("Failed to fetch posts:", postError);
@@ -322,7 +339,7 @@ const GroupDetailPage = () => {
         if (post.status === "APPROVED") {
           setApprovedPosts((prev) => {
             const exists = prev.some((p) => p.id === post.id);
-            return exists ? prev : [post, ...prev];
+            return exists ? prev : sortPosts([post, ...prev]);
           });
         } else if (post.status === "PENDING" && isAdmin) {
           setPendingPosts((prev) => {
@@ -332,9 +349,10 @@ const GroupDetailPage = () => {
         }
       } else if (action === "UPDATED") {
         if (post.status === "APPROVED") {
-          setApprovedPosts((prev) =>
-            prev.map((p) => (p.id === post.id ? post : p)),
-          );
+          setApprovedPosts((prev) => {
+            const newList = prev.map((p) => (p.id === post.id ? post : p));
+            return sortPosts(newList);
+          });
           // If it was pending and now approved, remove from pending
           setPendingPosts((prev) => prev.filter((p) => p.id !== post.id));
         } else if (post.status === "PENDING") {
@@ -511,8 +529,7 @@ const GroupDetailPage = () => {
     try {
       await transferOwnership(group.id, memberToTransfer.userId);
       toast.success(
-        `Đã chuyển quyền quản trị cho ${
-          memberToTransfer.fullName || memberToTransfer.username
+        `Đã chuyển quyền quản trị cho ${memberToTransfer.fullName || memberToTransfer.username
         }`,
       );
       setShowTransferConfirmModal(false);
@@ -769,11 +786,10 @@ const GroupDetailPage = () => {
                   <button
                     key={tab.en}
                     onClick={() => setActiveTab(tab.vi)}
-                    className={`py-4 font-bold text-sm tracking-wide whitespace-nowrap transition-all border-b-2 ${
-                      activeTab === tab.vi
-                        ? "text-primary border-primary"
-                        : "text-text-secondary hover:text-text-main border-transparent"
-                    }`}
+                    className={`py-4 font-bold text-sm tracking-wide whitespace-nowrap transition-all border-b-2 ${activeTab === tab.vi
+                      ? "text-primary border-primary"
+                      : "text-text-secondary hover:text-text-main border-transparent"
+                      }`}
                   >
                     {tab.vi}
                   </button>
@@ -781,23 +797,22 @@ const GroupDetailPage = () => {
               {isAdmin && (
                 <button
                   onClick={() => setActiveTab("Kiểm duyệt")}
-                  className={`py-4 font-black text-sm tracking-widest whitespace-nowrap transition-all border-b-2 flex items-center gap-2 ${
-                    activeTab === "Kiểm duyệt"
-                      ? "text-orange-400 border-orange-400"
-                      : "text-text-secondary hover:text-orange-400 border-transparent"
-                  }`}
+                  className={`py-4 font-black text-sm tracking-widest whitespace-nowrap transition-all border-b-2 flex items-center gap-2 ${activeTab === "Kiểm duyệt"
+                    ? "text-orange-400 border-orange-400"
+                    : "text-text-secondary hover:text-orange-400 border-transparent"
+                    }`}
                 >
                   <Gavel size={18} />
                   KIỂM DUYỆT
                   {(pendingPosts.length > 0 ||
                     memberRequests.length > 0 ||
                     bannedMembers.length > 0) && (
-                    <span className="size-5 bg-orange-500 text-text-main text-[10px] rounded-full flex items-center justify-center">
-                      {pendingPosts.length +
-                        memberRequests.length +
-                        bannedMembers.length}
-                    </span>
-                  )}
+                      <span className="size-5 bg-orange-500 text-text-main text-[10px] rounded-full flex items-center justify-center">
+                        {pendingPosts.length +
+                          memberRequests.length +
+                          bannedMembers.length}
+                      </span>
+                    )}
                 </button>
               )}
             </nav>
@@ -810,8 +825,8 @@ const GroupDetailPage = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 flex flex-col gap-6">
                 {group.privacy === "PRIVATE" &&
-                userMembership?.status !== "ACCEPTED" &&
-                !isAdmin ? (
+                  userMembership?.status !== "ACCEPTED" &&
+                  !isAdmin ? (
                   <div className="bg-surface-main rounded-[2.5rem] p-12 border border-border-main text-center space-y-6">
                     <div className="size-24 rounded-full bg-primary/10 flex items-center justify-center text-primary mx-auto mb-8">
                       <Lock size={40} />
@@ -823,8 +838,8 @@ const GroupDetailPage = () => {
                       {userMembership?.status === "PENDING"
                         ? "Bạn đã nhận được lời mời tham gia nhóm này. Vui lòng phản hồi lời mời ở phía trên để xem nội dung."
                         : userMembership?.status === "REQUESTED"
-                        ? "Yêu cầu gia nhập của bạn đang chờ quản trị viên phê duyệt. Nội dung sẽ hiển thị sau khi yêu cầu được chấp nhận."
-                        : "Nội dung và danh sách thành viên của nhóm này đã được ẩn. Vui lòng gia nhập nhóm để tham gia cộng đồng."}
+                          ? "Yêu cầu gia nhập của bạn đang chờ quản trị viên phê duyệt. Nội dung sẽ hiển thị sau khi yêu cầu được chấp nhận."
+                          : "Nội dung và danh sách thành viên của nhóm này đã được ẩn. Vui lòng gia nhập nhóm để tham gia cộng đồng."}
                     </p>
                     {!userMembership?.status && (
                       <button
@@ -892,6 +907,7 @@ const GroupDetailPage = () => {
                             post={post}
                             onDelete={handleDeletePost}
                             onUpdate={handleUpdatePost}
+                            isAdmin={isAdmin}
                           />
                         ))
                       ) : (
@@ -966,17 +982,16 @@ const GroupDetailPage = () => {
                               {member.fullName}
                             </p>
                             <span
-                              className={`px-2 py-0.5 text-[10px] font-black rounded uppercase ${
-                                member.role === "ADMIN"
-                                  ? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
-                                  : "bg-zinc-800 text-zinc-400"
-                              }`}
+                              className={`px-2 py-0.5 text-[10px] font-black rounded uppercase ${member.role === "ADMIN"
+                                ? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
+                                : "bg-zinc-800 text-zinc-400"
+                                }`}
                             >
                               {member.role === "ADMIN"
                                 ? "Quản trị viên"
                                 : member.role === "OWNER"
-                                ? "Chủ nhóm"
-                                : "Thành viên"}
+                                  ? "Chủ nhóm"
+                                  : "Thành viên"}
                             </span>
                           </div>
                           <p className="text-xs text-text-secondary mt-0.5 italic">
@@ -992,7 +1007,7 @@ const GroupDetailPage = () => {
                         {Number(getUserIdFromToken()) ===
                           Number(group.ownerId) &&
                           Number(member.userId) !==
-                            Number(getUserIdFromToken()) && (
+                          Number(getUserIdFromToken()) && (
                             <div className="flex gap-1">
                               <button
                                 onClick={() =>
@@ -1024,10 +1039,10 @@ const GroupDetailPage = () => {
                         {/* Admin actions (if requester is Admin but not Owner): can kick/ban members */}
                         {isAdmin &&
                           Number(getUserIdFromToken()) !==
-                            Number(group.ownerId) &&
+                          Number(group.ownerId) &&
                           member.role === "MEMBER" &&
                           Number(member.userId) !==
-                            Number(getUserIdFromToken()) && (
+                          Number(getUserIdFromToken()) && (
                             <div className="flex gap-1">
                               <button
                                 onClick={() => handleBanMember(member)}
@@ -1055,31 +1070,28 @@ const GroupDetailPage = () => {
               <div className="flex gap-4 border-b border-border-main">
                 <button
                   onClick={() => setModTab("Bài viết")}
-                  className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${
-                    modTab === "Bài viết"
-                      ? "text-primary border-primary"
-                      : "text-text-secondary border-transparent"
-                  }`}
+                  className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${modTab === "Bài viết"
+                    ? "text-primary border-primary"
+                    : "text-text-secondary border-transparent"
+                    }`}
                 >
                   Bài viết chờ duyệt
                 </button>
                 <button
                   onClick={() => setModTab("Yêu cầu")}
-                  className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${
-                    modTab === "Yêu cầu"
-                      ? "text-primary border-primary"
-                      : "text-text-secondary border-transparent"
-                  }`}
+                  className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${modTab === "Yêu cầu"
+                    ? "text-primary border-primary"
+                    : "text-text-secondary border-transparent"
+                    }`}
                 >
                   Yêu cầu tham gia ({memberRequests.length})
                 </button>
                 <button
                   onClick={() => setModTab("Bị cấm")}
-                  className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${
-                    modTab === "Bị cấm"
-                      ? "text-primary border-primary"
-                      : "text-text-secondary border-transparent"
-                  }`}
+                  className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${modTab === "Bị cấm"
+                    ? "text-primary border-primary"
+                    : "text-text-secondary border-transparent"
+                    }`}
                 >
                   Thành viên bị cấm ({bannedMembers.length})
                 </button>
@@ -1117,11 +1129,10 @@ const GroupDetailPage = () => {
                             {post.aiStatus && (
                               <div className="flex flex-col gap-1">
                                 <span
-                                  className={`px-2 py-0.5 text-[10px] font-black uppercase rounded border w-fit ${
-                                    post.aiStatus === "TOXIC"
-                                      ? "bg-red-500/10 text-red-500 border-red-500/20"
-                                      : "bg-green-500/10 text-green-500 border-green-500/20"
-                                  }`}
+                                  className={`px-2 py-0.5 text-[10px] font-black uppercase rounded border w-fit ${post.aiStatus === "TOXIC"
+                                    ? "bg-red-500/10 text-red-500 border-red-500/20"
+                                    : "bg-green-500/10 text-green-500 border-green-500/20"
+                                    }`}
                                 >
                                   AI: {post.aiStatus}
                                 </span>
@@ -1160,11 +1171,10 @@ const GroupDetailPage = () => {
 
                           {post.images && post.images.length > 0 && (
                             <div
-                              className={`grid gap-2 ${
-                                post.images.length === 1
-                                  ? "grid-cols-1"
-                                  : "grid-cols-2"
-                              }`}
+                              className={`grid gap-2 ${post.images.length === 1
+                                ? "grid-cols-1"
+                                : "grid-cols-2"
+                                }`}
                             >
                               {post.images.map((img, idx) => (
                                 <img
