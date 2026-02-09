@@ -352,70 +352,99 @@ export default function ChatInterface() {
 
   // Listen for Typing Events
   useEffect(() => {
-    if (!stompClient || !isConnected || !activeRoom?.firebaseRoomKey) return;
+    // Add check for stompClient.connected to avoid "There is no underlying STOMP connection" error
+    if (!stompClient || !isConnected || !stompClient.connected || !activeRoom?.firebaseRoomKey) {
+      if (activeRoom?.firebaseRoomKey && isConnected && stompClient && !stompClient.connected) {
+        console.warn("== [DEBUG] STOMP is initialized and marked as connected, but internal state is not connected yet.");
+      }
+      return;
+    }
 
     const subscriptions = [];
 
-    console.log("== [DEBUG] Subscribing to typing for room:", activeRoom.firebaseRoomKey);
-    const sub = stompClient.subscribe(
-      `/topic/chat/${activeRoom.firebaseRoomKey}/typing`,
-      (message) => {
-        const event = JSON.parse(message.body);
-        if (event.userId === currentUser.id) return;
+    try {
+      console.log("== [DEBUG] Subscribing to typing for room:", activeRoom.firebaseRoomKey);
+      const sub = stompClient.subscribe(
+        `/topic/chat/${activeRoom.firebaseRoomKey}/typing`,
+        (message) => {
+          const event = JSON.parse(message.body);
+          if (event.userId === currentUser.id) return;
 
-        setTypingUsers((prev) => {
-          const currentRoomTyping = prev[event.firebaseRoomKey] || [];
-          if (event.typing) {
-            if (!currentRoomTyping.includes(event.fullName)) {
-              return { ...prev, [event.firebaseRoomKey]: [...currentRoomTyping, event.fullName] };
+          setTypingUsers((prev) => {
+            const currentRoomTyping = prev[event.firebaseRoomKey] || [];
+            if (event.typing) {
+              if (!currentRoomTyping.includes(event.fullName)) {
+                return { ...prev, [event.firebaseRoomKey]: [...currentRoomTyping, event.fullName] };
+              }
+            } else {
+              return { ...prev, [event.firebaseRoomKey]: currentRoomTyping.filter(name => name !== event.fullName) };
             }
-          } else {
-            return { ...prev, [event.firebaseRoomKey]: currentRoomTyping.filter(name => name !== event.fullName) };
-          }
-          return prev;
-        });
-      }
-    );
-    subscriptions.push(sub);
+            return prev;
+          });
+        }
+      );
+      subscriptions.push(sub);
+    } catch (error) {
+      console.error("== [DEBUG] Failed to subscribe to typing:", error);
+    }
 
     return () => {
-      subscriptions.forEach(sub => sub.unsubscribe());
+      subscriptions.forEach(sub => {
+        try {
+          sub.unsubscribe();
+        } catch (e) {
+          // ignore unsubscribe errors during unmount/reconnect
+        }
+      });
     };
   }, [stompClient, isConnected, activeRoom?.firebaseRoomKey, currentUser.id]);
 
   // Listen for Seen (Read Receipt) Events
   useEffect(() => {
-    if (!stompClient || !isConnected || !activeRoom?.firebaseRoomKey) return;
+    if (!stompClient || !isConnected || !stompClient.connected || !activeRoom?.firebaseRoomKey) return;
 
-    const sub = stompClient.subscribe(
-      `/topic/chat/${activeRoom.firebaseRoomKey}/seen`,
-      (message) => {
-        const event = JSON.parse(message.body);
+    let sub;
+    try {
+      sub = stompClient.subscribe(
+        `/topic/chat/${activeRoom.firebaseRoomKey}/seen`,
+        (message) => {
+          const event = JSON.parse(message.body);
 
-        // Update activeRoom.members locally to reflect the new lastReadAt
-        setActiveRoom((prev) => {
-          if (!prev || prev.id !== event.roomId) return prev;
+          // Update activeRoom.members locally to reflect the new lastReadAt
+          setActiveRoom((prev) => {
+            if (!prev || prev.id !== event.roomId) return prev;
 
-          const updatedMembers = prev.members.map((m) => {
-            if (m.id === event.userId) {
-              return { ...m, lastReadAt: event.lastReadAt };
-            }
-            return m;
+            const updatedMembers = prev.members.map((m) => {
+              if (m.id === event.userId) {
+                return { ...m, lastReadAt: event.lastReadAt };
+              }
+              return m;
+            });
+
+            return { ...prev, members: updatedMembers };
           });
 
-          return { ...prev, members: updatedMembers };
-        });
+          // Also update Redux store to sync sidebar and prevent sync-back
+          dispatch(updateMemberReadStatus({
+            roomId: event.roomId,
+            userId: event.userId,
+            lastReadAt: event.lastReadAt
+          }));
+        }
+      );
+    } catch (error) {
+      console.error("== [DEBUG] Failed to subscribe to seen events:", error);
+    }
 
-        // Also update Redux store to sync sidebar and prevent sync-back
-        dispatch(updateMemberReadStatus({
-          roomId: event.roomId,
-          userId: event.userId,
-          lastReadAt: event.lastReadAt
-        }));
+    return () => {
+      if (sub) {
+        try {
+          sub.unsubscribe();
+        } catch (e) {
+          // ignore
+        }
       }
-    );
-
-    return () => sub.unsubscribe();
+    };
   }, [stompClient, isConnected, activeRoom?.id, activeRoom?.firebaseRoomKey]);
 
   // Mark room as read when active or new messages arrive
@@ -439,21 +468,29 @@ export default function ChatInterface() {
   }, [activeRoom?.id, messages.length, currentUser.id]);
 
   const emitTyping = (isTyping) => {
-    if (!stompClient || !isConnected || !activeRoom) {
-      console.log("== [DEBUG] Typing emit skipped:", { isConnected, activeRoom: !!activeRoom });
+    if (!stompClient || !isConnected || !stompClient.connected || !activeRoom) {
+      console.log("== [DEBUG] Typing emit skipped:", {
+        isConnected,
+        stompConnected: stompClient?.connected,
+        activeRoom: !!activeRoom
+      });
       return;
     }
 
-    console.log("== [DEBUG] Emitting typing:", isTyping, "for room:", activeRoom.firebaseRoomKey);
-    stompClient.publish({
-      destination: "/app/chat/typing",
-      body: JSON.stringify({
-        firebaseRoomKey: activeRoom.firebaseRoomKey,
-        userId: currentUser.id,
-        fullName: userProfile?.fullName || currentUser.fullName || currentUser.username,
-        typing: isTyping
-      })
-    });
+    try {
+      console.log("== [DEBUG] Emitting typing:", isTyping, "for room:", activeRoom.firebaseRoomKey);
+      stompClient.publish({
+        destination: "/app/chat/typing",
+        body: JSON.stringify({
+          firebaseRoomKey: activeRoom.firebaseRoomKey,
+          userId: currentUser.id,
+          fullName: userProfile?.fullName || currentUser.fullName || currentUser.username,
+          typing: isTyping
+        })
+      });
+    } catch (error) {
+      console.error("== [DEBUG] Failed to emit typing:", error);
+    }
   };
 
   const handleInputChange = (text) => {

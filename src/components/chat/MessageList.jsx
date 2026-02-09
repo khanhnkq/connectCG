@@ -6,7 +6,8 @@ const MessageList = React.memo(({ messages, currentUser, activeRoom, messagesEnd
     const readReceiptsMap = {};
     if (activeRoom?.members) {
         activeRoom.members.forEach(member => {
-            if (!member.lastReadAt) return;
+            // Only show other members' read status, not the current user's
+            if (!member.lastReadAt || member.id === currentUser.id) return;
 
             const lastReadTime = new Date(member.lastReadAt).getTime();
             let lastReadMsgId = null;
