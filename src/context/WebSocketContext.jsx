@@ -8,6 +8,7 @@ import { useDispatch } from "react-redux";
 import {
   addNotification,
   setGroupDeletionAlert,
+  setGroupBanAlert,
 } from "../redux/slices/notificationSlice";
 import {
   setOnlineUsers,
@@ -112,6 +113,7 @@ export const WebSocketProvider = ({ children }) => {
           const payload = JSON.parse(message.body);
           // TungNotificationDTO structure: { type, content, actorName, ... }
 
+          // Group Management Notifications
           if (payload.type === "GROUP_DELETED") {
             console.log("🔔 Nhận sự kiện GROUP_DELETED:", payload);
             dispatch(addNotification(payload));
@@ -125,7 +127,99 @@ export const WebSocketProvider = ({ children }) => {
               payload.content || "Nhóm của bạn đã bị xóa do vi phạm.",
               { duration: 6000 },
             );
-          } else if (
+          } else if (payload.type === "GROUP_BANNED") {
+            dispatch(addNotification(payload));
+            toast.error(payload.content || "Bạn đã bị cấm khỏi nhóm.", {
+              icon: "🚫",
+              duration: 5000,
+            });
+          } else if (payload.type === "GROUP_UNBAN") {
+            dispatch(addNotification(payload));
+            toast.success(payload.content || "Bạn đã được gỡ lệnh cấm.", {
+              icon: "✅",
+              duration: 5000,
+            });
+          } else if (payload.type === "GROUP_JOIN_APPROVED") {
+            dispatch(addNotification(payload));
+            toast.success(
+              payload.content || "Yêu cầu vào nhóm đã được duyệt!",
+              { icon: "🎉", duration: 5000 },
+            );
+          } else if (payload.type === "GROUP_JOIN_REJECTED") {
+            dispatch(addNotification(payload));
+            toast.error(payload.content || "Yêu cầu vào nhóm bị từ chối.", {
+              icon: "❌",
+              duration: 5000,
+            });
+          } else if (payload.type === "GROUP_INVITE_ACCEPTED") {
+            dispatch(addNotification(payload));
+            toast.success(payload.content, { icon: "🤝", duration: 5000 });
+          } else if (payload.type === "GROUP_MEMBER_JOINED") {
+            dispatch(addNotification(payload));
+            toast(payload.content, { icon: "👋", duration: 4000 });
+          } else if (payload.type === "GROUP_MEMBER_LEFT") {
+            dispatch(addNotification(payload));
+            toast(payload.content, { icon: "👋", duration: 4000 });
+          } else if (payload.type === "GROUP_OWNER_CHANGE") {
+            dispatch(addNotification(payload));
+            toast.success(payload.content, { icon: "👑", duration: 5000 });
+          } else if (payload.type === "GROUP_ROLE_CHANGED") {
+            dispatch(addNotification(payload));
+            toast(payload.content, { icon: "🔄", duration: 5000 });
+          } else if (payload.type === "GROUP_JOIN_REQUEST") {
+            dispatch(addNotification(payload));
+            toast(payload.content, {
+              icon: "👥",
+              duration: 5000,
+              style: {
+                borderRadius: "10px",
+                background: "#333",
+                color: "#fff",
+              },
+            });
+          }
+          // Post Notifications
+          else if (payload.type === "POST_APPROVED") {
+            dispatch(addNotification(payload));
+            toast.success(payload.content || "Bài viết đã được phê duyệt!", {
+              icon: "✅",
+              duration: 5000,
+            });
+          } else if (payload.type === "POST_REJECTED") {
+            dispatch(addNotification(payload));
+            toast.error(payload.content || "Bài viết bị từ chối.", {
+              icon: "❌",
+              duration: 5000,
+            });
+          } else if (payload.type === "POST_PENDING") {
+            dispatch(addNotification(payload));
+            toast(payload.content || "Bài viết đang chờ duyệt.", {
+              icon: "⏳",
+              duration: 5000,
+            });
+          } else if (payload.type === "POST_COMMENT") {
+            dispatch(addNotification(payload));
+            toast(payload.content, { icon: "💬", duration: 4000 });
+          } else if (payload.type === "COMMENT_REPLY") {
+            dispatch(addNotification(payload));
+            toast(payload.content, { icon: "💬", duration: 4000 });
+          } else if (payload.type === "POST_REACTION") {
+            dispatch(addNotification(payload));
+            toast(payload.content, { icon: "❤️", duration: 4000 });
+          }
+          // Friend Notifications
+          else if (payload.type === "FRIEND_REQUEST") {
+            dispatch(addNotification(payload));
+            toast(payload.content, { icon: "👤", duration: 5000 });
+          } else if (payload.type === "FRIEND_ACCEPT") {
+            dispatch(addNotification(payload));
+            toast.success(payload.content || "Đã trở thành bạn bè!", {
+              icon: "🎉",
+              duration: 5000,
+            });
+          }
+          // Warning & Strike Notifications
+          else if (
             payload.type === "WARNING" ||
             payload.type === "AI_STRIKE_WARNING"
           ) {
@@ -134,27 +228,17 @@ export const WebSocketProvider = ({ children }) => {
           } else if (payload.type === "AI_STRIKE_BANNED") {
             dispatch(addNotification(payload));
             toast.error(payload.content, { icon: "🚫", duration: 8000 });
-          } else if (payload.type === "REPORT_SUBMITTED") {
-            // Admin receives notification about new report
+          }
+          // Report Notifications
+          else if (payload.type === "REPORT_SUBMITTED") {
             dispatch(addNotification(payload));
             toast(payload.content, { icon: "🚨", duration: 5000 });
           } else if (payload.type === "REPORT_UPDATED") {
-            // User receives notification about their report status
             dispatch(addNotification(payload));
             toast.success(payload.content, { duration: 5000 });
-          } else if (payload.type === "GROUP_JOIN_REQUEST") {
-            dispatch(addNotification(payload));
-            toast(payload.content, {
-              icon: "👥",
-              duration: 5000,
-              style: {
-                borderRadius: '10px',
-                background: '#333',
-                color: '#fff',
-              },
-            });
-          } else {
-            // General notification
+          }
+          // General notification fallback
+          else {
             dispatch(addNotification(payload));
             toast(payload.content, { icon: "🔔" });
           }

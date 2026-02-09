@@ -36,15 +36,38 @@ const NotificationList = ({
 
     // Handle specific notification types first
     switch (notification.type) {
+      // Friend notifications
       case "FRIEND_REQUEST":
         navigate(`/dashboard/friends?tab=requests`);
         return;
+      case "FRIEND_ACCEPT":
+        navigate(
+          `/dashboard/member/${notification.actorId || notification.targetId}`,
+        );
+        return;
+
+      // Group invite notifications
       case "GROUP_INVITE":
       case "GROUP_INVITATION":
         navigate(`/dashboard/groups?tab=invites`);
         return;
+      case "GROUP_INVITE_ACCEPTED":
+      case "GROUP_MEMBER_JOINED":
+      case "GROUP_JOIN_APPROVED":
+      case "GROUP_OWNER_CHANGE":
+      case "GROUP_ROLE_CHANGED":
+      case "GROUP_UNBAN":
+        navigate(`/dashboard/groups/${notification.targetId}`);
+        return;
+      case "GROUP_JOIN_REJECTED":
+      case "GROUP_BANNED":
+      case "GROUP_MEMBER_LEFT":
+      case "GROUP_DELETED":
+        navigate(`/dashboard/groups`);
+        return;
+
+      // Report notifications
       case "REPORT_SUBMITTED":
-        // Admin notification
         navigate(`/admin-website/reports`);
         return;
       case "REPORT_UPDATED":
@@ -53,13 +76,18 @@ const NotificationList = ({
       case "ROLE_CHANGE":
         navigate(`/dashboard/my-profile`);
         return;
-      case "GROUP_DELETED":
-        navigate(`/dashboard/groups`);
-        return;
+
+      // Post notifications
       case "POST_REACTION":
       case "POST_COMMENT":
       case "COMMENT_REPLY":
+      case "POST_APPROVED":
         navigate(`/dashboard/post/${notification.targetId}`);
+        return;
+      case "POST_REJECTED":
+      case "POST_PENDING":
+        // Post was rejected or pending - go to profile to check posts
+        navigate(`/dashboard/my-profile`);
         return;
     }
 
