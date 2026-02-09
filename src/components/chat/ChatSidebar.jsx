@@ -2,7 +2,7 @@ import React from 'react';
 import { Search, SquarePen, User, Users } from 'lucide-react';
 import { useSelector } from 'react-redux';
 
-const ChatSidebar = ({
+const ChatSidebar = React.memo(({
     conversations,
     activeRoom,
     activeTab,
@@ -153,6 +153,6 @@ const ChatSidebar = ({
             </div>
         </div>
     );
-};
+});
 
 export default ChatSidebar;
