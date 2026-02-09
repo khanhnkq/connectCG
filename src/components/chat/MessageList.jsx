@@ -6,7 +6,8 @@ const MessageList = React.memo(({ messages, currentUser, activeRoom, messagesEnd
     const readReceiptsMap = {};
     if (activeRoom?.members) {
         activeRoom.members.forEach(member => {
-            if (!member.lastReadAt) return;
+            // Only show other members' read status, not the current user's
+            if (!member.lastReadAt || member.id === currentUser.id) return;
 
             const lastReadTime = new Date(member.lastReadAt).getTime();
             let lastReadMsgId = null;
@@ -97,7 +98,7 @@ const MessageList = React.memo(({ messages, currentUser, activeRoom, messagesEnd
                                             : "bg-bubble-received rounded-bl-none text-text-main self-start"
                                             }`}
                                     >
-                                        <p>{msg.text}</p>
+                                        <p className="whitespace-pre-wrap break-words break-all">{msg.text}</p>
                                     </div>
                                     <div className={`flex items-center gap-1 text-text-secondary text-[10px] mt-1 ${isSentByMe ? "self-end pr-1" : "self-start pl-1"}`}>
                                         <span>

@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import { useNavigate } from "react-router-dom";
@@ -23,12 +24,22 @@ const WebSocketContext = createContext({ stompClient: null, isConnected: false }
 export const WebSocketProvider = ({ children }) => {
   const [stompClient, setStompClient] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
+  const { token } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) return;
+    if (!token) {
+      if (stompClient) {
+        console.log("WebSocket: No token, deactivating client");
+        stompClient.deactivate();
+        setStompClient(null);
+        setIsConnected(false);
+      }
+      return;
+    }
+
+    console.log("WebSocket: Initializing connection...");
 
     const client = new Client({
       webSocketFactory: () => {
@@ -217,9 +228,10 @@ export const WebSocketProvider = ({ children }) => {
     setStompClient(client);
 
     return () => {
+      console.log("WebSocket: Cleaning up connection...");
       client.deactivate();
     };
-  }, [navigate, dispatch]);
+  }, [token, navigate, dispatch]);
 
   return (
     <WebSocketContext.Provider value={{ stompClient, isConnected }}>
