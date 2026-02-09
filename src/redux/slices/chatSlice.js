@@ -77,6 +77,18 @@ const chatSlice = createSlice({
             state.conversations = [];
             state.error = null;
         },
+        updateMemberReadStatus: (state, action) => {
+            const { roomId, userId, lastReadAt } = action.payload;
+            const index = state.conversations.findIndex(c => c.id === roomId);
+            if (index !== -1 && state.conversations[index].members) {
+                state.conversations[index].members = state.conversations[index].members.map(m => {
+                    if (m.id === userId) {
+                        return { ...m, lastReadAt };
+                    }
+                    return m;
+                });
+            }
+        },
         removeConversation: (state, action) => {
             const conversationId = action.payload;
             state.conversations = state.conversations.filter(c => c.id !== conversationId);
@@ -104,7 +116,8 @@ export const {
     setLoading,
     setError,
     clearConversations,
-    removeConversation
+    removeConversation,
+    updateMemberReadStatus
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

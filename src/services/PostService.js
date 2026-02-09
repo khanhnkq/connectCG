@@ -39,6 +39,9 @@ const postService = {
         return axiosClient.post(`/posts/${postId}/reject`, null, {
             params: { manualStrike }
         });
+    },
+    togglePinPost(groupId, postId) {
+        return axiosClient.post(`/groups/${groupId}/posts/${postId}/pin`);
     }
 
 };

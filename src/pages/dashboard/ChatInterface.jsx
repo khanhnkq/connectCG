@@ -54,6 +54,7 @@ import {
   setConversations,
   updateConversation,
   clearUnreadCount,
+  updateMemberReadStatus,
 } from "../../redux/slices/chatSlice";
 import NewChatModal from "../../components/chat/NewChatModal.jsx";
 import InviteMemberModal from "../../components/chat/InviteMemberModal.jsx";
@@ -63,6 +64,7 @@ import ChatWindow from "../../components/chat/ChatWindow.jsx";
 import useChatRooms from "../chat/hooks/useChatRooms";
 import useChatMessages from "../chat/hooks/useChatMessages";
 import { fetchUserProfile } from "../../redux/slices/userSlice";
+import { useWebSocket } from "../../context/WebSocketContext";
 
 export default function ChatInterface() {
   const { user: currentUser } = useSelector((state) => state.auth);
@@ -80,6 +82,9 @@ export default function ChatInterface() {
   const [activeRoom, setActiveRoom] = useState(null);
   const { messages, setMessages } = useChatMessages(activeRoom);
   const [inputText, setInputText] = useState("");
+  const [typingUsers, setTypingUsers] = useState({}); // { firebaseRoomKey: [names...] }
+  const typingTimeoutRef = useRef(null);
+  const { stompClient, isConnected } = useWebSocket();
   const [showNewChatModal, setShowNewChatModal] = useState(false);
   const [friends, setFriends] = useState([]);
   const [selectedMembers, setSelectedMembers] = useState([]);
@@ -305,26 +310,31 @@ export default function ChatInterface() {
     if (!activeRoom || messages.length === 0) return;
 
     const scrollToBottom = (behavior = "auto") => {
-      messagesEndRef.current?.scrollIntoView({ behavior, block: "end" });
+      messagesEndRef.current?.scrollIntoView({ behavior });
     };
 
-    // First attempt
-    const timer1 = setTimeout(() => {
-      const isRoomSwitch = lastRoomIdRef.current !== activeRoom.id;
-      scrollToBottom(isRoomSwitch ? "auto" : "smooth");
-      lastRoomIdRef.current = activeRoom.id;
-    }, 150);
-
-    // Second "safety" attempt for slow rendering (images, etc)
-    const timer2 = setTimeout(() => {
+    // Immediate auto scroll for room switch, smooth for new messages
+    const isRoomSwitch = lastRoomIdRef.current !== activeRoom.id;
+    if (isRoomSwitch) {
       scrollToBottom("auto");
-    }, 500);
+      lastRoomIdRef.current = activeRoom.id;
+    } else {
+      // Use requestAnimationFrame or small timeout to ensure DOM is ready
+      const timer = setTimeout(() => scrollToBottom("smooth"), 50);
+      return () => clearTimeout(timer);
+    }
+  }, [messages.length, activeRoom?.id]);
 
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-    };
-  }, [messages, activeRoom?.id]);
+  // Keep activeRoom in sync with Redux updates (e.g. member list updates, name changes)
+  useEffect(() => {
+    if (activeRoom) {
+      const updated = conversations.find(c => c.id === activeRoom.id);
+      if (updated && JSON.stringify(updated.members) !== JSON.stringify(activeRoom.members)) {
+        // Only update if members actually changed to avoid infinite loops
+        setActiveRoom(prev => ({ ...prev, ...updated }));
+      }
+    }
+  }, [conversations, activeRoom?.id]);
 
   // Click outside to close emoji picker
   useEffect(() => {
@@ -339,6 +349,129 @@ export default function ChatInterface() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Listen for Typing Events
+  useEffect(() => {
+    if (!stompClient || !isConnected || !activeRoom?.firebaseRoomKey) return;
+
+    const subscriptions = [];
+
+    console.log("== [DEBUG] Subscribing to typing for room:", activeRoom.firebaseRoomKey);
+    const sub = stompClient.subscribe(
+      `/topic/chat/${activeRoom.firebaseRoomKey}/typing`,
+      (message) => {
+        const event = JSON.parse(message.body);
+        if (event.userId === currentUser.id) return;
+
+        setTypingUsers((prev) => {
+          const currentRoomTyping = prev[event.firebaseRoomKey] || [];
+          if (event.typing) {
+            if (!currentRoomTyping.includes(event.fullName)) {
+              return { ...prev, [event.firebaseRoomKey]: [...currentRoomTyping, event.fullName] };
+            }
+          } else {
+            return { ...prev, [event.firebaseRoomKey]: currentRoomTyping.filter(name => name !== event.fullName) };
+          }
+          return prev;
+        });
+      }
+    );
+    subscriptions.push(sub);
+
+    return () => {
+      subscriptions.forEach(sub => sub.unsubscribe());
+    };
+  }, [stompClient, isConnected, activeRoom?.firebaseRoomKey, currentUser.id]);
+
+  // Listen for Seen (Read Receipt) Events
+  useEffect(() => {
+    if (!stompClient || !isConnected || !activeRoom?.firebaseRoomKey) return;
+
+    const sub = stompClient.subscribe(
+      `/topic/chat/${activeRoom.firebaseRoomKey}/seen`,
+      (message) => {
+        const event = JSON.parse(message.body);
+
+        // Update activeRoom.members locally to reflect the new lastReadAt
+        setActiveRoom((prev) => {
+          if (!prev || prev.id !== event.roomId) return prev;
+
+          const updatedMembers = prev.members.map((m) => {
+            if (m.id === event.userId) {
+              return { ...m, lastReadAt: event.lastReadAt };
+            }
+            return m;
+          });
+
+          return { ...prev, members: updatedMembers };
+        });
+
+        // Also update Redux store to sync sidebar and prevent sync-back
+        dispatch(updateMemberReadStatus({
+          roomId: event.roomId,
+          userId: event.userId,
+          lastReadAt: event.lastReadAt
+        }));
+      }
+    );
+
+    return () => sub.unsubscribe();
+  }, [stompClient, isConnected, activeRoom?.id, activeRoom?.firebaseRoomKey]);
+
+  // Mark room as read when active or new messages arrive
+  useEffect(() => {
+    if (activeRoom && messages.length > 0) {
+      const lastMsg = messages[messages.length - 1];
+      if (!lastMsg || lastMsg.senderId === currentUser.id) return;
+
+      const currentMember = activeRoom.members?.find(m => m.id === currentUser.id);
+      const lastMsgTime = lastMsg.timestamp ? new Date(lastMsg.timestamp).getTime() : 0;
+      const myLastRead = currentMember?.lastReadAt ? new Date(currentMember.lastReadAt).getTime() : 0;
+
+      if (lastMsgTime > myLastRead) {
+        ChatService.markAsRead(activeRoom.id).catch(err =>
+          console.error("Error marking room as read:", err)
+        );
+      }
+    }
+    // Deep dependency on members removed to prevent excessive loops, 
+    // we only care about the latest message arrival
+  }, [activeRoom?.id, messages.length, currentUser.id]);
+
+  const emitTyping = (isTyping) => {
+    if (!stompClient || !isConnected || !activeRoom) {
+      console.log("== [DEBUG] Typing emit skipped:", { isConnected, activeRoom: !!activeRoom });
+      return;
+    }
+
+    console.log("== [DEBUG] Emitting typing:", isTyping, "for room:", activeRoom.firebaseRoomKey);
+    stompClient.publish({
+      destination: "/app/chat/typing",
+      body: JSON.stringify({
+        firebaseRoomKey: activeRoom.firebaseRoomKey,
+        userId: currentUser.id,
+        fullName: userProfile?.fullName || currentUser.fullName || currentUser.username,
+        typing: isTyping
+      })
+    });
+  };
+
+  const handleInputChange = (text) => {
+    setInputText(text);
+
+    // Send "Typing" signal
+    if (text.length > 0) {
+      emitTyping(true);
+
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = setTimeout(() => {
+        emitTyping(false);
+      }, 3000);
+    } else {
+      emitTyping(false);
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    }
+  };
 
   // Fetch friends for new chat
   useEffect(() => {
@@ -596,7 +729,7 @@ export default function ChatInterface() {
           }}
           messagesEndRef={messagesEndRef}
           inputText={inputText}
-          setInputText={setInputText}
+          setInputText={handleInputChange}
           onSendMessage={handleSendMessage}
           onToggleEmojiPicker={() => setShowEmojiPicker(!showEmojiPicker)}
           showEmojiPicker={showEmojiPicker}
@@ -605,6 +738,7 @@ export default function ChatInterface() {
           onBack={() => setActiveRoom(null)}
           onShowSettings={() => setShowSettings(!showSettings)}
           onInviteMember={handleOpenInviteModal}
+          typingUsers={activeRoom ? (typingUsers[activeRoom.firebaseRoomKey] || []) : []}
         />
 
         <ChatSettings

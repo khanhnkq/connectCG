@@ -16,6 +16,7 @@ import {
   Lock,
   ChevronDown,
   ThumbsUp,
+  Pin,
 } from "lucide-react";
 import { useSelector } from "react-redux";
 import ImageLightbox from "../common/ImageLightBox";
@@ -171,6 +172,7 @@ export default function PostCard({
   type = "feed",
   onUpdate,
   onDelete,
+  isAdmin: canPin = false, // From group detail
 }) {
   const [showComments, setShowComments] = useState(false);
   const { user } = useSelector((state) => state.auth);
@@ -235,6 +237,8 @@ export default function PostCard({
       currentUserReaction: post.currentUserReaction,
       reactCount: post.reactCount || 0,
       commentCount: post.commentCount || 0,
+      isPinned: post.isPinned,
+      pinnedAt: post.pinnedAt,
     };
   } else {
     data = {
@@ -327,6 +331,18 @@ export default function PostCard({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const handleTogglePin = async () => {
+    try {
+      await postService.togglePinPost(data.groupId, data.id);
+      toast.success(data.isPinned ? "Đã bỏ ghim bài viết" : "Đã ghim bài viết");
+      setShowMenu(false);
+      // Removed onUpdate call to avoid redundant PUT request. 
+      // Real-time update logic in parent (via WebSocket) will handle the sync.
+    } catch (error) {
+      toast.error("Thao tác thất bại");
+    }
+  };
+
   // Handle saving edit from child component
   const handleUpdateWrapper = async (postId, updatedData) => {
     if (onUpdate) {
@@ -337,10 +353,17 @@ export default function PostCard({
 
   return (
     <article
-      className={`bg-surface-main rounded-[2rem] border border-border-main shadow-sm transition-all duration-300 mb-4 ${
-        type === "dashboard" ? "shadow-lg" : ""
-      } hover:shadow-md`}
+      className={`bg-surface-main rounded-[2rem] border border-border-main shadow-sm transition-all duration-300 mb-4 ${type === "dashboard" ? "shadow-lg" : ""
+        } hover:shadow-md`}
     >
+      {/* PIN INDICATOR */}
+      {data.isPinned && (
+        <div className="px-6 pt-3 flex items-center gap-2 text-primary font-bold text-sm">
+          <Pin size={14} className="fill-current rotate-45" />
+          <span>Bài viết đã ghim</span>
+        </div>
+      )}
+
       {/* HEADER */}
       <div className="p-5 md:p-6 flex justify-between items-start border-b border-border-main/20 mb-3">
         <div className="flex gap-4">
@@ -445,6 +468,16 @@ export default function PostCard({
               >
                 <Share2 size={16} /> Chia sẻ
               </button>
+
+              {canPin && data.groupId && (
+                <button
+                  onClick={handleTogglePin}
+                  className="w-full text-left px-4 py-2.5 text-sm text-primary hover:bg-background-main flex items-center gap-2 font-medium"
+                >
+                  <Pin size={16} className={data.isPinned ? "fill-current" : ""} />
+                  {data.isPinned ? "Bỏ ghim bài viết" : "Ghim bài viết"}
+                </button>
+              )}
 
               <button
                 onClick={() => {
