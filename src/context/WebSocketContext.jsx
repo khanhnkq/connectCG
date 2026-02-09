@@ -142,8 +142,8 @@ export const WebSocketProvider = ({ children }) => {
           } else if (payload.type === "GROUP_JOIN_APPROVED") {
             dispatch(addNotification(payload));
             toast.success(
-                payload.content || "Yêu cầu vào nhóm đã được duyệt!",
-                { icon: "🎉", duration: 5000 },
+              payload.content || "Yêu cầu vào nhóm đã được duyệt!",
+              { icon: "🎉", duration: 5000 },
             );
           } else if (payload.type === "GROUP_JOIN_REJECTED") {
             dispatch(addNotification(payload));
@@ -220,8 +220,8 @@ export const WebSocketProvider = ({ children }) => {
           }
           // Warning & Strike Notifications
           else if (
-              payload.type === "WARNING" ||
-              payload.type === "AI_STRIKE_WARNING"
+            payload.type === "WARNING" ||
+            payload.type === "AI_STRIKE_WARNING"
           ) {
             dispatch(addNotification(payload));
             toast(payload.content, { icon: "⚠️", duration: 6000 });
