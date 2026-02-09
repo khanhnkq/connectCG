@@ -97,7 +97,7 @@ const MessageList = React.memo(({ messages, currentUser, activeRoom, messagesEnd
                                             : "bg-bubble-received rounded-bl-none text-text-main self-start"
                                             }`}
                                     >
-                                        <p>{msg.text}</p>
+                                        <p className="whitespace-pre-wrap break-words break-all">{msg.text}</p>
                                     </div>
                                     <div className={`flex items-center gap-1 text-text-secondary text-[10px] mt-1 ${isSentByMe ? "self-end pr-1" : "self-start pl-1"}`}>
                                         <span>
