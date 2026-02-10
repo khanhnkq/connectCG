@@ -29,6 +29,7 @@ import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import AutoplayVideo from "../common/AutoplayVideo";
 import ShareModal from "./ShareModal";
+import SharedPostContent from "./SharedPostContent";
 
 // --- HELPER 1: Format thời gian ---
 const formatTime = (dateString) => {
@@ -49,6 +50,7 @@ const MediaGallery = ({ mediaItems, onMediaClick, isPaused, setIsPaused }) => {
   if (!mediaItems || mediaItems.length === 0) return null;
 
   // Hàm render 1 media item
+
   const renderItem = (
     item,
     index,
@@ -237,6 +239,7 @@ export default function PostCard({
       currentUserReaction: post.currentUserReaction,
       reactCount: post.reactCount || 0,
       commentCount: post.commentCount || 0,
+      shareCount: post.shareCount || 0,
       isPinned: post.isPinned,
       pinnedAt: post.pinnedAt,
     };
@@ -249,11 +252,14 @@ export default function PostCard({
       mediaItems: image ? [{ url: image, type: "IMAGE" }] : [],
     };
   }
+  const isShared = !!post.originalPost;
+  const displayPost = isShared ? post.originalPost : post;
 
   // Local state for optimistic updates
   const [localReaction, setLocalReaction] = useState(data.currentUserReaction);
   const [localReactCount, setLocalReactCount] = useState(data.reactCount);
   const [localCommentCount, setLocalCommentCount] = useState(data.commentCount);
+  const [localShareCount, setLocalShareCount] = useState(data.shareCount);
   const [videoPaused, setVideoPaused] = useState(false);
 
   // Sync prop changes to local state
@@ -261,7 +267,13 @@ export default function PostCard({
     setLocalReaction(data.currentUserReaction);
     setLocalReactCount(data.reactCount);
     setLocalCommentCount(data.commentCount);
-  }, [data.currentUserReaction, data.reactCount, data.commentCount]);
+    setLocalShareCount(data.shareCount);
+  }, [
+    data.currentUserReaction,
+    data.reactCount,
+    data.commentCount,
+    data.shareCount,
+  ]);
 
   // Listen for realtime reaction events
   useEffect(() => {
@@ -286,6 +298,18 @@ export default function PostCard({
     };
     window.addEventListener("commentEvent", handleCommentEvent);
     return () => window.removeEventListener("commentEvent", handleCommentEvent);
+  }, [data.id]);
+
+  // Listen for realtime post update events (for shareCount)
+  useEffect(() => {
+    const handlePostEvent = (e) => {
+      const { type, postId, post: updatedPost } = e.detail;
+      if (postId === data.id && type === "UPDATED" && updatedPost) {
+        setLocalShareCount(updatedPost.shareCount || 0);
+      }
+    };
+    window.addEventListener("postEvent", handlePostEvent);
+    return () => window.removeEventListener("postEvent", handlePostEvent);
   }, [data.id]);
 
   const handleReactWrapper = async (type) => {
@@ -336,10 +360,10 @@ export default function PostCard({
       await postService.togglePinPost(data.groupId, data.id);
       toast.success(data.isPinned ? "Đã bỏ ghim bài viết" : "Đã ghim bài viết");
       setShowMenu(false);
-      // Removed onUpdate call to avoid redundant PUT request. 
+      // Removed onUpdate call to avoid redundant PUT request.
       // Real-time update logic in parent (via WebSocket) will handle the sync.
     } catch (error) {
-      toast.error("Thao tác thất bại");
+      toast.error("Thao tác thất bại" + error);
     }
   };
 
@@ -353,8 +377,9 @@ export default function PostCard({
 
   return (
     <article
-      className={`bg-surface-main rounded-[2rem] border border-border-main shadow-sm transition-all duration-300 mb-4 ${type === "dashboard" ? "shadow-lg" : ""
-        } hover:shadow-md`}
+      className={`bg-surface-main rounded-[2rem] border border-border-main shadow-sm transition-all duration-300 mb-4 ${
+        type === "dashboard" ? "shadow-lg" : ""
+      } hover:shadow-md`}
     >
       {/* PIN INDICATOR */}
       {data.isPinned && (
@@ -474,7 +499,10 @@ export default function PostCard({
                   onClick={handleTogglePin}
                   className="w-full text-left px-4 py-2.5 text-sm text-primary hover:bg-background-main flex items-center gap-2 font-medium"
                 >
-                  <Pin size={16} className={data.isPinned ? "fill-current" : ""} />
+                  <Pin
+                    size={16}
+                    className={data.isPinned ? "fill-current" : ""}
+                  />
                   {data.isPinned ? "Bỏ ghim bài viết" : "Ghim bài viết"}
                 </button>
               )}
@@ -521,6 +549,7 @@ export default function PostCard({
           )
         )}
       </div>
+      {isShared && <SharedPostContent post={displayPost} />}
 
       {/* MEDIA GALLERY */}
       {/* Hide media when editing because PostUpdate handles preview */}
@@ -535,7 +564,9 @@ export default function PostCard({
         </div>
       )}
 
-      {(localReactCount > 0 || localCommentCount > 0) && (
+      {(localReactCount > 0 ||
+        localCommentCount > 0 ||
+        localShareCount > 0) && (
         <div className="px-5 py-2 flex items-center justify-between text-[13px] text-text-secondary">
           <div className="flex items-center gap-1.5 cursor-pointer hover:underline decoration-text-secondary/50 transition-all">
             {localReactCount > 0 && (
@@ -579,8 +610,12 @@ export default function PostCard({
                 {localCommentCount} bình luận
               </button>
             )}
-            {/* Placeholder for share count if future-proofed */}
-            {/* <span>2 shares</span> */}
+            {/* Share count display */}
+            {localShareCount > 0 && (
+              <span className="hover:text-text-main transition-colors cursor-pointer">
+                {localShareCount} chia sẻ
+              </span>
+            )}
           </div>
         </div>
       )}
