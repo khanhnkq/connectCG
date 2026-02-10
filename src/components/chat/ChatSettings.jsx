@@ -12,8 +12,10 @@ import {
   Info,
   Users,
   Paperclip,
+  Play
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import FirebaseChatService from "../../services/chat/FirebaseChatService";
 
 const ChatSettings = ({
   activeRoom,
@@ -28,11 +30,24 @@ const ChatSettings = ({
   onInviteMember,
   isOpen,
   onClose,
+  onShowMediaGallery,
+  onOpenLightbox,
 }) => {
   const navigate = useNavigate();
   const chatAvatarInputRef = useRef(null);
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState("");
+  const [previewImages, setPreviewImages] = useState([]);
+
+  React.useEffect(() => {
+    if (activeRoom?.firebaseRoomKey) {
+      FirebaseChatService.getMediaMessages(activeRoom.firebaseRoomKey, 6)
+        .then(imgs => setPreviewImages(imgs))
+        .catch(err => console.error("Error fetching preview images:", err));
+    } else {
+      setPreviewImages([]);
+    }
+  }, [activeRoom?.firebaseRoomKey]);
 
   if (!activeRoom) {
     return (
@@ -61,9 +76,8 @@ const ChatSettings = ({
 
   return (
     <aside
-      className={`${
-        isOpen ? "flex" : "hidden"
-      } xl:flex fixed xl:static inset-y-0 right-0 w-80 lg:w-96 xl:w-80 flex-col border-l border-border-main bg-background-main overflow-y-auto shrink-0 z-30 transition-all duration-300 shadow-2xl xl:shadow-none animate-in slide-in-from-right duration-300`}
+      className={`${isOpen ? "flex" : "hidden"
+        } xl:flex fixed xl:static inset-y-0 right-0 w-80 lg:w-96 xl:w-80 flex-col border-l border-border-main bg-background-main overflow-y-auto shrink-0 z-30 transition-all duration-300 shadow-2xl xl:shadow-none animate-in slide-in-from-right duration-300`}
     >
       {/* Mobile Close Button */}
       <div className="xl:hidden absolute top-4 right-4 z-10">
@@ -79,10 +93,9 @@ const ChatSettings = ({
           <div
             className="size-24 rounded-full bg-cover bg-center ring-4 ring-surface-main mb-4 shadow-xl"
             style={{
-              backgroundImage: `url("${
-                activeRoom?.avatarUrl ||
+              backgroundImage: `url("${activeRoom?.avatarUrl ||
                 "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-              }")`,
+                }")`,
             }}
           ></div>
           {activeRoom?.type === "GROUP" && (
@@ -222,10 +235,9 @@ const ChatSettings = ({
                   <div
                     className="size-8 rounded-full bg-cover bg-center border border-border-main"
                     style={{
-                      backgroundImage: `url("${
-                        member.avatarUrl ||
+                      backgroundImage: `url("${member.avatarUrl ||
                         "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                      }")`,
+                        }")`,
                     }}
                   ></div>
                   <div className="flex-1 min-w-0">
@@ -233,11 +245,10 @@ const ChatSettings = ({
                       {member.fullName}
                     </p>
                     <span
-                      className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${
-                        member.role === "ADMIN"
-                          ? "bg-orange-500/20 text-orange-400"
-                          : "bg-surface-main text-text-secondary"
-                      }`}
+                      className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${member.role === "ADMIN"
+                        ? "bg-orange-500/20 text-orange-400"
+                        : "bg-surface-main text-text-secondary"
+                        }`}
                     >
                       {member.role === "ADMIN" ? "Quản trị viên" : "Thành viên"}
                     </span>
@@ -263,35 +274,52 @@ const ChatSettings = ({
               ))}
             </div>
           </>
-        ) : (
-          <>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-white text-sm font-bold uppercase tracking-wide">
-                Ảnh & Video
-              </h3>
-              <button className="text-primary text-xs font-bold hover:underline">
-                Xem tất cả
-              </button>
-            </div>
+
+        ) : null}
+
+        {/* Luôn hiển thị phần Ảnh & Video cho cả Group và Direct */}
+        <div className="mt-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-white text-sm font-bold uppercase tracking-wide">
+              Ảnh & Video
+            </h3>
+            <button
+              onClick={onShowMediaGallery}
+              className="text-primary text-xs font-bold hover:underline"
+            >
+              Xem tất cả
+            </button>
+          </div>
+
+          {previewImages.length > 0 ? (
             <div className="grid grid-cols-3 gap-2">
-              {[
-                "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=150&q=80",
-                "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?auto=format&fit=crop&w=150&q=80",
-                "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=150&q=80",
-                "https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=150&q=80",
-              ].map((img, i) => (
+              {previewImages.slice(0, 6).map((msg, i) => (
                 <div
-                  key={i}
-                  className="aspect-square bg-cover bg-center rounded-xl cursor-pointer hover:opacity-80 transition-opacity border border-border-main"
-                  style={{ backgroundImage: `url("${img}")` }}
-                ></div>
+                  key={msg.id}
+                  className={`aspect-square relative rounded-xl cursor-pointer hover:opacity-80 transition-opacity border border-border-main ${msg.type === 'video' ? 'bg-black/10' : 'bg-cover bg-center'}`}
+                  style={msg.type === 'video' ? {} : { backgroundImage: `url("${msg.imageUrl}")` }}
+                  onClick={() => onOpenLightbox && onOpenLightbox(msg.imageUrl, msg.type)}
+                >
+                  {msg.type === 'video' && (
+                    <>
+                      <video
+                        src={msg.imageUrl}
+                        className="w-full h-full object-cover rounded-xl"
+                        muted
+                        preload="metadata"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <Play size={24} className="text-white opacity-90 drop-shadow-md" fill="white" />
+                      </div>
+                    </>
+                  )}
+                </div>
               ))}
-              <div className="aspect-square bg-surface-main rounded-xl flex items-center justify-center text-text-secondary hover:text-primary cursor-pointer transition-all border border-border-main">
-                <span className="text-xs font-bold">+12</span>
-              </div>
             </div>
-          </>
-        )}
+          ) : (
+            <p className="text-text-secondary text-xs italic">Chưa có hình ảnh nào</p>
+          )}
+        </div>
       </div>
 
       <div className="p-5 border-t border-border-main mt-auto">
@@ -321,7 +349,7 @@ const ChatSettings = ({
           </button>
         </div>
       </div>
-    </aside>
+    </aside >
   );
 };
 

@@ -14,11 +14,11 @@ export const uploadImage = async (file, folder = 'user/avatar') => {
 
     // Validate file
     const maxSize = isVideo ? 50 * 1024 * 1024 : 5 * 1024 * 1024;
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif',
         'video/mp4', 'video/webm']; // Thêm video ;
 
     if (file.size > maxSize) {
-        throw new Error(`Kích thước file quá lớn (Video tối đa 50MB, Ảnh 5MB). File hiện tại: ${(file.size/1024/1024).toFixed(2)}MB`);
+        throw new Error(`Kích thước file quá lớn (Video tối đa 50MB, Ảnh 5MB). File hiện tại: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
     }
 
     if (!allowedTypes.includes(file.type)) {
@@ -87,4 +87,13 @@ export const uploadGroupCover = async (file) => {
 
 export const uploadPostMedia = async (file) => {
     return uploadImage(file, 'posts'); // Lưu vào folder 'posts'
+};
+
+/**
+ * Upload hình ảnh chat
+ * @param {File} file - File hình ảnh chat
+ * @returns {Promise<string>} - URL của hình ảnh
+ */
+export const uploadChatImage = async (file) => {
+    return uploadImage(file, 'chat/images');
 };

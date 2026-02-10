@@ -1,7 +1,8 @@
 import React, { Fragment } from 'react';
+import { PlayCircle } from 'lucide-react';
 import { formatDaySeparator } from '../../utils/chatHelpers.js';
 
-const MessageList = React.memo(({ messages, currentUser, activeRoom, messagesEndRef }) => {
+const MessageList = React.memo(({ messages, currentUser, activeRoom, messagesEndRef, onOpenLightbox }) => {
     // Map of messageId/index to members who have read up to that message
     const readReceiptsMap = {};
     if (activeRoom?.members) {
@@ -92,14 +93,72 @@ const MessageList = React.memo(({ messages, currentUser, activeRoom, messagesEnd
                                             {msgSenderName}
                                         </span>
                                     )}
-                                    <div
-                                        className={`p-4 rounded-2xl text-sm leading-relaxed shadow-sm ${isSentByMe
-                                            ? "bg-bubble-sent rounded-br-none text-white font-semibold"
-                                            : "bg-bubble-received rounded-bl-none text-text-main self-start"
-                                            }`}
-                                    >
-                                        <p className="whitespace-pre-wrap break-words break-all">{msg.text}</p>
-                                    </div>
+
+                                    {/* Message Content - Text or Image */}
+                                    {msg.type === 'image' && msg.imageUrl ? (
+                                        <div className="flex flex-col gap-1">
+                                            <div
+                                                className={`overflow-hidden rounded-2xl ${isSentByMe ? 'rounded-br-none' : 'rounded-bl-none'} cursor-pointer hover:opacity-90 transition-opacity`}
+                                                onClick={() => onOpenLightbox && onOpenLightbox(msg.imageUrl, 'image')}
+                                            >
+                                                <img
+                                                    src={msg.imageUrl}
+                                                    alt="Shared image"
+                                                    className="max-w-xs max-h-96 object-cover"
+                                                    loading="lazy"
+                                                />
+                                            </div>
+                                            {msg.text && (
+                                                <div
+                                                    className={`p-3 rounded-xl text-sm leading-relaxed ${isSentByMe
+                                                        ? "bg-bubble-sent text-white font-semibold"
+                                                        : "bg-bubble-received text-text-main"
+                                                        }`}
+                                                >
+                                                    <p className="whitespace-pre-wrap break-words break-all">{msg.text}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : msg.type === 'video' && msg.imageUrl ? (
+                                        <div className="flex flex-col gap-1">
+                                            <div
+                                                className={`relative overflow-hidden rounded-2xl ${isSentByMe ? 'rounded-br-none' : 'rounded-bl-none'} cursor-pointer hover:opacity-90 transition-opacity group`}
+                                                onClick={() => onOpenLightbox && onOpenLightbox(msg.imageUrl, 'video')}
+                                            >
+                                                <video
+                                                    src={msg.imageUrl}
+                                                    className="max-w-xs max-h-96 object-cover"
+                                                    muted
+                                                    preload="metadata"
+                                                />
+                                                <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
+                                                    <PlayCircle size={48} className="text-white opacity-90 drop-shadow-lg scale-100 group-hover:scale-110 transition-transform" />
+                                                </div>
+                                                <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded font-bold">
+                                                    VIDEO
+                                                </div>
+                                            </div>
+                                            {msg.text && (
+                                                <div
+                                                    className={`p-3 rounded-xl text-sm leading-relaxed ${isSentByMe
+                                                        ? "bg-bubble-sent text-white font-semibold"
+                                                        : "bg-bubble-received text-text-main"
+                                                        }`}
+                                                >
+                                                    <p className="whitespace-pre-wrap break-words break-all">{msg.text}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div
+                                            className={`p-4 rounded-2xl text-sm leading-relaxed shadow-sm ${isSentByMe
+                                                ? "bg-bubble-sent rounded-br-none text-white font-semibold"
+                                                : "bg-bubble-received rounded-bl-none text-text-main self-start"
+                                                }`}
+                                        >
+                                            <p className="whitespace-pre-wrap break-words break-all">{msg.text}</p>
+                                        </div>
+                                    )}
                                     <div className={`flex items-center gap-1 text-text-secondary text-[10px] mt-1 ${isSentByMe ? "self-end pr-1" : "self-start pl-1"}`}>
                                         <span>
                                             {msg.timestamp

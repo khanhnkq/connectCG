@@ -1,7 +1,7 @@
 import React from "react";
-import { Phone, Video, ArrowLeft, Info, UserPlus } from "lucide-react";
+import { Phone, Video, ArrowLeft, Info, UserPlus, Images } from "lucide-react";
 
-const ChatHeader = ({ activeRoom, onBack, onShowSettings, onInviteMember }) => {
+const ChatHeader = ({ activeRoom, onBack, onShowSettings, onInviteMember, onShowMediaGallery }) => {
   if (!activeRoom) return null;
 
   return (
@@ -48,6 +48,13 @@ const ChatHeader = ({ activeRoom, onBack, onShowSettings, onInviteMember }) => {
           disabled
         >
           <Video size={24} />
+        </button>
+        <button
+          onClick={onShowMediaGallery}
+          className="size-10 rounded-full hover:bg-surface-main hover:text-primary flex items-center justify-center transition-all"
+          title="Xem hình ảnh đã chia sẻ"
+        >
+          <Images size={24} />
         </button>
         {activeRoom.type === "GROUP" && (
           <button

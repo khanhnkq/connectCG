@@ -48,7 +48,7 @@ import reportService from "../../services/ReportService";
 import FriendService from "../../services/friend/FriendService";
 import ReportModal from "../../components/report/ReportModal";
 import ConfirmModal from "../../components/common/ConfirmModal";
-import { uploadImage } from "../../utils/uploadImage";
+import { uploadImage, uploadChatImage } from "../../utils/uploadImage";
 import { useDispatch } from "react-redux";
 import {
   setConversations,
@@ -65,6 +65,8 @@ import useChatRooms from "../chat/hooks/useChatRooms";
 import useChatMessages from "../chat/hooks/useChatMessages";
 import { fetchUserProfile } from "../../redux/slices/userSlice";
 import { useWebSocket } from "../../context/WebSocketContext";
+import MediaGallery from "../../components/chat/MediaGallery.jsx";
+import ImageLightbox from "../../components/chat/ImageLightbox.jsx";
 
 export default function ChatInterface() {
   const { user: currentUser } = useSelector((state) => state.auth);
@@ -98,6 +100,10 @@ export default function ChatInterface() {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const emojiPickerRef = useRef(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [showMediaGallery, setShowMediaGallery] = useState(false);
+  const [lightboxMedia, setLightboxMedia] = useState(null); // { url, type }
 
   const [activeTab, setActiveTab] = useState("DIRECT"); // "DIRECT" | "GROUP"
   const [kickMemberData, setKickMemberData] = useState(null);
@@ -355,7 +361,6 @@ export default function ChatInterface() {
     // Add check for stompClient.connected to avoid "There is no underlying STOMP connection" error
     if (!stompClient || !isConnected || !stompClient.connected || !activeRoom?.firebaseRoomKey) {
       if (activeRoom?.firebaseRoomKey && isConnected && stompClient && !stompClient.connected) {
-        console.warn("== [DEBUG] STOMP is initialized and marked as connected, but internal state is not connected yet.");
       }
       return;
     }
@@ -363,7 +368,6 @@ export default function ChatInterface() {
     const subscriptions = [];
 
     try {
-      console.log("== [DEBUG] Subscribing to typing for room:", activeRoom.firebaseRoomKey);
       const sub = stompClient.subscribe(
         `/topic/chat/${activeRoom.firebaseRoomKey}/typing`,
         (message) => {
@@ -478,7 +482,6 @@ export default function ChatInterface() {
     }
 
     try {
-      console.log("== [DEBUG] Emitting typing:", isTyping, "for room:", activeRoom.firebaseRoomKey);
       stompClient.publish({
         destination: "/app/chat/typing",
         body: JSON.stringify({
@@ -541,16 +544,39 @@ export default function ChatInterface() {
   };
 
   const handleSendMessage = async () => {
-    const text = inputText.trim();
-    if (!text || !activeRoom) return;
+    if (!activeRoom || (!inputText.trim() && !selectedImage)) return;
 
     if (!currentUser?.id) {
       toast.error("Phiên làm việc hết hạn, vui lòng đăng nhập lại");
       return;
     }
 
-    setInputText(""); // Xóa ngay để tránh gửi lặp
+    const text = inputText.trim();
+    setInputText(""); // Clear input immediately
+
     try {
+      let imageUrl = null;
+      let msgType = "text";
+
+      // Upload image/video if selected
+      if (selectedImage) {
+        setIsUploading(true);
+        try {
+          imageUrl = await uploadChatImage(selectedImage);
+          if (selectedImage.type?.startsWith('video/')) {
+            msgType = "video";
+          } else {
+            msgType = "image";
+          }
+        } catch (error) {
+          console.error('Media upload error:', error);
+          toast.error(error.message || 'Upload thất bại');
+          setInputText(text); // Restore text on error
+          setIsUploading(false);
+          return;
+        }
+      }
+
       const msgData = {
         senderId: currentUser.id,
         senderName:
@@ -560,14 +586,20 @@ export default function ChatInterface() {
           "Ẩn danh",
         senderAvatarUrl:
           userProfile?.currentAvatarUrl || currentUser.avatarUrl || "",
-        text: text,
-        type: "text",
+        text: text || "",
+        type: imageUrl ? msgType : "text",
+        imageUrl: imageUrl || undefined,
         timestamp: Date.now(),
       };
+
       await FirebaseChatService.sendMessage(
         activeRoom.firebaseRoomKey,
         msgData,
       );
+
+      // Clear selected image after successful send
+      setSelectedImage(null);
+      setIsUploading(false);
 
       // Update lastMessageAt on Backend
       ChatService.updateLastMessageAt(activeRoom.firebaseRoomKey).catch((err) =>
@@ -575,7 +607,8 @@ export default function ChatInterface() {
       );
     } catch (error) {
       console.error("Error sending message:", error);
-      setInputText(text); // Khôi phục nếu lỗi
+      setInputText(text); // Restore on error
+      setIsUploading(false);
       toast.error("Gửi tin nhắn thất bại");
     }
   };
@@ -776,7 +809,26 @@ export default function ChatInterface() {
           onShowSettings={() => setShowSettings(!showSettings)}
           onInviteMember={handleOpenInviteModal}
           typingUsers={activeRoom ? (typingUsers[activeRoom.firebaseRoomKey] || []) : []}
+          selectedImage={selectedImage}
+          onImageSelect={setSelectedImage}
+          onClearImage={() => setSelectedImage(null)}
+          isUploading={isUploading}
+          onShowMediaGallery={() => setShowMediaGallery(true)}
+          onOpenLightbox={(url, type = 'image') => setLightboxMedia({ url, type })}
         />
+
+        <MediaGallery
+          roomKey={activeRoom?.firebaseRoomKey}
+          isOpen={showMediaGallery}
+          onClose={() => setShowMediaGallery(false)}
+          onMediaClick={(url, type) => setLightboxMedia({ url, type })}
+        />
+
+        <ImageLightbox
+          media={lightboxMedia}
+          onClose={() => setLightboxMedia(null)}
+        />
+
 
         <ChatSettings
           isOpen={showSettings}
@@ -798,6 +850,8 @@ export default function ChatInterface() {
           setShowReportUser={setShowReportUser}
           setShowLeaveConfirm={setShowLeaveConfirm}
           setShowDeleteConfirm={setShowDeleteConfirm}
+          onShowMediaGallery={() => setShowMediaGallery(true)}
+          onOpenLightbox={(url, type = 'image') => setLightboxMedia({ url, type })}
         />
       </div>
 
