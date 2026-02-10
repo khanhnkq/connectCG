@@ -1,5 +1,5 @@
 import { db } from "../../config/firebase";
-import { ref, push, onChildAdded, serverTimestamp, query, limitToLast, orderByKey, remove, get, orderByChild, equalTo } from "firebase/database";
+import { ref, push, onChildAdded, onChildRemoved, serverTimestamp, query, limitToLast, orderByKey, remove, get, orderByChild, equalTo } from "firebase/database";
 
 const FirebaseChatService = {
     /**
@@ -28,22 +28,45 @@ const FirebaseChatService = {
         // Sử dụng limitToLast để lấy lịch sử gần nhất
         const msgQuery = query(messagesRef, orderByKey(), limitToLast(limit));
 
-        return onChildAdded(msgQuery, (snapshot) => {
+        const onAdd = onChildAdded(msgQuery, (snapshot) => {
             const data = snapshot.val();
             callback({
-                id: snapshot.key,
-                ...data
+                type: 'add',
+                message: {
+                    id: snapshot.key,
+                    ...data
+                }
             });
         });
+
+        const onRemove = onChildRemoved(messagesRef, (snapshot) => {
+            callback({
+                type: 'remove',
+                messageId: snapshot.key
+            });
+        });
+
+        // Trả về hàm cleanup
+        return () => {
+            onAdd();
+            onRemove();
+        };
     },
 
     /**
-     * Xóa toàn bộ tin nhắn trong phòng trên Firebase
-     * @param {string} roomKey 
+     * Xóa toàn bộ tin nhắn trong phòng
      */
     deleteMessages: async (roomKey) => {
         const messagesRef = ref(db, `messages/${roomKey}`);
         return remove(messagesRef);
+    },
+
+    /**
+     * Xóa một tin nhắn cụ thể
+     */
+    deleteMessage: async (roomKey, messageId) => {
+        const messageRef = ref(db, `messages/${roomKey}/${messageId}`);
+        return remove(messageRef);
     },
 
     /**
@@ -72,7 +95,7 @@ const FirebaseChatService = {
      * @param {number} limit - Số lượng hình ảnh lấy (mặc định 20)
      * @returns {Promise<Array>} - Danh sách tin nhắn có hình ảnh
      */
-    getMediaMessages: async (roomKey, limit = 20) => {
+    getMediaMessages: async (roomKey, limit = 20, minTimestamp = 0) => {
         try {
             const messagesRef = ref(db, `messages/${roomKey}`);
 
@@ -87,7 +110,8 @@ const FirebaseChatService = {
                 const allMessages = Object.keys(data).map(key => ({ id: key, ...data[key] }));
 
                 const mediaMessages = allMessages.filter(msg =>
-                    msg.type === 'image' || msg.type === 'video'
+                    (msg.type === 'image' || msg.type === 'video') &&
+                    (msg.timestamp || 0) > minTimestamp
                 );
 
                 return mediaMessages

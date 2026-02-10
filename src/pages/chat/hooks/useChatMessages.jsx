@@ -31,17 +31,25 @@ const useChatMessages = (activeRoom) => {
         // Subscribe specifically to THIS room's messages
         const unsub = FirebaseChatService.subscribeToMessages(
             activeRoom.firebaseRoomKey,
-            (newMsg) => {
-                // Filter out if message is older than clientClearedAt
-                if (activeRoom.clientClearedAt) {
-                    const clearTime = new Date(activeRoom.clientClearedAt).getTime();
-                    if (newMsg.timestamp <= clearTime) return;
-                }
+            (event) => {
+                if (event.type === 'add') {
+                    const newMsg = event.message;
 
-                setMessages((prev) => {
-                    if (prev.some((m) => m.id === newMsg.id)) return prev;
-                    return [...prev, newMsg];
-                });
+                    // Filter out if message is older than clientClearedAt
+                    if (activeRoom.clientClearedAt) {
+                        const clearTime = new Date(activeRoom.clientClearedAt).getTime();
+                        if ((newMsg.timestamp || 0) <= clearTime) return;
+                    }
+
+                    setMessages((prev) => {
+                        if (prev.some((m) => m.id === newMsg.id)) return prev;
+                        // Insert and sort to keep order
+                        const nextMessages = [...prev, newMsg];
+                        return nextMessages.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+                    });
+                } else if (event.type === 'remove') {
+                    setMessages((prev) => prev.filter((m) => m.id !== event.messageId));
+                }
             }
         );
 

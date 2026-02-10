@@ -26,6 +26,7 @@ const ChatWindow = ({
   isUploading,
   onShowMediaGallery,
   onOpenLightbox,
+  onDeleteMessage,
 }) => {
   return (
     <div
@@ -48,6 +49,7 @@ const ChatWindow = ({
             activeRoom={activeRoom}
             messagesEndRef={messagesEndRef}
             onOpenLightbox={onOpenLightbox}
+            onDeleteMessage={onDeleteMessage}
           />
 
           {typingUsers.length > 0 && (

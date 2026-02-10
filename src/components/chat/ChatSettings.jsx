@@ -41,13 +41,14 @@ const ChatSettings = ({
 
   React.useEffect(() => {
     if (activeRoom?.firebaseRoomKey) {
-      FirebaseChatService.getMediaMessages(activeRoom.firebaseRoomKey, 6)
+      const minTimestamp = activeRoom?.clientClearedAt ? new Date(activeRoom.clientClearedAt).getTime() : 0;
+      FirebaseChatService.getMediaMessages(activeRoom.firebaseRoomKey, 6, minTimestamp)
         .then(imgs => setPreviewImages(imgs))
         .catch(err => console.error("Error fetching preview images:", err));
     } else {
       setPreviewImages([]);
     }
-  }, [activeRoom?.firebaseRoomKey]);
+  }, [activeRoom?.firebaseRoomKey, activeRoom?.clientClearedAt]);
 
   if (!activeRoom) {
     return (

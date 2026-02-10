@@ -634,6 +634,17 @@ export default function ChatInterface() {
     }
   };
 
+  const handleDeleteMessage = async (messageId) => {
+    if (!activeRoom) return;
+    try {
+      await FirebaseChatService.deleteMessage(activeRoom.firebaseRoomKey, messageId);
+      toast.success("Đã xóa tin nhắn");
+    } catch (error) {
+      console.error("Delete message error:", error);
+      toast.error("Không thể xóa tin nhắn");
+    }
+  };
+
   const handleRenameName = async (newName) => {
     if (!newName?.trim() || newName === activeRoom.name) {
       return;
@@ -815,10 +826,12 @@ export default function ChatInterface() {
           isUploading={isUploading}
           onShowMediaGallery={() => setShowMediaGallery(true)}
           onOpenLightbox={(url, type = 'image') => setLightboxMedia({ url, type })}
+          onDeleteMessage={handleDeleteMessage}
         />
 
         <MediaGallery
           roomKey={activeRoom?.firebaseRoomKey}
+          minTimestamp={activeRoom?.clientClearedAt ? new Date(activeRoom.clientClearedAt).getTime() : 0}
           isOpen={showMediaGallery}
           onClose={() => setShowMediaGallery(false)}
           onMediaClick={(url, type) => setLightboxMedia({ url, type })}

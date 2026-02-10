@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, ChevronDown, Loader2, Play } from 'lucide-react';
 import FirebaseChatService from '../../services/chat/FirebaseChatService';
 
-const MediaGallery = ({ roomKey, isOpen, onClose, onMediaClick }) => {
+const MediaGallery = ({ roomKey, isOpen, onClose, onMediaClick, minTimestamp = 0 }) => {
     const [mediaMessages, setMediaMessages] = useState([]);
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
@@ -17,7 +17,7 @@ const MediaGallery = ({ roomKey, isOpen, onClose, onMediaClick }) => {
     const loadMedia = async () => {
         setLoading(true);
         try {
-            const messages = await FirebaseChatService.getMediaMessages(roomKey, limit);
+            const messages = await FirebaseChatService.getMediaMessages(roomKey, limit, minTimestamp);
             setMediaMessages(messages);
             setHasMore(messages.length >= limit);
         } catch (error) {

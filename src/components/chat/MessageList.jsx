@@ -1,8 +1,8 @@
 import React, { Fragment } from 'react';
-import { PlayCircle } from 'lucide-react';
+import { PlayCircle, Trash2 } from 'lucide-react';
 import { formatDaySeparator } from '../../utils/chatHelpers.js';
 
-const MessageList = React.memo(({ messages, currentUser, activeRoom, messagesEndRef, onOpenLightbox }) => {
+const MessageList = React.memo(({ messages, currentUser, activeRoom, messagesEndRef, onOpenLightbox, onDeleteMessage }) => {
     // Map of messageId/index to members who have read up to that message
     const readReceiptsMap = {};
     if (activeRoom?.members) {
@@ -73,8 +73,22 @@ const MessageList = React.memo(({ messages, currentUser, activeRoom, messagesEnd
                         <div className="flex flex-col w-full">
                             <div
                                 className={`flex gap-3 max-w-[80%] ${isSentByMe ? "self-end justify-end ml-auto" : ""
-                                    }`}
+                                    } group`}
                             >
+                                {isSentByMe && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (window.confirm("Bạn có chắc muốn xóa tin nhắn này?")) {
+                                                onDeleteMessage && onDeleteMessage(msg.id);
+                                            }
+                                        }}
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-text-secondary hover:text-red-500 self-center"
+                                        title="Xóa tin nhắn"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                )}
                                 {!isSentByMe && (
                                     <div
                                         className="size-8 rounded-full bg-cover bg-center shrink-0 self-end mb-1 border border-border-main"
