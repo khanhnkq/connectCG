@@ -7,9 +7,12 @@ import {
   Facebook,
   Twitter,
   MessageCircle,
+  Loader2,
 } from "lucide-react";
+import { useState } from "react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import postService from "../../services/PostService";
 
 export default function ShareModal({ isOpen, onClose, postId }) {
   const shareUrl = `${window.location.origin}/dashboard/post/${postId}`;
@@ -18,6 +21,27 @@ export default function ShareModal({ isOpen, onClose, postId }) {
     navigator.clipboard.writeText(shareUrl);
     toast.success("Đã sao chép liên kết vào bộ nhớ tạm!");
     onClose();
+  };
+  const [caption, setCaption] = useState("");
+  const [isSharing, setIsSharing] = useState(false);
+
+  const handleShareToFeed = async () => {
+    if (!caption.trim() || isSharing) return;
+    setIsSharing(true);
+    try {
+      await postService.sharePost(postId, {
+        content: caption,
+        visibility: "PUBLIC",
+      });
+      toast.success("Đã chia sẻ thành công!");
+      onClose();
+    } catch (err) {
+      toast.error(
+        "Lỗi khi chia sẻ: " + (err.response?.data?.message || err.message),
+      );
+    } finally {
+      setIsSharing(false);
+    }
   };
 
   const shareOptions = [
@@ -55,18 +79,6 @@ export default function ShareModal({ isOpen, onClose, postId }) {
           "_blank",
         ),
     },
-    {
-      name: "Twitter",
-      icon: <Twitter size={20} />,
-      color: "bg-sky-50 text-sky-500",
-      action: () =>
-        window.open(
-          `https://twitter.com/intent/tweet?url=${encodeURIComponent(
-            shareUrl,
-          )}`,
-          "_blank",
-        ),
-    },
   ];
 
   return (
@@ -99,42 +111,71 @@ export default function ShareModal({ isOpen, onClose, postId }) {
               </button>
             </div>
 
-            {/* Content */}
-            <div className="p-6">
-              <p className="text-sm text-text-secondary mb-4">
-                Chọn kênh bạn muốn chia sẻ:
-              </p>
+            <div className="p-6 space-y-4">
+              {/* Caption Input */}
+              <div>
+                <textarea
+                  value={caption}
+                  onChange={(e) => setCaption(e.target.value)}
+                  placeholder="Hãy nói gì đó về bài viết này..."
+                  disabled={isSharing}
+                  className={`w-full p-3 bg-background-main rounded-md border border-border-main focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none h-24 text-sm transition-all ${
+                    isSharing
+                      ? "opacity-50 cursor-not-allowed pointer-events-none"
+                      : ""
+                  }`}
+                />
+                <div className="flex justify-end mt-2">
+                  <button
+                    onClick={handleShareToFeed}
+                    disabled={!caption.trim() || isSharing}
+                    className="px-4 py-2 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg shadow-primary/20 min-w-[120px] justify-center"
+                  >
+                    {isSharing ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        Đang chia sẻ...
+                      </>
+                    ) : (
+                      <>
+                        <Share2 size={16} />
+                        Chia sẻ ngay
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
 
-              <div className="grid grid-cols-1 gap-3">
+              <div className="relative flex items-center py-2">
+                <div className="flex-grow border-t border-border-main/50"></div>
+                <span className="flex-shrink-0 mx-4 text-text-secondary text-xs font-medium">
+                  Hoặc chia sẻ qua
+                </span>
+                <div className="flex-grow border-t border-border-main/50"></div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-2">
                 {shareOptions.map((option) => (
                   <button
                     key={option.name}
                     onClick={option.action}
-                    className="flex items-center gap-4 p-3 rounded-2xl hover:bg-background-main transition-all group border border-transparent hover:border-border-main/50"
+                    disabled={isSharing}
+                    className={`flex items-center gap-4 p-3 rounded-2xl transition-all group border border-transparent ${
+                      isSharing
+                        ? "opacity-50 cursor-not-allowed"
+                        : "hover:bg-background-main hover:border-border-main/50"
+                    }`}
                   >
                     <div
-                      className={`size-10 rounded-xl flex items-center justify-center ${option.color} group-hover:scale-110 transition-transform`}
+                      className={`size-8 rounded-xl flex items-center justify-center ${option.color} group-hover:scale-110 transition-transform`}
                     >
                       {option.icon}
                     </div>
-                    <span className="font-semibold text-text-main">
+                    <span className="font-semibold text-text-main text-sm">
                       {option.name}
                     </span>
                   </button>
                 ))}
-              </div>
-
-              {/* URL Preview */}
-              <div className="mt-6 p-3 bg-background-main rounded-xl flex items-center gap-3 border border-border-main/30">
-                <span className="text-xs text-text-secondary truncate flex-1 uppercase tracking-tight">
-                  {shareUrl}
-                </span>
-                <button
-                  onClick={handleCopyLink}
-                  className="px-3 py-1.5 bg-surface-main border border-border-main rounded-lg text-primary text-xs font-bold hover:bg-primary hover:text-white transition-all shadow-sm"
-                >
-                  Copy
-                </button>
               </div>
             </div>
           </motion.div>

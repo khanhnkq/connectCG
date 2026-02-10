@@ -42,7 +42,11 @@ const postService = {
     },
     togglePinPost(groupId, postId) {
         return axiosClient.post(`/groups/${groupId}/posts/${postId}/pin`);
-    }
+    },
+    sharePost(originalPostId, data) {
+        // data: { content: "caption...", visibility: "PUBLIC" }
+        return axiosClient.post(`/posts/${originalPostId}/share`, data);
+    },
 
 };
 
