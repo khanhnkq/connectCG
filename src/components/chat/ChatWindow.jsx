@@ -20,6 +20,12 @@ const ChatWindow = ({
   onShowSettings,
   onInviteMember,
   typingUsers = [],
+  selectedImage,
+  onImageSelect,
+  onClearImage,
+  isUploading,
+  onShowMediaGallery,
+  onOpenLightbox,
 }) => {
   return (
     <div
@@ -33,6 +39,7 @@ const ChatWindow = ({
             onBack={onBack}
             onShowSettings={onShowSettings}
             onInviteMember={onInviteMember}
+            onShowMediaGallery={onShowMediaGallery}
           />
 
           <MessageList
@@ -40,6 +47,7 @@ const ChatWindow = ({
             currentUser={currentUser}
             activeRoom={activeRoom}
             messagesEndRef={messagesEndRef}
+            onOpenLightbox={onOpenLightbox}
           />
 
           {typingUsers.length > 0 && (
@@ -63,6 +71,10 @@ const ChatWindow = ({
             showEmojiPicker={showEmojiPicker}
             emojiPickerRef={emojiPickerRef}
             emojis={emojis}
+            selectedImage={selectedImage}
+            onImageSelect={onImageSelect}
+            onClearImage={onClearImage}
+            isUploading={isUploading}
           />
         </>
       ) : (
