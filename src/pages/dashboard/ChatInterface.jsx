@@ -588,7 +588,7 @@ export default function ChatInterface() {
           userProfile?.currentAvatarUrl || currentUser.avatarUrl || "",
         text: text || "",
         type: imageUrl ? msgType : "text",
-        imageUrl: imageUrl || undefined,
+        imageUrl: imageUrl || null,
         timestamp: Date.now(),
       };
 
