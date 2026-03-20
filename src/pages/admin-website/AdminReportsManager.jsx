@@ -4,7 +4,7 @@ import {
   ArrowDownWideNarrow,
   ArrowUpNarrowWide,
 } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../components/layout-admin/AdminLayout";
@@ -157,8 +157,8 @@ const AdminReportsManagement = () => {
   // Client-side filtering is no longer needed as backend handles it
   const filteredReports = reports;
 
-  // GROUP REPORTS BY TARGET ID
-  const groupedReports = Object.values(
+  // GROUP REPORTS BY TARGET ID (memoized to avoid recomputation on every render)
+  const groupedReports = useMemo(() => Object.values(
     filteredReports.reduce((acc, report) => {
       const tType = report.targetType || report.target_type;
       const tId = report.targetId || report.target_id || report.targetID;
@@ -200,13 +200,13 @@ const AdminReportsManagement = () => {
 
       return acc;
     }, {}),
-  );
+  ), [filteredReports]);
 
-  const displayReports = [...groupedReports].sort((a, b) => {
+  const displayReports = useMemo(() => [...groupedReports].sort((a, b) => {
     const timeA = new Date(a.createdAt).getTime();
     const timeB = new Date(b.createdAt).getTime();
     return sortOrder === "desc" ? timeB - timeA : timeA - timeB;
-  });
+  }), [groupedReports, sortOrder]);
 
   const activeCount = totalElements;
 
@@ -226,14 +226,14 @@ const AdminReportsManagement = () => {
   useEffect(() => {
     const fetchMetadata = async () => {
       const newMetadata = {};
-      const promises = [];
+      const tasks = []; // Store task functions to run with limited concurrency
       const groupsToFetch = []; // Track groups to potentially repair
 
       for (const group of displayReports) {
         if (targetMetadata[`${group.targetType}_${group.targetId}`]) continue;
 
         if (group.targetType === "USER") {
-          promises.push(
+          tasks.push(() =>
             UserProfileService.getUserProfile(group.targetId)
               .then((res) => {
                 newMetadata[`USER_${group.targetId}`] = {
@@ -255,7 +255,7 @@ const AdminReportsManagement = () => {
           );
         } else if (group.targetType === "GROUP") {
           groupsToFetch.push(group.targetId);
-          promises.push(
+          tasks.push(() =>
             findGroupById(group.targetId)
               .then((res) => {
                 newMetadata[`GROUP_${group.targetId}`] = {
@@ -286,7 +286,7 @@ const AdminReportsManagement = () => {
             !targetMetadata[reporterKey] &&
             !newMetadata[reporterKey]
           ) {
-            promises.push(
+            tasks.push(() =>
               UserProfileService.getUserProfile(reporterId)
                 .then((res) => {
                   newMetadata[reporterKey] = {
@@ -311,7 +311,7 @@ const AdminReportsManagement = () => {
         if (group.reviewerId) {
           const resolverKey = `USER_${group.reviewerId}`;
           if (!targetMetadata[resolverKey] && !newMetadata[resolverKey]) {
-            promises.push(
+            tasks.push(() =>
               UserProfileService.getUserProfile(group.reviewerId)
                 .then((res) => {
                   newMetadata[resolverKey] = {
@@ -327,8 +327,12 @@ const AdminReportsManagement = () => {
         }
       }
 
-      if (promises.length > 0) {
-        await Promise.allSettled(promises);
+      if (tasks.length > 0) {
+        // Run tasks in batches of 5 to avoid overwhelming the server
+        const BATCH_SIZE = 5;
+        for (let i = 0; i < tasks.length; i += BATCH_SIZE) {
+          await Promise.allSettled(tasks.slice(i, i + BATCH_SIZE).map((t) => t()));
+        }
 
         // REPAIR PHASE for Groups
         // Check for groups that failed to load (likely soft-deleted and returned 404/error by strict findById)

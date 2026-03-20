@@ -282,8 +282,10 @@ const GroupDetailPage = () => {
             const exists = prev.some((m) => Number(m.userId) === targetUserId);
             return exists ? prev : [...prev, member];
           });
-          // Use fetchGroupData to get the exact memberCount from server
-          fetchGroupData();
+          // Increment memberCount locally instead of triggering a full refetch
+          setGroup((prev) =>
+            prev ? { ...prev, memberCount: (prev.memberCount || 0) + 1 } : prev,
+          );
         }
         setMemberRequests((prev) =>
           prev.filter((r) => Number(r.userId) !== targetUserId),
@@ -296,7 +298,12 @@ const GroupDetailPage = () => {
         setMembers((prev) =>
           prev.filter((m) => Number(m.userId) !== targetUserId),
         );
-        fetchGroupData();
+        // Decrement memberCount locally instead of triggering a full refetch
+        setGroup((prev) =>
+          prev
+            ? { ...prev, memberCount: Math.max(0, (prev.memberCount || 0) - 1) }
+            : prev,
+        );
       } else if (action === "REQUESTED") {
         if (member) {
           setMemberRequests((prev) => {
@@ -312,8 +319,12 @@ const GroupDetailPage = () => {
         setMembers((prev) =>
           prev.filter((m) => Number(m.userId) !== targetUserId),
         );
-        // Refresh everything including memberCount
-        fetchGroupData();
+        // Decrement memberCount locally instead of triggering a full refetch
+        setGroup((prev) =>
+          prev
+            ? { ...prev, memberCount: Math.max(0, (prev.memberCount || 0) - 1) }
+            : prev,
+        );
         fetchBannedMembers();
       } else if (action === "UNBANNED") {
         // Just refresh banned list
