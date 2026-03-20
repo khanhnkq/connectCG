@@ -3,6 +3,23 @@ import { PlayCircle, Trash2 } from 'lucide-react';
 import { formatDaySeparator } from '../../utils/chatHelpers.js';
 
 const MessageList = React.memo(({ messages, currentUser, activeRoom, messagesEndRef, onOpenLightbox, onDeleteMessage }) => {
+    // Binary search: find the index of the last message whose timestamp <= lastReadTime.
+    // Assumes messages are sorted by timestamp (ascending).
+    const findLastReadIndex = (lastReadTime) => {
+        let lo = 0, hi = messages.length - 1, result = -1;
+        while (lo <= hi) {
+            const mid = (lo + hi) >>> 1;
+            const msgTime = messages[mid].timestamp ? new Date(messages[mid].timestamp).getTime() : 0;
+            if (msgTime <= lastReadTime) {
+                result = mid;
+                lo = mid + 1;
+            } else {
+                hi = mid - 1;
+            }
+        }
+        return result;
+    };
+
     // Map of messageId/index to members who have read up to that message
     const readReceiptsMap = {};
     if (activeRoom?.members) {
@@ -11,16 +28,9 @@ const MessageList = React.memo(({ messages, currentUser, activeRoom, messagesEnd
             if (!member.lastReadAt || member.id === currentUser.id) return;
 
             const lastReadTime = new Date(member.lastReadAt).getTime();
-            let lastReadMsgId = null;
-            for (let i = messages.length - 1; i >= 0; i--) {
-                const msgTime = messages[i].timestamp ? new Date(messages[i].timestamp).getTime() : 0;
-                if (msgTime <= lastReadTime) {
-                    lastReadMsgId = messages[i].id || i;
-                    break;
-                }
-            }
-
-            if (lastReadMsgId !== null) {
+            const idx = findLastReadIndex(lastReadTime);
+            if (idx !== -1) {
+                const lastReadMsgId = messages[idx].id || idx;
                 if (!readReceiptsMap[lastReadMsgId]) readReceiptsMap[lastReadMsgId] = [];
                 readReceiptsMap[lastReadMsgId].push(member);
             }

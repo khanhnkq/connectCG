@@ -281,13 +281,22 @@ export default function ChatInterface() {
     if (activeRoom && conversations.length > 0) {
       const updatedRoom = conversations.find((c) => c.id === activeRoom.id);
       if (updatedRoom) {
-        // Only update if there are actual changes to avoid loops, 
-        // using JSON stringify for deep comparison or specific fields check
-        // Simplified check: Compare key fields that affect UI
+        // Compare key fields that affect UI without expensive JSON.stringify
+        const membersChanged = (() => {
+          const prev = activeRoom.members;
+          const next = updatedRoom.members;
+          if ((prev?.length ?? 0) !== (next?.length ?? 0)) return true;
+          if (!prev || !next) return false;
+          for (let i = 0; i < prev.length; i++) {
+            if (prev[i].id !== next[i].id || prev[i].lastReadAt !== next[i].lastReadAt) return true;
+          }
+          return false;
+        })();
+
         const hasChanges =
           updatedRoom.name !== activeRoom.name ||
           updatedRoom.avatarUrl !== activeRoom.avatarUrl ||
-          JSON.stringify(updatedRoom.members) !== JSON.stringify(activeRoom.members);
+          membersChanged;
 
         if (hasChanges) {
           setActiveRoom(updatedRoom);
@@ -330,17 +339,6 @@ export default function ChatInterface() {
       return () => clearTimeout(timer);
     }
   }, [messages.length, activeRoom?.id]);
-
-  // Keep activeRoom in sync with Redux updates (e.g. member list updates, name changes)
-  useEffect(() => {
-    if (activeRoom) {
-      const updated = conversations.find(c => c.id === activeRoom.id);
-      if (updated && JSON.stringify(updated.members) !== JSON.stringify(activeRoom.members)) {
-        // Only update if members actually changed to avoid infinite loops
-        setActiveRoom(prev => ({ ...prev, ...updated }));
-      }
-    }
-  }, [conversations, activeRoom?.id]);
 
   // Click outside to close emoji picker
   useEffect(() => {
