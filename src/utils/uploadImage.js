@@ -1,13 +1,22 @@
-import axios from 'axios';
-import { CLOUDINARY_URL, UPLOAD_PRESET } from '../config/cloundinaryConfig';
+import axiosClient from '../config/axiosConfig';
+
+const CATEGORY_ALIASES = {
+    'user/avatar': 'avatar',
+    'user/cover': 'cover',
+    posts: 'post',
+    comments: 'comment',
+    'group/img': 'group',
+    'chat/images': 'chat',
+    'chat/avatar': 'chat',
+};
 
 /**
- * Upload ảnh lên Cloudinary
+ * Upload ảnh/video qua backend media API. Storage credential không xuất hiện ở frontend.
  * @param {File} file - File ảnh cần upload
  * @param {string} folder - Thư mục lưu trữ (mặc định: user/avatar)
  * @returns {Promise<string>} - URL của ảnh đã upload
  */
-export const uploadImage = async (file, folder = 'user/avatar') => {
+export const uploadMedia = async (file, folder = 'user/avatar') => {
     if (!file) return null;
     // --- CẤU HÌNH VALIDATE ---
     const isVideo = file.type.startsWith('video/');
@@ -25,29 +34,29 @@ export const uploadImage = async (file, folder = 'user/avatar') => {
         throw new Error('Định dạng không hỗ trợ (chỉ chấp nhận JPG, PNG, GIF, MP4, WEBM)');
     }
 
-    // Prepare form data
+    const category = CATEGORY_ALIASES[folder];
+    if (!category) {
+        throw new Error('Nhóm media không hợp lệ');
+    }
+
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', UPLOAD_PRESET);
-    formData.append('folder', folder);
-
-    // --- XỬ LÝ ENDPOINT CHO VIDEO ---
-    // Mặc định config là .../image/upload. Nếu upload video phải đổi sang .../video/upload
-    let uploadEndpoint = CLOUDINARY_URL;
-    if (isVideo) {
-        uploadEndpoint = CLOUDINARY_URL.replace("/image/upload", "/video/upload");
-    }
+    formData.append('category', category);
 
     try {
-        const response = await axios.post(uploadEndpoint, formData, {
+        const response = await axiosClient.post('/media/upload', formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
         });
-
-        return response.data.secure_url;
+        return response.data;
     } catch (error) {
-        console.error('Cloudinary upload error:', error);
-        throw new Error(error.response?.data?.message || 'Upload thất bại');
+        console.error('Media upload error:', error);
+        throw new Error(error.response?.data?.message || error.message || 'Upload thất bại');
     }
+};
+
+export const uploadImage = async (file, folder = 'user/avatar') => {
+    const media = await uploadMedia(file, folder);
+    return media?.url ?? null;
 };
 
 /**

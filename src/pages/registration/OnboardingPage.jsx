@@ -99,10 +99,10 @@ export default function Step2() {
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     let avatarUrl = null;
 
-    // Upload avatar lên Cloudinary nếu có
+    // Upload avatar qua backend media API nếu có
     if (values.avatar) {
       try {
-        console.log("Đang upload avatar lên Cloudinary...");
+        console.log("Đang upload avatar...");
         avatarUrl = await uploadAvatar(values.avatar);
         console.log("Upload thành công:", avatarUrl);
       } catch (error) {
@@ -123,7 +123,7 @@ export default function Step2() {
       hobbyIds: values.hobbies, // Array IDs
       cityCode: values.city?.code,
       cityName: values.city?.name,
-      avatarUrl: avatarUrl, // URL từ Cloudinary
+      avatarUrl: avatarUrl,
     };
 
     // Log dữ liệu để kiểm tra

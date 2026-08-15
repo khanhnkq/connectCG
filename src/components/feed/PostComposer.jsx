@@ -13,7 +13,7 @@ import {
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import postService from "../../services/PostService";
-import { uploadImage } from "../../utils/uploadImage"; // Import hàm uploadImage gốc từ utils
+import { uploadImage } from "../../utils/uploadImage";
 import toast from "react-hot-toast";
 
 // --- CẤU HÌNH VALIDATION ---
@@ -66,12 +66,10 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
       try {
         setSubmitting(true);
 
-        // 1. Upload file lên Cloudinary
-        // Lưu ý: Đảm bảo file src/utils/uploadImage.js của bạn đã cho phép upload Video như hướng dẫn trước
+        // 1. Upload file qua backend media API
         let mediaUrls = [];
         if (values.media.length > 0) {
           const uploadPromises = values.media.map((file) =>
-            // Tham số thứ 2 là folder trên Cloudinary
             uploadImage(file, "posts"),
           );
           mediaUrls = await Promise.all(uploadPromises);
