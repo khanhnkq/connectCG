@@ -7,6 +7,7 @@ import { loginUser } from "../../redux/slices/authSlice";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { getErrorMessage } from "../../utils/errorUtils";
+import { appConfig } from "../../config/runtimeConfig";
 // Validation schema
 const LoginSchema = Yup.object().shape({
   email: Yup.string().required("Vui lòng nhập email hoặc tên đăng nhập"),
@@ -278,7 +279,7 @@ export default function Login() {
             {/* Social Login */}
             <div className="grid grid-cols-2 gap-4 mb-8">
               <a
-                href={import.meta.env.VITE_OAUTH2_FACEBOOK_URL}
+                href={appConfig.oauthFacebookUrl}
                 className="flex items-center justify-center gap-3 rounded-xl border border-border-main bg-surface-main hover:bg-border-main h-14 px-4 transition-colors"
               >
                 <svg
@@ -294,7 +295,7 @@ export default function Login() {
                 <span className="text-text-main font-medium">Facebook</span>
               </a>
               <a
-                href={import.meta.env.VITE_OAUTH2_GOOGLE_URL}
+                href={appConfig.oauthGoogleUrl}
                 className="flex items-center justify-center gap-3 rounded-xl border border-border-main bg-surface-main hover:bg-border-main h-14 px-4 transition-colors"
               >
                 <svg

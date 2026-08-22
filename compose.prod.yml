@@ -1,0 +1,13 @@
+name: connect-frontend
+
+services:
+  frontend:
+    image: ${FRONTEND_IMAGE:-ghcr.io/khanhnkq/connectcg-frontend}:${FRONTEND_TAG:-latest}
+    restart: unless-stopped
+    ports:
+      - "${SERVICE_BIND_ADDRESS:-127.0.0.1}:${FRONTEND_PORT:-3000}:80"
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:?VITE_API_BASE_URL is required}
+      VITE_WS_URL: ${VITE_WS_URL:?VITE_WS_URL is required}
+      VITE_OAUTH2_GOOGLE_URL: ${VITE_OAUTH2_GOOGLE_URL:?VITE_OAUTH2_GOOGLE_URL is required}
+      VITE_OAUTH2_FACEBOOK_URL: ${VITE_OAUTH2_FACEBOOK_URL:?VITE_OAUTH2_FACEBOOK_URL is required}

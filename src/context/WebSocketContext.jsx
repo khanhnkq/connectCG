@@ -18,6 +18,7 @@ import { updateConversation, removeConversation } from "../redux/slices/chatSlic
 import { store } from "../redux/store/store";
 import userService from "../services/UserService";
 import { logout } from "../redux/slices/authSlice";
+import { appConfig } from "../config/runtimeConfig";
 
 const WebSocketContext = createContext({ stompClient: null, isConnected: false });
 
@@ -37,7 +38,7 @@ export const WebSocketProvider = ({ children }) => {
 
     const client = new Client({
       webSocketFactory: () => {
-        let url = import.meta.env.VITE_WS_URL;
+        let url = appConfig.wsUrl;
         if (!url) return new SockJS("/ws");
 
         url = url.trim();

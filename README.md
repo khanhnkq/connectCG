@@ -1,16 +1,31 @@
-# React + Vite
+# ConnectCG frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Production deployment
 
-Currently, two official plugins are available:
+Run the interactive deployment menu from the frontend repository:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```bash
+chmod +x deploy.sh
+./deploy.sh
+```
 
-## React Compiler
+The menu supports two independent targets:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **VPS Docker:** pulls `ghcr.io/khanhnkq/connectcg-frontend` and injects backend/OAuth URLs when the container starts. The same immutable image works on a shared VPS or a separate frontend VPS.
+- **Vercel:** links the project, uploads the four production `VITE_*` variables, and runs a production deployment through the Vercel CLI.
 
-## Expanding the ESLint configuration
+GitHub Actions publishes `latest`, `sha-<commit>`, and `v*` image tags. Prefer a `sha-*` tag for production so rollback is deterministic.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+For a VPS, expose the Nginx container through a host reverse proxy:
+
+```caddyfile
+app.example.com {
+    reverse_proxy 127.0.0.1:3000
+}
+```
+
+The generated browser configuration contains public endpoints only. Do not add secrets to any `VITE_*` variable because both Docker and Vercel deliver them to the browser.
+
+When frontend and backend use different root domains, the backend cookie must use `Secure=true` and `SameSite=None`. When using subdomains of the same root domain, `SameSite=Lax` is preferred.
+
+See [Vercel CLI deployment](https://vercel.com/docs/projects/deploy-from-cli) and [Vercel environment variables](https://vercel.com/docs/cli/env).

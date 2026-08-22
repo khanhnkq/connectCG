@@ -1,6 +1,7 @@
 import axios from "axios";
+import { appConfig } from "./runtimeConfig";
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+const apiBaseUrl = appConfig.apiBaseUrl;
 
 const axiosClient = axios.create({
   baseURL: apiBaseUrl,
@@ -15,6 +16,7 @@ const axiosClient = axios.create({
 
 let refreshRequest = null;
 let csrfRequest = null;
+let csrfToken = null;
 
 const readCookie = (name) => {
   const prefix = `${name}=`;
@@ -27,7 +29,7 @@ const readCookie = (name) => {
 };
 
 export const ensureCsrfCookie = async () => {
-  let token = readCookie("XSRF-TOKEN");
+  let token = readCookie("XSRF-TOKEN") || csrfToken;
   if (token) return token;
 
   if (!csrfRequest) {
@@ -38,12 +40,13 @@ export const ensureCsrfCookie = async () => {
   }
 
   try {
-    await csrfRequest;
+    const response = await csrfRequest;
+    csrfToken = response.data?.token || null;
   } finally {
     csrfRequest = null;
   }
 
-  token = readCookie("XSRF-TOKEN");
+  token = readCookie("XSRF-TOKEN") || csrfToken;
   if (!token) {
     throw new Error("Không thể khởi tạo CSRF token");
   }
