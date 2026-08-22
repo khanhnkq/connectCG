@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { Client } from "@stomp/stompjs";
+import { Client, ReconnectionTimeMode } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -8,7 +8,6 @@ import { useDispatch } from "react-redux";
 import {
   addNotification,
   setGroupDeletionAlert,
-  setGroupBanAlert,
 } from "../redux/slices/notificationSlice";
 import {
   setOnlineUsers,
@@ -18,24 +17,19 @@ import {
 import { updateConversation, removeConversation } from "../redux/slices/chatSlice";
 import { store } from "../redux/store/store";
 import userService from "../services/UserService";
+import { logout } from "../redux/slices/authSlice";
 
 const WebSocketContext = createContext({ stompClient: null, isConnected: false });
 
 export const WebSocketProvider = ({ children }) => {
   const [stompClient, setStompClient] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
-  const { token } = useSelector((state) => state.auth);
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (!token) {
-      if (stompClient) {
-        console.log("WebSocket: No token, deactivating client");
-        stompClient.deactivate();
-        setStompClient(null);
-        setIsConnected(false);
-      }
+    if (!isAuthenticated) {
       return;
     }
 
@@ -52,19 +46,14 @@ export const WebSocketProvider = ({ children }) => {
           url = url.replace("https:", "http:");
         }
 
-        const finalUrl = url.includes("?")
-          ? `${url}&access_token=${token}`
-          : `${url}?access_token=${token}`;
-
-        return new SockJS(finalUrl);
+        return new SockJS(url);
       },
-      connectHeaders: { Authorization: `Bearer ${token}` },
       reconnectDelay: 1000,
-      heartbeatIncoming: 4000,
-      heartbeatOutgoing: 4000,
-      debug: (str) => {
-        // console.log("STOMP debug:", str);
-      }
+      maxReconnectDelay: 30000,
+      reconnectTimeMode: ReconnectionTimeMode.EXPONENTIAL,
+      connectionTimeout: 10000,
+      heartbeatIncoming: 10000,
+      heartbeatOutgoing: 10000,
     });
 
     client.onConnect = () => {
@@ -85,8 +74,8 @@ export const WebSocketProvider = ({ children }) => {
       client.subscribe("/user/queue/errors", (msg) => {
         const payload = JSON.parse(msg.body);
         if (payload.type === "LOCK" || payload.type === "DELETE") {
-          localStorage.clear();
           client.deactivate();
+          dispatch(logout());
           navigate("/login");
         }
       });
@@ -180,9 +169,8 @@ export const WebSocketProvider = ({ children }) => {
 
       // --- 4. Content Streams ---
       client.subscribe("/topic/posts", msg => window.dispatchEvent(new CustomEvent("postEvent", { detail: JSON.parse(msg.body) })));
-      client.subscribe("/topic/reactions", msg => window.dispatchEvent(new CustomEvent("reactionEvent", { detail: JSON.parse(msg.body) })));
-      client.subscribe("/topic/comments", msg => window.dispatchEvent(new CustomEvent("commentEvent", { detail: JSON.parse(msg.body) })));
       client.subscribe("/topic/users", msg => window.dispatchEvent(new CustomEvent("userEvent", { detail: JSON.parse(msg.body) })));
+      client.subscribe("/user/queue/post-moderation", msg => window.dispatchEvent(new CustomEvent("postEvent", { detail: JSON.parse(msg.body) })));
 
       // --- 5. Chat Metadata & Invitations ---
       client.subscribe("/user/queue/chat", (message) => {
@@ -207,37 +195,41 @@ export const WebSocketProvider = ({ children }) => {
         } catch (e) { console.error("Error chat sync:", e); }
       });
 
-      // --- 6. Group Membership ---
-      client.subscribe("/topic/groups/membership", (message) => {
-        try {
-          const payload = JSON.parse(message.body);
-          window.dispatchEvent(new CustomEvent("membershipEvent", { detail: payload }));
-          const currentUserId = JSON.parse(localStorage.getItem("userData"))?.userId;
-          if (payload.action === "BANNED" && payload.userId === currentUserId) {
-            dispatch(setGroupBanAlert({ groupId: payload.groupId, groupName: payload.groupName, action: "BANNED" }));
-          }
-        } catch (e) { console.error("Error membership:", e); }
-      });
     };
 
     client.onDisconnect = () => {
       setIsConnected(false);
     };
 
+    client.onWebSocketClose = () => {
+      setIsConnected(false);
+    };
+
+    client.onStompError = (frame) => {
+      setIsConnected(false);
+      console.error("WebSocket broker error:", frame.headers.message);
+    };
+
     client.activate();
+    // The active STOMP instance is the state exposed to feature subscriptions.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setStompClient(client);
 
     return () => {
       console.log("WebSocket: Cleaning up connection...");
       client.deactivate();
     };
-  }, [token, navigate, dispatch]);
+  }, [isAuthenticated, user?.id, navigate, dispatch]);
 
   return (
-    <WebSocketContext.Provider value={{ stompClient, isConnected }}>
+    <WebSocketContext.Provider value={{
+      stompClient: isAuthenticated ? stompClient : null,
+      isConnected: Boolean(isAuthenticated && isConnected),
+    }}>
       {children}
     </WebSocketContext.Provider>
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useWebSocket = () => useContext(WebSocketContext);

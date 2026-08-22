@@ -5,7 +5,6 @@ import {
   ArrowUpNarrowWide,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../components/layout-admin/AdminLayout";
 import reportService from "../../services/ReportService";
@@ -59,7 +58,8 @@ const AdminReportsManagement = () => {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(false);
   const [sortOrder, setSortOrder] = useState("desc"); // desc (newest) | asc (oldest)
-  const [currentUserId, setCurrentUserId] = useState(null);
+  const sessionUser = useSelector((state) => state.auth.user);
+  const currentUserId = sessionUser?.id ? Number(sessionUser.id) : null;
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(0);
@@ -72,19 +72,6 @@ const AdminReportsManagement = () => {
 
   // Redux: Listen for new notifications (Real-time updates)
   const { items: notifications } = useSelector((state) => state.notifications);
-
-  useEffect(() => {
-    const userStr = localStorage.getItem("user");
-    if (userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        setCurrentUserId(Number(user.id));
-        console.log("Current Admin ID:", Number(user.id));
-      } catch (e) {
-        console.error("Failed to parse user from localStorage", e);
-      }
-    }
-  }, []);
 
   // Modal State
   const [detailModal, setDetailModal] = useState({
@@ -522,7 +509,7 @@ const AdminReportsManagement = () => {
       }
       fetchReports();
       closeDetailModal();
-    } catch (error) {
+    } catch {
       toast.error("Lỗi khi cập nhật trạng thái");
     }
   };
@@ -577,7 +564,7 @@ const AdminReportsManagement = () => {
 
       if (reportsOrId) await handleResolveReport(reportsOrId);
       else fetchReports();
-    } catch (error) {
+    } catch {
       toast.error("Lỗi khi xóa nhóm");
     }
   };

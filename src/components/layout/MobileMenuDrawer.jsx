@@ -12,7 +12,7 @@ import {
   Moon,
   Sun,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 // import { logout } from "../../services/AuthService"; // REMOVED
 import { logout } from "../../redux/slices/authSlice"; // ADDED
 // import { toggleTheme } from "../../redux/slices/themeSlice"; // REMOVED (Previous step)
@@ -36,21 +36,7 @@ export default function MobileMenuDrawer({ isOpen, onClose }) {
   const [showManaged, setShowManaged] = useState(true);
   const [showJoined, setShowJoined] = useState(true);
 
-  // Check Admin Role (Lazy Initialization)
-  const [isAdmin, setIsAdmin] = useState(() => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      try {
-        const payload = token.split(".")[1];
-        const decoded = JSON.parse(atob(payload));
-        const rolesRaw = decoded.role || "";
-        return rolesRaw.includes("ROLE_ADMIN");
-      } catch {
-        return false;
-      }
-    }
-    return false;
-  });
+  const isAdmin = Boolean(user?.role?.includes("ROLE_ADMIN"));
 
   // Fetch Groups
   useEffect(() => {
@@ -81,8 +67,8 @@ export default function MobileMenuDrawer({ isOpen, onClose }) {
     }
   }, [user?.id, isOpen]);
 
-  const handleLogout = () => {
-    dispatch(logout());
+  const handleLogout = async () => {
+    await dispatch(logout()).unwrap();
     navigate("/login");
     onClose();
   };
@@ -96,7 +82,7 @@ export default function MobileMenuDrawer({ isOpen, onClose }) {
       {isOpen && (
         <>
           {/* Backdrop */}
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -105,7 +91,7 @@ export default function MobileMenuDrawer({ isOpen, onClose }) {
           />
 
           {/* Drawer */}
-          <motion.div
+          <Motion.div
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
@@ -179,7 +165,7 @@ export default function MobileMenuDrawer({ isOpen, onClose }) {
 
                   <AnimatePresence>
                     {showManaged && (
-                      <motion.div
+                      <Motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
@@ -207,7 +193,7 @@ export default function MobileMenuDrawer({ isOpen, onClose }) {
                             </Link>
                           ))}
                         </div>
-                      </motion.div>
+                      </Motion.div>
                     )}
                   </AnimatePresence>
                 </div>
@@ -233,7 +219,7 @@ export default function MobileMenuDrawer({ isOpen, onClose }) {
 
                   <AnimatePresence>
                     {showJoined && (
-                      <motion.div
+                      <Motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
@@ -261,7 +247,7 @@ export default function MobileMenuDrawer({ isOpen, onClose }) {
                             </Link>
                           ))}
                         </div>
-                      </motion.div>
+                      </Motion.div>
                     )}
                   </AnimatePresence>
                 </div>
@@ -309,7 +295,7 @@ export default function MobileMenuDrawer({ isOpen, onClose }) {
                 ))}
               </div>
             </div>
-          </motion.div>
+          </Motion.div>
         </>
       )}
     </AnimatePresence>

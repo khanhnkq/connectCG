@@ -88,29 +88,11 @@ export default function UserProfile() {
     },
     [setPosts],
   );
-  // Hàm lấy Avatar
-  const fetchCurrentUserAvatar = useCallback(async () => {
-    try {
-      // 1. Lấy string JSON từ localStorage
-      const userProfileStr = localStorage.getItem("userProfile");
-
-      if (userProfileStr) {
-        // 2. Parse từ String sang Object
-        const userProfile = JSON.parse(userProfileStr);
-        // 3. Lấy avatar (Fallback các trường hợp key có thể khác nhau)
-        const avatar =
-          userProfile.currentAvatarUrl ||
-          userProfile.avatar ||
-          userProfile.avatarUrl;
-
-        if (avatar) {
-          setUserAvatar(avatar);
-        }
-      }
-    } catch (error) {
-      console.error("Failed to fetch user avatar", error);
-    }
-  }, []);
+  useEffect(() => {
+    setUserAvatar(
+      profile?.currentAvatarUrl || profile?.avatar || profile?.avatarUrl || "",
+    );
+  }, [profile]);
   const handlePostCreated = (newPost) => {
     // only add if approved (AI check result)
     if (newPost.status === "APPROVED") {
@@ -126,10 +108,9 @@ export default function UserProfile() {
     if (userId) {
       // Always fetch fresh profile data
       dispatch(fetchUserProfile(userId));
+      fetchPosts(userId);
     }
-    fetchPosts(userId);
-    fetchCurrentUserAvatar();
-  }, [user, dispatch, fetchPosts, fetchCurrentUserAvatar]);
+  }, [user, dispatch, fetchPosts]);
 
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0];

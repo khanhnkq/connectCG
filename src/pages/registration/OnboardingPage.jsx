@@ -72,8 +72,8 @@ export default function Step2() {
   const [avatarPreview, setAvatarPreview] = useState(null);
   const fileInputRef = useRef(null);
 
-  const handleLogout = () => {
-    dispatch(logout());
+  const handleLogout = async () => {
+    await dispatch(logout()).unwrap();
     navigate("/login");
   };
   const { hasProfile } = useSelector((state) => state.auth);

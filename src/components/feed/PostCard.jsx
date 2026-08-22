@@ -30,6 +30,7 @@ import { Link } from "react-router-dom";
 import AutoplayVideo from "../common/AutoplayVideo";
 import ShareModal from "./ShareModal";
 import SharedPostContent from "./SharedPostContent";
+import { useWebSocket } from "../../context/WebSocketContext";
 
 // --- HELPER 1: Format thời gian ---
 const formatTime = (dateString) => {
@@ -177,6 +178,7 @@ export default function PostCard({
   isAdmin: canPin = false, // From group detail
 }) {
   const [showComments, setShowComments] = useState(false);
+  const { stompClient, isConnected } = useWebSocket();
   const { user } = useSelector((state) => state.auth);
   const [showMenu, setShowMenu] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(-1); // Index ảnh đang xem (-1 là đóng)
@@ -264,6 +266,8 @@ export default function PostCard({
 
   // Sync prop changes to local state
   useEffect(() => {
+    // The server snapshot must replace optimistic state after a refetch.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLocalReaction(data.currentUserReaction);
     setLocalReactCount(data.reactCount);
     setLocalCommentCount(data.commentCount);
@@ -274,6 +278,32 @@ export default function PostCard({
     data.commentCount,
     data.shareCount,
   ]);
+
+  useEffect(() => {
+    if (!stompClient || !isConnected || !data.id) return undefined;
+
+    const dispatchEvent = (eventName) => (message) => {
+      window.dispatchEvent(
+        new CustomEvent(eventName, { detail: JSON.parse(message.body) }),
+      );
+    };
+    const subscriptions = [
+      stompClient.subscribe(
+        `/topic/posts/${data.id}/reactions`,
+        dispatchEvent("reactionEvent"),
+      ),
+      stompClient.subscribe(
+        `/topic/posts/${data.id}/comments`,
+        dispatchEvent("commentEvent"),
+      ),
+      stompClient.subscribe(
+        `/topic/posts/${data.id}/updates`,
+        dispatchEvent("postEvent"),
+      ),
+    ];
+
+    return () => subscriptions.forEach((subscription) => subscription.unsubscribe());
+  }, [stompClient, isConnected, data.id]);
 
   // Listen for realtime reaction events
   useEffect(() => {
@@ -303,8 +333,8 @@ export default function PostCard({
   // Listen for realtime post update events (for shareCount)
   useEffect(() => {
     const handlePostEvent = (e) => {
-      const { type, postId, post: updatedPost } = e.detail;
-      if (postId === data.id && type === "UPDATED" && updatedPost) {
+      const { action, postId, post: updatedPost } = e.detail;
+      if (postId === data.id && action === "UPDATED" && updatedPost) {
         setLocalShareCount(updatedPost.shareCount || 0);
       }
     };

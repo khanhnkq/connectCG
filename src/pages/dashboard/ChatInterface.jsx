@@ -86,6 +86,7 @@ export default function ChatInterface() {
   const [inputText, setInputText] = useState("");
   const [typingUsers, setTypingUsers] = useState({}); // { firebaseRoomKey: [names...] }
   const typingTimeoutRef = useRef(null);
+  const lastTypingSentAtRef = useRef(0);
   const { stompClient, isConnected } = useWebSocket();
   const [showNewChatModal, setShowNewChatModal] = useState(false);
   const [friends, setFriends] = useState([]);
@@ -179,7 +180,6 @@ export default function ChatInterface() {
   };
 
   const [isInviting, setIsInviting] = useState(false);
-  const [isKicking, setIsKicking] = useState(false);
 
   const handleInviteMember = async () => {
     if (!selectedInvitees || selectedInvitees.length === 0 || !activeRoom)
@@ -358,8 +358,6 @@ export default function ChatInterface() {
   useEffect(() => {
     // Add check for stompClient.connected to avoid "There is no underlying STOMP connection" error
     if (!stompClient || !isConnected || !stompClient.connected || !activeRoom?.firebaseRoomKey) {
-      if (activeRoom?.firebaseRoomKey && isConnected && stompClient && !stompClient.connected) {
-      }
       return;
     }
 
@@ -394,7 +392,7 @@ export default function ChatInterface() {
       subscriptions.forEach(sub => {
         try {
           sub.unsubscribe();
-        } catch (e) {
+        } catch {
           // ignore unsubscribe errors during unmount/reconnect
         }
       });
@@ -442,7 +440,7 @@ export default function ChatInterface() {
       if (sub) {
         try {
           sub.unsubscribe();
-        } catch (e) {
+        } catch {
           // ignore
         }
       }
@@ -499,14 +497,20 @@ export default function ChatInterface() {
 
     // Send "Typing" signal
     if (text.length > 0) {
-      emitTyping(true);
+      const now = Date.now();
+      if (now - lastTypingSentAtRef.current >= 1000) {
+        emitTyping(true);
+        lastTypingSentAtRef.current = now;
+      }
 
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       typingTimeoutRef.current = setTimeout(() => {
         emitTyping(false);
+        lastTypingSentAtRef.current = 0;
       }, 3000);
     } else {
       emitTyping(false);
+      lastTypingSentAtRef.current = 0;
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     }
   };
@@ -705,7 +709,6 @@ export default function ChatInterface() {
 
   const confirmKickMember = async () => {
     if (!activeRoom || !kickMemberData) return;
-    setIsKicking(true);
     try {
       if (
         kickMemberData.role === "Member" ||
@@ -730,8 +733,6 @@ export default function ChatInterface() {
     } catch (error) {
       console.error(error);
       toast.error("Thao tác thất bại");
-    } finally {
-      setIsKicking(false);
     }
   };
 

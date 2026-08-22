@@ -1,38 +1,50 @@
-import axiosClient from "../config/axiosConfig";
+import axiosClient, { ensureCsrfCookie } from "../config/axiosConfig";
+
+const ensureCsrf = ensureCsrfCookie;
+
+const postWithCsrf = async (url, data, config) => {
+  await ensureCsrf();
+  return axiosClient.post(url, data, config);
+};
 
 const authService = {
-    login: (username, password) => {
-        // Đường dẫn này nối đuôi vào baseURL -> http://localhost:8080/api/v1/auth/login
-        return axiosClient.post('/v1/auth/login', { username, password });
-    },
+  ensureCsrf,
 
-    register: (data) => {
-        return axiosClient.post('/v1/auth/register', data);
-    },
-    createProfile: (data) => {
-        return axiosClient.post('/v1/auth/profile', data);
-    },
+  login: (username, password) =>
+    postWithCsrf("/v1/auth/login", { username, password }, { skipAuthRefresh: true }),
 
-    logout: () => {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('user');
-        localStorage.removeItem('hasProfile');
-    },
+  register: (data) =>
+    postWithCsrf("/v1/auth/register", data, { skipAuthRefresh: true }),
 
-    getCurrentUser: () => {
-        const userStr = localStorage.getItem('user');
-        if (userStr) return JSON.parse(userStr);
-        return null;
-    },
-    forgotPassword(email) {
-        return axiosClient.post(`/v1/auth/forgot-password`, null, { params: { email } });
-    },
-    resetPassword(token, newPassword) {
-        return axiosClient.post(`/v1/auth/reset-password`, null, { params: { token, newPassword } });
-    },
-    verifyEmail(token) {
-        return axiosClient.get(`/v1/auth/verify-email`, { params: { token } });
-    }
+  createProfile: (data) => postWithCsrf("/v1/auth/profile", data),
+
+  forgotPassword: (email) =>
+    postWithCsrf("/v1/auth/forgot-password", null, {
+      params: { email },
+      skipAuthRefresh: true,
+    }),
+
+  resetPassword: (token, newPassword) =>
+    postWithCsrf("/v1/auth/reset-password", null, {
+      params: { token, newPassword },
+      skipAuthRefresh: true,
+    }),
+
+  verifyEmail: (token) =>
+    axiosClient.get("/v1/auth/verify-email", {
+      params: { token },
+      skipAuthRefresh: true,
+    }),
+
+  getCurrentSession: async () => {
+    await ensureCsrf();
+    return axiosClient.get("/v1/auth/me");
+  },
+
+  logout: () =>
+    postWithCsrf("/v1/auth/logout", null, { skipAuthRefresh: true }),
+
+  logoutAll: () => postWithCsrf("/v1/auth/logout-all", null),
 };
 
 export default authService;

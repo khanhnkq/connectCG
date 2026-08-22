@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Settings, Bell, LogOut, ChevronDown } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../redux/slices/authSlice";
 
@@ -42,8 +42,8 @@ const UserMenuDropdown = ({ isOpen, onClose, onShowNotifications }) => {
   const { user } = useSelector((state) => state.auth);
   const { profile: userProfile } = useSelector((state) => state.user);
 
-  const handleLogout = () => {
-    dispatch(logout());
+  const handleLogout = async () => {
+    await dispatch(logout()).unwrap();
     navigate("/login");
     onClose();
   };
@@ -51,7 +51,7 @@ const UserMenuDropdown = ({ isOpen, onClose, onShowNotifications }) => {
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, y: 15, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 15, scale: 0.95 }}
@@ -120,7 +120,7 @@ const UserMenuDropdown = ({ isOpen, onClose, onShowNotifications }) => {
             onClick={handleLogout}
             danger
           />
-        </motion.div>
+        </Motion.div>
       )}
     </AnimatePresence>
   );

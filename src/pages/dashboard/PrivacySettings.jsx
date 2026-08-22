@@ -18,16 +18,20 @@ import {
   Activity,
   UserX,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import { logoutAll } from "../../redux/slices/authSlice";
 
 const SettingToggle = ({
-  icon: Icon,
+  icon,
   title,
   description,
   enabled,
   onToggle,
 }) => (
-  <motion.div
+  <Motion.div
     whileHover={{ y: -2 }}
     className="flex items-center justify-between p-5 bg-surface-main rounded-[1.5rem] shadow-sm border border-border-main/5 hover:shadow-md transition-all group"
   >
@@ -39,7 +43,7 @@ const SettingToggle = ({
             : "bg-gray-500/5 text-text-secondary/60"
         }`}
       >
-        <Icon size={24} strokeWidth={enabled ? 2.5 : 2} />
+        {React.createElement(icon, { size: 24, strokeWidth: enabled ? 2.5 : 2 })}
       </div>
       <div className="flex flex-col justify-center">
         <h4 className="font-extrabold text-text-main text-lg group-hover:text-primary transition-colors leading-tight">
@@ -58,18 +62,18 @@ const SettingToggle = ({
           : "bg-text-secondary/20"
       }`}
     >
-      <motion.span
+      <Motion.span
         animate={{ x: enabled ? 22 : 4 }}
         className="inline-block h-5 w-5 rounded-full bg-white shadow-md"
       />
     </button>
-  </motion.div>
+  </Motion.div>
 );
 
-const SectionHeader = ({ icon: Icon, title, description }) => (
+const SectionHeader = ({ icon, title, description }) => (
   <div className="flex items-center gap-4 mb-8">
     <div className="p-3 bg-primary text-[#231810] rounded-[1.2rem] shadow-lg shadow-primary/10">
-      <Icon size={22} strokeWidth={2.5} />
+      {React.createElement(icon, { size: 22, strokeWidth: 2.5 })}
     </div>
     <div>
       <h3 className="text-xl font-black text-text-main uppercase tracking-tighter">
@@ -82,13 +86,16 @@ const SectionHeader = ({ icon: Icon, title, description }) => (
   </div>
 );
 
-const QuickAction = ({ icon: Icon, title, status, color }) => (
-  <button className="w-full flex items-center justify-between p-5 rounded-[1.8rem] bg-surface-main hover:bg-background-main transition-all duration-300 group shadow-sm hover:shadow-md border border-border-main/5">
+const QuickAction = ({ icon, title, status, color, onClick }) => (
+  <button
+    onClick={onClick}
+    className="w-full flex items-center justify-between p-5 rounded-[1.8rem] bg-surface-main hover:bg-background-main transition-all duration-300 group shadow-sm hover:shadow-md border border-border-main/5"
+  >
     <div className="flex items-center gap-4">
       <div
         className={`p-3 rounded-2xl bg-background-main group-hover:bg-surface-main transition-colors ${color}`}
       >
-        <Icon size={20} />
+        {React.createElement(icon, { size: 20 })}
       </div>
       <div className="text-left">
         <p className="text-base font-black text-text-main leading-none mb-1">
@@ -109,6 +116,8 @@ const QuickAction = ({ icon: Icon, title, status, color }) => (
 );
 
 export default function PrivacySettings() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [settings, setSettings] = useState({
     privateAccount: false,
     activityStatus: true,
@@ -122,9 +131,19 @@ export default function PrivacySettings() {
     setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
+  const handleLogoutAll = async () => {
+    try {
+      await dispatch(logoutAll()).unwrap();
+      toast.success("Đã đăng xuất khỏi tất cả thiết bị.");
+      navigate("/login", { replace: true });
+    } catch {
+      toast.error("Không thể thu hồi các phiên đăng nhập. Vui lòng thử lại.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background-main/30">
-      <motion.div
+      <Motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         className="p-10 max-w-[75rem] mx-auto pb-32"
@@ -247,9 +266,10 @@ export default function PrivacySettings() {
                 />
                 <QuickAction
                   icon={Smartphone}
-                  title="Thiết bị đăng nhập"
-                  status="3 thiết bị"
+                  title="Đăng xuất mọi thiết bị"
+                  status="Thu hồi tất cả phiên đăng nhập"
                   color="text-blue-500"
+                  onClick={handleLogoutAll}
                 />
                 <QuickAction
                   icon={UserX}
@@ -288,7 +308,7 @@ export default function PrivacySettings() {
             </div>
           </div>
         </div>
-      </motion.div>
+      </Motion.div>
     </div>
   );
 }

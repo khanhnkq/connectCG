@@ -1,4 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { clearSession, loginUser, logout, logoutAll } from "./authSlice";
+
+const resetChatState = (state) => {
+    state.conversations = [];
+    state.activeRoomId = null;
+    state.error = null;
+    state.loading = false;
+};
 
 const chatSlice = createSlice({
     name: 'chat',
@@ -98,12 +106,11 @@ const chatSlice = createSlice({
         }
     },
     extraReducers: (builder) => {
-        // Clear conversations on logout
-        builder.addCase('auth/logout', (state) => {
-            state.conversations = [];
-            state.error = null;
-            state.loading = false;
-        });
+        builder
+            .addCase(loginUser.pending, resetChatState)
+            .addCase(logout.pending, resetChatState)
+            .addCase(logoutAll.pending, resetChatState)
+            .addCase(clearSession, resetChatState);
     }
 });
 

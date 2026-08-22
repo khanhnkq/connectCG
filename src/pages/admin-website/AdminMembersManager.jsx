@@ -14,6 +14,7 @@ import {
   ShieldHalf,
 } from "lucide-react";
 import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import AdminLayout from "../../components/layout-admin/AdminLayout";
 import toast from "react-hot-toast";
 import ConfirmModal from "../../components/common/ConfirmModal";
@@ -30,7 +31,8 @@ const AdminMembersManager = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState(""); // '' for all
-  const [currentUserId, setCurrentUserId] = useState(null);
+  const sessionUser = useSelector((state) => state.auth.user);
+  const currentUserId = sessionUser?.id ? Number(sessionUser.id) : null;
   const [pagination, setPagination] = useState({
     currentPage: 0,
     totalPages: 0,
@@ -45,18 +47,6 @@ const AdminMembersManager = () => {
     onConfirm: null,
     type: "danger",
   });
-
-  useEffect(() => {
-    const userStr = localStorage.getItem("user");
-    if (userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        setCurrentUserId(Number(user.id)); // Ensure it's a number for strict comparison
-      } catch (e) {
-        console.error("Failed to parse user from localStorage", e);
-      }
-    }
-  }, []);
 
   const fetchUsers = React.useCallback(
     async (page, keyword, role) => {

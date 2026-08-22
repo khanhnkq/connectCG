@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { Routes, Route, Outlet } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { Toaster } from "react-hot-toast";
 import { WebSocketProvider } from "./context/WebSocketContext";
 import DashboardLayout from "./components/layout/DashboardLayout";
@@ -36,8 +38,28 @@ import GroupDeletedModal from "./components/common/GroupDeletedModal";
 import { toastConfig } from "./config/toastConfig";
 
 import PostDetailPage from "./pages/dashboard/PostDetailPage";
+import { clearSession, initializeAuth } from "./redux/slices/authSlice";
 
 function App() {
+  const dispatch = useDispatch();
+  const authChecked = useSelector((state) => state.auth.authChecked);
+
+  useEffect(() => {
+    dispatch(initializeAuth());
+
+    const handleSessionExpired = () => dispatch(clearSession());
+    window.addEventListener("auth:session-expired", handleSessionExpired);
+    return () => window.removeEventListener("auth:session-expired", handleSessionExpired);
+  }, [dispatch]);
+
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen grid place-items-center bg-background-main text-text-secondary">
+        Đang kiểm tra phiên đăng nhập...
+      </div>
+    );
+  }
+
   return (
     <ThemeProvider>
       <Toaster {...toastConfig} />

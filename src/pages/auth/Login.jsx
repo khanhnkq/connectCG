@@ -72,7 +72,8 @@ export default function Login() {
     console.log("Login:", values);
     try {
       const resultAction = await dispatch(loginUser(values)).unwrap();
-      const displayName = resultAction.user?.fullName || resultAction.user?.username;
+      const displayName =
+        resultAction.fullName || resultAction.username || "bạn";
       toast.success(`Đăng nhập thành công! Chào mừng ${displayName}`);
       if (resultAction.hasProfile) {
         navigate("/dashboard/feed");

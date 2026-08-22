@@ -16,9 +16,11 @@ import {
   findMyJoinedGroups,
 } from "../../services/groups/GroupService";
 import toast from "react-hot-toast";
+import { useSelector } from "react-redux";
 
 export default function GroupsManagement() {
   const navigate = useNavigate();
+  const authenticatedUser = useSelector((state) => state.auth.user);
   const [searchParams, setSearchParams] = useSearchParams();
 
   // States
@@ -260,16 +262,15 @@ export default function GroupsManagement() {
   };
 
   const checkIfAdmin = (group) => {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    return group.ownerId == user.id || group.currentUserRole === "ADMIN";
+    return Number(group.ownerId) === Number(authenticatedUser?.id)
+      || group.currentUserRole === "ADMIN";
   };
 
   // Real-time synchronization
   useEffect(() => {
     const handleEvent = (e) => {
       const { action, groupId, userId } = e.detail;
-      const currentUserId = JSON.parse(localStorage.getItem("user") || "{}").id;
-      if (Number(userId) !== Number(currentUserId)) return;
+      if (Number(userId) !== Number(authenticatedUser?.id)) return;
 
       if (["ACCEPTED", "JOINED", "APPROVED", "INVITED"].includes(action)) {
         fetchGroups(true);
@@ -286,7 +287,7 @@ export default function GroupsManagement() {
     };
     window.addEventListener("membershipEvent", handleEvent);
     return () => window.removeEventListener("membershipEvent", handleEvent);
-  }, [fetchGroups]);
+  }, [fetchGroups, authenticatedUser?.id]);
 
   const filteredGroups = (groups) => {
     if (!searchQuery.trim()) return groups;

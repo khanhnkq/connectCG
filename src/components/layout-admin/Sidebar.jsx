@@ -10,6 +10,7 @@ import {
   Network,
 } from "lucide-react";
 import UserProfileService from "../../services/user/UserProfileService";
+import { useSelector } from "react-redux";
 
 const iconMap = {
   dashboard: LayoutDashboard,
@@ -21,35 +22,27 @@ const iconMap = {
 };
 
 const Sidebar = ({ brandName = "Quản trị MXH", activeTab = "Groups" }) => {
-  const [currentUser, setCurrentUser] = React.useState(null);
+  const sessionUser = useSelector((state) => state.auth.user);
+  const [currentUser, setCurrentUser] = React.useState(sessionUser);
 
   React.useEffect(() => {
     const fetchProfile = async () => {
-      const userStr = localStorage.getItem("user");
-      if (userStr) {
+      if (sessionUser) {
+        setCurrentUser(sessionUser);
+        if (sessionUser.id) {
         try {
-          const user = JSON.parse(userStr);
-          // Initial set from localStorage
-          setCurrentUser(user);
-
-          // Fetch full profile to get fullName and latest avatar
-          if (user.id) {
-            try {
-              const res = await UserProfileService.getUserProfile(user.id);
-              if (res.data) {
-                setCurrentUser((prev) => ({ ...prev, ...res.data }));
-              }
-            } catch (err) {
-              console.error("Failed to fetch admin profile", err);
+          const res = await UserProfileService.getUserProfile(sessionUser.id);
+          if (res.data) {
+            setCurrentUser((prev) => ({ ...prev, ...res.data }));
             }
+          } catch (err) {
+            console.error("Failed to fetch admin profile", err);
           }
-        } catch (error) {
-          console.error("Failed to parse user data", error);
         }
       }
     };
     fetchProfile();
-  }, []);
+  }, [sessionUser]);
 
   const navItems = [
     // { name: "Dashboard", label: "Tổng quan", icon: "dashboard", path: "/admin-website" },
@@ -77,10 +70,6 @@ const Sidebar = ({ brandName = "Quản trị MXH", activeTab = "Groups" }) => {
       icon: "analytics",
       path: "/admin-website/reports",
     },
-  ];
-
-  const systemItems = [
-    { name: "Settings", label: "Cài đặt", icon: "settings", path: "#" },
   ];
 
   return (

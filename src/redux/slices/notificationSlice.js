@@ -1,5 +1,16 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { getMyNotifications } from '../../services/NotificationService';
+import { clearSession, loginUser, logout, logoutAll } from './authSlice';
+
+const resetNotificationState = (state) => {
+    state.items = [];
+    state.loading = false;
+    state.error = null;
+    state.unreadCount = 0;
+    state.groupDeletionAlert = null;
+    state.groupBanAlert = null;
+    state.currentRequestId = null;
+};
 
 export const fetchNotifications = createAsyncThunk(
     'notifications/fetchNotifications',
@@ -22,6 +33,7 @@ const notificationSlice = createSlice({
         unreadCount: 0,
         groupDeletionAlert: null, // Stores payload for group deletion modal { type, content, ... }
         groupBanAlert: null, // { groupId, groupName, action }
+        currentRequestId: null,
     },
     reducers: {
         addNotification: (state, action) => {
@@ -67,20 +79,29 @@ const notificationSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            .addCase(fetchNotifications.pending, (state) => {
+            .addCase(fetchNotifications.pending, (state, action) => {
                 state.loading = true;
+                state.currentRequestId = action.meta.requestId;
             })
             .addCase(fetchNotifications.fulfilled, (state, action) => {
+                if (action.meta.requestId !== state.currentRequestId) return;
                 state.loading = false;
+                state.currentRequestId = null;
                 // Safe check if payload is array. If backend returns Page object, we might need .content
                 const payload = action.payload || [];
                 state.items = Array.isArray(payload) ? payload : (payload.content || []);
                 state.unreadCount = state.items.filter(n => !n.isRead).length;
             })
             .addCase(fetchNotifications.rejected, (state, action) => {
+                if (action.meta.requestId !== state.currentRequestId) return;
                 state.loading = false;
                 state.error = action.payload;
-            });
+                state.currentRequestId = null;
+            })
+            .addCase(loginUser.pending, resetNotificationState)
+            .addCase(logout.pending, resetNotificationState)
+            .addCase(logoutAll.pending, resetNotificationState)
+            .addCase(clearSession, resetNotificationState);
     },
 });
 

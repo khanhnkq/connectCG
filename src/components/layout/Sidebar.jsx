@@ -18,7 +18,7 @@ export default function SidebarComponent() {
   const dispatch = useDispatch();
   const [open, setOpen] = useState(false);
 
-  const [isAdmin, setIsAdmin] = useState(false);
+  const isAdmin = Boolean(user?.role?.includes("ROLE_ADMIN"));
 
   // Groups Logic
   const [managedGroups, setManagedGroups] = useState([]);
@@ -59,21 +59,6 @@ export default function SidebarComponent() {
     };
     fetchGroups();
   }, [user?.id]);
-
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      try {
-        const payload = token.split(".")[1];
-        const decoded = JSON.parse(atob(payload));
-        const rolesRaw = decoded.role || "";
-        const hasAdminRole = rolesRaw.includes("ROLE_ADMIN");
-        setIsAdmin(hasAdminRole);
-      } catch (error) {
-        setIsAdmin(false);
-      }
-    }
-  }, []);
 
   const menuItems = [];
 

@@ -36,7 +36,6 @@ import {
   rejectRequest,
   banMember,
   transferOwnership,
-  updateGroupMemberRole,
   getPendingPosts,
   approvePost,
   rejectPost,
@@ -51,11 +50,14 @@ import TransferOwnershipModal from "../../components/groups/TransferOwnershipMod
 import reportService from "../../services/ReportService";
 import ConfirmModal from "../../components/common/ConfirmModal";
 import { usePostManagement } from "../../hooks/usePostManagement";
+import { useWebSocket } from "../../context/WebSocketContext";
 
 const GroupDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { profile: currentUserProfile } = useSelector((state) => state.user);
+  const authenticatedUser = useSelector((state) => state.auth.user);
+  const { stompClient, isConnected } = useWebSocket();
   const [group, setGroup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false); // Group-level admin/owner
@@ -89,32 +91,17 @@ const GroupDetailPage = () => {
 
   const [showTransferOwnershipModal, setShowTransferOwnershipModal] =
     useState(false);
-  // Helper function to decode JWT and get user ID & ROLE
-  const getUserInfoFromToken = () => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) return null;
-
-    try {
-      const payload = token.split(".")[1];
-      const decoded = JSON.parse(atob(payload));
-      return {
-        id: decoded.userId || decoded.sub || decoded.id,
-        role:
-          decoded.role ||
-          decoded.authorities ||
-          (decoded.realm_access ? decoded.realm_access.roles : null),
-      };
-    } catch (error) {
-      console.error("Failed to decode token:", error);
-      return null;
-    }
-  };
+  // Authentication metadata comes from the server-backed Redux session.
+  const getUserInfoFromToken = useCallback(() => {
+    if (!authenticatedUser) return null;
+    return { id: authenticatedUser.id, role: authenticatedUser.role };
+  }, [authenticatedUser]);
 
   // Legacy support for just ID
-  const getUserIdFromToken = () => {
+  const getUserIdFromToken = useCallback(() => {
     const info = getUserInfoFromToken();
     return info ? info.id : null;
-  };
+  }, [getUserInfoFromToken]);
 
 
   const sortPosts = (postList) => {
@@ -155,7 +142,6 @@ const GroupDetailPage = () => {
       }
 
       const userInfo = getUserInfoFromToken();
-      const userStr = localStorage.getItem("user");
       const membership = groupData.currentUserStatus;
 
       let currentUserId = null;
@@ -164,9 +150,6 @@ const GroupDetailPage = () => {
         currentUserId = Number(userInfo.id);
         // Check role from token - handle both formats and case sensitivity
         // Check system admin role if needed in future
-      } else if (userStr) {
-        const userData = JSON.parse(userStr);
-        currentUserId = userData.id;
       }
       let effectiveIsAdmin = false;
       if (currentUserId) {
@@ -192,7 +175,7 @@ const GroupDetailPage = () => {
           setMemberRequests(requests);
           const pPosts = await getPendingPosts(id);
           setPendingPosts(pPosts);
-        } catch (e) {
+        } catch {
           console.log("No pending data access");
         }
       }
@@ -236,7 +219,7 @@ const GroupDetailPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [id, navigate]);
+  }, [id, navigate, getUserInfoFromToken, setApprovedPosts]);
 
   useEffect(() => {
     fetchGroupData();
@@ -257,12 +240,51 @@ const GroupDetailPage = () => {
     }
   }, [activeTab, isAdmin, fetchBannedMembers]);
 
+  useEffect(() => {
+    const currentUserId = Number(getUserIdFromToken());
+    const canViewGroup =
+      group?.privacy === "PUBLIC" ||
+      group?.currentUserStatus === "ACCEPTED" ||
+      Number(group?.ownerId) === currentUserId;
+    if (!stompClient || !isConnected || !group || !canViewGroup) return undefined;
+
+    const dispatchEvent = (eventName) => (message) => {
+      window.dispatchEvent(
+        new CustomEvent(eventName, { detail: JSON.parse(message.body) }),
+      );
+    };
+    const subscriptions = [
+      stompClient.subscribe(
+        `/topic/groups/${id}/posts`,
+        dispatchEvent("postEvent"),
+      ),
+      stompClient.subscribe(
+        `/topic/groups/${id}/membership`,
+        dispatchEvent("membershipEvent"),
+      ),
+    ];
+    if (isAdmin) {
+      subscriptions.push(
+        stompClient.subscribe(
+          `/topic/groups/${id}/posts/pending`,
+          dispatchEvent("postEvent"),
+        ),
+        stompClient.subscribe(
+          `/topic/groups/${id}/membership/pending`,
+          dispatchEvent("membershipEvent"),
+        ),
+      );
+    }
+
+    return () => subscriptions.forEach((subscription) => subscription.unsubscribe());
+  }, [stompClient, isConnected, group, id, isAdmin, getUserIdFromToken]);
+
   const handleUnbanMember = async (userId) => {
     try {
       await unbanMember(id, userId);
       toast.success("Đã gỡ lệnh cấm thành công");
       setBannedMembers((prev) => prev.filter((m) => m.userId !== userId));
-    } catch (error) {
+    } catch {
       toast.error("Gỡ lệnh cấm thất bại");
     }
   };
@@ -335,7 +357,7 @@ const GroupDetailPage = () => {
     window.addEventListener("membershipEvent", handleMembershipEvent);
     return () =>
       window.removeEventListener("membershipEvent", handleMembershipEvent);
-  }, [id, activeTab, fetchBannedMembers, navigate]);
+  }, [id, activeTab, fetchBannedMembers, navigate, getUserIdFromToken]);
 
   // Real-time Post Events
   useEffect(() => {
@@ -501,16 +523,6 @@ const GroupDetailPage = () => {
     } catch (error) {
       console.error("Failed to decline invite:", error);
       toast.error("Không thể từ chối lời mời");
-    }
-  };
-
-  const handleRejectPost = async (p) => {
-    try {
-      await rejectPost(group.id, p.id);
-      toast.success("Đã từ chối bài viết");
-    } catch (error) {
-      console.error("Reject post failed:", error);
-      toast.error("Từ chối bài viết thất bại");
     }
   };
 

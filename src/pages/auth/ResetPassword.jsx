@@ -58,7 +58,7 @@ export default function ResetPassword() {
     } catch (error) {
       console.error(error);
       const message =
-        error.response?.data || "Đã xảy ra lỗi. Token có thể đã hết hạn.";
+        error.response?.data?.message || "Đã xảy ra lỗi. Token có thể đã hết hạn.";
       setErrors({ submit: message });
       toast.error(message);
     } finally {

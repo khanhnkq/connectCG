@@ -1,4 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { clearSession, loginUser, logout, logoutAll } from "./authSlice";
+
+const resetOnlineUsers = (state) => {
+    state.onlineUserIds = [];
+};
 
 const onlineUsersSlice = createSlice({
     name: "onlineUsers",
@@ -22,6 +27,13 @@ const onlineUsersSlice = createSlice({
             const userId = action.payload;
             state.onlineUserIds = state.onlineUserIds.filter(id => id !== userId);
         },
+    },
+    extraReducers: (builder) => {
+        builder
+            .addCase(loginUser.pending, resetOnlineUsers)
+            .addCase(logout.pending, resetOnlineUsers)
+            .addCase(logoutAll.pending, resetOnlineUsers)
+            .addCase(clearSession, resetOnlineUsers);
     },
 });
 
