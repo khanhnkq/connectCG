@@ -4,7 +4,7 @@ const FriendSuggestionService = {
     // Lấy danh sách gợi ý kết bạn
     getSuggestions: async (page = 0, size = 10) => {
         try {
-            const response = await api.get(`/v1/friends/suggestions?page=${page}&size=${size}`);
+            const response = await api.get(`/friends/suggestions?page=${page}&size=${size}`);
             return response.data;
         } catch (error) {
             console.error("Error fetching friend suggestions:", error);
@@ -15,7 +15,7 @@ const FriendSuggestionService = {
     // Ẩn/Xóa một gợi ý
     dismissSuggestion: async (userId) => {
         try {
-            const response = await api.delete(`/v1/friends/suggestions/${userId}`);
+            const response = await api.delete(`/friends/suggestions/${userId}`);
             return response.data;
         } catch (error) {
             console.error("Error dismissing suggestion:", error);
@@ -26,7 +26,7 @@ const FriendSuggestionService = {
     // Làm mới gợi ý (Refresh)
     refreshSuggestions: async () => {
         try {
-            const response = await api.post(`/v1/friends/suggestions/refresh`);
+            const response = await api.post(`/friends/suggestions/refresh`);
             return response.data;
         } catch (error) {
             console.error("Error refreshing suggestions:", error);

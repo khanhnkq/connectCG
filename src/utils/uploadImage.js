@@ -1,4 +1,4 @@
-import axiosClient from '../config/axiosConfig';
+import axiosClient, { ensureCsrfCookie } from '../config/axiosConfig';
 
 const CATEGORY_ALIASES = {
     'user/avatar': 'avatar',
@@ -21,13 +21,13 @@ export const uploadMedia = async (file, folder = 'user/avatar') => {
     // --- CẤU HÌNH VALIDATE ---
     const isVideo = file.type.startsWith('video/');
 
-    // Validate file
-    const maxSize = isVideo ? 50 * 1024 * 1024 : 5 * 1024 * 1024;
+    // Validate file (cho phép ảnh gốc ban đầu lên tới 25MB vì sẽ được nén về < 300KB)
+    const maxSize = isVideo ? 50 * 1024 * 1024 : 15 * 1024 * 1024;
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif',
         'video/mp4', 'video/webm']; // Thêm video ;
 
     if (file.size > maxSize) {
-        throw new Error(`Kích thước file quá lớn (Video tối đa 50MB, Ảnh 5MB). File hiện tại: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
+        throw new Error(`Kích thước file quá lớn (Video tối đa 50MB, Ảnh 15MB). File hiện tại: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
     }
 
     if (!allowedTypes.includes(file.type)) {
@@ -44,8 +44,11 @@ export const uploadMedia = async (file, folder = 'user/avatar') => {
     formData.append('category', category);
 
     try {
+        await ensureCsrfCookie();
         const response = await axiosClient.post('/media/upload', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
         });
         return response.data;
     } catch (error) {
@@ -54,9 +57,17 @@ export const uploadMedia = async (file, folder = 'user/avatar') => {
     }
 };
 
+export const normalizeMediaUrl = (url) => {
+    if (!url) return url;
+    if (url.includes('localhost:3900/connect-media/')) {
+        return url.replace('http://localhost:3900/connect-media/', 'http://localhost:8080/api/v1/media/view/');
+    }
+    return url;
+};
+
 export const uploadImage = async (file, folder = 'user/avatar') => {
     const media = await uploadMedia(file, folder);
-    return media?.url ?? null;
+    return normalizeMediaUrl(media?.url ?? null);
 };
 
 /**

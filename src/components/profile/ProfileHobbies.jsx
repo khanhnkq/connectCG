@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Pencil } from "lucide-react";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { getIconComponent } from "../../utils/iconMap";
 import HobbySelectionModal from "./HobbySelectionModal";

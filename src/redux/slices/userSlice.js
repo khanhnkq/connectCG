@@ -88,15 +88,15 @@ const userSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            .addCase(initializeAuth.pending, resetProfileState)
-            .addCase(initializeAuth.rejected, resetProfileState)
+            .addCase(initializeAuth.rejected, (state, action) => {
+                if (action.payload?.status === 401 || action.payload?.status === 403) {
+                    resetProfileState(state);
+                }
+            })
             .addCase(loginUser.pending, resetProfileState)
-            .addCase(logout.pending, resetProfileState)
             .addCase(logout.fulfilled, resetProfileState)
             .addCase(logout.rejected, resetProfileState)
-            .addCase(logoutAll.pending, resetProfileState)
             .addCase(logoutAll.fulfilled, resetProfileState)
-            .addCase(logoutAll.rejected, resetProfileState)
             .addCase(clearSession, resetProfileState)
             .addCase(fetchUserProfile.pending, (state, action) => {
                 state.loading = true;

@@ -7,7 +7,7 @@ const FriendRequestService = {
      * @param {number} size 
      */
     getPendingRequests: (page = 0, size = 10) => {
-        return axiosClient.get('/v1/friend-requests', {
+        return axiosClient.get('/friend-requests', {
             params: { page, size }
         });
     },
@@ -17,7 +17,7 @@ const FriendRequestService = {
      * @param {number} requestId 
      */
     acceptRequest: (requestId) => {
-        return axiosClient.post(`/v1/friend-requests/${requestId}/accept`);
+        return axiosClient.post(`/friend-requests/${requestId}/accept`);
     },
 
     /**
@@ -25,7 +25,7 @@ const FriendRequestService = {
      * @param {number} requestId 
      */
     rejectRequest: (requestId) => {
-        return axiosClient.post(`/v1/friend-requests/${requestId}/reject`);
+        return axiosClient.post(`/friend-requests/${requestId}/reject`);
     },
 
     /**
@@ -33,7 +33,7 @@ const FriendRequestService = {
      * @param {number} receiverId 
      */
     sendRequest: (receiverId) => {
-        return axiosClient.post(`/v1/friend-requests/send/${receiverId}`);
+        return axiosClient.post(`/friend-requests/send/${receiverId}`);
     },
 
     /**
@@ -41,7 +41,7 @@ const FriendRequestService = {
      * @param {number} receiverId 
      */
     cancelRequest: (receiverId) => {
-        return axiosClient.delete(`/v1/friend-requests/cancel/${receiverId}`);
+        return axiosClient.delete(`/friend-requests/cancel/${receiverId}`);
     }
 };
 

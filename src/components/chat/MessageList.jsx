@@ -75,7 +75,7 @@ const MessageList = React.memo(({ messages, currentUser, activeRoom, messagesEnd
                             <div className="flex items-center justify-center my-6">
                                 <div className="h-px bg-border-main flex-1 opacity-20" />
                                 <span className="px-4 text-[10px] font-black uppercase tracking-[0.2em] text-text-muted bg-surface-main/30 py-1 rounded-full border border-border-main/20">
-                                    {formatDaySeparator(msg.timestamp || Date.now())}
+                                    {formatDaySeparator(msg.timestamp || 0)}
                                 </span>
                                 <div className="h-px bg-border-main flex-1 opacity-20" />
                             </div>

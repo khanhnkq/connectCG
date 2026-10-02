@@ -8,6 +8,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import ImageLightbox from "../common/ImageLightBox";
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 
 const ProfileLibrary = ({ profile, isOwner }) => {

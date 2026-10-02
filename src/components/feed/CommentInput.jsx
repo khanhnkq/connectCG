@@ -59,7 +59,7 @@ export default function CommentInput({
         removeImage();
       }}
     >
-      {({ values, isSubmitting, setFieldValue }) => (
+      {({ values, isSubmitting }) => (
         <div className="flex-1 flex flex-col gap-2">
           {previewUrl && (
             <div className="relative inline-block w-20 h-20 mb-1 animate-in fade-in zoom-in duration-200">

@@ -31,23 +31,6 @@ const MainFeedManager = () => {
     onConfirm: null,
   });
 
-  useEffect(() => {
-    setCurrentPage(0); // Reset to first page when tab changes
-    fetchPosts(0);
-  }, [activeTab]);
-
-  useEffect(() => {
-    fetchPosts(currentPage);
-  }, [currentPage]);
-
-  useEffect(() => {
-    const handlePostEvent = (e) => {
-      fetchPosts(currentPage);
-    };
-    window.addEventListener("postEvent", handlePostEvent);
-    return () => window.removeEventListener("postEvent", handlePostEvent);
-  }, [activeTab, currentPage]);
-
   const fetchPosts = React.useCallback(
     async (page = 0) => {
       try {
@@ -74,16 +57,21 @@ const MainFeedManager = () => {
   );
 
   useEffect(() => {
-    fetchPosts();
+    setCurrentPage(0); // Reset to first page when tab changes
+    fetchPosts(0);
   }, [activeTab, fetchPosts]);
 
   useEffect(() => {
+    fetchPosts(currentPage);
+  }, [currentPage, fetchPosts]);
+
+  useEffect(() => {
     const handlePostEvent = () => {
-      fetchPosts();
+      fetchPosts(currentPage);
     };
     window.addEventListener("postEvent", handlePostEvent);
     return () => window.removeEventListener("postEvent", handlePostEvent);
-  }, [fetchPosts]);
+  }, [currentPage, fetchPosts]);
 
   const handleApprove = async (postId) => {
     try {

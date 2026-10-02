@@ -51,7 +51,7 @@ export const Folder = ({
   children,
   isSelectable = true,
 }) => {
-  const { expandedItems, handleExpand, selectedId, setSelectedId } =
+  const { expandedItems, handleExpand, setSelectedId } =
     useContext(TreeContext);
   const isExpanded = expandedItems.includes(value);
 

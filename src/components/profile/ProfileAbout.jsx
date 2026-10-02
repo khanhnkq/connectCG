@@ -10,10 +10,12 @@ import {
   Users,
   Sparkles,
 } from "lucide-react";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 
 import { formatDate } from "../../utils/dateUtils";
 
+// eslint-disable-next-line no-unused-vars
 const InfoItem = ({ icon: Icon, label, value, delay }) => {
   return (
     <motion.div

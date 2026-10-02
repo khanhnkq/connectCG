@@ -1,10 +1,10 @@
 import React from "react";
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import NotificationList from "../notification/NotificationList";
 
 const NotificationDropdown = ({
   isOpen,
-  onClose,
   notifications,
   onMarkAsRead,
   onDelete,

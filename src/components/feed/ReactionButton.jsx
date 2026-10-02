@@ -1,5 +1,7 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { useState } from "react";
 import { AiOutlineLike } from "react-icons/ai"; // Like mặc định (chưa thả tim)
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import { FacebookSelector } from "@charkour/react-reactions";
 

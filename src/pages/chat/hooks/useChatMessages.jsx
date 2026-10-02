@@ -10,6 +10,7 @@ const useChatMessages = (activeRoom) => {
 
     useEffect(() => {
         if (!activeRoom?.firebaseRoomKey) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setMessages([]);
             dispatch(setActiveRoomId(null));
             return;

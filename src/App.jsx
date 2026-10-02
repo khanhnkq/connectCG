@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Routes, Route, Outlet } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Toaster } from "react-hot-toast";
@@ -43,19 +43,74 @@ import { clearSession, initializeAuth } from "./redux/slices/authSlice";
 function App() {
   const dispatch = useDispatch();
   const authChecked = useSelector((state) => state.auth.authChecked);
+  const authError = useSelector((state) => state.auth.error);
+  const [initError, setInitError] = useState(false);
 
   useEffect(() => {
-    dispatch(initializeAuth());
+    dispatch(initializeAuth())
+      .unwrap()
+      .catch((err) => {
+        if (err?.status !== 401 && err?.status !== 403) {
+          setInitError(true);
+        }
+      });
 
     const handleSessionExpired = () => dispatch(clearSession());
     window.addEventListener("auth:session-expired", handleSessionExpired);
     return () => window.removeEventListener("auth:session-expired", handleSessionExpired);
   }, [dispatch]);
 
-  if (!authChecked) {
+  if (!authChecked && !initError) {
     return (
       <div className="min-h-screen grid place-items-center bg-background-main text-text-secondary">
-        Đang kiểm tra phiên đăng nhập...
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-3 border-accent-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-sm font-medium">Đang kiểm tra phiên đăng nhập...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (initError && !authChecked) {
+    return (
+      <div className="min-h-screen grid place-items-center bg-background-main text-text-main p-4">
+        <div className="max-w-md w-full bg-surface-main border border-border-main rounded-2xl p-6 shadow-xl text-center space-y-4">
+          <div className="w-12 h-12 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto text-xl">
+            ⚠️
+          </div>
+          <div>
+            <h3 className="text-lg font-bold">Không thể kết nối đến máy chủ</h3>
+            <p className="text-sm text-text-secondary mt-1">
+              {authError || "Hệ thống đang gặp sự cố kết nối hoặc phản hồi chậm. Vui lòng thử lại."}
+            </p>
+          </div>
+          <div className="flex gap-3 justify-center pt-2">
+            <button
+              onClick={() => {
+                setInitError(false);
+                dispatch(initializeAuth())
+                  .unwrap()
+                  .catch((err) => {
+                    if (err?.status !== 401 && err?.status !== 403) {
+                      setInitError(true);
+                    }
+                  });
+              }}
+              className="px-5 py-2.5 bg-accent-primary hover:bg-accent-primary/90 text-white rounded-xl font-semibold text-sm transition-colors cursor-pointer"
+            >
+              Thử lại
+            </button>
+            <button
+              onClick={() => {
+                setInitError(false);
+                dispatch(clearSession());
+              }}
+              className="px-5 py-2.5 bg-surface-secondary hover:bg-surface-secondary/80 text-text-secondary rounded-xl font-semibold text-sm transition-colors cursor-pointer"
+            >
+              Tiếp tục với tư cách khách
+            </button>
+          </div>
+        </div>
       </div>
     );
   }

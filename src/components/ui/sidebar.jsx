@@ -1,12 +1,14 @@
 "use client";
 import { cn } from "../../lib/utils";
 import React, { useState, createContext, useContext } from "react";
+// eslint-disable-next-line no-unused-vars
 import { AnimatePresence, motion } from "framer-motion";
 import { IconMenu2, IconX } from "@tabler/icons-react";
 import { Link } from "react-router-dom";
 
 const SidebarContext = createContext(undefined);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useSidebar = () => {
   const context = useContext(SidebarContext);
   if (!context) {

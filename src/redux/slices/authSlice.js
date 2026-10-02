@@ -24,7 +24,11 @@ export const initializeAuth = createAsyncThunk(
       const response = await authService.getCurrentSession();
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || null);
+      return rejectWithValue({
+        status: error.response?.status,
+        data: error.response?.data || null,
+        message: error.response?.data?.message || error.message || "Lỗi kiểm tra phiên đăng nhập",
+      });
     }
   },
 );
@@ -68,14 +72,25 @@ export const createProfile = createAsyncThunk(
 export const logout = createAsyncThunk("auth/logout", async () => {
   try {
     await authService.logout();
-  } catch {
-    // Clear the in-memory session even when the server cannot be reached.
+    return { serverRevoked: true };
+  } catch (error) {
+    return { serverRevoked: false, error: error.message };
   }
 });
 
-export const logoutAll = createAsyncThunk("auth/logoutAll", async () => {
-  await authService.logoutAll();
-});
+export const logoutAll = createAsyncThunk(
+  "auth/logoutAll",
+  async (_, { rejectWithValue }) => {
+    try {
+      await authService.logoutAll();
+      return { success: true };
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Không thể đăng xuất tất cả thiết bị",
+      );
+    }
+  },
+);
 
 const applySession = (state, session) => {
   state.user = sessionUser(session);
@@ -102,15 +117,25 @@ const authSlice = createSlice({
     builder
       .addCase(initializeAuth.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
       .addCase(initializeAuth.fulfilled, (state, action) => {
         applySession(state, action.payload);
         state.authChecked = true;
         state.loading = false;
+        state.error = null;
       })
-      .addCase(initializeAuth.rejected, (state) => {
-        resetSession(state);
+      .addCase(initializeAuth.rejected, (state, action) => {
+        const status = action.payload?.status;
+        if (status === 401 || status === 403) {
+          resetSession(state);
+          state.error = null;
+        } else {
+          // Lỗi mạng hoặc 5xx: giữ trạng thái hiện tại, lưu thông báo lỗi
+          state.error = action.payload?.message || "Lỗi kết nối máy chủ";
+        }
         state.authChecked = true;
+        state.loading = false;
       })
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
@@ -139,12 +164,29 @@ const authSlice = createSlice({
       .addCase(createProfile.fulfilled, (state) => {
         state.hasProfile = true;
       })
-      .addCase(logout.pending, resetSession)
-      .addCase(logout.fulfilled, resetSession)
-      .addCase(logout.rejected, resetSession)
-      .addCase(logoutAll.pending, resetSession)
-      .addCase(logoutAll.fulfilled, resetSession)
-      .addCase(logoutAll.rejected, resetSession);
+      .addCase(logout.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(logout.fulfilled, (state, action) => {
+        resetSession(state);
+        if (!action.payload?.serverRevoked) {
+          console.warn("Logout: Server revocation failed, session cleared locally only");
+        }
+      })
+      .addCase(logout.rejected, (state) => {
+        resetSession(state);
+      })
+      .addCase(logoutAll.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(logoutAll.fulfilled, (state) => {
+        resetSession(state);
+      })
+      .addCase(logoutAll.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Đăng xuất tất cả thiết bị thất bại";
+      });
   },
 });
 

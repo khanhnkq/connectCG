@@ -73,8 +73,16 @@ export default function Step2() {
   const fileInputRef = useRef(null);
 
   const handleLogout = async () => {
-    await dispatch(logout()).unwrap();
-    navigate("/login");
+    try {
+      const result = await dispatch(logout()).unwrap();
+      if (result && !result.serverRevoked) {
+        toast("Phiên đăng nhập đã xóa cục bộ. Máy chủ tạm thời không phản hồi.", { icon: "⚠️" });
+      }
+    } catch {
+      // Ignored
+    } finally {
+      navigate("/login");
+    }
   };
   const { hasProfile } = useSelector((state) => state.auth);
 

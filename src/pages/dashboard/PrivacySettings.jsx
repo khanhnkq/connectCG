@@ -19,7 +19,7 @@ import {
   UserX,
 } from "lucide-react";
 import { motion as Motion } from "framer-motion";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { logoutAll } from "../../redux/slices/authSlice";
@@ -30,40 +30,54 @@ const SettingToggle = ({
   description,
   enabled,
   onToggle,
+  disabled = false,
+  badge = null,
 }) => (
   <Motion.div
-    whileHover={{ y: -2 }}
-    className="flex items-center justify-between p-5 bg-surface-main rounded-[1.5rem] shadow-sm border border-border-main/5 hover:shadow-md transition-all group"
+    whileHover={disabled ? {} : { y: -2 }}
+    className={`flex items-center justify-between p-5 bg-surface-main rounded-[1.5rem] shadow-sm border border-border-main/5 transition-all group ${
+      disabled ? "opacity-60 cursor-not-allowed" : "hover:shadow-md"
+    }`}
   >
     <div className="flex gap-5">
       <div
         className={`p-4 rounded-2xl transition-all duration-300 ${
-          enabled
+          enabled && !disabled
             ? "bg-primary/10 text-primary shadow-inner shadow-primary/5"
             : "bg-gray-500/5 text-text-secondary/60"
         }`}
       >
-        {React.createElement(icon, { size: 24, strokeWidth: enabled ? 2.5 : 2 })}
+        {React.createElement(icon, { size: 24, strokeWidth: enabled && !disabled ? 2.5 : 2 })}
       </div>
       <div className="flex flex-col justify-center">
-        <h4 className="font-extrabold text-text-main text-lg group-hover:text-primary transition-colors leading-tight">
-          {title}
-        </h4>
+        <div className="flex items-center gap-2">
+          <h4 className="font-extrabold text-text-main text-lg leading-tight">
+            {title}
+          </h4>
+          {badge && (
+            <span className="px-2 py-0.5 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 text-[10px] font-black uppercase tracking-wider rounded-md border border-yellow-500/20">
+              {badge}
+            </span>
+          )}
+        </div>
         <p className="text-sm text-text-secondary font-medium opacity-70 mt-0.5">
           {description}
         </p>
       </div>
     </div>
     <button
-      onClick={onToggle}
+      onClick={disabled ? undefined : onToggle}
+      disabled={disabled}
       className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-500 focus:outline-none ${
-        enabled
+        disabled
+          ? "bg-text-secondary/10 cursor-not-allowed"
+          : enabled
           ? "bg-primary shadow-lg shadow-primary/20"
           : "bg-text-secondary/20"
       }`}
     >
       <Motion.span
-        animate={{ x: enabled ? 22 : 4 }}
+        animate={{ x: enabled && !disabled ? 22 : 4 }}
         className="inline-block h-5 w-5 rounded-full bg-white shadow-md"
       />
     </button>
@@ -86,10 +100,13 @@ const SectionHeader = ({ icon, title, description }) => (
   </div>
 );
 
-const QuickAction = ({ icon, title, status, color, onClick }) => (
+const QuickAction = ({ icon, title, status, color, onClick, disabled = false }) => (
   <button
-    onClick={onClick}
-    className="w-full flex items-center justify-between p-5 rounded-[1.8rem] bg-surface-main hover:bg-background-main transition-all duration-300 group shadow-sm hover:shadow-md border border-border-main/5"
+    onClick={disabled ? undefined : onClick}
+    disabled={disabled}
+    className={`w-full flex items-center justify-between p-5 rounded-[1.8rem] bg-surface-main transition-all duration-300 group shadow-sm border border-border-main/5 ${
+      disabled ? "opacity-60 cursor-not-allowed" : "hover:bg-background-main hover:shadow-md"
+    }`}
   >
     <div className="flex items-center gap-4">
       <div
@@ -118,6 +135,8 @@ const QuickAction = ({ icon, title, status, color, onClick }) => (
 export default function PrivacySettings() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const currentUser = useSelector((state) => state.auth?.user);
+
   const [settings, setSettings] = useState({
     privateAccount: false,
     activityStatus: true,
@@ -148,46 +167,36 @@ export default function PrivacySettings() {
         animate={{ opacity: 1, y: 0 }}
         className="p-10 max-w-[75rem] mx-auto pb-32"
       >
-        {/* HERO SECTION - PRIVACY SCORE */}
+        {/* HERO SECTION - PRIVACY STATUS */}
         <div className="mb-16 flex flex-col md:flex-row items-center gap-10 bg-surface-main p-10 rounded-[3rem] shadow-xl border border-border-main/10 relative overflow-hidden group">
           {/* Background Highlight */}
           <div className="absolute -top-24 -left-24 w-64 h-64 bg-primary/5 rounded-full blur-[100px] transition-all duration-1000 group-hover:scale-150" />
 
           <div className="relative shrink-0 flex items-center justify-center">
-            {/* Circular Progress Placeholder Effect */}
-            <div className="size-40 rounded-full border-[10px] border-background-main relative flex items-center justify-center">
-              <div className="absolute inset-0 rounded-full border-[10px] border-primary border-t-transparent animate-spin-slow" />
-              <div className="flex flex-col items-center">
-                <span className="text-4xl font-black text-text-main">85</span>
-                <span className="text-[10px] font-black uppercase tracking-tighter opacity-50">
-                  Score
-                </span>
-              </div>
+            <div className="size-36 rounded-full border-[6px] border-primary/20 bg-primary/5 relative flex items-center justify-center">
+              <ShieldCheck size={56} className="text-primary" />
             </div>
-            {/* Shield Badge */}
-            <div className="absolute -bottom-2 -right-2 p-3 bg-green-500 text-white rounded-2xl shadow-lg border-4 border-surface-main">
-              <ShieldCheck size={24} />
+            {/* Status Badge */}
+            <div className="absolute -bottom-2 -right-2 p-2.5 bg-green-500 text-white rounded-2xl shadow-lg border-4 border-surface-main">
+              <Shield size={20} />
             </div>
           </div>
 
           <div className="flex-1 text-center md:text-left">
             <div className="flex items-center gap-2 mb-3 justify-center md:justify-start">
-              <span className="px-3 py-1 bg-green-500/10 text-green-500 text-[11px] font-black uppercase tracking-widest rounded-full border border-green-500/20">
-                Excellent Privacy
-              </span>
               <span className="px-3 py-1 bg-primary/10 text-primary text-[11px] font-black uppercase tracking-widest rounded-full border border-primary/20">
-                v2.4
+                Trung tâm bảo mật
               </span>
             </div>
-            <h2 className="text-5xl font-black text-text-main tracking-tighter mb-4 leading-none">
-              HI, KHÁNH! <br />
-              <span className="text-text-secondary opacity-50">
-                YOUR PRIVACY IS SECURED.
+            <h2 className="text-4xl md:text-5xl font-black text-text-main tracking-tighter mb-4 leading-none uppercase">
+              XIN CHÀO, {currentUser?.fullName || currentUser?.name || "BẠN"}! <br />
+              <span className="text-text-secondary opacity-50 text-2xl md:text-3xl">
+                BẢO MẬT & QUYỀN RIÊNG TƯ
               </span>
             </h2>
-            <p className="text-lg text-text-secondary font-medium max-w-xl">
-              Cài đặt quyền riêng tư của bạn đang được tối ưu hóa. Hãy xem lại
-              các thiết lập bên dưới để duy trì sự an toàn cho tài khoản.
+            <p className="text-base text-text-secondary font-medium max-w-xl">
+              Một số tùy chọn bảo mật đang trong quá trình phát triển và hoàn thiện.
+              Bạn có thể quản lý các phiên đăng nhập đang hoạt động của mình ngay bên dưới.
             </p>
           </div>
         </div>
@@ -208,6 +217,8 @@ export default function PrivacySettings() {
                   description="Khi bật, chỉ những người bạn phê duyệt mới có thể xem nội dung."
                   enabled={settings.privateAccount}
                   onToggle={() => toggleSetting("privateAccount")}
+                  disabled={true}
+                  badge="Sắp có"
                 />
                 <SettingToggle
                   icon={Activity}
@@ -215,6 +226,8 @@ export default function PrivacySettings() {
                   description="Hiển thị chấm xanh khi bạn đang trực tuyến trên Connect."
                   enabled={settings.activityStatus}
                   onToggle={() => toggleSetting("activityStatus")}
+                  disabled={true}
+                  badge="Sắp có"
                 />
                 <SettingToggle
                   icon={MessageCircle}
@@ -222,6 +235,8 @@ export default function PrivacySettings() {
                   description="Cho người khác biết khi bạn đã xem tin nhắn."
                   enabled={settings.showReadReceipts}
                   onToggle={() => toggleSetting("showReadReceipts")}
+                  disabled={true}
+                  badge="Sắp có"
                 />
               </div>
             </section>
@@ -236,9 +251,11 @@ export default function PrivacySettings() {
                 <SettingToggle
                   icon={Shield}
                   title="Lọc nội dung Toxic bằng AI"
-                  description="Tự động ẩn các bình luận hoặc bài viết có nội dung xúc phạm."
+                  description="Tự động kiểm duyệt và gắn cờ các bài viết vi phạm chuẩn mực cộng đồng."
                   enabled={settings.aiFiltering}
                   onToggle={() => toggleSetting("aiFiltering")}
+                  disabled={true}
+                  badge="Hệ thống tự động"
                 />
                 <SettingToggle
                   icon={UserCheck}
@@ -246,6 +263,8 @@ export default function PrivacySettings() {
                   description="Sử dụng AI để gợi ý và duyệt những người quen biết thật sự."
                   enabled={settings.allowTagging}
                   onToggle={() => toggleSetting("allowTagging")}
+                  disabled={true}
+                  badge="Sắp có"
                 />
               </div>
             </section>
@@ -261,8 +280,9 @@ export default function PrivacySettings() {
                 <QuickAction
                   icon={Unlock}
                   title="Xác thực 2 yếu tố"
-                  status="Đang tắt"
+                  status="Sắp có"
                   color="text-orange-500"
+                  disabled={true}
                 />
                 <QuickAction
                   icon={Smartphone}
@@ -274,14 +294,16 @@ export default function PrivacySettings() {
                 <QuickAction
                   icon={UserX}
                   title="Chặn người dùng"
-                  status="12 người"
+                  status="—"
                   color="text-text-secondary"
+                  disabled={true}
                 />
                 <QuickAction
                   icon={Trash2}
                   title="Quản lý dữ liệu"
-                  status="Tải về ngay"
+                  status="Sắp có"
                   color="text-red-500"
+                  disabled={true}
                 />
               </div>
             </div>

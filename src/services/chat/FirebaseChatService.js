@@ -1,5 +1,5 @@
 import { db } from "../../config/firebase";
-import { ref, push, onChildAdded, onChildRemoved, serverTimestamp, query, limitToLast, orderByKey, remove, get, orderByChild, equalTo } from "firebase/database";
+import { ref, push, onChildAdded, onChildRemoved, serverTimestamp, query, limitToLast, orderByKey, remove, get } from "firebase/database";
 
 const FirebaseChatService = {
     /**

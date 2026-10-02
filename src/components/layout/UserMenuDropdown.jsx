@@ -4,6 +4,7 @@ import { Settings, Bell, LogOut, ChevronDown } from "lucide-react";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../redux/slices/authSlice";
+import toast from "react-hot-toast";
 
 const DropdownItem = ({ icon, label, onClick, danger }) => {
   return (
@@ -43,9 +44,17 @@ const UserMenuDropdown = ({ isOpen, onClose, onShowNotifications }) => {
   const { profile: userProfile } = useSelector((state) => state.user);
 
   const handleLogout = async () => {
-    await dispatch(logout()).unwrap();
-    navigate("/login");
-    onClose();
+    try {
+      const result = await dispatch(logout()).unwrap();
+      if (result && !result.serverRevoked) {
+        toast("Phiên đăng nhập đã xóa cục bộ. Máy chủ tạm thời không phản hồi.", { icon: "⚠️" });
+      }
+    } catch {
+      // Ignored
+    } finally {
+      navigate("/login");
+      onClose();
+    }
   };
 
   return (

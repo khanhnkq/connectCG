@@ -1,6 +1,8 @@
+import React, { useState } from "react";
+
 export const CommentItem = ({ comment, onReply }) => {
   const [isReplying, setIsReplying] = useState(false);
-  const [showReplies, setShowReplies] = useState(true); // Toggle replies
+  const [showReplies] = useState(true); // Toggle replies
   return (
     <div className="flex gap-3 mb-4">
       <Avatar src={comment.authorAvatar} />

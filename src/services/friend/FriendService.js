@@ -8,7 +8,7 @@ const FriendService = {
      */
     getFriends: (userId, filters = {}) => {
         const { name, gender, cityId, page = 0, size = 10 } = filters;
-        return axiosClient.get(`/v1/friends/${userId}`, {
+        return axiosClient.get(`/friends/${userId}`, {
             params: { name, gender, cityId, page, size }
         });
     },
@@ -18,7 +18,7 @@ const FriendService = {
      * @param {Object} params - { page, size }
      */
     getMyFriends: (params) => {
-        return axiosClient.get("/v1/friends/my-friends", { params });
+        return axiosClient.get("/friends/my-friends", { params });
     },
 
     /**
@@ -26,7 +26,7 @@ const FriendService = {
      * @param {number} friendId 
      */
     unfriend: (friendId) => {
-        return axiosClient.delete(`/v1/friends/${friendId}`);
+        return axiosClient.delete(`/friends/${friendId}`);
     },
 
 };

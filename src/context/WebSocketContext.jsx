@@ -17,8 +17,10 @@ import {
 import { updateConversation, removeConversation } from "../redux/slices/chatSlice";
 import { store } from "../redux/store/store";
 import userService from "../services/UserService";
-import { logout } from "../redux/slices/authSlice";
+import { clearSession, logout } from "../redux/slices/authSlice";
 import { appConfig } from "../config/runtimeConfig";
+import axiosClient, { ensureCsrfCookie } from "../config/axiosConfig";
+import { refreshWithLock } from "../config/tokenRefresh";
 
 const WebSocketContext = createContext({ stompClient: null, isConnected: false });
 
@@ -48,6 +50,13 @@ export const WebSocketProvider = ({ children }) => {
         }
 
         return new SockJS(url);
+      },
+      beforeConnect: async () => {
+        try {
+          await ensureCsrfCookie();
+        } catch (err) {
+          console.warn("WebSocket: Failed to ensure CSRF cookie before connect", err);
+        }
       },
       reconnectDelay: 1000,
       maxReconnectDelay: 30000,
@@ -206,14 +215,46 @@ export const WebSocketProvider = ({ children }) => {
       setIsConnected(false);
     };
 
-    client.onStompError = (frame) => {
+    let isRefreshingAuth = false;
+
+    client.onStompError = async (frame) => {
       setIsConnected(false);
-      console.error("WebSocket broker error:", frame.headers.message);
+      const message = frame?.headers?.message || "";
+      console.error("WebSocket broker error:", message);
+
+      const isAuthError =
+        message.includes("401") ||
+        message.includes("Unauthorized") ||
+        message.includes("403") ||
+        message.includes("Access Denied") ||
+        message.toLowerCase().includes("expired");
+
+      if (isAuthError && !isRefreshingAuth) {
+        isRefreshingAuth = true;
+        console.warn("WebSocket: Auth error detected. Attempting token refresh...");
+        try {
+          client.deactivate();
+          await refreshWithLock(axiosClient);
+          console.log("WebSocket: Token refresh succeeded, reconnecting WebSocket...");
+          setTimeout(() => {
+            if (store.getState().auth.isAuthenticated) {
+              client.activate();
+            }
+          }, 1000);
+        } catch (err) {
+          console.error("WebSocket: Token refresh failed after auth error", err);
+          if (err.response?.status === 401 || err.response?.status === 403) {
+            dispatch(clearSession());
+            navigate("/login");
+          }
+        } finally {
+          isRefreshingAuth = false;
+        }
+      }
     };
 
     client.activate();
     // The active STOMP instance is the state exposed to feature subscriptions.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setStompClient(client);
 
     return () => {

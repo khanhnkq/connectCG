@@ -6,9 +6,7 @@ import FriendRequestService from '../services/friend/FriendRequestService';
 import { updateFriendsCount } from '../redux/slices/userSlice';
 
 export function useFriends(userId = null, initialParams = {}) {
-    const dispatch = useDispatch();
     const { user } = useSelector((state) => state.auth);
-    const { profile } = useSelector((state) => state.user);
 
     // State
     const [friends, setFriends] = useState([]);
@@ -93,9 +91,6 @@ export function useFriends(userId = null, initialParams = {}) {
             }
 
             // Check if we reached the end
-            const totalElements = response.data.totalElements || 0; // Check API response structure
-            const currentCount = isReset ? newFriends.length : friends.length + newFriends.length; // Approximate
-            // Better: response.data.last or content.length < size
             if (newFriends.length < PAGE_SIZE || response.data.last) {
                 setHasMore(false);
             } else {
@@ -129,7 +124,7 @@ export function useFriends(userId = null, initialParams = {}) {
             toast.success("Đã hủy kết bạn", { id: tid });
             setFriends(prev => prev.filter(f => f.id !== friendId));
             return true;
-        } catch (error) {
+        } catch {
             toast.error("Không thể hủy kết bạn", { id: tid });
             return false;
         }

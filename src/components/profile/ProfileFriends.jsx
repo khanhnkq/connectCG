@@ -19,6 +19,7 @@ import toast from "react-hot-toast";
 import { useFriends } from "../../hooks/useFriends";
 
 import { useRef, useEffect, useCallback } from "react";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 
 const ProfileFriends = ({ profile, isOwner }) => {

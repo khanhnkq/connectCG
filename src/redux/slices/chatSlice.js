@@ -108,8 +108,9 @@ const chatSlice = createSlice({
     extraReducers: (builder) => {
         builder
             .addCase(loginUser.pending, resetChatState)
-            .addCase(logout.pending, resetChatState)
-            .addCase(logoutAll.pending, resetChatState)
+            .addCase(logout.fulfilled, resetChatState)
+            .addCase(logout.rejected, resetChatState)
+            .addCase(logoutAll.fulfilled, resetChatState)
             .addCase(clearSession, resetChatState);
     }
 });

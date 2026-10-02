@@ -10,6 +10,7 @@ import {
   ChevronDown,
   Menu,
 } from "lucide-react";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { useSelector, useDispatch } from "react-redux";
 import {

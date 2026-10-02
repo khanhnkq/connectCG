@@ -12,6 +12,7 @@ import { usePostManagement } from "../../hooks/usePostManagement";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchUserProfile } from "../../redux/slices/userSlice";
 
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 
 export default function Newsfeed() {

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef } from 'react';
 import { CirclePlus, Send, Image as ImageIcon, X } from 'lucide-react';
 
 const MessageInput = ({

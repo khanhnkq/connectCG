@@ -1,6 +1,7 @@
 "use client";
 
 import { Moon, Sun } from "lucide-react";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { useTheme } from "../../context/ThemeContext";
 import { useRef } from "react";
@@ -9,7 +10,7 @@ export function AnimatedThemeToggler({ className = "" }) {
   const { theme, toggleTheme } = useTheme();
   const buttonRef = useRef(null);
 
-  const handleThemeToggle = async (e) => {
+  const handleThemeToggle = async () => {
     // Check if View Transitions API is supported
     if (!document.startViewTransition) {
       toggleTheme();

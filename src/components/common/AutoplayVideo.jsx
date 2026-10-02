@@ -46,6 +46,7 @@ const AutoplayVideo = ({
     // Sync state if manuallyPaused changes while in view
     if (manuallyPaused && isPlaying) {
       videoNode.pause();
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsPlaying(false);
     }
 
@@ -79,7 +80,7 @@ const AutoplayVideo = ({
     setIsMuted(!isMuted);
   };
 
-  const handleContainerClick = (e) => {
+  const handleContainerClick = () => {
     // Primary action: Open LightBox
     if (onClick) onClick();
   };

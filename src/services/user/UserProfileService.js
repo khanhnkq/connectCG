@@ -8,20 +8,20 @@ const UserProfileService = {
      */
     getUserProfile: (userId) => {
         // Trùng khớp với @GetMapping("/{userId}/profile") trong UserProfileController.java
-        // Base URL đã là /api trong axiosConfig, nên ở đây dùng /v1/users/...
-        return axiosClient.get(`/v1/users/${userId}/profile`);
+        // Base URL là /api/v1 trong axiosConfig, nên ở đây dùng /users/...
+        return axiosClient.get(`/users/${userId}/profile`);
     },
 
     updateAvatar: (imageUrl) => {
-        return axiosClient.post('/v1/users/avatar', { url: imageUrl });
+        return axiosClient.post('/users/avatar', { url: imageUrl });
     },
 
     updateCover: (imageUrl) => {
-        return axiosClient.post('/v1/users/cover', { url: imageUrl });
+        return axiosClient.post('/users/cover', { url: imageUrl });
     },
     
     updateProfileInfo: (data) => {
-        return axiosClient.put('/v1/users/profile', data);
+        return axiosClient.put('/users/profile', data);
     },
 
     getAllHobbies: () => {
@@ -29,7 +29,7 @@ const UserProfileService = {
     },
 
     updateUserHobbies: (hobbyIds) => {
-        return axiosClient.put('/v1/users/hobbies', hobbyIds);
+        return axiosClient.put('/users/hobbies', hobbyIds);
     }
 };
 

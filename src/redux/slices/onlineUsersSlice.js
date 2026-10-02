@@ -31,8 +31,9 @@ const onlineUsersSlice = createSlice({
     extraReducers: (builder) => {
         builder
             .addCase(loginUser.pending, resetOnlineUsers)
-            .addCase(logout.pending, resetOnlineUsers)
-            .addCase(logoutAll.pending, resetOnlineUsers)
+            .addCase(logout.fulfilled, resetOnlineUsers)
+            .addCase(logout.rejected, resetOnlineUsers)
+            .addCase(logoutAll.fulfilled, resetOnlineUsers)
             .addCase(clearSession, resetOnlineUsers);
     },
 });

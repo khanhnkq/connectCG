@@ -4,8 +4,8 @@ const runtimeConfig =
 const readConfig = (key, fallback = "") =>
   runtimeConfig[key] || import.meta.env[key] || fallback;
 
-const apiBaseUrl = readConfig("VITE_API_BASE_URL", "/api").replace(/\/$/, "");
-const backendOrigin = apiBaseUrl.replace(/\/api$/, "");
+const apiBaseUrl = readConfig("VITE_API_BASE_URL", "/api/v1").replace(/\/$/, "");
+const backendOrigin = apiBaseUrl.replace(/\/api\/v1$/, "").replace(/\/api$/, "");
 
 export const appConfig = Object.freeze({
   apiBaseUrl,

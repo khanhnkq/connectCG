@@ -28,3 +28,5 @@ dist-ssr
 .env.deploy
 .deploy/
 .vercel
+.env*
+.cloudflare

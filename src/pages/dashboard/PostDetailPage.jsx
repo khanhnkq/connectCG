@@ -32,13 +32,28 @@ export default function PostDetailPage() {
     }
   }, [id, navigate]);
 
-  const handleUpdatePost = (postId, updatedData) => {
-    setPost((prev) => ({ ...prev, ...updatedData }));
+  const handleUpdatePost = async (postId, updatedData) => {
+    try {
+      const response = await postService.updatePost(postId, updatedData);
+      setPost((prev) => ({ ...prev, ...(response?.data || updatedData) }));
+      toast.success("Cập nhật bài viết thành công");
+    } catch (error) {
+      console.error("Cập nhật bài viết thất bại:", error);
+      toast.error("Cập nhật thất bại. Vui lòng thử lại.");
+      throw error;
+    }
   };
 
-  const handleDeletePost = () => {
-    toast.success("Bài viết đã được xóa");
-    navigate("/dashboard/feed");
+  const handleDeletePost = async (postId) => {
+    const targetId = postId || id;
+    try {
+      await postService.deletePost(targetId);
+      toast.success("Bài viết đã được xóa");
+      navigate("/dashboard/feed");
+    } catch (error) {
+      console.error("Xóa bài viết thất bại:", error);
+      toast.error("Xóa thất bại. Vui lòng thử lại.");
+    }
   };
 
   return (

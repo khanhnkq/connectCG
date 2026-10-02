@@ -7,7 +7,7 @@ const UserSearchService = {
      * @returns {Promise} - Page<MemberSearchResponse>
      */
     searchMembers: (params) => {
-        const URL_USER = '/v1/users';
+        const URL_USER = '/users';
         return axiosClient.get(`${URL_USER}/search`, { params });
     }
 };

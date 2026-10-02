@@ -294,7 +294,7 @@ const ChatSettings = ({
 
           {previewImages.length > 0 ? (
             <div className="grid grid-cols-3 gap-2">
-              {previewImages.slice(0, 6).map((msg, i) => (
+              {previewImages.slice(0, 6).map((msg) => (
                 <div
                   key={msg.id}
                   className={`aspect-square relative rounded-xl cursor-pointer hover:opacity-80 transition-opacity border border-border-main ${msg.type === 'video' ? 'bg-black/10' : 'bg-cover bg-center'}`}

@@ -70,7 +70,6 @@ export default function Login() {
   }, []);
 
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
-    console.log("Login:", values);
     try {
       const resultAction = await dispatch(loginUser(values)).unwrap();
       const displayName =

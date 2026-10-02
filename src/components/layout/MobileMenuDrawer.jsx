@@ -15,6 +15,7 @@ import {
 import { motion as Motion, AnimatePresence } from "framer-motion";
 // import { logout } from "../../services/AuthService"; // REMOVED
 import { logout } from "../../redux/slices/authSlice"; // ADDED
+import toast from "react-hot-toast";
 // import { toggleTheme } from "../../redux/slices/themeSlice"; // REMOVED (Previous step)
 import { useTheme } from "../../context/ThemeContext";
 import { findMyGroups } from "../../services/groups/GroupService";
@@ -68,9 +69,17 @@ export default function MobileMenuDrawer({ isOpen, onClose }) {
   }, [user?.id, isOpen]);
 
   const handleLogout = async () => {
-    await dispatch(logout()).unwrap();
-    navigate("/login");
-    onClose();
+    try {
+      const result = await dispatch(logout()).unwrap();
+      if (result && !result.serverRevoked) {
+        toast("Phiên đăng nhập đã xóa cục bộ. Máy chủ tạm thời không phản hồi.", { icon: "⚠️" });
+      }
+    } catch {
+      // Ignored
+    } finally {
+      navigate("/login");
+      onClose();
+    }
   };
 
   const handleToggleTheme = () => {

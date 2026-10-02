@@ -99,8 +99,9 @@ const notificationSlice = createSlice({
                 state.currentRequestId = null;
             })
             .addCase(loginUser.pending, resetNotificationState)
-            .addCase(logout.pending, resetNotificationState)
-            .addCase(logoutAll.pending, resetNotificationState)
+            .addCase(logout.fulfilled, resetNotificationState)
+            .addCase(logout.rejected, resetNotificationState)
+            .addCase(logoutAll.fulfilled, resetNotificationState)
             .addCase(clearSession, resetNotificationState);
     },
 });
