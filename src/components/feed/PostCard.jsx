@@ -279,13 +279,18 @@ export default function PostCard({
     data.shareCount,
   ]);
 
+  // Only subscribe to post-specific comment/reaction streams when comments are expanded
   useEffect(() => {
-    if (!stompClient || !isConnected || !data.id) return undefined;
+    if (!stompClient || !isConnected || !data.id || !showComments) return undefined;
 
     const dispatchEvent = (eventName) => (message) => {
-      window.dispatchEvent(
-        new CustomEvent(eventName, { detail: JSON.parse(message.body) }),
-      );
+      try {
+        window.dispatchEvent(
+          new CustomEvent(eventName, { detail: JSON.parse(message.body) }),
+        );
+      } catch (err) {
+        console.error("Error parsing realtime message:", err);
+      }
     };
     const subscriptions = [
       stompClient.subscribe(
@@ -296,14 +301,10 @@ export default function PostCard({
         `/topic/posts/${data.id}/comments`,
         dispatchEvent("commentEvent"),
       ),
-      stompClient.subscribe(
-        `/topic/posts/${data.id}/updates`,
-        dispatchEvent("postEvent"),
-      ),
     ];
 
     return () => subscriptions.forEach((subscription) => subscription.unsubscribe());
-  }, [stompClient, isConnected, data.id]);
+  }, [stompClient, isConnected, data.id, showComments]);
 
   // Listen for realtime reaction events
   useEffect(() => {

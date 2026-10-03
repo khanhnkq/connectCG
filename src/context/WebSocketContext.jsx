@@ -178,7 +178,19 @@ export const WebSocketProvider = ({ children }) => {
       });
 
       // --- 4. Content Streams ---
-      client.subscribe("/topic/posts", msg => window.dispatchEvent(new CustomEvent("postEvent", { detail: JSON.parse(msg.body) })));
+      client.subscribe("/topic/posts", (msg) => {
+        try {
+          const detail = JSON.parse(msg.body);
+          if (detail.newReactCount !== undefined || detail.action === "REACTED" || detail.action === "UNREACTED") {
+            window.dispatchEvent(new CustomEvent("reactionEvent", { detail }));
+          } else if (detail.newCommentCount !== undefined || detail.action === "CREATED" || detail.action === "DELETED") {
+            window.dispatchEvent(new CustomEvent("commentEvent", { detail }));
+          }
+          window.dispatchEvent(new CustomEvent("postEvent", { detail }));
+        } catch (e) {
+          console.error("Error parsing /topic/posts message:", e);
+        }
+      });
       client.subscribe("/topic/users", msg => window.dispatchEvent(new CustomEvent("userEvent", { detail: JSON.parse(msg.body) })));
       client.subscribe("/user/queue/post-moderation", msg => window.dispatchEvent(new CustomEvent("postEvent", { detail: JSON.parse(msg.body) })));
 

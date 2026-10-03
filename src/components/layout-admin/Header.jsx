@@ -91,11 +91,7 @@ const Header = ({ title = "Quản lý" }) => {
     );
 
     try {
-      await Promise.all(
-        unreadNotifications.map((notification) =>
-          NotificationService.markAsRead(notification.id),
-        ),
-      );
+      await NotificationService.markAllAsRead();
       dispatch(markAllAsRead());
       toast.success("Đã đánh dấu tất cả đã đọc", { id: tid });
     } catch (error) {

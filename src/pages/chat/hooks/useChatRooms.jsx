@@ -3,157 +3,191 @@ import { useDispatch, useSelector } from 'react-redux';
 import ChatService from '../../../services/chat/ChatService';
 import FirebaseChatService from '../../../services/chat/FirebaseChatService';
 import { setConversations, updateConversation } from '../../../redux/slices/chatSlice';
+import { store } from '../../../redux/store/store';
 import toast from 'react-hot-toast';
+
+// Module-level listener registry for Firebase subscriptions
+// Map<roomId, { unsubscribe: Function, refCount: number, firebaseRoomKey: string }>
+const globalRoomSubscriptions = new Map();
+
+// In-flight fetchRooms promise deduplicator across concurrent mounting components
+let inFlightFetchRoomsPromise = null;
+const fetchRoomsFromApi = async () => {
+    if (!inFlightFetchRoomsPromise) {
+        inFlightFetchRoomsPromise = ChatService.getMyChatRooms().finally(() => {
+            inFlightFetchRoomsPromise = null;
+        });
+    }
+    return inFlightFetchRoomsPromise;
+};
+
+const registerRoomSubscription = (room) => {
+    if (!room?.id || !room?.firebaseRoomKey) return;
+    const roomId = room.id;
+
+    if (globalRoomSubscriptions.has(roomId)) {
+        const entry = globalRoomSubscriptions.get(roomId);
+        if (entry.firebaseRoomKey === room.firebaseRoomKey) {
+            entry.refCount += 1;
+            return;
+        }
+        // If room key changed, tear down old listener
+        try {
+            entry.unsubscribe?.();
+        } catch (e) {
+            console.error("Error unsubscribing obsolete room key:", e);
+        }
+        globalRoomSubscriptions.delete(roomId);
+    }
+
+    const unsubscribe = FirebaseChatService.subscribeToMessages(room.firebaseRoomKey, (event) => {
+        if (!event) return;
+
+        // Ignore remove events for last-message preview
+        if (event.type === 'remove') {
+            return;
+        }
+
+        if (event.type !== 'add' || !event.message) return;
+
+        const state = store.getState();
+        const currentConversations = state.chat.conversations || [];
+        const activeRoomId = state.chat.activeRoomId;
+        const currentUser = state.auth.user;
+
+        // Guard: nếu room đã bị xóa khỏi conversations, không update (tránh re-inserting)
+        const targetRoom = currentConversations.find(c => String(c.id) === String(roomId));
+        if (!targetRoom) {
+            return;
+        }
+
+        const msg = event.message;
+
+        // Determine display name priority (Full Name from members > senderName from Firebase)
+        let senderName = msg.senderName;
+        if (targetRoom.members) {
+            const member = targetRoom.members.find(m => String(m.id) === String(msg.senderId));
+            if (member && member.fullName) {
+                senderName = member.fullName;
+            }
+        }
+
+        let visible = msg.text || (msg.type === 'image' ? "Đã gửi một ảnh" : "Đã gửi một tệp");
+        let timestamp = msg.timestamp || Date.now();
+
+        // Handle client-side history clearing
+        if (targetRoom.clientClearedAt) {
+            const clearTime = new Date(targetRoom.clientClearedAt).getTime();
+            if (timestamp <= clearTime) {
+                visible = "Chưa có tin nhắn";
+                senderName = null;
+            }
+        }
+
+        // Determine if this is a "new" message that should trigger an unread badge
+        const isBrandNew = timestamp > (targetRoom.lastMessageTimestamp || 0);
+
+        // Push update to Redux - this triggers UI updates in Sidebar and Dropdown
+        const updatePayload = {
+            id: targetRoom.id,
+            lastMessageVisible: visible,
+            lastMessageTimestamp: timestamp,
+            lastMessageSenderName: senderName,
+            lastMessageSenderId: msg.senderId,
+        };
+
+        // OPTIMISTIC UNREAD COUNT: If we get a new message from someone else while not in the room, 
+        // mark it unread immediately instead of waiting for the backend WebSocket.
+        const isFromOthers = String(msg.senderId) !== String(currentUser?.id);
+        const isNotInRoom = String(activeRoomId) !== String(targetRoom.id);
+
+        if (isBrandNew && isFromOthers && isNotInRoom) {
+            updatePayload.unreadCount = (targetRoom.unreadCount || 0) + 1;
+        }
+
+        store.dispatch(updateConversation(updatePayload));
+    }, 1); // Only listen for the latest message
+
+    globalRoomSubscriptions.set(roomId, {
+        unsubscribe,
+        refCount: 1,
+        firebaseRoomKey: room.firebaseRoomKey,
+    });
+};
+
+const releaseRoomSubscription = (roomId) => {
+    const entry = globalRoomSubscriptions.get(roomId);
+    if (!entry) return;
+
+    entry.refCount -= 1;
+    if (entry.refCount <= 0) {
+        try {
+            entry.unsubscribe?.();
+        } catch (e) {
+            console.error("Error unsubscribing room:", e);
+        }
+        globalRoomSubscriptions.delete(roomId);
+    }
+};
 
 const useChatRooms = () => {
     const [isLoading, setIsLoading] = useState(true);
     const conversations = useSelector((state) => state.chat.conversations);
-    const activeRoomId = useSelector((state) => state.chat.activeRoomId);
-    const { user: currentUser } = useSelector((state) => state.auth);
     const dispatch = useDispatch();
 
-    // Map to track active Firebase listeners for last messages
-    const subscriptionsRef = useRef(new Map());
+    // Track which room IDs this hook instance has registered with the singleton listener registry
+    const instanceSubscribedRoomIdsRef = useRef(new Set());
 
     // Use a ref to store the latest conversations to avoid dependency loop in fetchRooms
     const conversationsRef = useRef(conversations);
-    const activeRoomIdRef = useRef(activeRoomId);
-    const currentUserRef = useRef(currentUser);
-
     useEffect(() => {
         conversationsRef.current = conversations;
-        activeRoomIdRef.current = activeRoomId;
-        currentUserRef.current = currentUser;
-    }, [conversations, activeRoomId, currentUser]);
+    }, [conversations]);
 
-    // Unsubscribe a specific room listener
+    // Unsubscribe a specific room listener for this instance
     const unsubscribeRoom = useCallback((roomId) => {
-        const unsub = subscriptionsRef.current.get(roomId);
-        if (unsub) {
-            try {
-                unsub();
-            } catch (e) {
-                console.error("Error unsubscribing room:", e);
-            }
-            subscriptionsRef.current.delete(roomId);
+        if (instanceSubscribedRoomIdsRef.current.has(roomId)) {
+            releaseRoomSubscription(roomId);
+            instanceSubscribedRoomIdsRef.current.delete(roomId);
         }
     }, []);
 
-    // Function to subscribe to the last message of a room
-    const subscribeToRoomLastMessage = useCallback((room) => {
-        if (!room?.id || !room?.firebaseRoomKey) return;
-
-        // Avoid redundant subscriptions
-        if (subscriptionsRef.current.has(room.id)) return;
-
-        const unsubscribe = FirebaseChatService.subscribeToMessages(room.firebaseRoomKey, (event) => {
-            if (!event) return;
-
-            // Ignore remove events for last-message preview
-            if (event.type === 'remove') {
-                return;
-            }
-
-            if (event.type !== 'add' || !event.message) return;
-
-            // Guard: nếu room đã bị xóa khỏi conversations, không update (tránh re-inserting)
-            if (!conversationsRef.current.some(c => c.id === room.id)) {
-                return;
-            }
-
-            const msg = event.message;
-
-            // Determine display name priority (Full Name from members > senderName from Firebase)
-            let senderName = msg.senderName;
-            if (room.members) {
-                const member = room.members.find(m => String(m.id) === String(msg.senderId));
-                if (member && member.fullName) {
-                    senderName = member.fullName;
-                }
-            }
-
-            let visible = msg.text || (msg.type === 'image' ? "Đã gửi một ảnh" : "Đã gửi một tệp");
-            let timestamp = msg.timestamp || Date.now();
-
-            // Handle client-side history clearing
-            if (room.clientClearedAt) {
-                const clearTime = new Date(room.clientClearedAt).getTime();
-                if (timestamp <= clearTime) {
-                    visible = "Chưa có tin nhắn";
-                    senderName = null;
-                }
-            }
-
-            // Determine if this is a "new" message that should trigger an unread badge
-            const existing = conversationsRef.current.find(c => c.id === room.id);
-            const isBrandNew = !existing || (timestamp > (existing.lastMessageTimestamp || 0));
-
-            // Push update to Redux - this triggers UI updates in Sidebar and Dropdown
-            const updatePayload = {
-                id: room.id,
-                lastMessageVisible: visible,
-                lastMessageTimestamp: timestamp,
-                lastMessageSenderName: senderName,
-                lastMessageSenderId: msg.senderId,
-            };
-
-            // OPTIMISTIC UNREAD COUNT: If we get a new message from someone else while not in the room, 
-            // mark it unread immediately instead of waiting for the backend WebSocket.
-            const isFromOthers = String(msg.senderId) !== String(currentUserRef.current?.id);
-            const isNotInRoom = String(activeRoomIdRef.current) !== String(room.id);
-
-            if (isBrandNew && isFromOthers && isNotInRoom) {
-                updatePayload.unreadCount = (existing?.unreadCount || 0) + 1;
-            }
-
-            dispatch(updateConversation(updatePayload));
-        }, 1); // Only listen for the latest message
-
-        subscriptionsRef.current.set(room.id, unsubscribe);
-    }, [dispatch]);
-
-    // Effect: Automatically subscribe to rooms and clean up listeners for removed rooms
+    // Effect: Automatically register subscriptions and release removed ones
     useEffect(() => {
         const currentRoomIds = new Set(conversations.map(c => c.id));
+        const registered = instanceSubscribedRoomIdsRef.current;
 
-        // Dọn listener cho các room không còn tồn tại trong conversations
-        for (const [roomId, unsub] of subscriptionsRef.current.entries()) {
+        // Clean up rooms no longer in conversations for this hook instance
+        for (const roomId of Array.from(registered)) {
             if (!currentRoomIds.has(roomId)) {
-                try {
-                    unsub();
-                } catch (e) {
-                    console.error("Error unsubscribing removed room:", e);
-                }
-                subscriptionsRef.current.delete(roomId);
+                releaseRoomSubscription(roomId);
+                registered.delete(roomId);
             }
         }
 
-        // Subscribe cho room mới
+        // Register new rooms
         conversations.forEach(room => {
-            if (room.firebaseRoomKey && !subscriptionsRef.current.has(room.id)) {
-                subscribeToRoomLastMessage(room);
+            if (room.firebaseRoomKey && !registered.has(room.id)) {
+                registerRoomSubscription(room);
+                registered.add(room.id);
             }
         });
-    }, [conversations, subscribeToRoomLastMessage]);
+    }, [conversations]);
 
-    // Cleanup: Disconnect all listeners when the hook is unmounted
+    // Cleanup: Release all subscriptions registered by this hook instance on unmount
     useEffect(() => {
-        const subs = subscriptionsRef.current;
+        const registered = instanceSubscribedRoomIdsRef.current;
         return () => {
-            subs.forEach(unsub => {
-                try {
-                    unsub();
-                } catch {
-                    // Ignore
-                }
-            });
-            subs.clear();
+            for (const roomId of registered) {
+                releaseRoomSubscription(roomId);
+            }
+            registered.clear();
         };
     }, []);
 
     const fetchRooms = useCallback(async () => {
         try {
-            const response = await ChatService.getMyChatRooms();
+            const response = await fetchRoomsFromApi();
             const rooms = response.data;
 
             // Prepare rooms for Redux (listeners will populate the message content shortly)
@@ -225,3 +259,4 @@ const useChatRooms = () => {
 };
 
 export default useChatRooms;
+

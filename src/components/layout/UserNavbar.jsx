@@ -154,12 +154,7 @@ const UserNavbar = ({ onMenuClick }) => {
     );
 
     try {
-      // Mark each notification as read individually
-      await Promise.all(
-        unreadNotifications.map((notification) =>
-          NotificationService.markAsRead(notification.id),
-        ),
-      );
+      await NotificationService.markAllAsRead();
 
       // Update Redux state
       dispatch(markAllAsRead());

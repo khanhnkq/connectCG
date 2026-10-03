@@ -2,8 +2,8 @@ import axiosClient from '../config/axiosConfig';
 
 const URL_NOTIFICATION = '/notifications';
 
-export const getMyNotifications = async () => {
-    const res = await axiosClient.get(URL_NOTIFICATION);
+export const getMyNotifications = async (params) => {
+    const res = await axiosClient.get(URL_NOTIFICATION, { params });
     return res.data;
 };
 

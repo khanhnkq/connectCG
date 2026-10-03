@@ -104,21 +104,21 @@ export default function MemberProfile() {
 
         // FIX: Check if we are the receiver of a pending request
         // The API might not return isRequestReceiver, so we check our pending list
-        if (profileData.relationshipStatus !== "FRIEND") {
+        if (profileData.relationshipStatus !== "FRIEND" && profileData.relationshipStatus !== "SELF") {
           try {
             // Fetch first page of pending requests to see if this user sent one
             const requestsRes = await FriendRequestService.getPendingRequests(
               0,
               100,
             );
-            const incomingReq = requestsRes.data.content.find(
+            const incomingReq = requestsRes.data.content?.find(
               (req) => req.senderId == profileData.userId,
             );
 
             if (incomingReq) {
               profileData = {
                 ...profileData,
-                relationshipStatus: "PENDING",
+                relationshipStatus: "WAITING",
                 isRequestReceiver: true,
                 requestId: incomingReq.requestId,
                 requestSent: false, // We didn't send it, we received it
@@ -188,11 +188,19 @@ export default function MemberProfile() {
       }
     } else if (type === "ACCEPT_REQUEST") {
       try {
-        if (!profile.requestId) {
+        let reqId = profile.requestId;
+        if (!reqId) {
+          const requestsRes = await FriendRequestService.getPendingRequests(0, 100);
+          const incomingReq = requestsRes.data.content?.find(
+            (req) => req.senderId == profile.userId,
+          );
+          reqId = incomingReq?.requestId;
+        }
+        if (!reqId) {
           toast.error("Không tìm thấy thông tin lời mời.");
           return;
         }
-        await FriendRequestService.acceptRequest(profile.requestId);
+        await FriendRequestService.acceptRequest(reqId);
         setProfile((prev) => ({
           ...prev,
           relationshipStatus: "FRIEND",
@@ -207,11 +215,19 @@ export default function MemberProfile() {
       }
     } else if (type === "REJECT_REQUEST") {
       try {
-        if (!profile.requestId) {
+        let reqId = profile.requestId;
+        if (!reqId) {
+          const requestsRes = await FriendRequestService.getPendingRequests(0, 100);
+          const incomingReq = requestsRes.data.content?.find(
+            (req) => req.senderId == profile.userId,
+          );
+          reqId = incomingReq?.requestId;
+        }
+        if (!reqId) {
           toast.error("Không tìm thấy thông tin lời mời.");
           return;
         }
-        await FriendRequestService.rejectRequest(profile.requestId);
+        await FriendRequestService.rejectRequest(reqId);
         setProfile((prev) => ({
           ...prev,
           relationshipStatus: "STRANGER",
@@ -365,8 +381,9 @@ export default function MemberProfile() {
                           <UserMinus size={18} />
                           Đã là bạn bè
                         </button>
-                      ) : profile.relationshipStatus === "PENDING" &&
-                        profile.isRequestReceiver ? (
+                      ) : profile.relationshipStatus === "WAITING" ||
+                        (profile.relationshipStatus === "PENDING" &&
+                          profile.isRequestReceiver) ? (
                         <div className="flex gap-3 w-full md:w-auto flex-1 md:flex-none">
                           <button
                             onClick={confirmAcceptRequest}

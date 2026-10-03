@@ -7,6 +7,8 @@ import { Play, Pause, Volume2, VolumeX, Maximize2 } from "lucide-react";
  */
 const AutoplayVideo = ({
   src,
+  poster,
+  thumbnailUrl,
   className,
   onClick,
   manuallyPaused,
@@ -93,6 +95,8 @@ const AutoplayVideo = ({
       <video
         ref={videoRef}
         src={src}
+        poster={thumbnailUrl || poster}
+        preload="metadata"
         className="max-w-full max-h-full object-contain"
         muted={isMuted}
         loop
