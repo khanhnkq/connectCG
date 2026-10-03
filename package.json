@@ -8,7 +8,9 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "api:generate": "swagger-typescript-api generate -p openapi.json -o src/api/generated --modular --http-client=axios --js --module-name-first-tag --extract-request-params --single-http-client",
+    "api:generate:online": "swagger-typescript-api generate -p http://localhost:8080/v3/api-docs -o src/api/generated --modular --http-client=axios --js --module-name-first-tag --extract-request-params --single-http-client"
   },
   "dependencies": {
     "@charkour/react-reactions": "^0.11.0",
@@ -46,6 +48,7 @@
     "globals": "^16.5.0",
     "jsdom": "^29.1.1",
     "postcss": "^8.5.6",
+    "swagger-typescript-api": "^13.13.0",
     "tailwindcss": "^4.1.18",
     "vite": "^7.2.4",
     "vitest": "^5.0.3"

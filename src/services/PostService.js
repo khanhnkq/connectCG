@@ -1,53 +1,53 @@
+import { postApi } from '../api';
 import axiosClient from '../config/axiosConfig';
 
+/**
+ * PostService - Facade wrapper delegating to auto-generated postApi SDK.
+ * Preserves 100% backward compatibility for all existing components.
+ */
 const postService = {
     getPostById(id) {
-        return axiosClient.get(`/posts/${id}`);
+        return postApi.postGetPostById({ id });
     },
     getPostsByUserId(userId) {
-        return axiosClient.get(`/posts/user/${userId}`)
+        return postApi.postGetUserProfilePosts({ id: userId });
     },
     deletePost(id) {
-        return axiosClient.delete(`/posts/${id}`);
+        return postApi.postDeletePost({ id });
     },
     getPendingHomepagePosts(page = 0, size = 10) {
-        return axiosClient.get('/posts/admin/pending', { params: { page, size } });
+        return postApi.postGetPendingHomepagePosts({ page, size });
     },
     getAuditHomepagePosts(page = 0, size = 10) {
-        return axiosClient.get('/posts/admin/audit', { params: { page, size } });
+        return postApi.postGetAuditHomepagePosts({ page, size });
     },
     getPublicHomepagePosts(page = 0, size = 10) {
-        return axiosClient.get(`/posts`, { params: { page, size } });
+        return postApi.postGetPublicHomepagePosts({ page, size });
     },
     approvePost(postId) {
-        return axiosClient.post(`/posts/${postId}/approve`);
+        return postApi.postApprovePost({ id: postId });
     },
     createPost(post) {
-        return axiosClient.post(`/posts`, post);
+        return postApi.postCreatePost(post);
     },
     updatePost(id, data) {
-        // data có thể là { content: "...", visibility: "..." }
-        return axiosClient.put(`/posts/${id}`, data);
+        return postApi.postUpdatePost({ id }, data);
     },
     reactToPost(postId, reactionType) {
-        return axiosClient.post(`/posts/${postId}/react`, { reaction: reactionType });
+        return postApi.postReactToPost({ id: postId }, { reaction: reactionType });
     },
     unreactToPost(postId) {
-        return axiosClient.delete(`/posts/${postId}/react`);
+        return postApi.postUnReactToPost({ id: postId });
     },
     rejectPost(postId, manualStrike = false) {
-        return axiosClient.post(`/posts/${postId}/reject`, null, {
-            params: { manualStrike }
-        });
+        return postApi.postRejectPost({ id: postId }, { params: { manualStrike } });
     },
     togglePinPost(groupId, postId) {
         return axiosClient.post(`/groups/${groupId}/posts/${postId}/pin`);
     },
     sharePost(originalPostId, data) {
-        // data: { content: "caption...", visibility: "PUBLIC" }
-        return axiosClient.post(`/posts/${originalPostId}/share`, data);
+        return postApi.postSharePost({ id: originalPostId }, data);
     },
-
 };
 
 export default postService;

@@ -1,24 +1,26 @@
-import axiosClient from '../config/axiosConfig';
+import { reportApi } from '../api';
 
+/**
+ * ReportService - Facade wrapper delegating to auto-generated reportApi SDK.
+ * Preserves 100% backward compatibility for all existing components.
+ */
 const reportService = {
     createReport(payload) {
-        return axiosClient.post('/reports', payload);
+        return reportApi.reportCreateReport(payload);
     },
 
     getReports(params = {}) {
         const { page = 0, size = 10, status, targetType } = params;
-        return axiosClient.get('/reports', { 
-            params: { page, size, status, targetType } 
-        });
+        return reportApi.reportGetReports({ page, size, status, targetType });
     },
 
     getReportById(id) {
-        return axiosClient.get(`/reports/${id}`);
+        return reportApi.reportGetReportDetail({ id });
     },
 
     updateReportStatus(id, status) {
         // status: "PENDING" | "UNDER_REVIEW" | "RESOLVED"
-        return axiosClient.put(`/reports/${id}`, { status });
+        return reportApi.reportUpdateReportStatus({ id }, { status });
     },
 };
 

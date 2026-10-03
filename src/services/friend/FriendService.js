@@ -1,5 +1,9 @@
-import axiosClient from "../../config/axiosConfig";
+import { friendRestApi } from "../../api";
 
+/**
+ * FriendService - Facade wrapper delegating to auto-generated friendRestApi SDK.
+ * Preserves 100% backward compatibility for all existing components.
+ */
 const FriendService = {
     /**
      * Lấy danh sách bạn bè của một người dùng
@@ -8,17 +12,15 @@ const FriendService = {
      */
     getFriends: (userId, filters = {}) => {
         const { name, gender, cityId, page = 0, size = 10 } = filters;
-        return axiosClient.get(`/friends/${userId}`, {
-            params: { name, gender, cityId, page, size }
-        });
+        return friendRestApi.friendrestGetFriendsByUserId({ userId, name, gender, cityId, page, size });
     },
 
     /**
      * Lấy danh sách bạn bè của chính người dùng hiện tại
      * @param {Object} params - { page, size }
      */
-    getMyFriends: (params) => {
-        return axiosClient.get("/friends/my-friends", { params });
+    getMyFriends: (params = {}) => {
+        return friendRestApi.friendrestGetMyFriends(params);
     },
 
     /**
@@ -26,9 +28,8 @@ const FriendService = {
      * @param {number} friendId 
      */
     unfriend: (friendId) => {
-        return axiosClient.delete(`/friends/${friendId}`);
+        return friendRestApi.friendrestUnfriend({ friendId });
     },
-
 };
 
 export default FriendService;
