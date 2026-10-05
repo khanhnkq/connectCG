@@ -1,6 +1,10 @@
 import React from 'react';
 import { MagnifyingGlass as Search, NotePencil as SquarePen, User, Users } from "@phosphor-icons/react";
 import { useSelector } from 'react-redux';
+import { Avatar } from '../ui/avatar/Avatar';
+import { Badge } from '../ui/badge/Badge';
+import { IconButton } from '../ui/button/Button';
+import { Input } from '../ui/input/Input';
 
 const ChatSidebar = React.memo(({
     conversations,
@@ -14,7 +18,7 @@ const ChatSidebar = React.memo(({
     onSelectRoom,
     onOpenNewChat
 }) => {
-    const { user: currentUser } = useSelector((state) => state.auth);
+    const { user: currentUser } = useSelector((state) => state.auth || {});
     return (
         <div
             className={`${activeRoom ? "hidden md:flex" : "flex"
@@ -24,12 +28,13 @@ const ChatSidebar = React.memo(({
                 <h2 className="text-xl font-extrabold text-text-main tracking-tight">
                     Tin nhắn
                 </h2>
-                <button
+                <IconButton
+                    icon={SquarePen}
+                    variant="primary"
+                    size="sm"
+                    aria-label="Tạo tin nhắn mới"
                     onClick={onOpenNewChat}
-                    className="size-9 rounded-full bg-[#3A2A20] hover:bg-primary hover:text-[#231810] flex items-center justify-center text-primary transition-all shadow-md"
-                >
-                    <SquarePen size={20} />
-                </button>
+                />
             </div>
 
             <div className="px-5 pt-4 pb-2 flex gap-2">
@@ -43,9 +48,9 @@ const ChatSidebar = React.memo(({
                     <User size={16} />
                     <span>Cá nhân</span>
                     {directUnreadCount > 0 && (
-                        <span className="bg-red-600 text-white text-[10px] size-5 flex items-center justify-center rounded-full ml-1 font-bold">
+                        <Badge variant="danger" size="sm" className="ml-1">
                             {directUnreadCount > 99 ? '99+' : directUnreadCount}
-                        </span>
+                        </Badge>
                     )}
                 </button>
                 <button
@@ -58,29 +63,21 @@ const ChatSidebar = React.memo(({
                     <Users size={16} />
                     <span>Nhóm</span>
                     {groupUnreadCount > 0 && (
-                        <span className="bg-red-600 text-white text-[10px] size-5 flex items-center justify-center rounded-full ml-1 font-bold">
+                        <Badge variant="danger" size="sm" className="ml-1">
                             {groupUnreadCount > 99 ? '99+' : groupUnreadCount}
-                        </span>
+                        </Badge>
                     )}
                 </button>
             </div>
 
-            <div className="px-5 py-4">
-                <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Search
-                            className="text-text-secondary transition-colors"
-                            size={20}
-                        />
-                    </div>
-                    <input
-                        className="block w-full pl-10 pr-4 py-3 border border-border-main rounded-xl bg-surface-main text-text-main placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all text-sm font-medium shadow-inner"
-                        placeholder="Tìm kiếm cuộc trò chuyện..."
-                        type="text"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
+            <div className="px-5 py-3">
+                <Input
+                    leftIcon={Search}
+                    placeholder="Tìm kiếm cuộc trò chuyện..."
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
             </div>
 
             <div className="flex-1 overflow-y-auto px-3 pb-4 space-y-1 custom-scrollbar">
@@ -103,18 +100,19 @@ const ChatSidebar = React.memo(({
                                 }`}
                         >
                             <div className="relative shrink-0">
-                                <div
-                                    className="size-12 rounded-full bg-cover bg-center ring-2 ring-transparent group-hover:ring-primary/20 transition-all border border-border-main"
-                                    style={{
-                                        backgroundImage: `url("${conv.avatarUrl ||
-                                            "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                                            }")`,
-                                    }}
-                                ></div>
+                                <Avatar
+                                    src={conv.avatarUrl}
+                                    name={conv.name || "Hội thoại"}
+                                    size="lg"
+                                />
                                 {conv.unreadCount > 0 && activeRoom?.id !== conv.id && (
-                                    <div className="absolute -top-1 -right-1 size-5 bg-red-600 rounded-full flex items-center justify-center border-2 border-background-main animate-in zoom-in shadow-lg">
-                                        <span className="text-[10px] font-black text-white">{conv.unreadCount}</span>
-                                    </div>
+                                    <Badge
+                                        variant="danger"
+                                        size="sm"
+                                        className="absolute -top-1 -right-1 px-1.5 py-0 min-w-5 h-5 flex items-center justify-center font-black animate-in zoom-in border-2 border-background-main"
+                                    >
+                                        {conv.unreadCount}
+                                    </Badge>
                                 )}
                             </div>
                             <div className="flex-1 min-w-0">

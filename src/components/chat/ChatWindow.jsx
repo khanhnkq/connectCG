@@ -3,6 +3,7 @@ import { ChatText as MessageSquare } from "@phosphor-icons/react";
 import ChatHeader from "./ChatHeader.jsx";
 import MessageList from "./MessageList.jsx";
 import MessageInput from "./MessageInput.jsx";
+import { EmptyState } from "../ui/feedback/Skeleton.jsx";
 
 const ChatWindow = ({
   activeRoom,
@@ -80,9 +81,13 @@ const ChatWindow = ({
           />
         </>
       ) : (
-        <div className="flex-1 flex flex-col items-center justify-center text-text-secondary gap-4">
-          <MessageSquare size={64} className="opacity-20" />
-          <p>Chọn một cuộc trò chuyện để bắt đầu</p>
+        <div className="flex-1 flex items-center justify-center p-8">
+          <EmptyState
+            icon={MessageSquare}
+            title="Cuộc trò chuyện"
+            description="Chọn một cuộc trò chuyện để bắt đầu"
+            className="border-none bg-transparent"
+          />
         </div>
       )}
     </div>

@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { PlusCircle as CirclePlus, PaperPlaneTilt as Send, Image as ImageIcon, X } from "@phosphor-icons/react";
+import { IconButton } from "../ui/button/Button";
 
 const MessageInput = ({
     inputText,
@@ -31,7 +32,7 @@ const MessageInput = ({
                     {selectedImage.type?.startsWith('video/') ? (
                         <video
                             src={URL.createObjectURL(selectedImage)}
-                            className="h-24 w-24 object-cover rounded-lg border-2 border-primary"
+                            className="h-24 w-24 object-cover rounded-xl border border-primary"
                             autoPlay
                             muted
                             loop
@@ -40,16 +41,17 @@ const MessageInput = ({
                         <img
                             src={URL.createObjectURL(selectedImage)}
                             alt="Preview"
-                            className="h-24 w-24 object-cover rounded-lg border-2 border-primary"
+                            className="h-24 w-24 object-cover rounded-xl border border-primary"
                         />
                     )}
-                    <button
-                        type="button"
+                    <IconButton
+                        icon={X}
+                        variant="danger"
+                        size="sm"
+                        aria-label="Xóa file đính kèm"
                         onClick={onClearImage}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors z-10"
-                    >
-                        <X size={16} />
-                    </button>
+                        className="absolute -top-2 -right-2 size-6 rounded-full"
+                    />
                 </div>
             )}
 
@@ -58,20 +60,22 @@ const MessageInput = ({
                     e.preventDefault();
                     onSendMessage();
                 }}
-                className="flex gap-3 items-end"
+                className="flex gap-2.5 items-end"
             >
-                {/* ... Emoji Picker ... */}
+                {/* Emoji Picker */}
                 <div className="relative" ref={emojiPickerRef}>
-                    <button
+                    <IconButton
+                        icon={CirclePlus}
+                        variant="ghost"
+                        size="md"
+                        aria-label="Thêm biểu tượng cảm xúc"
                         type="button"
                         onClick={onShowEmojiPicker}
-                        className={`p-3 text-text-secondary hover:text-text-main hover:bg-surface-main rounded-full transition-colors flex-shrink-0 ${showEmojiPicker ? "bg-surface-main text-primary" : ""}`}
-                    >
-                        <CirclePlus size={24} />
-                    </button>
+                        className={showEmojiPicker ? "text-primary bg-surface-main" : ""}
+                    />
 
                     {showEmojiPicker && (
-                        <div className="absolute bottom-full left-0 mb-4 p-3 bg-surface-main border border-border-main rounded-2xl shadow-2xl grid grid-cols-6 gap-2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200 w-64 backdrop-blur-xl bg-opacity-95">
+                        <div className="absolute bottom-full left-0 mb-4 p-3 bg-surface-main border border-border-main rounded-2xl shadow-2xl grid grid-cols-6 gap-2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200 w-64 backdrop-blur-xl">
                             {emojis.map((emoji) => (
                                 <button
                                     key={emoji}
@@ -79,7 +83,7 @@ const MessageInput = ({
                                     onClick={() => {
                                         setInputText(prev => prev + emoji);
                                     }}
-                                    className="text-2xl hover:scale-125 transition-transform p-1"
+                                    className="text-2xl hover:scale-125 transition-transform p-1 cursor-pointer"
                                 >
                                     {emoji}
                                 </button>
@@ -89,14 +93,15 @@ const MessageInput = ({
                 </div>
 
                 {/* Media Picker Button */}
-                <button
+                <IconButton
+                    icon={ImageIcon}
+                    variant="ghost"
+                    size="md"
+                    aria-label="Đính kèm hình ảnh hoặc video"
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isUploading}
-                    className="p-3 text-text-secondary hover:text-text-main hover:bg-surface-main rounded-full transition-colors flex-shrink-0 disabled:opacity-50"
-                >
-                    <ImageIcon size={24} />
-                </button>
+                />
                 <input
                     ref={fileInputRef}
                     type="file"
@@ -105,27 +110,26 @@ const MessageInput = ({
                     className="hidden"
                 />
 
-                <div className="flex-1 bg-surface-main border border-border-main rounded-3xl flex items-center px-4 py-1.5 focus-within:ring-1 focus-within:ring-primary focus-within:border-primary transition-all">
+                <div className="flex-1 bg-surface-main border border-border-main rounded-xl flex items-center px-4 py-1.5 focus-within:ring-1 focus-within:ring-primary focus-within:border-primary transition-all">
                     <input
                         value={inputText}
                         onChange={(e) => setInputText(e.target.value)}
-                        className="bg-transparent border-none text-text-main placeholder-text-secondary/50 focus:ring-0 w-full py-2.5 text-sm"
+                        className="bg-transparent border-none text-text-main placeholder:text-text-muted focus:ring-0 focus:outline-none w-full py-1 text-sm font-medium"
                         placeholder={selectedImage ? "Thêm chú thích (tùy chọn)..." : "Nhập tin nhắn..."}
                         type="text"
                         disabled={isUploading}
                     />
                 </div>
-                <button
+
+                <IconButton
+                    icon={Send}
                     type="submit"
+                    variant="primary"
+                    size="md"
+                    aria-label="Gửi tin nhắn"
+                    isLoading={isUploading}
                     disabled={(!inputText.trim() && !selectedImage) || isUploading}
-                    className="p-3.5 bg-primary hover:bg-orange-600 text-[#231810] rounded-full shadow-lg shadow-orange-500/20 transition-all hover:scale-105 flex-shrink-0 disabled:opacity-50 disabled:hover:scale-100"
-                >
-                    {isUploading ? (
-                        <div className="animate-spin h-6 w-6 border-2 border-[#231810] border-t-transparent rounded-full" />
-                    ) : (
-                        <Send size={24} />
-                    )}
-                </button>
+                />
             </form>
         </div>
     );

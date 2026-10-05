@@ -1,6 +1,8 @@
 import React, { Fragment } from 'react';
 import { PlayCircle, Trash as Trash2 } from "@phosphor-icons/react";
 import { formatDaySeparator } from '../../utils/chatHelpers.js';
+import { Avatar } from '../ui/avatar/Avatar';
+import { IconButton } from '../ui/button/Button';
 
 const MessageList = React.memo(({ messages, currentUser, activeRoom, messagesEndRef, onOpenLightbox, onDeleteMessage }) => {
     // Binary search: find the index of the last message whose timestamp <= lastReadTime.
@@ -86,26 +88,27 @@ const MessageList = React.memo(({ messages, currentUser, activeRoom, messagesEnd
                                     } group`}
                             >
                                 {isSentByMe && (
-                                    <button
+                                    <IconButton
+                                        icon={Trash2}
+                                        variant="ghost"
+                                        size="sm"
+                                        aria-label="Xóa tin nhắn"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             if (window.confirm("Bạn có chắc muốn xóa tin nhắn này?")) {
                                                 onDeleteMessage && onDeleteMessage(msg.id);
                                             }
                                         }}
-                                        className="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-text-secondary hover:text-red-500 self-center"
-                                        title="Xóa tin nhắn"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-500 self-center"
+                                    />
                                 )}
                                 {!isSentByMe && (
-                                    <div
-                                        className="size-8 rounded-full bg-cover bg-center shrink-0 self-end mb-1 border border-border-main"
-                                        style={{
-                                            backgroundImage: `url("${msgAvatar}")`,
-                                        }}
-                                    ></div>
+                                    <Avatar
+                                        src={msgAvatar}
+                                        name={msgSenderName}
+                                        size="sm"
+                                        className="self-end mb-1"
+                                    />
                                 )}
                                 <div
                                     className={`flex flex-col gap-1 ${isSentByMe ? "items-end" : "items-start"
