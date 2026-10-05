@@ -69,10 +69,10 @@ export function GroupHeader({
               )}
             </h1>
             <div className="flex items-center gap-2">
-              <Badge variant={group.privacy === "PUBLIC" ? "primary" : "warning"}>
+              <Badge variant={group.privacy === "PUBLIC" ? "primary" : "default"}>
                 {group.privacy === "PUBLIC" ? "Công khai" : "Riêng tư"}
               </Badge>
-              <Badge variant="success">Đang hoạt động</Badge>
+              <Badge variant="default">Đang hoạt động</Badge>
             </div>
           </div>
 
@@ -95,7 +95,7 @@ export function GroupHeader({
               <Button variant="danger" onClick={onLeaveGroup}>
                 Rời nhóm
               </Button>
-              <Button variant="outline" onClick={onInviteClick}>
+              <Button variant="secondary" onClick={onInviteClick}>
                 Mời bạn bè
               </Button>
             </>
@@ -108,7 +108,7 @@ export function GroupHeader({
               <Button variant="primary" onClick={onAcceptInvite}>
                 Chấp nhận
               </Button>
-              <Button variant="danger" onClick={onDeclineInvite}>
+              <Button variant="secondary" onClick={onDeclineInvite} className="hover:border-danger hover:text-danger">
                 Từ chối
               </Button>
             </>

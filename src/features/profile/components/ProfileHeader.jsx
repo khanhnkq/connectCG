@@ -193,7 +193,7 @@ export function ProfileHeader({
                     {/* Relationship action */}
                     {profile?.relationshipStatus === "FRIEND" ? (
                       <Button
-                        variant="outline"
+                        variant="secondary"
                         onClick={onConfirmUnfriend}
                         title="Click để hủy kết bạn"
                         className="flex-1 md:flex-none hover:border-danger hover:text-danger"
@@ -203,7 +203,7 @@ export function ProfileHeader({
                     ) : profile?.relationshipStatus === "WAITING" ||
                       (profile?.relationshipStatus === "PENDING" &&
                         profile?.isRequestReceiver) ? (
-                      <div className="flex gap-2 flex-1 md:flex-none">
+                      <div className="flex gap-2.5 flex-1 md:flex-none">
                         <Button
                           variant="primary"
                           onClick={onConfirmAcceptRequest}
@@ -211,7 +211,7 @@ export function ProfileHeader({
                           Chấp nhận
                         </Button>
                         <Button
-                          variant="outline"
+                          variant="secondary"
                           onClick={onConfirmRejectRequest}
                           className="hover:border-danger hover:text-danger"
                         >
@@ -220,9 +220,9 @@ export function ProfileHeader({
                       </div>
                     ) : profile?.relationshipStatus === "PENDING" ? (
                       <Button
-                        variant="outline"
+                        variant="secondary"
                         onClick={onConfirmCancelRequest}
-                        className="flex-1 md:flex-none"
+                        className="flex-1 md:flex-none hover:border-danger hover:text-danger"
                       >
                         Thu hồi lời mời
                       </Button>
@@ -248,7 +248,7 @@ export function ProfileHeader({
                     {/* Report icon button */}
                     <Button
                       icon={Warning}
-                      variant="outline"
+                      variant="secondary"
                       size="icon"
                       aria-label="Báo cáo người dùng"
                       onClick={onOpenReport}

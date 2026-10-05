@@ -13,17 +13,15 @@ function getInitials(name) {
 }
 
 /**
- * Deterministic pastel color palette for initials background
+ * Harmonized gray and orange color palette for initials background
  */
 function getInitialsBg(name) {
-  if (!name) return "bg-primary/10 text-primary border-primary/20";
+  if (!name) return "bg-surface-subtle text-text-secondary border-border-main";
   const colors = [
-    "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20",
-    "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
-    "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
-    "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
-    "bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/20",
-    "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
+    "bg-surface-subtle text-text-main border-border-main",
+    "bg-primary/10 text-primary border-primary/20",
+    "bg-surface-subtle text-text-secondary border-border-main",
+    "bg-primary/10 text-primary border-primary/20",
   ];
   let hash = 0;
   for (let i = 0; i < name.length; i++) {

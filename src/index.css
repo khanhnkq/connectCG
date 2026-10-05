@@ -12,22 +12,22 @@
 }
 
 :root {
-  /* Brand Tokens - Energetic Tangerine */
-  --color-primary: #f97316;
-  --color-primary-hover: #ea580c;
-  --color-primary-active: #c2410c;
-  --color-primary-subtle: #fff7ed;
+  /* Brand Tokens - Warm Tangerine (Hermès / Terracotta tone - Premium & Eye-friendly) */
+  --color-primary: #ea580c;
+  --color-primary-hover: #c2410c;
+  --color-primary-active: #9a3412;
+  --color-primary-subtle: rgba(234, 88, 12, 0.08);
 
-  /* Surface & Canvas Tokens (Modern Flat - No Shadow, No Blur) */
-  --color-background: #fafaf9;
+  /* Surface & Canvas Tokens (Modern Flat - Clean, Balanced, No Blur) */
+  --color-background: #f8f9fa;
   --color-foreground: #09090b;
   --color-surface: #ffffff;
-  --color-surface-subtle: #f4f4f5;
-  --color-border: #e4e4e7;
-  --color-border-strong: #d4d4d8;
+  --color-surface-subtle: #f1f3f5;
+  --color-border: #e5e7eb;
+  --color-border-strong: #d1d5db;
 
   /* Typography / Text Tokens */
-  --color-text-main: #09090b;
+  --color-text-main: #18181b;
   --color-text-secondary: #52525b;
   --color-text-muted: #71717a;
 
@@ -38,25 +38,25 @@
   --color-info: #3b82f6;
 
   /* Chat colors */
-  --color-chat-sent: #f97316;
-  --color-chat-received: #f4f4f5;
+  --color-chat-sent: #ea580c;
+  --color-chat-received: #f1f3f5;
   --color-chat-bg: #ffffff;
 }
 
 .dark {
   /* Brand Tokens in Dark Mode */
-  --color-primary: #f97316;
-  --color-primary-hover: #fb923c;
-  --color-primary-active: #ea580c;
-  --color-primary-subtle: #431407;
+  --color-primary: #ea580c;
+  --color-primary-hover: #f97316;
+  --color-primary-active: #c2410c;
+  --color-primary-subtle: rgba(234, 88, 12, 0.15);
 
   /* Dark Flat Canvas & Surfaces */
-  --color-background: #18181b;
+  --color-background: #121214;
   --color-foreground: #fafafa;
-  --color-surface: #27272a;
-  --color-surface-subtle: #3f3f46;
-  --color-border: #3f3f46;
-  --color-border-strong: #52525b;
+  --color-surface: #1c1c20;
+  --color-surface-subtle: #27272c;
+  --color-border: #2e2e35;
+  --color-border-strong: #3f3f46;
 
   /* Dark Typography */
   --color-text-main: #fafafa;
@@ -70,9 +70,9 @@
   --color-info: #60a5fa;
 
   /* Dark Chat */
-  --color-chat-sent: #f97316;
-  --color-chat-received: #3f3f46;
-  --color-chat-bg: #18181b;
+  --color-chat-sent: #ea580c;
+  --color-chat-received: #27272c;
+  --color-chat-bg: #121214;
 }
 
 /* Base styles */
