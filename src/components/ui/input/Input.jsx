@@ -49,15 +49,19 @@ export const Input = forwardRef(
                 ? "border-danger focus:border-danger focus:ring-1 focus:ring-danger"
                 : "border-border-main focus:border-primary focus:ring-1 focus:ring-primary"
             } ${LeftIcon ? "pl-10" : "pl-3.5"} ${
-              RightIcon ? "pr-10" : "pr-3.5"
+              RightIcon || props.rightElement ? "pr-10" : "pr-3.5"
             } outline-none ${className}`}
             {...props}
           />
-          {RightIcon && (
+          {props.rightElement ? (
+            <div className="absolute right-2.5 text-text-muted flex items-center">
+              {props.rightElement}
+            </div>
+          ) : RightIcon ? (
             <div className="absolute right-3.5 text-text-muted pointer-events-none">
               <RightIcon className="size-4 shrink-0" />
             </div>
-          )}
+          ) : null}
         </div>
         {error ? (
           <p className="text-xs text-danger font-medium leading-none">{error}</p>

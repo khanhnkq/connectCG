@@ -1,430 +1,447 @@
-import { ArrowRight, SignIn as LogIn, Star, MagnifyingGlass as Search, Sparkle as Sparkles, Gift, Lock, Globe, Envelope as Mail, ChatCircle as MessageCircle } from "@phosphor-icons/react";
+import React from "react";
 import { Link } from "react-router-dom";
+import {
+  Star,
+  MagnifyingGlass,
+  Sparkle,
+  Gift,
+  Lock,
+  Globe,
+  Envelope,
+  ChatCircle,
+} from "@phosphor-icons/react";
+import { Button } from "../components/ui/button/Button";
+import { Card } from "../components/ui/card/Card";
+import { Badge } from "../components/ui/badge/Badge";
 
+const COMMUNITY_TEASERS = [
+  {
+    name: "Minh Anh",
+    role: "UX Designer",
+    city: "Hà Nội",
+    image:
+      "https://lh3.googleusercontent.com/aida-public/AB6AXuA61rF2qJA_61d08hoKQD1vgLttk99SWH-2mhQvPCoH57mhr0UjI8L7ybrsEWnI2oLFtMUesiVK-j9CGmOjLqaDBSP4VGvvtSiwItxsARYkGe8mEsW7qwBkWXGsCjQLKe10vZ7AQv05zjKn0dsPLE5BUEJCjrwzv9TUcPhyKj43H7MuKHeGmqxrZrq5_s7ODalnsrwBejsIxD4NsrZetKdfuu5WRkwVCT304dnvOmT15inm4rJUGChESlWiT5jnp5f3NqPpm8kKCv0",
+  },
+  {
+    name: "Quốc Bảo",
+    role: "Lập trình viên",
+    city: "Đà Nẵng",
+    image:
+      "https://lh3.googleusercontent.com/aida-public/AB6AXuBdoLrCwAT83JCL6U8m7TnDC0oM8kn4OVr5XeeYADi_UYRinmq2C0fIwzychqDESZvGWD0nS5EqD_0hTACwjoHHIUqj1bI5Ic1EQZ75Oef8FoxX0B7g4dp_lmTjf44WtIpjrF_Ygs2b0iQ90dlQzFyapA7Oh2Pm1-peCNesZBogBZhUpUCXOnp5_KqLP9H-cm69o1uTTt-sGGAzw11HFpXZ7pvgNJkIjC9OPnhWLCMwXKlgZz2nKU2pguarVqXSrrVwTiSrRLt4h5g",
+  },
+  {
+    name: "Thùy Trang",
+    role: "Nhiếp ảnh gia",
+    city: "TP. Hồ Chí Minh",
+    image:
+      "https://lh3.googleusercontent.com/aida-public/AB6AXuCA2lYtnTFCA75HFG_52JszPx-az718WMOboPAn-G1i24N852_c8WMA84zaSIjPhM2bLmVoY8itXvafnzxb5VjPbzRUZp6AXCKTfAEXa9jysG_6eND1TYZ0D1OFOXHtOKIWA2x0OJxEozgg2vR_FVWQLKzKDMrEuV3ZX9MEa8yOLevyaZjSYY0z7uQTwuSXWp4HBjjqAcBcZLqU4iAoqv71JyHkK1TW8TD9Rt3KVz3qa5jC8Xq-idWXHr3qpktV4H962cWYDM__P1Y",
+  },
+  {
+    name: "Hoàng Nam",
+    role: "Kiến trúc sư",
+    city: "Hải Phòng",
+    image:
+      "https://lh3.googleusercontent.com/aida-public/AB6AXuCfCl1X2bsOD2anKofpFDzckD9z_a3CDOQqg1A1-nnzE0ALZhx8h2sNsn_PdV7-P6oEpg0XRttDsHUQJwA2Aa3MdUW6FIzwdzYDOxxjZFF7_x9QBl_cJ0NvpSwm_LFGlB5Yi4n9ksqFEjuIaIuQTyLOghyL8b2P7JdZiE9YN9aMocc7VfC_uvu-UaLuLtbGD9_5Kropk3H3Na2Of1n_kfzDW9PvINieVznAqTbyDeohff0qGU0J5IQTasq56bubbiAsxjbHlaBRaZ4",
+  },
+  {
+    name: "Khánh Linh",
+    role: "Biên tập viên",
+    city: "Cần Thơ",
+    image:
+      "https://lh3.googleusercontent.com/aida-public/AB6AXuDJPlnDjBjXuixfttGBOr0_Jx2ZLTctMTrGw14hx9On0XfJumO9xm9cOekOU2h2N4DYnbdA2kJqNkj1La7ogr0YwtHbWZbBTN2f4jz2tMaZ4MysYtOwrJh9nwBn3ooj5LQfIAwf-a0pq9vR24ScthQGYkC_nY1vIxbb6OW1ySd-C8q1C-EFoeCLGB47y8OGHnKoiwdLpB3Jgft_uYAPe6-xAq52AMh9kmGduf6uAp8MOpDKV3ZUqpAElRvG46XdK09BKNQRomKVHFo",
+  },
+  {
+    name: "Tuấn Anh",
+    role: "Giáo viên",
+    city: "Huế",
+    image:
+      "https://lh3.googleusercontent.com/aida-public/AB6AXuC5XMIpiqrD96rbcu3BjxqHOkpiTb_uUr6zVOzb3_EuEuyT7BKqTEpoqxuP4Q5_KQvP60A_2VSvikFgb-T6dHDeoW_JBguXbEb2aBZWpYU2ZHqnq9-UbMsPrpz9nuSS5PoGtucwsXXNpETlS5qomt4Lt5QiBEH-IIExc6OiETtXvtpKy0BwNQlgjk1GYSXjtSmGV42SJAbFmDxmcSZYbOTUNXQk7EwH1M2sDDKY33EOblUP98AmvedKaka_lnog0uPtQE6vFnDMUuk",
+  },
+];
+
+/**
+ * LandingPage: Trang chủ giới thiệu ConnectCG
+ * - Chuẩn hóa Modern Flat 2026: 0px blur, 0px drop shadow, viền 1px crisp
+ * - Tuân thủ nghiêm ngặt Mutual Exclusivity: nút có chữ không kẹp icon
+ * - Tương thích hoàn hảo Light Mode & Dark Mode
+ */
 export default function LandingPage() {
   return (
-    <div className="bg-background-main text-text-main font-display antialiased w-full overflow-x-hidden transition-colors duration-300">
-      {/* Navigation */}
-      <nav className="fixed top-0 inset-x-0 z-50 bg-background-main/90 backdrop-blur-md border-b border-border-main transition-all">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+    <div className="bg-background-main text-text-main font-sans antialiased w-full overflow-x-hidden transition-colors duration-200">
+      {/* 1. Header Navigation */}
+      <nav className="fixed top-0 inset-x-0 z-50 bg-background-main border-b border-border-main">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-18 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2.5 group">
             <img
               src="/logo.png"
               alt="Connect Logo"
-              className="h-10 w-auto object-contain"
+              className="h-9 w-auto object-contain transition-transform group-hover:scale-105"
             />
-            <span className="text-xl font-extrabold tracking-tight">
+            <span className="text-xl font-black tracking-tight text-text-main">
               Connect<span className="text-primary">.</span>
             </span>
-          </div>
-          <div className="hidden md:flex items-center gap-8">
-            <a
-              className="text-sm font-bold text-text-secondary hover:text-text-main transition-colors"
-              href="#"
-            >
-              Câu Chuyện
+          </Link>
+
+          <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-text-secondary">
+            <a href="#features" className="hover:text-primary transition-colors">
+              Tính năng
             </a>
-            <a
-              className="text-sm font-bold text-text-secondary hover:text-text-main transition-colors"
-              href="#"
-            >
-              Cộng Đồng
+            <a href="#community" className="hover:text-primary transition-colors">
+              Cộng đồng
             </a>
-            <a
-              className="text-sm font-bold text-text-secondary hover:text-text-main transition-colors"
-              href="#"
-            >
-              An Toàn
-            </a>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link
-              to="/login"
-              className="hidden sm:block text-text-main hover:text-primary font-bold px-5 py-2.5 transition-colors text-sm border border-primary/30 hover:border-primary rounded-full"
-            >
-              Đăng Nhập
+            <Link to="/terms" className="hover:text-primary transition-colors">
+              Điều khoản
             </Link>
-            <Link
-              to="/registration/step-1"
-              className="bg-primary hover:bg-primary-hover text-white font-bold px-6 py-2.5 rounded-full transition-all shadow-lg shadow-primary/20 text-sm hover:scale-105 active:scale-95"
-            >
-              Tham Gia Ngay
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            <Link to="/login">
+              <Button variant="ghost" size="sm">
+                Đăng nhập
+              </Button>
+            </Link>
+            <Link to="/registration/step-1">
+              <Button variant="primary" size="sm">
+                Tham gia ngay
+              </Button>
             </Link>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative min-h-[85vh] flex items-center pt-20 overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <img
-            alt="Group of diverse people connecting"
-            className="w-full h-full object-cover object-center opacity-70"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhcShxtS0XBI7jv54oz8BZHYnYJHTux8aUkOpW2U1TcMj77P1Zk7CfS0xkdspYSsaFMEIHlz7XfA_bNAzViKVPgpAvEnxYOXH6uBKwPaXvisQj-qzxZ0kEh4uvH_nXlKY02OoRAN8PtRB7-rUPoFMJRdcUuPkHkHHuBUvoUAb3ySmdNj7Tgq_LJwGk2s63fXg_g2aazlaj2KhkB8JkcpRh7OewTypUwnWJyqOdhFQGXDv8ZfgpP_74nO8k0KbW4mjhNz82gGN1nPQ"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-background-main via-background-main/80 to-transparent z-10" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background-main via-transparent to-transparent z-10" />
-        </div>
-        <div className="relative z-20 max-w-7xl mx-auto px-4 md:px-6 w-full grid lg:grid-cols-2 gap-12">
-          <div className="flex flex-col justify-center items-start pt-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-primary text-xs font-bold uppercase tracking-widest mb-6 backdrop-blur-sm">
-              <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              Đã Có Mặt Toàn Cầu
-            </div>
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] mb-6 drop-shadow-lg">
-              Kết Nối, Chia Sẻ và
-              <span className="text-primary block mt-2">Tìm Bạn Bè</span>
+      {/* 2. Hero Section */}
+      <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 border-b border-border-main bg-background-main overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 w-full grid lg:grid-cols-2 gap-12 items-center">
+          <div className="flex flex-col items-start space-y-6">
+            <Badge variant="subtle" size="md">
+              Mạng xã hội kết nối thế hệ mới
+            </Badge>
+
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1] text-text-main">
+              Kết Nối Chân Thực,
+              <span className="text-primary block mt-1">Tìm Người Cùng Tần Số</span>
             </h1>
-            <p className="text-lg md:text-xl text-text-secondary mb-8 max-w-xl leading-relaxed font-medium drop-shadow-md">
-              Trải nghiệm phong cách mạng xã hội mới. Kết nối với hàng ngàn
-              người cùng chí hướng trong môi trường an toàn, cao cấp giúp xây
-              dựng những mối quan hệ chân thực.
+
+            <p className="text-base sm:text-lg text-text-secondary leading-relaxed max-w-xl">
+              Trải nghiệm phong cách mạng xã hội phẳng hiện đại. Khám phá những
+              người bạn cùng sở thích, bắt đầu cuộc trò chuyện ý nghĩa trong không gian
+              an toàn và văn minh.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-              <Link
-                to="/registration/step-1"
-                className="bg-primary hover:bg-primary-hover text-white text-base font-bold px-8 py-4 rounded-full transition-all transform hover:-translate-y-1 shadow-xl shadow-primary/25 flex items-center justify-center gap-2"
-              >
-                Tham Gia Cộng Đồng
-                <ArrowRight size={20} />
+
+            <div className="flex flex-wrap items-center gap-3 pt-2 w-full sm:w-auto">
+              <Link to="/registration/step-1">
+                <Button variant="primary" size="lg">
+                  Tạo tài khoản miễn phí
+                </Button>
               </Link>
-              <Link
-                to="/login"
-                className="bg-black/20 backdrop-blur-sm border border-primary/50 hover:border-primary text-primary hover:bg-primary/10 text-base font-bold px-8 py-4 rounded-full transition-all flex items-center justify-center gap-2"
-              >
-                <LogIn size={20} />
-                Đăng Nhập
+              <Link to="/login">
+                <Button variant="outline" size="lg">
+                  Đăng nhập tài khoản
+                </Button>
               </Link>
             </div>
-            <div className="mt-12 flex items-center gap-4 p-4 rounded-2xl bg-surface-main/5 border border-border-main backdrop-blur-sm">
-              <div className="flex -space-x-4">
-                <div
-                  className="size-12 rounded-full border-2 border-[#1A120B] bg-cover bg-center"
-                  style={{
-                    backgroundImage:
-                      'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAUO2YNLAxc1Nl_nCWaGx0Dwt8BIkrV0WsFtsI9ePfpuH2QDYaR2IL1U-BCix40iXmHOlV6rzlHb2YzzlKUEpD183YkjDBCAQtHPFoSaXz638Vjta7H-NlTtKESwQOh_CcHQs-rhd6cbbiyxlQVatQS90HHg710X2WFSTAS7LkytHfywWdbhdy-IVBZk0wtKYnjblM6Vy6IA3R_7kOjPY04ZFIVnhosSED60xtTRmy2ylVAGG80CffMYIEPaZ6iQHq6uonwSSfKBJw")',
-                  }}
-                />
-                <div
-                  className="size-12 rounded-full border-2 border-[#1A120B] bg-cover bg-center"
-                  style={{
-                    backgroundImage:
-                      'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAFnbIOg359_IruqeJZR2XF_Z9o0ttAo63JvDFovmYNSKdvPDsjabpqB7jFC2UUE6tzEncOSivvm1W5vNt9KxVCVPm7pn8OrwN7RLmHA4OMIo36hL-88I-wXa9YN61Vi-X20nAg7gI-1QfF28jrI8oV5TGX_X32VjN7POtm_CtBB9DkdWcNvsqgkBEwNZFhOLngZBuNQA5Z5pU-fGIhAf3z355mdR5RIij1VsmKLkaqcqcd87735upuE6OE5UqM8bI3FCXkrTk4agw")',
-                  }}
-                />
-                <div
-                  className="size-12 rounded-full border-2 border-[#1A120B] bg-cover bg-center"
-                  style={{
-                    backgroundImage:
-                      'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBuHYpNqBoJZ6H3wxyG6OtCnMMVU4FTUngw6LYZy4SgjA0mY2sYsDcePdMS10ev3_M8tw950TFDzIey60zy_0YaYchnCYNkI1EFXtTTC7THk5zGBor8yBtMr-aAf8sbShLZVQv8CQzSm5kNH7EvWmKXyi1RIv1DxZa3HFHT34tseJeUcKe6h6lFC6Ar26xYdz8DghOGsPL3pKrXSb5Jj3_uULvl0M_QzCz6myNZnocquEnyZkGrndeht0XMB4Yrsu9Is2B6nJ3Mi9M")',
-                  }}
-                />
-                <div className="size-12 rounded-full border-2 border-background-main bg-surface-main flex items-center justify-center text-xs font-bold text-text-main">
-                  +5k
+
+            {/* Social Proof */}
+            <div className="pt-6 border-t border-border-main flex items-center gap-4 w-full">
+              <div className="flex -space-x-2.5">
+                {COMMUNITY_TEASERS.slice(0, 3).map((item, idx) => (
+                  <img
+                    key={idx}
+                    src={item.image}
+                    alt={item.name}
+                    className="size-10 rounded-full border-2 border-background-main object-cover"
+                  />
+                ))}
+                <div className="size-10 rounded-full border-2 border-background-main bg-surface-subtle flex items-center justify-center text-[11px] font-bold text-text-main">
+                  +10k
                 </div>
               </div>
               <div>
-                <div className="flex items-center gap-1 text-yellow-500 mb-1">
+                <div className="flex items-center gap-1 text-warning mb-0.5">
                   {[1, 2, 3, 4, 5].map((i) => (
-                    <Star key={i} size={14} fill="currentColor" />
+                    <Star key={i} size={13} weight="fill" />
                   ))}
                 </div>
-                <p className="text-sm font-medium text-gray-300">
-                  <span className="text-white font-bold">10k+</span> thành viên
-                  mới tuần này
+                <p className="text-xs font-medium text-text-secondary">
+                  Hàng ngàn thành viên mới tham gia mỗi tuần
                 </p>
               </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* Features Section */}
-      <section className="py-24 bg-background-main relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
-        <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-5xl font-extrabold mb-6 tracking-tight text-white">
-              Mọi thứ bạn cần để <span className="text-primary">kết nối</span>
-            </h2>
-            <p className="text-text-secondary text-lg leading-relaxed">
-              Nền tảng của chúng tôi cung cấp các công cụ cao cấp giúp bạn thể
-              hiện bản thân, khám phá bạn bè mới và xây dựng những mối quan hệ
-              bền vững.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                iconPath: <Search className="text-primary" size={32} />,
-                title: "Ghép Đôi Thông Minh",
-                description:
-                  "Lọc đối tượng theo sở thích, vị trí và lối sống. Thuật toán của chúng tôi giúp bạn tìm đúng người bạn cần mà không bị nhiễu.",
-              },
-              {
-                iconPath: <Sparkles className="text-primary" size={32} />,
-                title: "Thể Hiện Bản Thân",
-                description:
-                  "Tạo hồ sơ ấn tượng với thư viện ảnh và nhật ký cá nhân. Cập nhật trạng thái, chia sẻ khoảnh khắc và để cá tính của bạn tỏa sáng.",
-              },
-              {
-                iconPath: <Gift className="text-primary" size={32} />,
-                title: "Quà Tặng Ảo",
-                description:
-                  "Phá băng ngay lập tức. Gửi quà tặng ảo ý nghĩa để thể hiện sự cảm mến và bắt đầu cuộc trò chuyện đầy thiện cảm.",
-              },
-            ].map((feature, index) => (
-              <div
-                key={index}
-                className="bg-surface-main p-8 rounded-[2rem] border border-border-main hover:border-primary/30 transition-all duration-300 group hover:-translate-y-2 shadow-xl hover:shadow-primary/5"
-              >
-                <div className="size-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform ring-1 ring-border-main">
-                  {feature.iconPath}
-                </div>
-                <h3 className="text-2xl font-bold mb-4 text-text-main">
-                  {feature.title}
-                </h3>
-                <p className="text-gray-400 leading-relaxed">
-                  {feature.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-24 bg-gradient-to-b from-background-main to-background-main/50 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold mb-3 text-white">
-                Thành Viên Mới
-              </h2>
-              <p className="text-text-secondary">
-                Tham gia cùng hàng ngàn người đang hoạt động. Kết nối ngay lập
-                tức.
-              </p>
-            </div>
-            <button className="text-primary font-bold hover:text-white transition-colors flex items-center gap-1 group">
-              Xem tất cả thành viên{" "}
-              <ArrowRight
-                className="group-hover:translate-x-1 transition-transform"
-                size={20}
-              />
-            </button>
-          </div>
+          {/* Right Hero Banner Card */}
           <div className="relative">
-            {/* Blurred member cards grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 opacity-50 select-none pointer-events-none">
-              {[
-                "https://lh3.googleusercontent.com/aida-public/AB6AXuA61rF2qJA_61d08hoKQD1vgLttk99SWH-2mhQvPCoH57mhr0UjI8L7ybrsEWnI2oLFtMUesiVK-j9CGmOjLqaDBSP4VGvvtSiwItxsARYkGe8mEsW7qwBkWXGsCjQLKe10vZ7AQv05zjKn0dsPLE5BUEJCjrwzv9TUcPhyKj43H7MuKHeGmqxrZrq5_s7ODalnsrwBejsIxD4NsrZetKdfuu5WRkwVCT304dnvOmT15inm4rJUGChESlWiT5jnp5f3NqPpm8kKCv0",
-                "https://lh3.googleusercontent.com/aida-public/AB6AXuBdoLrCwAT83JCL6U8m7TnDC0oM8kn4OVr5XeeYADi_UYRinmq2C0fIwzychqDESZvGWD0nS5EqD_0hTACwjoHHIUqj1bI5Ic1EQZ75Oef8FoxX0B7g4dp_lmTjf44WtIpjrF_Ygs2b0iQ90dlQzFyapA7Oh2Pm1-peCNesZBogBZhUpUCXOnp5_KqLP9H-cm69o1uTTt-sGGAzw11HFpXZ7pvgNJkIjC9OPnhWLCMwXKlgZz2nKU2pguarVqXSrrVwTiSrRLt4h5g",
-                "https://lh3.googleusercontent.com/aida-public/AB6AXuCA2lYtnTFCA75HFG_52JszPx-az718WMOboPAn-G1i24N852_c8WMA84zaSIjPhM2bLmVoY8itXvafnzxb5VjPbzRUZp6AXCKTfAEXa9jysG_6eND1TYZ0D1OFOXHtOKIWA2x0OJxEozgg2vR_FVWQLKzKDMrEuV3ZX9MEa8yOLevyaZjSYY0z7uQTwuSXWp4HBjjqAcBcZLqU4iAoqv71JyHkK1TW8TD9Rt3KVz3qa5jC8Xq-idWXHr3qpktV4H962cWYDM__P1Y",
-                "https://lh3.googleusercontent.com/aida-public/AB6AXuCfCl1X2bsOD2anKofpFDzckD9z_a3CDOQqg1A1-nnzE0ALZhx8h2sNsn_PdV7-P6oEpg0XRttDsHUQJwA2Aa3MdUW6FIzwdzYDOxxjZFF7_x9QBl_cJ0NvpSwm_LFGlB5Yi4n9ksqFEjuIaIuQTyLOghyL8b2P7JdZiE9YN9aMocc7VfC_uvu-UaLuLtbGD9_5Kropk3H3Na2Of1n_kfzDW9PvINieVznAqTbyDeohff0qGU0J5IQTasq56bubbiAsxjbHlaBRaZ4",
-                "https://lh3.googleusercontent.com/aida-public/AB6AXuDJPlnDjBjXuixfttGBOr0_Jx2ZLTctMTrGw14hx9On0XfJumO9xm9cOekOU2h2N4DYnbdA2kJqNkj1La7ogr0YwtHbWZbBTN2f4jz2tMaZ4MysYtOwrJh9nwBn3ooj5LQfIAwf-a0pq9vR24ScthQGYkC_nY1vIxbb6OW1ySd-C8q1C-EFoeCLGB47y8OGHnKoiwdLpB3Jgft_uYAPe6-xAq52AMh9kmGduf6uAp8MOpDKV3ZUqpAElRvG46XdK09BKNQRomKVHFo",
-                "https://lh3.googleusercontent.com/aida-public/AB6AXuC5XMIpiqrD96rbcu3BjxqHOkpiTb_uUr6zVOzb3_EuEuyT7BKqTEpoqxuP4Q5_KQvP60A_2VSvikFgb-T6dHDeoW_JBguXbEb2aBZWpYU2ZHqnq9-UbMsPrpz9nuSS5PoGtucwsXXNpETlS5qomt4Lt5QiBEH-IIExc6OiETtXvtpKy0BwNQlgjk1GYSXjtSmGV42SJAbFmDxmcSZYbOTUNXQk7EwH1M2sDDKY33EOblUP98AmvedKaka_lnog0uPtQE6vFnDMUuk",
-              ].map((imgUrl, index) => (
-                <div
-                  key={index}
-                  className="bg-surface-main p-4 rounded-2xl border border-border-main flex flex-col items-center gap-3 grayscale-[50%]"
-                >
-                  <div
-                    className="size-20 rounded-full bg-cover bg-center blur-[6px]"
-                    style={{ backgroundImage: `url("${imgUrl}")` }}
-                  />
-                  <div className="h-4 w-20 bg-white/10 rounded-full" />
-                  <div className="h-3 w-12 bg-white/5 rounded-full" />
+            <Card className="p-2 overflow-hidden">
+              <img
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhcShxtS0XBI7jv54oz8BZHYnYJHTux8aUkOpW2U1TcMj77P1Zk7CfS0xkdspYSsaFMEIHlz7XfA_bNAzViKVPgpAvEnxYOXH6uBKwPaXvisQj-qzxZ0kEh4uvH_nXlKY02OoRAN8PtRB7-rUPoFMJRdcUuPkHkHHuBUvoUAb3ySmdNj7Tgq_LJwGk2s63fXg_g2aazlaj2KhkB8JkcpRh7OewTypUwnWJyqOdhFQGXDv8ZfgpP_74nO8k0KbW4mjhNz82gGN1nPQ"
+                alt="Connect Community"
+                className="w-full h-80 sm:h-96 object-cover rounded-xl"
+              />
+              <div className="p-4 flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-bold text-text-main">
+                    Cộng đồng Connect
+                  </h4>
+                  <p className="text-xs text-text-muted mt-0.5">
+                    Hơn 63 tỉnh thành • Đa dạng sở thích
+                  </p>
                 </div>
-              ))}
-            </div>
-            {/* CTA overlay */}
-            <div className="absolute inset-0 z-20 flex items-center justify-center p-4">
-              <div className="bg-surface-main/80 backdrop-blur-xl border border-primary/20 p-8 rounded-[2rem] shadow-2xl text-center max-w-sm w-full transform transition-all hover:scale-105 duration-500 group">
-                <div className="size-4 rounded-full bg-primary/20 text-primary flex items-center justify-center mx-auto mb-5 group-hover:bg-primary group-hover:text-[#1A120B] transition-colors">
-                  <Lock size={32} />
-                </div>
-                <h3 className="text-2xl font-bold text-text-main mb-2">
-                  Tham gia để xem hồ sơ
-                </h3>
-                <p className="text-text-secondary text-sm mb-6 leading-relaxed">
-                  Đăng ký miễn phí để xem đầy đủ hồ sơ, hình ảnh và kết nối với
-                  thành viên gần bạn.
-                </p>
-                <Link
-                  to="/registration/step-1"
-                  className="block w-full bg-primary hover:bg-primary-hover text-white font-bold py-4 rounded-full transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40"
-                >
-                  Tạo Tài Khoản Miễn Phí
+                <Link to="/registration/step-1">
+                  <Button variant="primary" size="sm">
+                    Khám phá ngay
+                  </Button>
                 </Link>
               </div>
-            </div>
+            </Card>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-surface-main border-t border-border-main pt-16 pb-8 transition-colors duration-300">
-        <div className="max-w-7xl mx-auto px-4 md:px-6">
-          <div className="flex flex-col md:flex-row justify-between items-start gap-12 mb-16">
-            <div className="max-w-xs">
-              <div className="flex items-center gap-2 mb-6">
+      {/* 3. Features Section */}
+      <section id="features" className="py-20 bg-background-main border-b border-border-main">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
+            <Badge variant="subtle" size="md">
+              Tính năng nổi bật
+            </Badge>
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-text-main">
+              Mọi công cụ bạn cần để <span className="text-primary">kết nối</span>
+            </h2>
+            <p className="text-text-secondary text-sm sm:text-base leading-relaxed">
+              Thiết kế tinh gọn, tập trung vào giá trị cốt lõi: giúp bạn thể hiện
+              bản thân và tìm đúng bạn bè mà không bị làm phiền.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                icon: MagnifyingGlass,
+                title: "Ghép Đôi Thông Minh",
+                description:
+                  "Lọc đối tượng theo sở thích, vị trí và mục đích kết nối. Thuật toán hỗ trợ gợi ý những người bạn phù hợp nhất.",
+              },
+              {
+                icon: Sparkle,
+                title: "Hồ Sơ Đa Tầng",
+                description:
+                  "Tạo hồ sơ ấn tượng với danh mục sở thích, hình ảnh cá nhân và nhật ký suy nghĩ. Tự do thể hiện cá tính riêng.",
+              },
+              {
+                icon: Gift,
+                title: "Tương Tác Trực Quan",
+                description:
+                  "Phá băng dễ dàng với tin nhắn tức thì, thả cảm xúc bài viết và chia sẻ câu chuyện hàng ngày với bạn bè.",
+              },
+            ].map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <Card key={index} className="p-6 sm:p-8 space-y-4 hover:border-primary transition-colors">
+                  <div className="size-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+                    <Icon size={24} weight="bold" />
+                  </div>
+                  <h3 className="text-lg font-bold text-text-main">
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm text-text-secondary leading-relaxed">
+                    {feature.description}
+                  </p>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* 4. Community Preview Section */}
+      <section id="community" className="py-20 bg-background-main border-b border-border-main">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+            <div>
+              <Badge variant="subtle" size="sm" className="mb-2">
+                Thành viên mới
+              </Badge>
+              <h2 className="text-2xl sm:text-3xl font-black text-text-main tracking-tight">
+                Gặp gỡ những người bạn mới
+              </h2>
+            </div>
+            <Link to="/registration/step-1">
+              <Button variant="outline" size="sm">
+                Đăng ký để xem tất cả
+              </Button>
+            </Link>
+          </div>
+
+          {/* Cards Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 relative">
+            {COMMUNITY_TEASERS.map((member, index) => (
+              <Card key={index} className="p-3 text-center space-y-2.5">
+                <img
+                  src={member.image}
+                  alt={member.name}
+                  className="size-16 rounded-full mx-auto object-cover border border-border-main"
+                />
+                <div>
+                  <h4 className="text-xs font-bold text-text-main truncate">
+                    {member.name}
+                  </h4>
+                  <p className="text-[10px] text-text-muted truncate">
+                    {member.role}
+                  </p>
+                  <p className="text-[10px] text-primary font-semibold mt-0.5">
+                    {member.city}
+                  </p>
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          {/* CTA Box */}
+          <Card className="mt-8 p-8 text-center max-w-xl mx-auto space-y-4 border-primary/30">
+            <div className="size-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mx-auto">
+              <Lock size={22} weight="bold" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-text-main">
+                Tham gia để kết nối cùng mọi người
+              </h3>
+              <p className="text-xs sm:text-sm text-text-secondary mt-1 max-w-md mx-auto">
+                Tạo tài khoản miễn phí chỉ trong 1 phút để khám phá đầy đủ hồ sơ,
+                nhắn tin và chia sẻ khoảnh khắc.
+              </p>
+            </div>
+            <div className="pt-2">
+              <Link to="/registration/step-1" className="inline-block w-full sm:w-auto">
+                <Button variant="primary" size="md" className="w-full sm:w-auto px-8">
+                  Tạo tài khoản ngay
+                </Button>
+              </Link>
+            </div>
+          </Card>
+        </div>
+      </section>
+
+      {/* 5. Footer */}
+      <footer className="bg-surface-main py-12 text-text-secondary border-t border-border-main">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-10">
+            <div className="col-span-2 sm:col-span-1 space-y-3">
+              <Link to="/" className="flex items-center gap-2">
                 <img
                   src="/logo.png"
                   alt="Connect Logo"
                   className="h-8 w-auto object-contain"
                 />
-                <span className="text-xl font-extrabold tracking-tight text-text-main">
+                <span className="text-lg font-black text-text-main">
                   Connect<span className="text-primary">.</span>
                 </span>
-              </div>
-              <p className="text-gray-500 text-sm leading-relaxed mb-6">
-                Mạng xã hội cao cấp dành cho những kết nối ý nghĩa và tình bạn
-                chân thực. Tham gia cuộc trò chuyện ngay hôm nay.
+              </Link>
+              <p className="text-xs text-text-muted leading-relaxed">
+                Mạng xã hội phẳng hiện đại dành cho những kết nối ý nghĩa và chân thực.
               </p>
-              <div className="flex gap-3">
+              <div className="flex gap-2 pt-1 text-text-muted">
                 <a
-                  className="size-10 rounded-full bg-background-main hover:bg-primary hover:text-white flex items-center justify-center transition-all text-text-secondary"
                   href="#"
+                  aria-label="Website"
+                  className="size-8 rounded-lg border border-border-main flex items-center justify-center hover:text-primary hover:border-primary transition-colors"
                 >
-                  <Globe size={18} />
+                  <Globe size={16} />
                 </a>
                 <a
-                  className="size-10 rounded-full bg-background-main hover:bg-primary hover:text-white flex items-center justify-center transition-all text-text-secondary"
                   href="#"
+                  aria-label="Email"
+                  className="size-8 rounded-lg border border-border-main flex items-center justify-center hover:text-primary hover:border-primary transition-colors"
                 >
-                  <Mail size={18} />
+                  <Envelope size={16} />
                 </a>
                 <a
-                  className="size-10 rounded-full bg-background-main hover:bg-primary hover:text-white flex items-center justify-center transition-all text-text-secondary"
                   href="#"
+                  aria-label="Chat"
+                  className="size-8 rounded-lg border border-border-main flex items-center justify-center hover:text-primary hover:border-primary transition-colors"
                 >
-                  <MessageCircle size={18} />
+                  <ChatCircle size={16} />
                 </a>
               </div>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-12 sm:gap-20">
-              <div>
-                <h4 className="text-text-main font-bold mb-6 text-sm uppercase tracking-wider">
-                  Công Ty
-                </h4>
-                <ul className="flex flex-col gap-3 text-sm text-gray-400">
-                  <li>
-                    <a
-                      className="hover:text-primary transition-colors"
-                      href="#"
-                    >
-                      Về Chúng Tôi
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      className="hover:text-primary transition-colors"
-                      href="#"
-                    >
-                      Tuyển Dụng
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      className="hover:text-primary transition-colors"
-                      href="#"
-                    >
-                      Báo Chí
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      className="hover:text-primary transition-colors"
-                      href="#"
-                    >
-                      Liên Hệ
-                    </a>
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="text-text-main font-bold mb-6 text-sm uppercase tracking-wider">
-                  Tài Nguyên
-                </h4>
-                <ul className="flex flex-col gap-3 text-sm text-gray-400">
-                  <li>
-                    <a
-                      className="hover:text-primary transition-colors"
-                      href="#"
-                    >
-                      Mẹo An Toàn
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      className="hover:text-primary transition-colors"
-                      href="#"
-                    >
-                      Quy Tắc Cộng Đồng
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      className="hover:text-primary transition-colors"
-                      href="#"
-                    >
-                      Câu Chuyện Thành Công
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      className="hover:text-primary transition-colors"
-                      href="#"
-                    >
-                      Trung Tâm Trợ Giúp
-                    </a>
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="text-text-main font-bold mb-6 text-sm uppercase tracking-wider">
-                  Pháp Lý
-                </h4>
-                <ul className="flex flex-col gap-3 text-sm text-gray-400">
-                  <li>
-                    <a
-                      className="hover:text-primary transition-colors"
-                      href="#"
-                    >
-                      Chính Sách Riêng Tư
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      className="hover:text-primary transition-colors"
-                      href="#"
-                    >
-                      Điều Khoản Dịch Vụ
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      className="hover:text-primary transition-colors"
-                      href="#"
-                    >
-                      Chính Sách Cookie
-                    </a>
-                  </li>
-                </ul>
-              </div>
+
+            <div>
+              <h4 className="text-xs font-bold text-text-main uppercase tracking-wider mb-3">
+                Sản phẩm
+              </h4>
+              <ul className="space-y-2 text-xs text-text-muted">
+                <li>
+                  <a href="#features" className="hover:text-primary transition-colors">
+                    Tính năng
+                  </a>
+                </li>
+                <li>
+                  <a href="#community" className="hover:text-primary transition-colors">
+                    Cộng đồng
+                  </a>
+                </li>
+                <li>
+                  <Link to="/registration/step-1" className="hover:text-primary transition-colors">
+                    Tạo tài khoản
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-xs font-bold text-text-main uppercase tracking-wider mb-3">
+                Tài nguyên
+              </h4>
+              <ul className="space-y-2 text-xs text-text-muted">
+                <li>
+                  <Link to="/terms" className="hover:text-primary transition-colors">
+                    Mẹo an toàn
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/terms" className="hover:text-primary transition-colors">
+                    Quy tắc cộng đồng
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/login" className="hover:text-primary transition-colors">
+                    Hỗ trợ
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-xs font-bold text-text-main uppercase tracking-wider mb-3">
+                Pháp lý
+              </h4>
+              <ul className="space-y-2 text-xs text-text-muted">
+                <li>
+                  <Link to="/terms" className="hover:text-primary transition-colors">
+                    Điều khoản sử dụng
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/terms" className="hover:text-primary transition-colors">
+                    Chính sách bảo mật
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/terms" className="hover:text-primary transition-colors">
+                    Chính sách cookie
+                  </Link>
+                </li>
+              </ul>
             </div>
           </div>
-          <div className="border-t border-border-main pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-text-muted font-medium">
-            <p>© 2023 Connect Social Inc. Bảo lưu mọi quyền.</p>
-            <div className="flex gap-6">
-              <a className="hover:text-gray-400 transition-colors" href="#">
-                English (US)
-              </a>
-              <a className="hover:text-gray-400 transition-colors" href="#">
-                Sitemap
-              </a>
+
+          <div className="pt-6 border-t border-border-main flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-text-muted">
+            <p>© 2026 Connect Social Inc. Bảo lưu mọi quyền.</p>
+            <div className="flex gap-4">
+              <span>Tiếng Việt</span>
+              <span>•</span>
+              <Link to="/terms" className="hover:underline">
+                Chính sách
+              </Link>
             </div>
           </div>
         </div>

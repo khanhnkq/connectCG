@@ -1,15 +1,22 @@
-import { Envelope as Mail, Eye, EyeSlash as EyeOff } from "@phosphor-icons/react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Formik, Form, Field } from "formik";
-import * as Yup from "yup";
-import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
+import { Formik, Form } from "formik";
+import * as Yup from "yup";
+import { Envelope, Eye, EyeSlash } from "@phosphor-icons/react";
+import toast from "react-hot-toast";
+
 import { registerUser } from "../../redux/slices/authSlice";
 import { getErrorMessage } from "../../utils/errorUtils";
-import { appConfig } from "../../config/runtimeConfig";
+import { Input } from "../../components/ui/input/Input";
+import { Button, IconButton } from "../../components/ui/button/Button";
+import { Card } from "../../components/ui/card/Card";
+import {
+  AuthSplitLayout,
+  TermsModal,
+  SocialLoginButtons,
+} from "../../features/auth";
 
-// Validation schema
 const Step1Schema = Yup.object().shape({
   username: Yup.string()
     .min(3, "Tên đăng nhập phải có ít nhất 3 ký tự")
@@ -26,20 +33,23 @@ const Step1Schema = Yup.object().shape({
     .matches(/[0-9]/, "Mật khẩu phải chứa ít nhất 1 số")
     .required("Vui lòng nhập mật khẩu"),
   confirmPassword: Yup.string()
-    .oneOf([Yup.ref("password"), null], "Mật khẩu xác nhận không khớp") // Kiểm tra xem có giống ô password không
+    .oneOf([Yup.ref("password"), null], "Mật khẩu xác nhận không khớp")
     .required("Vui lòng xác nhận mật khẩu"),
   acceptTerms: Yup.boolean().oneOf(
     [true],
-    "Bạn phải đồng ý với điều khoản để tiếp tục",
+    "Bạn phải đồng ý với điều khoản để tiếp tục"
   ),
 });
 
-import TermsModal from "../../components/auth/TermsModal";
-
 export default function Step1() {
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  const [isRegisterSuccess, setIsRegisterSuccess] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
+
   const dispatch = useDispatch();
+
   const initialValues = {
     username: "",
     email: "",
@@ -48,11 +58,10 @@ export default function Step1() {
     acceptTerms: false,
   };
 
-  const [isRegisterSuccess, setIsRegisterSuccess] = useState(false);
-
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
       await dispatch(registerUser(values)).unwrap();
+      setRegisteredEmail(values.email);
       setIsRegisterSuccess(true);
     } catch (error) {
       const message = getErrorMessage(error);
@@ -62,356 +71,203 @@ export default function Step1() {
     }
   };
 
-  if (isRegisterSuccess) {
-    return (
-      <div className="min-h-screen flex w-full bg-background-main items-center justify-center p-4 transition-colors duration-300">
-        <div className="bg-surface-main p-8 rounded-2xl border border-border-main shadow-xl text-center max-w-md w-full">
-          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Mail className="size-10 text-primary" />
-          </div>
-          <h2 className="text-2xl font-bold text-text-main mb-4">
-            Kiểm tra email của bạn
-          </h2>
-          <p className="text-text-secondary mb-6">
-            Chúng tôi đã gửi một liên kết xác thực đến email của bạn. Vui lòng
-            kiểm tra và xác thực tài khoản để tiếp tục.
-          </p>
-          <Link
-            to="/login"
-            className="inline-flex items-center justify-center px-6 py-3 bg-surface-main border border-border-main text-text-main rounded-full font-medium hover:bg-border-main transition-colors"
-          >
-            Về trang đăng nhập
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen flex w-full bg-background-main transition-colors duration-300">
+    <AuthSplitLayout
+      title={isRegisterSuccess ? "Kiểm tra email của bạn" : "Tạo tài khoản mới"}
+      subtitle={
+        isRegisterSuccess
+          ? `Chúng tôi đã gửi liên kết xác thực đến ${registeredEmail}.`
+          : "Bắt đầu hành trình kết nối ý nghĩa cùng hàng ngàn thành viên."
+      }
+      backTo="/login"
+    >
       <TermsModal isOpen={showTerms} onClose={() => setShowTerms(false)} />
-      {/* Left Side: Illustration/Image */}
-      <div className="hidden lg:flex w-1/2 relative flex-col justify-end p-12 overflow-hidden">
-        {/* Background Image */}
-        <div
-          className="absolute inset-0 z-0 bg-cover bg-center"
-          style={{
-            backgroundImage:
-              'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDNcX_OkXziFr_DLXg1rNkbJ3wS9r2bvbi2h7-4klRlJeBSya1D4N4wo0Wo3duWWyiffzU6pC-bpTYad3yDlJusQLY3mGR5BrnFYwKkG1kckD6DKkpsjRcmjbL2k95yvQLmGtXotc-X-5YDks3CJW31a747NjvKC2jjBjTkL4lY4Wy6hv2d6-sLwGzHpT25KwBm12U_PzECna1eM0R8KR4wyFWEBCPdyO_gH_N4Jww7lIv99BG12Ho_k4vT0pmblJ949OOiPXscn98")',
-          }}
-        />
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#231810] via-[#231810]/60 to-transparent opacity-90" />
-        {/* Content */}
-        <div className="relative z-20 max-w-lg">
-          <div className="flex items-center gap-3 mb-6 text-primary">
-            <img
-              src="/logo.png"
-              alt="Connect Logo"
-              className="h-10 w-auto object-contain"
-            />
-            <span className="text-2xl font-bold tracking-tight text-white">
-              Connect
-            </span>
+
+      {isRegisterSuccess ? (
+        <Card className="p-6 text-center space-y-5">
+          <div className="size-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto text-primary">
+            <Envelope size={32} />
           </div>
-          <h2 className="text-4xl md:text-5xl font-extrabold leading-tight mb-4 tracking-tight text-white">
-            Tìm kiếm những kết nối ý nghĩa dành riêng cho bạn.
-          </h2>
-          <p className="text-gray-300 text-lg leading-relaxed max-w-md">
-            Tham gia cộng đồng hàng triệu người đã tìm thấy một nửa hoàn hảo của
-            mình. Bắt đầu hành trình của bạn ngay hôm nay.
-          </p>
-        </div>
-      </div>
 
-      {/* Right Side: Form */}
-      <div className="w-full lg:w-1/2 flex flex-col h-screen overflow-y-auto bg-background-main relative transition-colors duration-300">
-        {/* Top Navigation (Mobile/Tablet only) */}
-        <div className="w-full p-6 flex justify-between items-center lg:hidden">
-          <div className="flex items-center gap-2 text-white">
-            <img
-              src="/logo.png"
-              alt="Connect Logo"
-              className="h-8 w-auto object-contain"
-            />
-            <span className="text-lg font-bold">Connect</span>
-          </div>
-        </div>
-
-        <div className="flex-1 flex flex-col justify-center py-10 px-6 sm:px-12 md:px-20 lg:px-24">
-          <div className="max-w-[480px] w-full mx-auto">
-            {/* Progress Bar
-                        <div className="flex flex-col gap-3 mb-8">
-                            <div className="flex gap-6 justify-between items-end">
-                                <p className="text-white text-base font-medium leading-normal">Bước 1 / 2</p>
-                                <span className="text-text-secondary text-sm font-medium">Thông tin cá nhân</span>
-                            </div>
-                            <div className="rounded-full bg-border-dark h-2 overflow-hidden">
-                                <div className="h-full rounded-full bg-primary w-1/2" />
-                            </div>
-                        </div> */}
-
-            {/* Title */}
-            <h1 className="text-3xl font-bold leading-tight tracking-tight mb-2 text-text-main">
-              Tạo hồ sơ của bạn
-            </h1>
-            <p className="text-text-secondary text-base mb-8">
-              Nhập thông tin cá nhân của bạn để bắt đầu.
+          <div className="space-y-1.5">
+            <h3 className="text-base font-bold text-text-main">
+              Xác thực tài khoản của bạn
+            </h3>
+            <p className="text-sm text-text-secondary leading-relaxed">
+              Vui lòng kiểm tra hộp thư đến và nhấp vào liên kết để kích hoạt tài
+              khoản trước khi đăng nhập.
             </p>
+          </div>
 
-            {/* Form */}
-            <Formik
-              initialValues={initialValues}
-              validationSchema={Step1Schema}
-              onSubmit={handleSubmit}
-            >
-              {({ errors, touched, isSubmitting }) => (
-                <Form className="flex flex-col gap-5">
-                  {/* Username */}
-                  <div className="flex flex-col gap-2">
-                    <label
-                      htmlFor="username"
-                      className="text-text-main text-base font-medium"
-                    >
-                      Tên đăng nhập <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary">
-                        @
-                      </span>
-                      <Field
-                        disabled={isSubmitting}
-                        type="text"
-                        name="username"
-                        id="username"
-                        className={`form-input w-full rounded-xl text-text-main focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${
-                          errors.username && touched.username
-                            ? "border-red-500"
-                            : "border-border-main"
-                        } bg-surface-main h-14 pl-10 pr-4 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
-                        placeholder="nguyen_van_a"
-                      />
-                    </div>
-                    {errors.username && touched.username && (
-                      <span className="text-red-500 text-sm">
-                        {errors.username}
-                      </span>
-                    )}
-                  </div>
+          <Link to="/login" className="block w-full pt-2">
+            <Button variant="primary" size="lg" className="w-full">
+              Về trang đăng nhập
+            </Button>
+          </Link>
+        </Card>
+      ) : (
+        <>
+          <Formik
+            initialValues={initialValues}
+            validationSchema={Step1Schema}
+            onSubmit={handleSubmit}
+          >
+            {({
+              values,
+              errors,
+              touched,
+              handleChange,
+              handleBlur,
+              setFieldValue,
+              isSubmitting,
+            }) => (
+              <Form className="flex flex-col gap-3.5">
+                <Input
+                  id="step1-username"
+                  name="username"
+                  label="Tên đăng nhập"
+                  placeholder="VD: alex_nguyen"
+                  value={values.username}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={touched.username && errors.username}
+                  disabled={isSubmitting}
+                />
 
-                  {/* Email */}
-                  <div className="flex flex-col gap-2">
-                    <label
-                      htmlFor="email"
-                      className="text-text-main text-base font-medium"
-                    >
-                      Địa chỉ Email <span className="text-red-500">*</span>
-                    </label>
-                    <Field
-                      disabled={isSubmitting}
-                      type="email"
-                      name="email"
-                      id="email"
-                      className={`form-input w-full rounded-xl text-text-main focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${
-                        errors.email && touched.email
-                          ? "border-red-500"
-                          : "border-border-main"
-                      } bg-surface-main h-14 px-4 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
-                      placeholder="email@example.com"
+                <Input
+                  id="step1-email"
+                  name="email"
+                  type="email"
+                  label="Địa chỉ Email"
+                  placeholder="VD: alex@example.com"
+                  value={values.email}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={touched.email && errors.email}
+                  disabled={isSubmitting}
+                />
+
+                <Input
+                  id="step1-password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  label="Mật khẩu"
+                  placeholder="Tối thiểu 8 ký tự (hoa, thường, số)"
+                  value={values.password}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={touched.password && errors.password}
+                  disabled={isSubmitting}
+                  rightElement={
+                    <IconButton
+                      size="sm"
+                      variant="ghost"
+                      icon={showPassword ? EyeSlash : Eye}
+                      aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                      onClick={() => setShowPassword(!showPassword)}
+                      tabIndex={-1}
                     />
-                    {errors.email && touched.email && (
-                      <span className="text-red-500 text-sm">
-                        {errors.email}
-                      </span>
-                    )}
-                  </div>
+                  }
+                />
 
-                  {/* Password */}
-                  <div className="flex flex-col gap-2">
-                    <label
-                      htmlFor="password"
-                      className="text-text-main text-base font-medium"
-                    >
-                      Mật khẩu <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative flex items-center">
-                      <Field
-                        disabled={isSubmitting}
-                        type={showPassword ? "text" : "password"}
-                        name="password"
-                        id="password"
-                        className={`form-input w-full rounded-xl text-text-main focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${
-                          errors.password && touched.password
-                            ? "border-red-500"
-                            : "border-border-main"
-                        } bg-surface-main h-14 pl-4 pr-12 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
-                        placeholder="Tối thiểu 8 ký tự"
-                      />
+                <Input
+                  id="step1-confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  label="Xác nhận mật khẩu"
+                  placeholder="Nhập lại mật khẩu"
+                  value={values.confirmPassword}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={touched.confirmPassword && errors.confirmPassword}
+                  disabled={isSubmitting}
+                  rightElement={
+                    <IconButton
+                      size="sm"
+                      variant="ghost"
+                      icon={showConfirmPassword ? EyeSlash : Eye}
+                      aria-label={
+                        showConfirmPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"
+                      }
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                      tabIndex={-1}
+                    />
+                  }
+                />
+
+                {/* Checkbox điều khoản */}
+                <div className="pt-1">
+                  <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      name="acceptTerms"
+                      checked={values.acceptTerms}
+                      onChange={(e) =>
+                        setFieldValue("acceptTerms", e.target.checked)
+                      }
+                      className="mt-0.5 size-4 rounded text-primary focus:ring-primary border-border-main accent-primary cursor-pointer"
+                      disabled={isSubmitting}
+                    />
+                    <span className="text-xs text-text-secondary leading-relaxed">
+                      Tôi đồng ý với{" "}
                       <button
                         type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 cursor-pointer text-text-secondary hover:text-primary transition-colors"
+                        onClick={() => setShowTerms(true)}
+                        className="text-primary hover:underline font-bold"
                       >
-                        {showPassword ? (
-                          <EyeOff size={20} />
-                        ) : (
-                          <Eye size={20} />
-                        )}
-                      </button>
-                    </div>
-                    {errors.password && touched.password && (
-                      <span className="text-red-500 text-sm">
-                        {errors.password}
-                      </span>
-                    )}
-                  </div>
-                  {/* Confirm Password */}
-                  <div className="flex flex-col gap-2">
-                    <label
-                      htmlFor="confirmPassword"
-                      className="text-text-main text-base font-medium"
-                    >
-                      Xác nhận mật khẩu <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <Field
-                        disabled={isSubmitting}
-                        type={showPassword ? "text" : "password"}
-                        name="confirmPassword"
-                        id="confirmPassword"
-                        className={`form-input w-full rounded-xl text-text-main focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${
-                          errors.confirmPassword && touched.confirmPassword
-                            ? "border-red-500"
-                            : "border-border-main"
-                        } bg-surface-main h-14 px-4 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
-                        placeholder="Nhập lại mật khẩu"
-                      />
-                    </div>
-                    {errors.confirmPassword && touched.confirmPassword && (
-                      <span className="text-red-500 text-sm">
-                        {errors.confirmPassword}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex flex-col gap-2 mt-2">
-                    <div className="flex items-center gap-3">
-                      <Field
-                        type="checkbox"
-                        name="acceptTerms"
-                        id="acceptTerms"
-                        disabled={isSubmitting}
-                        className="size-5 accent-primary cursor-pointer"
-                      />
-                      <label
-                        htmlFor="acceptTerms"
-                        className="text-sm text-text-secondary cursor-pointer"
-                      >
-                        Tôi đồng ý với{" "}
-                        <button
-                          type="button"
-                          onClick={() => setShowTerms(true)}
-                          className="text-primary hover:underline font-bold"
-                        >
-                          Điều khoản sử dụng
-                        </button>{" "}
-                        của Connect
-                      </label>
-                    </div>
-                    {errors.acceptTerms && touched.acceptTerms && (
-                      <span className="text-red-500 text-sm">
-                        {errors.acceptTerms}
-                      </span>
-                    )}
-                  </div>
+                        Điều khoản sử dụng
+                      </button>{" "}
+                      của Connect.
+                    </span>
+                  </label>
+                  {touched.acceptTerms && errors.acceptTerms && (
+                    <p className="text-xs text-danger font-medium mt-1">
+                      {errors.acceptTerms}
+                    </p>
+                  )}
+                </div>
 
-                  {/* Submit Button */}
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="mt-4 flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-full h-14 bg-primary hover:bg-primary-hover text-white text-lg font-bold leading-normal tracking-wide transition-colors shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isSubmitting ? "Đang xử lý..." : "Tiếp tục"}
-                  </button>
-                </Form>
-              )}
-            </Formik>
-
-            {/* Divider */}
-            <div className="relative my-8">
-              <div
-                aria-hidden="true"
-                className="absolute inset-0 flex items-center"
-              >
-                <div className="w-full border-t border-border-main" />
-              </div>
-              <div className="relative flex justify-center">
-                <span className="bg-background-main px-4 text-sm text-text-secondary">
-                  Hoặc tiếp tục với
-                </span>
-              </div>
-            </div>
-
-            {/* Social Login */}
-            <div className="grid grid-cols-2 gap-4 mb-8">
-              <a
-                href={appConfig.oauthFacebookUrl}
-                className="flex items-center justify-center gap-3 rounded-xl border border-border-main bg-surface-main hover:bg-border-main h-14 px-4 transition-colors"
-              >
-                <svg
-                  aria-hidden="true"
-                  className="h-5 w-5 fill-white"
-                  viewBox="0 0 24 24"
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="lg"
+                  className="w-full mt-2"
+                  isLoading={isSubmitting}
+                  loadingText="Đang tạo tài khoản..."
                 >
-                  <path
-                    fill="#1877F2"
-                    d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"
-                  />
-                </svg>
-                <span className="text-text-main font-medium">Facebook</span>
-              </a>
-              <a
-                href={appConfig.oauthGoogleUrl}
-                className="flex items-center justify-center gap-3 rounded-xl border border-border-main bg-surface-main hover:bg-border-main h-14 px-4 transition-colors"
-              >
-                <svg
-                  aria-hidden="true"
-                  className="h-5 w-5 fill-white"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    fill="#4285F4"
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  />
-                  <path
-                    fill="#34A853"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  />
-                  <path
-                    fill="#FBBC05"
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"
-                  />
-                  <path
-                    fill="#EA4335"
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                  />
-                </svg>
-                <span className="text-text-main font-medium">Google</span>
-              </a>
-            </div>
+                  Đăng ký tài khoản
+                </Button>
+              </Form>
+            )}
+          </Formik>
 
-            {/* Login Link */}
-            <p className="text-center text-text-secondary text-sm">
-              Đã có tài khoản?{" "}
-              <Link
-                to="/login"
-                className="text-primary hover:text-text-main font-bold transition-colors"
-              >
-                Đăng nhập
-              </Link>
-            </p>
+          {/* Phân tách */}
+          <div className="relative my-5">
+            <div aria-hidden="true" className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border-main" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-background-main px-3 text-text-muted font-medium">
+                Hoặc đăng ký nhanh với
+              </span>
+            </div>
           </div>
-        </div>
-      </div>
-    </div>
+
+          <SocialLoginButtons />
+
+          <p className="mt-6 text-center text-sm text-text-secondary">
+            Đã có tài khoản?{" "}
+            <Link
+              to="/login"
+              className="text-primary hover:underline font-bold transition-colors"
+            >
+              Đăng nhập
+            </Link>
+          </p>
+        </>
+      )}
+    </AuthSplitLayout>
   );
 }

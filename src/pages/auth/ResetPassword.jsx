@@ -1,12 +1,21 @@
-import { WarningCircle as AlertCircle, CheckCircle as CheckCircle2, ArrowLeft } from "@phosphor-icons/react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Formik, Form, Field } from "formik";
+import { Formik, Form } from "formik";
 import * as Yup from "yup";
+import {
+  WarningCircle,
+  CheckCircle,
+  Eye,
+  EyeSlash,
+} from "@phosphor-icons/react";
 import toast from "react-hot-toast";
-import authService from "../../services/authService";
 
-// Validation schema
+import authService from "../../services/authService";
+import { Input } from "../../components/ui/input/Input";
+import { Button, IconButton } from "../../components/ui/button/Button";
+import { Card } from "../../components/ui/card/Card";
+import { AuthSplitLayout } from "../../features/auth";
+
 const ResetPasswordSchema = Yup.object().shape({
   password: Yup.string()
     .min(6, "Mật khẩu phải có ít nhất 6 ký tự")
@@ -20,27 +29,32 @@ export default function ResetPassword() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
 
-  // UI states
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  // Nếu không có token trên URL, hiển thị lỗi
+  // Nếu không có token trên URL, hiển thị thông báo lỗi
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background-main text-text-main p-4 transition-colors duration-300">
-        <div className="text-center max-w-md">
-          <AlertCircle className="size-16 text-red-500 mb-4 mx-auto" />
-          <h1 className="text-2xl font-bold mb-2">Liên kết không hợp lệ</h1>
-          <p className="text-text-secondary mb-6">
-            Liên kết đặt lại mật khẩu này bị thiếu thông tin xác thực hoặc không
-            hợp lệ.
-          </p>
-          <Link
-            to="/forgot-password"
-            className="text-primary hover:text-primary-hover font-bold"
-          >
-            Quay lại trang Quên mật khẩu
+      <div className="min-h-screen flex items-center justify-center bg-background-main p-6">
+        <Card className="max-w-md w-full p-8 text-center space-y-5">
+          <div className="size-16 rounded-2xl bg-danger/10 border border-danger/20 flex items-center justify-center mx-auto text-danger">
+            <WarningCircle size={32} />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-text-main mb-2">
+              Liên kết không hợp lệ
+            </h1>
+            <p className="text-text-secondary text-sm leading-relaxed">
+              Liên kết đặt lại mật khẩu này bị thiếu thông tin xác thực hoặc đã hết hạn.
+            </p>
+          </div>
+          <Link to="/forgot-password" className="block w-full">
+            <Button variant="primary" size="lg" className="w-full">
+              Yêu cầu liên kết mới
+            </Button>
           </Link>
-        </div>
+        </Card>
       </div>
     );
   }
@@ -59,7 +73,7 @@ export default function ResetPassword() {
       console.error(error);
       const message =
         error.response?.data?.message || "Đã xảy ra lỗi. Token có thể đã hết hạn.";
-      setErrors({ submit: message });
+      setErrors({ confirmPassword: message });
       toast.error(message);
     } finally {
       setSubmitting(false);
@@ -67,175 +81,106 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen flex w-full bg-background-main transition-colors duration-300">
-      {/* Left Side: Illustration */}
-      <div className="hidden lg:flex w-1/2 relative flex-col justify-end p-12 overflow-hidden">
-        <div
-          className="absolute inset-0 z-0 bg-cover bg-center"
-          style={{
-            backgroundImage:
-              'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDNcX_OkXziFr_DLXg1rNkbJ3wS9r2bvbi2h7-4klRlJeBSya1D4N4wo0Wo3duWWyiffzU6pC-bpTYad3yDlJusQLY3mGR5BrnFYwKkG1kckD6DKkpsjRcmjbL2k95yvQLmGtXotc-X-5YDks3CJW31a747NjvKC2jjBjTkL4lY4Wy6hv2d6-sLwGzHpT25KwBm12U_PzECna1eM0R8KR4wyFWEBCPdyO_gH_N4Jww7lIv99BG12Ho_k4vT0pmblJ949OOiPXscn98")',
-          }}
-        />
-        <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#231810] via-[#231810]/60 to-transparent opacity-90" />
-        <div className="relative z-20 max-w-lg">
-          <div className="flex items-center gap-3 mb-6 text-primary">
-            <img
-              src="/logo.png"
-              alt="Connect Logo"
-              className="h-10 w-auto object-contain"
-            />
-            <span className="text-2xl font-bold tracking-tight text-text-main">
-              Connect
-            </span>
+    <AuthSplitLayout
+      title={isSubmitted ? "Đặt lại mật khẩu thành công" : "Tạo mật khẩu mới"}
+      subtitle={
+        isSubmitted
+          ? "Mật khẩu của bạn đã được cập nhật thành công."
+          : "Vui lòng nhập mật khẩu mới để tiếp tục đăng nhập tài khoản."
+      }
+      heroTitle="Bảo mật tài khoản của bạn."
+      heroSubtitle="Đặt lại mật khẩu mới để tiếp tục truy cập vào tài khoản và kết nối với mọi người."
+      backTo="/login"
+    >
+      {isSubmitted ? (
+        <Card className="p-6 text-center space-y-5">
+          <div className="size-16 rounded-2xl bg-success/10 border border-success/20 flex items-center justify-center mx-auto text-success">
+            <CheckCircle size={32} />
           </div>
-          <h2 className="text-4xl md:text-5xl font-extrabold leading-tight mb-4 tracking-tight text-text-main">
-            Bảo mật tài khoản của bạn.
-          </h2>
-          <p className="text-text-secondary text-lg leading-relaxed max-w-md">
-            Đặt lại mật khẩu mới để tiếp tục truy cập vào tài khoản và kết nối
-            với mọi người.
-          </p>
-        </div>
-      </div>
 
-      {/* Right Side: Form */}
-      <div className="w-full lg:w-1/2 flex flex-col h-screen overflow-y-auto bg-background-main relative transition-colors duration-300">
-        <div className="w-full p-6 flex justify-between items-center lg:hidden">
-          <div className="flex items-center gap-2 text-white">
-            <Link to="/" className="flex items-center gap-2">
-              <img
-                src="/logo.png"
-                alt="Connect Logo"
-                className="h-8 w-auto object-contain"
+          <div className="space-y-1.5">
+            <h3 className="text-base font-bold text-text-main">
+              Cập nhật thành công!
+            </h3>
+            <p className="text-sm text-text-secondary leading-relaxed">
+              Bạn có thể sử dụng mật khẩu mới này để đăng nhập ngay bây giờ.
+            </p>
+          </div>
+
+          <Link to="/login" className="block w-full pt-2">
+            <Button variant="primary" size="lg" className="w-full">
+              Đăng nhập ngay
+            </Button>
+          </Link>
+        </Card>
+      ) : (
+        <Formik
+          initialValues={initialValues}
+          validationSchema={ResetPasswordSchema}
+          onSubmit={handleSubmit}
+        >
+          {({ values, errors, touched, handleChange, handleBlur, isSubmitting }) => (
+            <Form className="flex flex-col gap-4">
+              <Input
+                id="reset-password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                label="Mật khẩu mới"
+                placeholder="Ít nhất 6 ký tự"
+                value={values.password}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={touched.password && errors.password}
+                disabled={isSubmitting}
+                rightElement={
+                  <IconButton
+                    size="sm"
+                    variant="ghost"
+                    icon={showPassword ? EyeSlash : Eye}
+                    aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                    onClick={() => setShowPassword(!showPassword)}
+                    tabIndex={-1}
+                  />
+                }
               />
-              <span className="text-lg font-bold">Connect</span>
-            </Link>
-          </div>
-        </div>
 
-        <div className="flex-1 flex flex-col justify-center py-10 px-6 sm:px-12 md:px-20 lg:px-24">
-          <div className="max-w-[480px] w-full mx-auto">
-            {isSubmitted ? (
-              // Success message
-              <div className="text-center">
-                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-green-500/20 flex items-center justify-center">
-                  <CheckCircle2 className="size-10 text-green-500" />
-                </div>
-                <h1 className="text-3xl font-bold leading-tight tracking-tight mb-2 text-text-main">
-                  Đổi mật khẩu thành công!
-                </h1>
-                <p className="text-text-secondary text-base mb-8">
-                  Mật khẩu của bạn đã được cập nhật. Bây giờ bạn có thể đăng
-                  nhập bằng mật khẩu mới.
-                </p>
-                <Link
-                  to="/login"
-                  className="inline-flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-full h-14 bg-primary hover:bg-primary-hover text-white text-lg font-bold leading-normal tracking-wide transition-colors shadow-lg shadow-primary/20"
-                >
-                  Đăng nhập ngay
-                </Link>
-              </div>
-            ) : (
-              // Form
-              <>
-                <h1 className="text-3xl font-bold leading-tight tracking-tight mb-2 text-text-main">
-                  Đặt lại mật khẩu
-                </h1>
-                <p className="text-text-secondary text-base mb-8">
-                  Vui lòng nhập mật khẩu mới cho tài khoản của bạn.
-                </p>
+              <Input
+                id="reset-confirmPassword"
+                name="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                label="Xác nhận mật khẩu mới"
+                placeholder="Nhập lại mật khẩu mới"
+                value={values.confirmPassword}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={touched.confirmPassword && errors.confirmPassword}
+                disabled={isSubmitting}
+                rightElement={
+                  <IconButton
+                    size="sm"
+                    variant="ghost"
+                    icon={showConfirmPassword ? EyeSlash : Eye}
+                    aria-label={showConfirmPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    tabIndex={-1}
+                  />
+                }
+              />
 
-                <Formik
-                  initialValues={initialValues}
-                  validationSchema={ResetPasswordSchema}
-                  onSubmit={handleSubmit}
-                >
-                  {({ errors, touched, isSubmitting }) => (
-                    <Form className="flex flex-col gap-5">
-                      {/* New Password */}
-                      <div className="flex flex-col gap-2">
-                        <label
-                          htmlFor="password"
-                          className="text-text-main text-base font-medium"
-                        >
-                          Mật khẩu mới
-                        </label>
-                        <Field
-                          type="password"
-                          name="password"
-                          id="password"
-                          className={`form-input w-full rounded-xl text-text-main focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${
-                            errors.password && touched.password
-                              ? "border-red-500"
-                              : "border-border-main"
-                          } bg-surface-main h-14 px-4 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
-                          placeholder="••••••••"
-                        />
-                        {errors.password && touched.password && (
-                          <span className="text-red-500 text-sm">
-                            {errors.password}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Confirm Password */}
-                      <div className="flex flex-col gap-2">
-                        <label
-                          htmlFor="confirmPassword"
-                          className="text-text-main text-base font-medium"
-                        >
-                          Xác nhận mật khẩu
-                        </label>
-                        <Field
-                          type="password"
-                          name="confirmPassword"
-                          id="confirmPassword"
-                          className={`form-input w-full rounded-xl text-text-main focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary border ${
-                            errors.confirmPassword && touched.confirmPassword
-                              ? "border-red-500"
-                              : "border-border-main"
-                          } bg-surface-main h-14 px-4 placeholder:text-text-secondary/60 text-base transition-all duration-200`}
-                          placeholder="••••••••"
-                        />
-                        {errors.confirmPassword && touched.confirmPassword && (
-                          <span className="text-red-500 text-sm">
-                            {errors.confirmPassword}
-                          </span>
-                        )}
-                      </div>
-
-                      {errors.submit && (
-                        <div className="p-3 bg-red-500/10 border border-red-500/50 rounded-lg text-red-500 text-sm text-center">
-                          {errors.submit}
-                        </div>
-                      )}
-
-                      <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="mt-4 flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-full h-14 bg-primary hover:bg-primary-hover text-white text-lg font-bold leading-normal tracking-wide transition-colors shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {isSubmitting ? "Đang xử lý..." : "Đổi mật khẩu"}
-                      </button>
-                    </Form>
-                  )}
-                </Formik>
-              </>
-            )}
-
-            <div className="mt-8 text-center">
-              <Link
-                to="/login"
-                className="inline-flex items-center gap-2 text-text-secondary hover:text-white transition-colors text-sm font-medium"
+              <Button
+                type="submit"
+                variant="primary"
+                size="lg"
+                className="w-full mt-2"
+                isLoading={isSubmitting}
+                loadingText="Đang cập nhật..."
               >
-                <ArrowLeft size={20} />
-                Quay lại Đăng nhập
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+                Cập nhật mật khẩu
+              </Button>
+            </Form>
+          )}
+        </Formik>
+      )}
+    </AuthSplitLayout>
   );
 }

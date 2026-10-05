@@ -1,14 +1,23 @@
-import { CheckCircle as CheckCircle2, WarningCircle as AlertCircle } from "@phosphor-icons/react";
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
+import {
+  CheckCircle,
+  WarningCircle,
+  CircleNotch,
+} from "@phosphor-icons/react";
+
 import authService from "../../services/authService";
+import { Card } from "../../components/ui/card/Card";
+import { Button } from "../../components/ui/button/Button";
 
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
   const navigate = useNavigate();
   const [status, setStatus] = useState(token ? "loading" : "error");
-  const [message, setMessage] = useState(token ? "" : "Token không tìm thấy.");
+  const [message, setMessage] = useState(
+    token ? "" : "Không tìm thấy mã xác thực (token)."
+  );
   const verifyCalled = useRef(false);
 
   useEffect(() => {
@@ -22,14 +31,14 @@ export default function VerifyEmail() {
         await authService.verifyEmail(token);
         setStatus("success");
         setMessage(
-          "Xác thực email thành công! Bạn có thể đăng nhập ngay bây giờ.",
+          "Xác thực email thành công! Bạn có thể đăng nhập ngay bây giờ."
         );
         setTimeout(() => navigate("/login"), 3000);
       } catch (error) {
         setStatus("error");
         setMessage(
           error.response?.data?.message ||
-            "Token không hợp lệ hoặc đã hết hạn.",
+            "Mã xác thực không hợp lệ hoặc đã hết hạn."
         );
       }
     };
@@ -38,50 +47,61 @@ export default function VerifyEmail() {
   }, [token, navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background-main px-4">
-      <div className="max-w-md w-full bg-surface-main p-8 rounded-2xl border border-border-main shadow-xl text-center">
+    <div className="min-h-screen flex items-center justify-center bg-background-main p-6">
+      <Card className="max-w-md w-full p-8 text-center space-y-6">
         {status === "loading" && (
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <div className="flex flex-col items-center gap-4 py-6">
+            <CircleNotch className="size-12 text-primary animate-spin" />
             <h2 className="text-xl font-bold text-text-main">
               Đang xác thực email...
             </h2>
+            <p className="text-sm text-text-secondary">
+              Vui lòng đợi trong giây lát trong khi chúng tôi kích hoạt tài khoản của bạn.
+            </p>
           </div>
         )}
 
         {status === "success" && (
           <div className="flex flex-col items-center gap-4">
-            <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center">
-              <CheckCircle2 className="size-10 text-green-500" />
+            <div className="size-16 rounded-2xl bg-success/10 border border-success/20 flex items-center justify-center text-success">
+              <CheckCircle size={32} />
             </div>
-            <h2 className="text-2xl font-bold text-text-main">
+            <h2 className="text-xl font-bold text-text-main">
               Xác thực thành công!
             </h2>
-            <p className="text-text-secondary">{message}</p>
-            <p className="text-sm text-text-secondary mt-2">
-              Đang chuyển hướng đến trang đăng nhập...
+            <p className="text-sm text-text-secondary leading-relaxed">
+              {message}
             </p>
+            <p className="text-xs text-text-muted">
+              Đang tự động chuyển hướng đến trang đăng nhập sau 3 giây...
+            </p>
+            <Link to="/login" className="w-full pt-2">
+              <Button variant="primary" size="lg" className="w-full">
+                Đăng nhập ngay
+              </Button>
+            </Link>
           </div>
         )}
 
         {status === "error" && (
           <div className="flex flex-col items-center gap-4">
-            <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center">
-              <AlertCircle className="size-10 text-red-500" />
+            <div className="size-16 rounded-2xl bg-danger/10 border border-danger/20 flex items-center justify-center text-danger">
+              <WarningCircle size={32} />
             </div>
-            <h2 className="text-2xl font-bold text-text-main">
+            <h2 className="text-xl font-bold text-text-main">
               Xác thực thất bại
             </h2>
-            <p className="text-text-secondary">{message}</p>
-            <Link
-              to="/login"
-              className="mt-4 px-6 py-2 bg-primary text-white rounded-full font-bold hover:bg-orange-600 transition-colors"
-            >
-              Quay lại đăng nhập
+            <p className="text-sm text-text-secondary leading-relaxed">
+              {message}
+            </p>
+            <Link to="/login" className="w-full pt-2">
+              <Button variant="primary" size="lg" className="w-full">
+                Quay lại trang Đăng nhập
+              </Button>
             </Link>
           </div>
         )}
-      </div>
+      </Card>
     </div>
   );
 }
