@@ -1,15 +1,6 @@
 import { useState, useRef } from "react";
 import { useSelector } from "react-redux";
-import {
-  Image,
-  Video,
-  Globe,
-  Users,
-  Lock,
-  ChevronDown,
-  X,
-  AlertTriangle,
-} from "lucide-react";
+import { Image, Video, Globe, Users, Lock, CaretDown as ChevronDown, X, Warning as AlertTriangle } from "@phosphor-icons/react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import postService from "../../services/PostService";

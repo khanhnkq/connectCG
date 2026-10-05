@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { X, Search, Loader2 } from "lucide-react";
+import { X, MagnifyingGlass as Search, CircleNotch as Loader2 } from "@phosphor-icons/react";
 import UserProfileService from "../../services/user/UserProfileService";
 import { getIconComponent } from "../../utils/iconMap";
 import { toast } from "react-toastify";

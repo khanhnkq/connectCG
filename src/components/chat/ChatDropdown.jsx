@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { MessageSquare, SquarePen } from 'lucide-react';
+import { ChatText as MessageSquare, NotePencil as SquarePen } from "@phosphor-icons/react";
 import ChatService from '../../services/chat/ChatService';
 import FirebaseChatService from '../../services/chat/FirebaseChatService';
 import useChatRooms from '../../pages/chat/hooks/useChatRooms';

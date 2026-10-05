@@ -1,5 +1,5 @@
 import React from "react";
-import { Info, CheckCircle2 } from "lucide-react";
+import { Info, CheckCircle as CheckCircle2 } from "@phosphor-icons/react";
 
 const ReportTable = ({
   reports,

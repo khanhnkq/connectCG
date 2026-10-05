@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { Search, UserPlus, Utensils, ChevronRight } from "lucide-react";
+import { MagnifyingGlass as Search, UserPlus, ForkKnife as Utensils, CaretRight as ChevronRight } from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import FriendService from "../../services/friend/FriendService";

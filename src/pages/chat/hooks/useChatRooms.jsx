@@ -239,11 +239,11 @@ const useChatRooms = () => {
     }, [dispatch]);
 
     // Calculate unread counts
-    const directUnreadCount = conversations
+    const directUnreadCount = (conversations || [])
         .filter(c => c.type === "DIRECT" && (c.unreadCount || 0) > 0)
         .length;
 
-    const groupUnreadCount = conversations
+    const groupUnreadCount = (conversations || [])
         .filter(c => c.type === "GROUP" && (c.unreadCount || 0) > 0)
         .length;
 

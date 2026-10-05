@@ -1,4 +1,4 @@
-import { Loader2, Check, X, UserPlus, Search, ChevronDown } from "lucide-react";
+import { CircleNotch as Loader2, Check, X, UserPlus, MagnifyingGlass as Search, CaretDown as ChevronDown } from "@phosphor-icons/react";
 import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import UserSearchService from "../../services/user/UserSearchService";

@@ -1,5 +1,5 @@
 import React from "react";
-import { Phone, Video, ArrowLeft, Info, UserPlus, Images } from "lucide-react";
+import { Phone, Video, ArrowLeft, Info, UserPlus, Images } from "@phosphor-icons/react";
 
 const ChatHeader = ({ activeRoom, onBack, onShowSettings, onInviteMember, onShowMediaGallery }) => {
   if (!activeRoom) return null;

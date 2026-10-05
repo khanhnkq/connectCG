@@ -1,10 +1,11 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Settings, Bell, LogOut, ChevronDown } from "lucide-react";
+import { Gear as Settings, Bell, SignOut as LogOut, CaretDown as ChevronDown } from "@phosphor-icons/react";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../redux/slices/authSlice";
 import toast from "react-hot-toast";
+import { Avatar } from "../ui/avatar/Avatar";
 
 const DropdownItem = ({ icon, label, onClick, danger }) => {
   return (
@@ -65,30 +66,28 @@ const UserMenuDropdown = ({ isOpen, onClose, onShowNotifications }) => {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 15, scale: 0.95 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
-          className="absolute right-0 top-full mt-3 w-72 bg-surface-main border border-border-main rounded-2xl shadow-2xl overflow-hidden z-50 p-2"
+          className="absolute right-0 top-full mt-3 w-72 bg-surface-main border border-border-main rounded-2xl overflow-hidden z-50 p-2"
         >
           {/* Profile Header */}
           <div
-            className="p-3 mb-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+            className="p-3 mb-2 rounded-xl bg-surface-subtle border border-border-main cursor-pointer hover:border-primary/40 transition-colors"
             onClick={() => {
               navigate("/dashboard/my-profile");
               onClose();
             }}
           >
             <div className="flex items-center gap-3">
-              <div className="bg-gradient-to-tr from-primary to-orange-400 p-[2px] rounded-full">
-                <img
-                  src={
-                    userProfile?.currentAvatarUrl ||
-                    "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                  }
-                  alt="User"
-                  className="w-10 h-10 rounded-full object-cover border-2 border-white dark:border-[#1C1C1E]"
-                />
-              </div>
+              <Avatar
+                src={userProfile?.currentAvatarUrl}
+                name={userProfile?.fullName || user?.username || "U"}
+                size="md"
+              />
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-gray-900 dark:text-white truncate text-sm">
+                <p className="font-bold text-text-main truncate text-sm">
                   {userProfile?.fullName || user?.username || "Người dùng"}
+                </p>
+                <p className="text-xs text-text-secondary truncate">
+                  {user?.email || "Trang cá nhân"}
                 </p>
               </div>
             </div>

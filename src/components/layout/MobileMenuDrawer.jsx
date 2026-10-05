@@ -1,17 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  X,
-  Settings,
-  LogOut,
-  ShieldCheck,
-  Users2,
-  ChevronRight,
-  ChevronDown,
-  Moon,
-  Sun,
-} from "lucide-react";
+import { X, Gear as Settings, SignOut as LogOut, ShieldCheck, UsersThree as Users2, CaretRight as ChevronRight, CaretDown as ChevronDown, Moon, Sun } from "@phosphor-icons/react";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 // import { logout } from "../../services/AuthService"; // REMOVED
 import { logout } from "../../redux/slices/authSlice"; // ADDED

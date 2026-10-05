@@ -4,7 +4,7 @@ import { Button, IconButton } from "../components/ui/button/Button";
 import { Badge } from "../components/ui/badge/Badge";
 import { Avatar } from "../components/ui/avatar/Avatar";
 import { mockUsers, mockPosts } from "./mocks/apiMockData";
-import { Heart, MessageSquare, Share2, MoreHorizontal } from "lucide-react";
+import { DotsThree } from "@phosphor-icons/react";
 
 export default {
   title: "Design System/Card",
@@ -50,7 +50,7 @@ export const PostCardLayout = {
               <p className="text-xs text-text-muted">15 phút trước · Công khai</p>
             </div>
           </div>
-          <IconButton icon={MoreHorizontal} variant="ghost" size="sm" aria-label="Tùy chọn khác" />
+          <IconButton icon={DotsThree} variant="ghost" size="sm" aria-label="Tùy chọn khác" />
         </div>
 
         <Card.Body className="py-4">

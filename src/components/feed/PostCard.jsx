@@ -1,23 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import {
-  CheckCircle2,
-  Users,
-  Globe,
-  MoreHorizontal,
-  AlertTriangle,
-  Heart,
-  MessageSquare,
-  Share2,
-  CheckCircle,
-  Trash,
-  Pencil,
-  Image as ImageIcon,
-  X,
-  Lock,
-  ChevronDown,
-  ThumbsUp,
-  Pin,
-} from "lucide-react";
+import { CheckCircle as CheckCircle2, Users, Globe, DotsThree as MoreHorizontal, Warning as AlertTriangle, Heart, ChatText as MessageSquare, ShareNetwork as Share2, CheckCircle, Trash, Pencil, Image as ImageIcon, X, Lock, CaretDown as ChevronDown, ThumbsUp, PushPin as Pin } from "@phosphor-icons/react";
 import { useSelector } from "react-redux";
 import ImageLightbox from "../common/ImageLightBox";
 import PostUpdate from "./PostUpdate";

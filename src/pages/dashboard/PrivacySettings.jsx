@@ -1,23 +1,5 @@
 import React, { useState } from "react";
-import {
-  Shield,
-  Lock,
-  Eye,
-  UserPlus,
-  MessageCircle,
-  Trash2,
-  Smartphone,
-  ChevronRight,
-  ShieldCheck,
-  Zap,
-  Clock,
-  Unlock,
-  EyeOff,
-  UserCheck,
-  AlertCircle,
-  Activity,
-  UserX,
-} from "lucide-react";
+import { Shield, Lock, Eye, UserPlus, ChatCircle as MessageCircle, Trash as Trash2, DeviceMobile as Smartphone, CaretRight as ChevronRight, ShieldCheck, Lightning as Zap, Clock, LockOpen as Unlock, EyeSlash as EyeOff, UserCheck, WarningCircle as AlertCircle, Pulse as Activity, UserMinus as UserX } from "@phosphor-icons/react";
 import { motion as Motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";

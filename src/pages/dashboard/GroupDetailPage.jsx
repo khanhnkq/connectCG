@@ -1,24 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  ArrowLeft,
-  ShieldCheck,
-  Users,
-  Settings,
-  LogOut,
-  UserPlus,
-  Hourglass,
-  CheckCircle2,
-  PlusCircle,
-  AlertTriangle,
-  Gavel,
-  Lock,
-  PlusSquare,
-  Globe,
-  History,
-  Key,
-  MessageSquare,
-  UserMinus,
-} from "lucide-react";
+import { ArrowLeft, ShieldCheck, Users, Gear as Settings, SignOut as LogOut, UserPlus, Hourglass, CheckCircle as CheckCircle2, PlusCircle, Warning as AlertTriangle, Gavel, Lock, PlusSquare, Globe, ClockCounterClockwise as History, Key, ChatText as MessageSquare, UserMinus } from "@phosphor-icons/react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import PostComposer from "../../components/feed/PostComposer";

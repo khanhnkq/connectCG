@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, ChevronDown, Loader2, Play } from 'lucide-react';
+import { X, CaretDown as ChevronDown, CircleNotch as Loader2, Play } from "@phosphor-icons/react";
 import FirebaseChatService from '../../services/chat/FirebaseChatService';
 
 const MediaGallery = ({ roomKey, isOpen, onClose, onMediaClick, minTimestamp = 0 }) => {

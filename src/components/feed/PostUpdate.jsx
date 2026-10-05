@@ -1,12 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import {
-  Image as ImageIcon,
-  X,
-  Globe,
-  Users,
-  Lock,
-  ChevronDown,
-} from "lucide-react";
+import { Image as ImageIcon, X, Globe, Users, Lock, CaretDown as ChevronDown } from "@phosphor-icons/react";
 import { uploadImage } from "../../utils/uploadImage";
 
 export default function PostUpdate({ post, onUpdate, onCancel }) {

@@ -1,5 +1,5 @@
 import React from "react";
-import { AlertCircle, AlertTriangle, Info } from "lucide-react";
+import { WarningCircle, Warning, Info } from "@phosphor-icons/react";
 import Modal from "./Modal";
 import Button from "../button/Button";
 
@@ -21,12 +21,12 @@ export function ConfirmDialog({
 }) {
   const themes = {
     danger: {
-      icon: <AlertCircle className="size-6 text-danger" />,
+      icon: <WarningCircle className="size-6 text-danger" />,
       iconBg: "bg-red-500/10 border-red-500/20",
       buttonVariant: "danger",
     },
     warning: {
-      icon: <AlertTriangle className="size-6 text-warning" />,
+      icon: <Warning className="size-6 text-warning" />,
       iconBg: "bg-amber-500/10 border-amber-500/20",
       buttonVariant: "primary",
     },

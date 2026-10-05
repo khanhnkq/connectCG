@@ -1,15 +1,5 @@
 import React from "react";
-import {
-  User,
-  Pencil,
-  Briefcase,
-  Heart,
-  MapPin,
-  Search,
-  Cake,
-  Users,
-  Sparkles,
-} from "lucide-react";
+import { User, Pencil, Briefcase, Heart, MapPin, MagnifyingGlass as Search, Cake, Users, Sparkle as Sparkles } from "@phosphor-icons/react";
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 

@@ -1,15 +1,4 @@
-import {
-  ArrowRight,
-  LogIn,
-  Star,
-  Search,
-  Sparkles,
-  Gift,
-  Lock,
-  Globe,
-  Mail,
-  MessageCircle,
-} from "lucide-react";
+import { ArrowRight, SignIn as LogIn, Star, MagnifyingGlass as Search, Sparkle as Sparkles, Gift, Lock, Globe, Envelope as Mail, ChatCircle as MessageCircle } from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
 
 export default function LandingPage() {

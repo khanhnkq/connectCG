@@ -1,6 +1,6 @@
 import React from "react";
 import { Input, Textarea } from "../components/ui/input/Input";
-import { Search, Mail, Lock } from "lucide-react";
+import { MagnifyingGlass, Envelope, Lock } from "@phosphor-icons/react";
 
 export default {
   title: "Design System/Input",
@@ -21,13 +21,13 @@ export const WithIcons = {
       <Input
         label="Tìm kiếm thành viên"
         placeholder="Nhập tên hoặc email..."
-        leftIcon={Search}
+        leftIcon={MagnifyingGlass}
       />
       <Input
         label="Địa chỉ Email"
         type="email"
         placeholder="name@example.com"
-        leftIcon={Mail}
+        leftIcon={Envelope}
       />
       <Input
         label="Mật khẩu"
@@ -44,7 +44,7 @@ export const ErrorState = {
     label: "Email",
     defaultValue: "invalid-email@",
     error: "Địa chỉ email không hợp lệ. Vui lòng kiểm tra lại.",
-    leftIcon: Mail,
+    leftIcon: Envelope,
   },
 };
 

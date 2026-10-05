@@ -1,4 +1,4 @@
-import { AlertCircle, AlertTriangle, HelpCircle } from "lucide-react";
+import { WarningCircle as AlertCircle, Warning as AlertTriangle, Question as HelpCircle } from "@phosphor-icons/react";
 import React from "react";
 import { createPortal } from "react-dom";
 

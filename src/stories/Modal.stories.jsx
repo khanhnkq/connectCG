@@ -3,7 +3,6 @@ import { Modal } from "../components/ui/modal/Modal";
 import { ConfirmDialog } from "../components/ui/modal/ConfirmDialog";
 import { Button } from "../components/ui/button/Button";
 import { Input } from "../components/ui/input/Input";
-import { Trash2 } from "lucide-react";
 
 export default {
   title: "Design System/Modal & Dialog",

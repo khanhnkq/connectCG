@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { X, Download } from 'lucide-react';
+import { X, DownloadSimple as Download } from "@phosphor-icons/react";
 
 const ImageLightbox = ({ media, imageUrl, onClose }) => {
     // Support both media object {url, type} and legacy imageUrl prop

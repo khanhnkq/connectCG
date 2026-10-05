@@ -1,20 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import {
-  Camera,
-  SquarePen,
-  Briefcase,
-  Heart,
-  MapPin,
-  SlidersHorizontal,
-  PlusSquare,
-  UserX,
-  LayoutDashboard,
-  User,
-  Image,
-  Users,
-  Search,
-} from "lucide-react";
+import { Camera, NotePencil as SquarePen, Briefcase, Heart, MapPin, SlidersHorizontal, PlusSquare, UserMinus as UserX, SquaresFour as LayoutDashboard, User, Image, Users, MagnifyingGlass as Search } from "@phosphor-icons/react";
 
 import PostComposer from "../../components/feed/PostComposer";
 import {

@@ -1,4 +1,4 @@
-import { User } from "lucide-react";
+import { User } from "@phosphor-icons/react";
 import React, { useState, useEffect } from "react";
 import UserProfileService from "../../services/user/UserProfileService";
 import { formatDate } from "../../utils/dateUtils";

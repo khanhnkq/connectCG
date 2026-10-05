@@ -1,9 +1,4 @@
-import {
-  History,
-  ShieldCheck,
-  ArrowDownWideNarrow,
-  ArrowUpNarrowWide,
-} from "lucide-react";
+import { ClockCounterClockwise as History, ShieldCheck, SortDescending as ArrowDownWideNarrow, SortAscending as ArrowUpNarrowWide } from "@phosphor-icons/react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../components/layout-admin/AdminLayout";

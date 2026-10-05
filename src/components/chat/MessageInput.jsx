@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { CirclePlus, Send, Image as ImageIcon, X } from 'lucide-react';
+import { PlusCircle as CirclePlus, PaperPlaneTilt as Send, Image as ImageIcon, X } from "@phosphor-icons/react";
 
 const MessageInput = ({
     inputText,

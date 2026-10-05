@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { CaretDown as ChevronDown, CaretRight as ChevronRight } from "@phosphor-icons/react";
 import CommentInput from "./CommentInput";
 import ImageLightbox from "../common/ImageLightBox";
 

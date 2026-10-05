@@ -1,4 +1,4 @@
-import { CheckCircle2, AlertCircle } from "lucide-react";
+import { CheckCircle as CheckCircle2, WarningCircle as AlertCircle } from "@phosphor-icons/react";
 import { useEffect, useState, useRef } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import authService from "../../services/authService";

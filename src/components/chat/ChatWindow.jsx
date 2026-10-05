@@ -1,5 +1,5 @@
 import React from "react";
-import { MessageSquare } from "lucide-react";
+import { ChatText as MessageSquare } from "@phosphor-icons/react";
 import ChatHeader from "./ChatHeader.jsx";
 import MessageList from "./MessageList.jsx";
 import MessageInput from "./MessageInput.jsx";

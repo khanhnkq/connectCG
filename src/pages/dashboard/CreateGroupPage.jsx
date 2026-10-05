@@ -1,18 +1,5 @@
 import React, { useState, useRef } from "react";
-import {
-  ArrowLeft,
-  Users,
-  Pencil,
-  AlertCircle,
-  Lock,
-  Globe,
-  ShieldCheck,
-  AlignLeft,
-  Focus,
-  RefreshCw,
-  Image,
-  Rocket,
-} from "lucide-react";
+import { ArrowLeft, Users, Pencil, WarningCircle as AlertCircle, Lock, Globe, ShieldCheck, TextAlignLeft as AlignLeft, Crosshair as Focus, ArrowsClockwise as RefreshCw, Image, Rocket } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";

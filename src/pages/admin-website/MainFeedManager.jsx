@@ -1,13 +1,4 @@
-import {
-  Shield,
-  AlertTriangle,
-  Inbox,
-  ShieldCheck,
-  CheckCircle2,
-  Trash2,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { Shield, Warning as AlertTriangle, Tray as Inbox, ShieldCheck, CheckCircle as CheckCircle2, Trash as Trash2, CaretLeft as ChevronLeft, CaretRight as ChevronRight } from "@phosphor-icons/react";
 import React, { useState, useEffect } from "react";
 import AdminLayout from "../../components/layout-admin/AdminLayout";
 import postService from "../../services/PostService";

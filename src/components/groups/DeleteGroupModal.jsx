@@ -1,4 +1,4 @@
-import { Trash2, AlertTriangle } from "lucide-react";
+import { Trash as Trash2, Warning as AlertTriangle } from "@phosphor-icons/react";
 import React from "react";
 
 export default function DeleteGroupModal({

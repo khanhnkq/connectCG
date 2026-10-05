@@ -1,5 +1,5 @@
 import React from "react";
-import { X, UserX, Check, UserPlus } from "lucide-react";
+import { X, UserMinus as UserX, Check, UserPlus } from "@phosphor-icons/react";
 
 const InviteMemberModal = ({
   show,

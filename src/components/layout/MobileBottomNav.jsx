@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, Users, UsersRound, MessageCircle } from "lucide-react";
+import { House as Home, Users, UsersThree as UsersRound, ChatCircle as MessageCircle } from "@phosphor-icons/react";
 import useChatRooms from "../../pages/chat/hooks/useChatRooms";
 
 export default function MobileBottomNav() {

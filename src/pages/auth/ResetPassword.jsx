@@ -1,4 +1,4 @@
-import { AlertCircle, CheckCircle2, ArrowLeft } from "lucide-react";
+import { WarningCircle as AlertCircle, CheckCircle as CheckCircle2, ArrowLeft } from "@phosphor-icons/react";
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Formik, Form, Field } from "formik";

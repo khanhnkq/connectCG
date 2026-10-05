@@ -1,4 +1,4 @@
-import { Mail, Eye, EyeOff } from "lucide-react";
+import { Envelope as Mail, Eye, EyeSlash as EyeOff } from "@phosphor-icons/react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Formik, Form, Field } from "formik";

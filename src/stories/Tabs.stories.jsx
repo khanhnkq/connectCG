@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Tabs } from "../components/ui/tabs/Tabs";
-import { Newspaper, Users, ShieldAlert, Image } from "lucide-react";
+import { Newspaper, Users, ShieldWarning, Image } from "@phosphor-icons/react";
 
 export default {
   title: "Design System/Tabs",
@@ -24,7 +24,7 @@ export const GroupTabs = {
             <Tabs.Trigger value="photos" icon={Image}>
               Hình ảnh
             </Tabs.Trigger>
-            <Tabs.Trigger value="mod" icon={ShieldAlert} badge={3}>
+            <Tabs.Trigger value="mod" icon={ShieldWarning} badge={3}>
               Kiểm duyệt
             </Tabs.Trigger>
           </Tabs.List>

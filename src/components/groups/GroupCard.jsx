@@ -1,8 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import {
-    ShieldCheck, Globe, Lock, UserPlus, PlusSquare, User, LogIn, Settings
-} from "lucide-react";
+import { ShieldCheck, Globe, Lock, UserPlus, PlusSquare, User, SignIn as LogIn, Gear as Settings } from "@phosphor-icons/react";
 
 const GroupCard = ({
     group,

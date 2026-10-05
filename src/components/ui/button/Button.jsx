@@ -1,5 +1,5 @@
 import React, { forwardRef } from "react";
-import { Loader2 } from "lucide-react";
+import { CircleNotch } from "@phosphor-icons/react";
 
 /**
  * Modern Flat Button Primitive
@@ -91,7 +91,7 @@ export const Button = forwardRef(
           {...props}
         >
           {isLoading ? (
-            <Loader2 className={`animate-spin ${glyphSize}`} />
+            <CircleNotch className={`animate-spin ${glyphSize}`} />
           ) : React.isValidElement(iconToRender) ? (
             iconToRender
           ) : typeof iconToRender === "function" ? (

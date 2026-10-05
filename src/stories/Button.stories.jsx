@@ -1,6 +1,6 @@
 import React from "react";
 import { Button, IconButton } from "../components/ui/button/Button";
-import { Plus, Trash2, Send, MoreHorizontal, Heart, Search, Bell, Settings } from "lucide-react";
+import { Plus, Trash, PaperPlaneTilt, DotsThree, Heart, MagnifyingGlass, Bell, Gear } from "@phosphor-icons/react";
 
 export default {
   title: "Design System/Button",
@@ -75,22 +75,22 @@ export const IconOnlyButtons = {
       <IconButton icon={Plus} variant="primary" aria-label="Thêm bài viết" />
 
       {/* Secondary Search Icon Button */}
-      <IconButton icon={Search} variant="secondary" aria-label="Tìm kiếm" />
+      <IconButton icon={MagnifyingGlass} variant="secondary" aria-label="Tìm kiếm" />
 
       {/* Ghost More Icon Button */}
-      <IconButton icon={MoreHorizontal} variant="ghost" aria-label="Tùy chọn khác" />
+      <IconButton icon={DotsThree} variant="ghost" aria-label="Tùy chọn khác" />
 
       {/* Danger Trash Icon Button */}
-      <IconButton icon={Trash2} variant="danger" aria-label="Xóa" />
+      <IconButton icon={Trash} variant="danger" aria-label="Xóa" />
 
       {/* Outline Settings Icon Button */}
-      <IconButton icon={Settings} variant="outline" aria-label="Cài đặt" />
+      <IconButton icon={Gear} variant="outline" aria-label="Cài đặt" />
 
       {/* Ghost Notification Icon Button */}
       <IconButton icon={Bell} variant="ghost" aria-label="Thông báo" />
 
       {/* Loading Icon Button */}
-      <IconButton icon={Send} variant="primary" isLoading aria-label="Đang gửi" />
+      <IconButton icon={PaperPlaneTilt} variant="primary" isLoading aria-label="Đang gửi" />
     </div>
   ),
 };

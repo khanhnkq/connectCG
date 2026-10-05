@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { X, Loader2 } from "lucide-react";
+import { X, CircleNotch as Loader2 } from "@phosphor-icons/react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useDispatch } from "react-redux";

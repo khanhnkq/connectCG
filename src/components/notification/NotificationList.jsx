@@ -1,5 +1,5 @@
 import React from "react";
-import { Trash2, Check, CheckCheck } from "lucide-react";
+import { Trash as Trash2, Check, Checks as CheckCheck } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 

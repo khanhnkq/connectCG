@@ -1,4 +1,4 @@
-import { MailCheck, ArrowLeft } from "lucide-react";
+import { EnvelopeOpen as MailCheck, ArrowLeft } from "@phosphor-icons/react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Formik, Form, Field } from "formik";

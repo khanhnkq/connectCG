@@ -1,5 +1,5 @@
 import React from "react";
-import { Search } from "lucide-react";
+import { MagnifyingGlass as Search } from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
 
 export default function GroupsRightSidebar({

@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import { PlayCircle, Trash2 } from 'lucide-react';
+import { PlayCircle, Trash as Trash2 } from "@phosphor-icons/react";
 import { formatDaySeparator } from '../../utils/chatHelpers.js';
 
 const MessageList = React.memo(({ messages, currentUser, activeRoom, messagesEndRef, onOpenLightbox, onDeleteMessage }) => {

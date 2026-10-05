@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { clearGroupDeletionAlert } from '../../redux/slices/notificationSlice';
-import { AlertTriangle, Info } from 'lucide-react';
+import { Warning as AlertTriangle, Info } from "@phosphor-icons/react";
 import { useNavigate } from 'react-router-dom';
 
 const GroupDeletedModal = () => {

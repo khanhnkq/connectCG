@@ -1,46 +1,7 @@
 import React, { useState, useEffect, useRef, Fragment } from "react";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-  Plus,
-  Search,
-  Settings,
-  Send,
-  MoreVertical,
-  Phone,
-  Video,
-  Image as ImageIcon,
-  Paperclip,
-  Smile,
-  UserPlus,
-  LogOut,
-  Trash2,
-  X,
-  Check,
-  Ban,
-  AlertTriangle,
-  Users,
-  Lock,
-  MessageSquare,
-  ShieldAlert,
-  Repeat,
-  History,
-  GalleryVerticalEnd,
-  Archive,
-  Star,
-  Flag,
-  ChevronDown,
-  ArrowLeft,
-  SquarePen,
-  CirclePlus,
-  Camera,
-  User,
-  ChevronRight,
-  Pencil,
-  BellOff,
-  UserX,
-  Info,
-} from "lucide-react";
+import { Plus, MagnifyingGlass as Search, Gear as Settings, PaperPlaneTilt as Send, DotsThreeVertical as MoreVertical, Phone, Video, Image as ImageIcon, Paperclip, Smiley as Smile, UserPlus, SignOut as LogOut, Trash as Trash2, X, Check, Prohibit as Ban, Warning as AlertTriangle, Users, Lock, ChatText as MessageSquare, ShieldWarning as ShieldAlert, Repeat, ClockCounterClockwise as History, Cards as GalleryVerticalEnd, Archive, Star, Flag, CaretDown as ChevronDown, ArrowLeft, NotePencil as SquarePen, PlusCircle as CirclePlus, Camera, User, CaretRight as ChevronRight, Pencil, BellSlash as BellOff, UserMinus as UserX, Info } from "@phosphor-icons/react";
 import toast from "react-hot-toast";
 import ChatService from "../../services/chat/ChatService";
 import FirebaseChatService from "../../services/chat/FirebaseChatService";

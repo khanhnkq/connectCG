@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, SquarePen, User, Users } from 'lucide-react';
+import { MagnifyingGlass as Search, NotePencil as SquarePen, User, Users } from "@phosphor-icons/react";
 import { useSelector } from 'react-redux';
 
 const ChatSidebar = React.memo(({

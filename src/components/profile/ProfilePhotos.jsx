@@ -1,5 +1,5 @@
 import React from "react";
-import { ZoomIn, Trash2 } from "lucide-react";
+import { MagnifyingGlassPlus as ZoomIn, Trash as Trash2 } from "@phosphor-icons/react";
 
 const ProfilePhotos = ({ profile, isOwner }) => {
   return (

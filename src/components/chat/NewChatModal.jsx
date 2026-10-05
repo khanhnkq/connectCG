@@ -1,5 +1,5 @@
 import React from "react";
-import { X, Search, Send, UserX, MessageSquare, Users } from "lucide-react";
+import { X, MagnifyingGlass as Search, PaperPlaneTilt as Send, UserMinus as UserX, ChatText as MessageSquare, Users } from "@phosphor-icons/react";
 
 const NewChatModal = ({
   show,

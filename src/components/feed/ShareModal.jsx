@@ -1,14 +1,5 @@
 import React from "react";
-import {
-  X,
-  Copy,
-  Share2,
-  Link as LinkIcon,
-  Facebook,
-  Twitter,
-  MessageCircle,
-  Loader2,
-} from "lucide-react";
+import { X, Copy, ShareNetwork as Share2, Link as LinkIcon, FacebookLogo as Facebook, TwitterLogo as Twitter, ChatCircle as MessageCircle, CircleNotch as Loader2 } from "@phosphor-icons/react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 // eslint-disable-next-line no-unused-vars

@@ -1,21 +1,4 @@
-import {
-  UserX,
-  UserMinus,
-  MailCheck,
-  UserPlus,
-  Mail,
-  AlertTriangle,
-  Briefcase,
-  Heart,
-  MapPin,
-  Lock,
-  ChevronLeft,
-  Search,
-  LayoutDashboard,
-  User,
-  Image,
-  Users,
-} from "lucide-react";
+import { UserMinus as UserX, UserMinus, EnvelopeOpen as MailCheck, UserPlus, Envelope as Mail, Warning as AlertTriangle, Briefcase, Heart, MapPin, Lock, CaretLeft as ChevronLeft, MagnifyingGlass as Search, SquaresFour as LayoutDashboard, User, Image, Users } from "@phosphor-icons/react";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";

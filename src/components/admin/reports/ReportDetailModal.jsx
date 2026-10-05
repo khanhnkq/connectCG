@@ -1,5 +1,5 @@
 import React from "react";
-import { X, ShieldCheck, ChevronRight, History, Lock } from "lucide-react";
+import { X, ShieldCheck, CaretRight as ChevronRight, ClockCounterClockwise as History, Lock } from "@phosphor-icons/react";
 
 const ReportDetailModal = ({
   isOpen,

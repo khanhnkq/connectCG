@@ -1,6 +1,6 @@
 "use client";
 
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun } from "@phosphor-icons/react";
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { useTheme } from "../../context/ThemeContext";

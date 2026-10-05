@@ -1,4 +1,4 @@
-import { X, Search, Check, UserPlus } from "lucide-react";
+import { X, MagnifyingGlass as Search, Check, UserPlus } from "@phosphor-icons/react";
 import React, { useState, useEffect } from "react";
 import FriendService from "../../services/friend/FriendService";
 import toast from "react-hot-toast";

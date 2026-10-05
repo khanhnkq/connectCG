@@ -1,19 +1,5 @@
 import React, { useState, useRef } from "react";
-import {
-  Camera,
-  Pencil,
-  Check,
-  X,
-  User,
-  ChevronRight,
-  UserX,
-  Trash2,
-  Flag,
-  Info,
-  Users,
-  Paperclip,
-  Play
-} from "lucide-react";
+import { Camera, Pencil, Check, X, User, CaretRight as ChevronRight, UserMinus as UserX, Trash as Trash2, Flag, Info, Users, Paperclip, Play } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 import FirebaseChatService from "../../services/chat/FirebaseChatService";
 

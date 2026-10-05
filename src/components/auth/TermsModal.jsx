@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { X } from "@phosphor-icons/react";
 
 const TermsModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;

@@ -1,18 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Users,
-  MessageCircle,
-  UserMinus,
-  UserX,
-  UserPlus,
-  UserSearch,
-  Loader2,
-  MoreVertical,
-  Check,
-  X,
-  Search,
-} from "lucide-react";
+import { Users, ChatCircle as MessageCircle, UserMinus, UserMinus as UserX, UserPlus, UserFocus as UserSearch, CircleNotch as Loader2, DotsThreeVertical as MoreVertical, Check, X, MagnifyingGlass as Search } from "@phosphor-icons/react";
 import FriendRequestService from "../../services/friend/FriendRequestService";
 import ConfirmModal from "../common/ConfirmModal";
 import toast from "react-hot-toast";

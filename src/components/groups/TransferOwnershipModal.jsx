@@ -1,4 +1,4 @@
-import { ArrowLeftRight, Search, Check, Info } from "lucide-react";
+import { ArrowsLeftRight as ArrowLeftRight, MagnifyingGlass as Search, Check, Info } from "@phosphor-icons/react";
 import React, { useState } from "react";
 
 export default function TransferOwnershipModal({

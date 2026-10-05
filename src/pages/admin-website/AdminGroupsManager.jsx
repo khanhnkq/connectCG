@@ -1,12 +1,4 @@
-import {
-  AlertTriangle,
-  Eye,
-  Pencil,
-  Trash2,
-  Search,
-  Users,
-  ChevronDown,
-} from "lucide-react";
+import { Warning as AlertTriangle, Eye, Pencil, Trash as Trash2, MagnifyingGlass as Search, Users, CaretDown as ChevronDown } from "@phosphor-icons/react";
 import React, { useState, useEffect } from "react";
 import AdminLayout from "../../components/layout-admin/AdminLayout";
 import * as Yup from "yup";

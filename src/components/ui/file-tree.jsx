@@ -1,9 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
-import {
-  ChevronRight,
-  File as FileIcon,
-  Folder as FolderIcon,
-} from "lucide-react";
+import { CaretRight as ChevronRight, File as FileIcon, Folder as FolderIcon } from "@phosphor-icons/react";
 
 const TreeContext = createContext();
 

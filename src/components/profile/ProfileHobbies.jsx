@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Pencil } from "lucide-react";
+import { Pencil } from "@phosphor-icons/react";
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { getIconComponent } from "../../utils/iconMap";

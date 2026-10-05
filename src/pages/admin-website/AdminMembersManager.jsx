@@ -1,18 +1,4 @@
-import {
-  Users,
-  Search,
-  ChevronDown,
-  ShieldCheck,
-  ShieldAlert,
-  User,
-  UserPlus,
-  UserMinus,
-  Ban,
-  UserX,
-  ChevronLeft,
-  ChevronRight,
-  ShieldHalf,
-} from "lucide-react";
+import { Users, MagnifyingGlass as Search, CaretDown as ChevronDown, ShieldCheck, ShieldWarning as ShieldAlert, User, UserPlus, UserMinus, Prohibit as Ban, UserMinus as UserX, CaretLeft as ChevronLeft, CaretRight as ChevronRight, ShieldChevron as ShieldHalf } from "@phosphor-icons/react";
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import AdminLayout from "../../components/layout-admin/AdminLayout";

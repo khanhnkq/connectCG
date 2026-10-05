@@ -1,7 +1,7 @@
 import React from "react";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
-import { Send, Loader2, Image, X } from "lucide-react";
+import { PaperPlaneTilt as Send, CircleNotch as Loader2, Image, X } from "@phosphor-icons/react";
 import { uploadImage } from "../../utils/uploadImage";
 import { useRef, useState } from "react";
 

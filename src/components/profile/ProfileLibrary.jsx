@@ -1,12 +1,5 @@
 import React, { useState } from "react";
-import {
-  Images,
-  Film,
-  LayoutGrid,
-  ZoomIn,
-  Play,
-  ChevronDown,
-} from "lucide-react";
+import { Images, FilmStrip as Film, GridFour as LayoutGrid, MagnifyingGlassPlus as ZoomIn, Play, CaretDown as ChevronDown } from "@phosphor-icons/react";
 import ImageLightbox from "../common/ImageLightBox";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";

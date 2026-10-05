@@ -1,6 +1,6 @@
 import React from "react";
 import CitySelect from "../../components/common/CitySelect";
-import { Search, Filter, RefreshCw } from "lucide-react";
+import { MagnifyingGlass as Search, Funnel as Filter, ArrowsClockwise as RefreshCw } from "@phosphor-icons/react";
 
 const MemberFilterSidebar = ({
   keyword,

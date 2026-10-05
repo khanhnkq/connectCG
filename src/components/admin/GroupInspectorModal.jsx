@@ -1,4 +1,4 @@
-import { X, ShieldCheck, AlertCircle, History, Trash2 } from "lucide-react";
+import { X, ShieldCheck, WarningCircle as AlertCircle, ClockCounterClockwise as History, Trash as Trash2 } from "@phosphor-icons/react";
 import React, { useState, useEffect } from "react";
 import {
   findById as findGroupById,

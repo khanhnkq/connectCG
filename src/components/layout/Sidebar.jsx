@@ -1,26 +1,65 @@
 import React, { useState, useEffect } from "react";
-import { Sidebar, SidebarBody, SidebarLink } from "../ui/sidebar";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
-  Settings,
+  House,
+  Users,
+  UsersThree,
+  ChatCircle,
+  User,
   ShieldCheck,
-  Users2,
-  ChevronDown,
-  ChevronRight,
-  AlertTriangle,
-} from "lucide-react";
+  Gear,
+  FileText,
+  ShieldWarning,
+  ArrowLeft,
+  CaretLeft,
+  CaretRight,
+  CaretDown,
+  SignOut,
+  Plus,
+} from "@phosphor-icons/react";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchUserProfile } from "../../redux/slices/userSlice";
+import { logout } from "../../redux/slices/authSlice";
 import { findMyGroups } from "../../services/groups/GroupService";
+import { Avatar } from "../ui/avatar/Avatar";
+import { IconButton } from "../ui/button/Button";
+import { Badge } from "../ui/badge/Badge";
+import toast from "react-hot-toast";
 
-export default function SidebarComponent() {
+/**
+ * Modern Flat Unified Sidebar
+ * - Dùng chung cho cả User & Admin (variant="user" | "admin")
+ * - Hỗ trợ thu gọn (icon-only 72px) và mở rộng (full 256px)
+ * - 0px shadow, 0px blur, 1px crisp border
+ * - Chuẩn quy tắc nút bấm: icon-only không có chữ, có chữ không có icon
+ */
+export function Sidebar({
+  variant = "user",
+  defaultCollapsed = false,
+  isCollapsed: controlledCollapsed,
+  onToggleCollapse,
+  activeTab,
+  className = "",
+}) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const [internalCollapsed, setInternalCollapsed] = useState(defaultCollapsed);
+  const isCollapsed =
+    controlledCollapsed !== undefined ? controlledCollapsed : internalCollapsed;
+
+  const toggleCollapse = () => {
+    const nextState = !isCollapsed;
+    setInternalCollapsed(nextState);
+    onToggleCollapse?.(nextState);
+  };
+
   const { user } = useSelector((state) => state.auth);
   const { profile: userProfile } = useSelector((state) => state.user);
-  const dispatch = useDispatch();
-  const [open, setOpen] = useState(false);
-
   const isAdmin = Boolean(user?.role?.includes("ROLE_ADMIN"));
 
-  // Groups Logic
+  // Groups state (User mode)
   const [managedGroups, setManagedGroups] = useState([]);
   const [joinedGroups, setJoinedGroups] = useState([]);
   const [showManaged, setShowManaged] = useState(true);
@@ -34,13 +73,15 @@ export default function SidebarComponent() {
   }, [user, userProfile, dispatch]);
 
   useEffect(() => {
-    const fetchGroups = async () => {
-      if (!user?.id) return;
-      try {
-        const response = await findMyGroups(0, 50); // Fetch up to 50 groups
-        const groups = response.content || response || [];
+    if (variant !== "user" || !user?.id) return;
 
-        // Filter groups
+    let isMounted = true;
+    const fetchGroups = async () => {
+      try {
+        const response = await findMyGroups(0, 50);
+        if (!isMounted) return;
+        const groups = response?.content || response || [];
+
         const managed = [];
         const joined = [];
 
@@ -57,161 +98,254 @@ export default function SidebarComponent() {
         console.error("Failed to fetch sidebar groups", err);
       }
     };
-    fetchGroups();
-  }, [user?.id]);
 
-  const menuItems = [];
+    fetchGroups();
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.id, variant]);
+
+  const handleLogout = async () => {
+    try {
+      await dispatch(logout()).unwrap();
+    } catch {
+      // Ignored
+    } finally {
+      navigate("/login");
+    }
+  };
+
+  const isActive = (path) => {
+    if (activeTab) {
+      return location.pathname.includes(activeTab.toLowerCase());
+    }
+    return location.pathname === path;
+  };
+
+  // Nav item lists
+  const userNavItems = [
+    { label: "Bảng tin", path: "/dashboard/feed", icon: House },
+    { label: "Bạn bè", path: "/dashboard/friends", icon: Users },
+    { label: "Nhóm cộng đồng", path: "/dashboard/groups", icon: UsersThree },
+    { label: "Tin nhắn", path: "/dashboard/chat", icon: ChatCircle },
+    { label: "Trang cá nhân", path: "/dashboard/my-profile", icon: User },
+    { label: "Quyền riêng tư", path: "/dashboard/settings/privacy", icon: ShieldCheck },
+  ];
 
   if (isAdmin) {
-    menuItems.push({
-      label: "Admin Panel",
-      href: "/admin-website/groups",
-      icon: <Settings className="text-text-secondary h-5 w-5 flex-shrink-0" />,
+    userNavItems.push({
+      label: "Trang quản trị",
+      path: "/admin-website/groups",
+      icon: Gear,
+      isAdminBadge: true,
     });
   }
 
+  const adminNavItems = [
+    { label: "Quản lý nhóm", path: "/admin-website/groups", icon: Users },
+    { label: "Quản lý thành viên", path: "/admin-website/members", icon: UsersThree },
+    { label: "Nội dung & Bài viết", path: "/admin-website/contents", icon: FileText },
+    { label: "Xử lý báo cáo", path: "/admin-website/reports", icon: ShieldWarning },
+    { label: "Về Bảng tin", path: "/dashboard/feed", icon: ArrowLeft, isDividerBefore: true },
+  ];
+
+  const currentNavItems = variant === "admin" ? adminNavItems : userNavItems;
+
   return (
-    <Sidebar open={open} setOpen={setOpen}>
-      <SidebarBody className="justify-between gap-10 bg-background-main border-r border-border-main transition-colors duration-300">
-        <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-          <div className="flex flex-col gap-2">
-            {menuItems.map((link, idx) => (
-              <div key={idx}>
-                <SidebarLink link={link} />
-              </div>
-            ))}
+    <aside
+      className={`h-full flex flex-col shrink-0 bg-surface-main border-r border-border-main select-none transition-[width] duration-200 ease-in-out ${
+        isCollapsed ? "w-20" : "w-64"
+      } ${className}`}
+    >
+      {/* 1. TOP HEADER & COLLAPSE TOGGLE */}
+      <div className="h-12 px-3 border-b border-border-main flex items-center justify-between shrink-0">
+        {!isCollapsed && (
+          <span className="text-[11px] font-bold uppercase tracking-wider text-text-muted px-2">
+            {variant === "admin" ? "Bảng điều khiển" : "Menu chính"}
+          </span>
+        )}
+        <div className={isCollapsed ? "mx-auto" : "ml-auto"}>
+          <IconButton
+            icon={isCollapsed ? CaretRight : CaretLeft}
+            variant="ghost"
+            size="sm"
+            aria-label={isCollapsed ? "Mở rộng sidebar" : "Thu gọn sidebar"}
+            onClick={toggleCollapse}
+          />
+        </div>
+      </div>
 
-            <div className="my-2 border-t border-border-main/50" />
+      {/* 2. SCROLLABLE NAVIGATION LIST */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden p-2 space-y-1 custom-scrollbar">
+        {currentNavItems.map((item) => {
+          const Icon = item.icon;
+          const active = isActive(item.path);
 
-            {/* Managed Groups */}
-            <div className="mb-2">
-              {open ? (
-                <button
-                  onClick={() =>
-                    managedGroups.length > 0 && setShowManaged(!showManaged)
-                  }
-                  className={`flex items-center justify-between w-full px-2 py-2 text-xs font-bold text-text-secondary uppercase tracking-wider transition-colors mb-1 group ${
-                    managedGroups.length > 0
-                      ? "hover:text-primary cursor-pointer"
-                      : "cursor-default"
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <ShieldCheck size={14} className="text-primary" />
-                    Quản lý nhóm
-                  </span>
-                  {managedGroups.length > 0 &&
-                    (showManaged ? (
-                      <ChevronDown size={14} />
-                    ) : (
-                      <ChevronRight size={14} />
-                    ))}
-                </button>
-              ) : (
-                <button
-                  className="flex items-center justify-center w-full py-2 hover:bg-surface-main/50 rounded-md transition-colors"
-                  title="Quản lý nhóm"
-                >
-                  <ShieldCheck size={18} className="text-primary" />
-                </button>
+          return (
+            <React.Fragment key={item.path}>
+              {item.isDividerBefore && (
+                <div className="my-2 border-t border-border-main" />
               )}
+              <Link
+                to={item.path}
+                title={isCollapsed ? item.label : undefined}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-colors ${
+                  active
+                    ? "bg-primary/10 text-primary font-semibold"
+                    : "text-text-secondary hover:text-text-main hover:bg-surface-subtle"
+                } ${isCollapsed ? "justify-center px-0" : ""}`}
+              >
+                <Icon
+                  size={20}
+                  weight={active ? "fill" : "regular"}
+                  className="shrink-0"
+                />
+                {!isCollapsed && (
+                  <span className="truncate flex-1">{item.label}</span>
+                )}
+                {!isCollapsed && item.isAdminBadge && (
+                  <Badge variant="primary" size="sm">
+                    Admin
+                  </Badge>
+                )}
+              </Link>
+            </React.Fragment>
+          );
+        })}
 
-              {showManaged &&
-                (managedGroups.length > 0
-                  ? managedGroups.map((group) => (
-                      <SidebarLink
-                        key={group.id}
-                        link={{
-                          label: group.name,
-                          href: `/dashboard/groups/${group.id}`,
-                          icon: (
-                            <div className="relative">
-                              <img
-                                src={
-                                  group.image ||
-                                  "https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=1000"
-                                }
-                                alt={group.name}
-                                className="h-6 w-6 !rounded-lg object-cover flex-shrink-0 border border-border-main"
-                              />
-                              <div className="absolute -bottom-1 -right-1 bg-primary rounded-full p-[2px] border border-background-main">
-                                <ShieldCheck size={8} className="text-white" />
-                              </div>
-                            </div>
-                          ),
-                        }}
-                      />
+        {/* 3. USER GROUPS SECTION (User mode only) */}
+        {variant === "user" && !isCollapsed && (
+          <div className="mt-4 pt-4 border-t border-border-main space-y-3">
+            {/* Managed Groups */}
+            <div>
+              <button
+                type="button"
+                onClick={() => setShowManaged(!showManaged)}
+                className="flex items-center justify-between w-full px-2 py-1 text-xs font-bold text-text-muted uppercase tracking-wider hover:text-text-main transition-colors cursor-pointer"
+              >
+                <span className="flex items-center gap-1.5">
+                  <ShieldCheck size={14} className="text-primary" />
+                  Nhóm quản lý ({managedGroups.length})
+                </span>
+                <CaretDown
+                  size={12}
+                  className={`transition-transform duration-150 ${
+                    showManaged ? "" : "-rotate-90"
+                  }`}
+                />
+              </button>
+
+              {showManaged && (
+                <div className="mt-1 space-y-0.5">
+                  {managedGroups.length === 0 ? (
+                    <p className="px-3 py-1.5 text-xs text-text-muted italic">
+                      Chưa có nhóm nào
+                    </p>
+                  ) : (
+                    managedGroups.slice(0, 5).map((g) => (
+                      <Link
+                        key={g.id}
+                        to={`/dashboard/groups/${g.id}`}
+                        className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs font-medium text-text-secondary hover:text-text-main hover:bg-surface-subtle transition-colors truncate"
+                      >
+                        <Avatar src={g.avatarUrl} name={g.name} size="sm" />
+                        <span className="truncate">{g.name}</span>
+                      </Link>
                     ))
-                  : open && (
-                      <div className="px-8 py-2 text-[10px] text-text-secondary italic">
-                        Chưa quản lý nhóm nào
-                      </div>
-                    ))}
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Joined Groups */}
-            <div className="mb-2">
-              {open ? (
-                <button
-                  onClick={() =>
-                    joinedGroups.length > 0 && setShowJoined(!showJoined)
-                  }
-                  className={`flex items-center justify-between w-full px-2 py-2 text-xs font-bold text-text-secondary uppercase tracking-wider transition-colors mb-1 group ${
-                    joinedGroups.length > 0
-                      ? "hover:text-primary cursor-pointer"
-                      : "cursor-default"
+            <div>
+              <button
+                type="button"
+                onClick={() => setShowJoined(!showJoined)}
+                className="flex items-center justify-between w-full px-2 py-1 text-xs font-bold text-text-muted uppercase tracking-wider hover:text-text-main transition-colors cursor-pointer"
+              >
+                <span className="flex items-center gap-1.5">
+                  <UsersThree size={14} className="text-primary" />
+                  Nhóm tham gia ({joinedGroups.length})
+                </span>
+                <CaretDown
+                  size={12}
+                  className={`transition-transform duration-150 ${
+                    showJoined ? "" : "-rotate-90"
                   }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <Users2 size={14} className="text-primary" />
-                    Nhóm tham gia
-                  </span>
-                  {joinedGroups.length > 0 &&
-                    (showJoined ? (
-                      <ChevronDown size={14} />
-                    ) : (
-                      <ChevronRight size={14} />
-                    ))}
-                </button>
-              ) : (
-                <button
-                  className="flex items-center justify-center w-full py-2 hover:bg-surface-main/50 rounded-md transition-colors"
-                  title="Nhóm tham gia"
-                >
-                  <Users2 size={18} className="text-primary" />
-                </button>
-              )}
+                />
+              </button>
 
-              {showJoined &&
-                (joinedGroups.length > 0
-                  ? joinedGroups.map((group) => (
-                      <SidebarLink
-                        key={group.id}
-                        link={{
-                          label: group.name,
-                          href: `/dashboard/groups/${group.id}`,
-                          icon: (
-                            <img
-                              src={
-                                group.image ||
-                                "https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=1000"
-                              }
-                              alt={group.name}
-                              className="h-6 w-6 !rounded-lg object-cover flex-shrink-0 border border-border-main"
-                            />
-                          ),
-                        }}
-                      />
+              {showJoined && (
+                <div className="mt-1 space-y-0.5">
+                  {joinedGroups.length === 0 ? (
+                    <p className="px-3 py-1.5 text-xs text-text-muted italic">
+                      Chưa tham gia nhóm nào
+                    </p>
+                  ) : (
+                    joinedGroups.slice(0, 5).map((g) => (
+                      <Link
+                        key={g.id}
+                        to={`/dashboard/groups/${g.id}`}
+                        className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs font-medium text-text-secondary hover:text-text-main hover:bg-surface-subtle transition-colors truncate"
+                      >
+                        <Avatar src={g.avatarUrl} name={g.name} size="sm" />
+                        <span className="truncate">{g.name}</span>
+                      </Link>
                     ))
-                  : open && (
-                      <div className="px-8 py-2 text-[10px] text-text-secondary italic">
-                        Chưa tham gia nhóm nào
-                      </div>
-                    ))}
+                  )}
+                </div>
+              )}
             </div>
           </div>
-        </div>
-      </SidebarBody>
-    </Sidebar>
+        )}
+      </div>
+
+      {/* 4. BOTTOM USER FOOTER */}
+      <div className="p-2 border-t border-border-main shrink-0 bg-surface-subtle/40">
+        {isCollapsed ? (
+          <div className="flex justify-center">
+            <IconButton
+              icon={SignOut}
+              variant="ghost"
+              size="sm"
+              aria-label="Đăng xuất"
+              onClick={handleLogout}
+            />
+          </div>
+        ) : (
+          <div className="flex items-center justify-between gap-2 p-1.5 rounded-xl bg-surface-main border border-border-main">
+            <Link
+              to="/dashboard/my-profile"
+              className="flex items-center gap-2.5 min-w-0 flex-1 hover:opacity-80 transition-opacity"
+            >
+              <Avatar
+                src={userProfile?.currentAvatarUrl}
+                name={userProfile?.fullName || user?.username || "U"}
+                size="sm"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold text-text-main truncate">
+                  {userProfile?.fullName || user?.username || "Người dùng"}
+                </p>
+                <p className="text-[10px] text-text-muted truncate">
+                  {isAdmin ? "Quản trị viên" : "Thành viên"}
+                </p>
+              </div>
+            </Link>
+
+            <IconButton
+              icon={SignOut}
+              variant="ghost"
+              size="sm"
+              aria-label="Đăng xuất"
+              onClick={handleLogout}
+            />
+          </div>
+        )}
+      </div>
+    </aside>
   );
 }
+
+export default Sidebar;

@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import PostCard from "../../components/feed/PostCard";
 import postService from "../../services/PostService";
 import RightSidebar from "../../components/layout/RightSidebar";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, CircleNotch as Loader2 } from "@phosphor-icons/react";
 import toast from "react-hot-toast";
 
 export default function PostDetailPage() {

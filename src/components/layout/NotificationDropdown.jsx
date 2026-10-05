@@ -18,7 +18,7 @@ const NotificationDropdown = ({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 10, scale: 0.95 }}
           transition={{ duration: 0.2 }}
-          className="absolute right-0 top-full mt-2 w-[80vw] sm:w-64 md:w-72 z-50 origin-top-right shadow-2xl rounded-2xl border border-border-main bg-surface-main overflow-hidden"
+          className="absolute right-0 top-full mt-2 w-[80vw] sm:w-64 md:w-72 z-50 origin-top-right shadow-none rounded-2xl border border-border-main bg-surface-main overflow-hidden"
         >
           <NotificationList
             notifications={notifications}

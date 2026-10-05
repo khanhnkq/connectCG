@@ -3,7 +3,7 @@ import React, { useEffect, useState, useCallback, useRef } from "react";
 import GroupsRightSidebar from "../../components/groups/GroupsRightSidebar";
 import GroupCard from "../../components/groups/GroupCard";
 import { useDebounce } from "../../hooks/useDebounce";
-import { ShieldCheck, Search, Plus, Users } from "lucide-react";
+import { ShieldCheck, MagnifyingGlass as Search, Plus, Users } from "@phosphor-icons/react";
 import {
   findDiscoverGroups,
   findPendingInvitations,

@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import { Play, Pause, Volume2, VolumeX, Maximize2 } from "lucide-react";
+import { Play, Pause, SpeakerHigh as Volume2, SpeakerX as VolumeX, ArrowsOut as Maximize2 } from "@phosphor-icons/react";
 
 /**
  * A video component that autoplays when it enters the viewport and pauses when it leaves.

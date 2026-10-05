@@ -1,6 +1,6 @@
 // src/components/common/ImageLightbox.jsx
 import { useEffect, useState, useRef } from "react";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, CaretLeft as ChevronLeft, CaretRight as ChevronRight } from "@phosphor-icons/react";
 
 export default function ImageLightbox({
   mediaItems,

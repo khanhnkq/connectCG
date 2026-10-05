@@ -8,29 +8,7 @@ import { useDispatch } from "react-redux";
 import { createProfile, logout } from "../../redux/slices/authSlice"; // Import thunk mới và logout
 import { useSelector } from "react-redux";
 import CitySelect from "../../components/common/CitySelect";
-import {
-  Heart,
-  Camera,
-  Pencil,
-  Video,
-  Mars,
-  Venus,
-  Transgender,
-  Users,
-  Briefcase,
-  Music,
-  Trophy,
-  Book,
-  Plane,
-  Utensils,
-  Gamepad2,
-  Film,
-  Palette,
-  Dumbbell,
-  Dog,
-  Monitor,
-  ArrowLeft,
-} from "lucide-react";
+import { Heart, Camera, Pencil, Video, GenderMale as Mars, GenderFemale as Venus, GenderTransgender as Transgender, Users, Briefcase, MusicNote as Music, Trophy, Book, Airplane as Plane, ForkKnife as Utensils, GameController as Gamepad2, FilmStrip as Film, Palette, Barbell as Dumbbell, Dog, Monitor, ArrowLeft } from "@phosphor-icons/react";
 
 // Validation schema
 const Step2Schema = Yup.object().shape({
