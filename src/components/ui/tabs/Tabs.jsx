@@ -64,15 +64,19 @@ Tabs.Trigger = function TabsTrigger({
       {Icon && <Icon className="size-3.5 shrink-0" />}
       <span>{children}</span>
       {badge !== undefined && (
-        <span
-          className={`px-1.5 py-0.2 rounded-full text-[10px] leading-tight font-extrabold ${
-            isActive
-              ? "bg-primary text-white"
-              : "bg-surface-main text-text-muted border border-border-main"
-          }`}
-        >
-          {badge}
-        </span>
+        React.isValidElement(badge) ? (
+          badge
+        ) : (
+          <span
+            className={`px-1.5 py-0.5 rounded-full text-[10px] leading-tight font-extrabold border-0 select-none ${
+              isActive
+                ? "bg-primary text-white"
+                : "bg-surface-subtle text-text-main"
+            }`}
+          >
+            {badge}
+          </span>
+        )
       )}
     </button>
   );

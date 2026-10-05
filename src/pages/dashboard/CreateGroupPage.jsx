@@ -1,12 +1,15 @@
 import React, { useState, useRef } from "react";
-import { ArrowLeft, Users, Pencil, WarningCircle as AlertCircle, Lock, Globe, ShieldCheck, TextAlignLeft as AlignLeft, Crosshair as Focus, ArrowsClockwise as RefreshCw, Image, Rocket } from "@phosphor-icons/react";
+import { ArrowLeft, Users, Globe, Lock, ShieldCheck, Image, ArrowsClockwise } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
-import { Formik, Form, Field } from "formik";
+import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import toast from "react-hot-toast";
 
 import { uploadGroupCover } from "../../utils/uploadImage";
-import { addGroup } from "../../services/groups/GroupService.js";
+import { addGroup } from "../../services/groups/GroupService";
+import { Card } from "../../components/ui/card/Card";
+import { Input, Textarea } from "../../components/ui/input/Input";
+import { Button } from "../../components/ui/button/Button";
 
 const createGroupSchema = Yup.object().shape({
   group_name: Yup.string()
@@ -16,20 +19,19 @@ const createGroupSchema = Yup.object().shape({
   privacy: Yup.string()
     .oneOf(["public", "private"])
     .required("Vui lòng chọn quyền riêng tư"),
-  description: Yup.string().max(500, "Mô tả quá dài"),
+  description: Yup.string().max(500, "Mô tả không được vượt quá 500 ký tự"),
   cover_image: Yup.mixed()
     .required("Vui lòng chọn ảnh bìa cho nhóm")
-    .test(
-      "fileType",
-      "Chỉ nhận định dạng jpg/png",
-      (value) => {
-        if (!value || typeof value === "string") return true;
-        return ["image/jpeg", "image/png", "image/jpg"].includes(value.type);
-      }
-    )
-
+    .test("fileType", "Chỉ nhận định dạng JPG hoặc PNG", (value) => {
+      if (!value || typeof value === "string") return true;
+      return ["image/jpeg", "image/png", "image/jpg"].includes(value.type);
+    }),
 });
 
+/**
+ * Modern Flat CreateGroupPage
+ * Standardized with Design System primitives (Input, Textarea, Card, Button).
+ */
 export default function CreateGroupPage() {
   const navigate = useNavigate();
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -43,15 +45,15 @@ export default function CreateGroupPage() {
   };
 
   const handleImageChange = (event, setFieldValue) => {
-    const file = event.currentTarget.files[0];
+    const file = event.currentTarget.files?.[0];
     if (file) {
       const maxSize = 2 * 1024 * 1024;
       if (file.size > maxSize) {
-        toast.error("Kích thước ảnh bìa nhóm không được vượt quá 2MB");
+        toast.error("Kích thước ảnh bìa không được vượt quá 2MB");
         return;
       }
       if (!["image/jpeg", "image/png", "image/jpg"].includes(file.type)) {
-        toast.error("Chỉ chấp nhận ảnh JPG hoặc PNG", { theme: "dark" });
+        toast.error("Chỉ chấp nhận ảnh JPG hoặc PNG");
         return;
       }
       setFieldValue("cover_image", file);
@@ -71,235 +73,220 @@ export default function CreateGroupPage() {
       }
 
       const finalGroupData = {
-        name: values.group_name,
+        name: values.group_name.trim(),
         privacy: values.privacy.toUpperCase(),
-        description: values.description,
+        description: values.description.trim(),
         image: imageUrl || "",
       };
+
       await addGroup(finalGroupData);
-      toast.success(`Nhóm "${values.group_name}" đã sẵn sàng!`);
-      setTimeout(() => {
-        setSubmitting(false);
-        navigate("/dashboard/groups");
-      }, 1500);
+      toast.success(`Nhóm "${values.group_name}" đã được tạo thành công!`);
+      navigate("/dashboard/groups");
     } catch (error) {
-      toast.error(`Lỗi: ${error.message}`);
+      toast.error(error.response?.data?.message || `Lỗi: ${error.message}`);
+    } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="relative">
-      {/* Visual Background Decorations */}
-      <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-primary/10 blur-[120px] rounded-full pointer-events-none animate-pulse" />
-      <div className="absolute bottom-[5%] left-[-5%] w-[400px] h-[400px] bg-orange-600/5 blur-[100px] rounded-full pointer-events-none" />
-
-      <div className="max-w-6xl mx-auto px-8 py-12 relative z-10">
-        {/* Compact & Stylish Header */}
-        <header className="mb-12">
+    <div className="min-h-screen bg-background-main py-8 px-4 md:px-8">
+      <div className="max-w-5xl mx-auto space-y-6">
+        {/* Navigation & Header */}
+        <div>
           <button
+            type="button"
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-text-muted hover:text-primary transition-all mb-6 group"
+            className="inline-flex items-center gap-2 text-xs font-bold text-text-secondary hover:text-primary transition-colors mb-4 cursor-pointer"
           >
-            <ArrowLeft
-              className="group-hover:-translate-x-1 transition-transform"
-              size={20}
-            />
-            <span className="text-xs font-black uppercase tracking-widest text-text-main group-hover:text-primary">
-              Quay lại
-            </span>
+            <ArrowLeft size={16} />
+            <span>Quay lại</span>
           </button>
 
-          <div className="flex items-center gap-6">
-            <div className="size-20 rounded-3xl bg-gradient-to-br from-primary to-orange-600 flex items-center justify-center shadow-2xl shadow-primary/20 transform -rotate-3">
-              <Users size={40} className="text-text-main" />
+          <div className="flex items-center gap-4">
+            <div className="size-12 rounded-xl bg-primary text-white flex items-center justify-center shrink-0">
+              <Users size={24} />
             </div>
             <div>
-              <h1 className="text-3xl font-black tracking-tight mb-1 text-text-main">
-                Thiết lập{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-400">
-                  Cộng đồng
-                </span>
-              </h1>
-              <p className="text-text-main/80 text-sm font-medium">
+              <h1 className="text-2xl font-bold text-text-main">Tạo nhóm mới</h1>
+              <p className="text-xs text-text-secondary mt-0.5">
                 Khởi tạo không gian riêng của bạn chỉ trong vài giây.
               </p>
             </div>
           </div>
-        </header>
+        </div>
 
+        {/* Form Container */}
         <Formik
           initialValues={initialValues}
           validationSchema={createGroupSchema}
           onSubmit={handleSubmit}
         >
-          {({ errors, touched, isSubmitting, setFieldValue, values }) => (
-            <Form className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              {/* Form Controls - Left Section */}
-              <div className="lg:col-span-7 space-y-6">
-                <div className="bg-surface-main border border-border-main rounded-[2.5rem] p-10 shadow-2xl space-y-8">
-                  {/* Group Name Input */}
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center ml-2">
-                      <label className="text-[11px] font-black text-primary uppercase tracking-[0.2em] flex items-center gap-2">
-                        <Pencil size={14} /> Tên nhóm
-                      </label>
-                      <span className="text-[9px] font-bold text-red-500/60 uppercase tracking-tighter">
-                        Bắt buộc
-                      </span>
-                    </div>
-                    <div className="relative group">
-                      <Field
-                        name="group_name"
-                        placeholder="Ví dụ: Hội yêu cây cảnh, Dev Hà Nội..."
-                        disabled={isSubmitting}
-                        className={`w-full bg-background-main border ${errors.group_name && touched.group_name
-                          ? "border-red-500/50"
-                          : "border-border-main group-focus-within:border-primary/50"
-                          } rounded-2xl py-5 px-6 text-text-main text-base focus:outline-none transition-all shadow-inner placeholder:text-text-muted/20 disabled:opacity-50 disabled:cursor-not-allowed`}
-                      />
-                      <div className="absolute inset-0 rounded-2xl ring-1 ring-white/5 pointer-events-none group-focus-within:ring-primary/20 transition-all" />
-                    </div>
-                    {errors.group_name && touched.group_name && (
-                      <p className="text-red-400 text-[10px] font-bold ml-2 flex items-center gap-1">
-                        <AlertCircle size={12} /> {errors.group_name}
-                      </p>
-                    )}
-                  </div>
+          {({ errors, touched, isSubmitting, setFieldValue, values, handleChange }) => (
+            <Form className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              {/* Left Column: Group Details */}
+              <div className="lg:col-span-7">
+                <Card className="p-6 md:p-8 rounded-2xl border border-border-main bg-surface-main space-y-6">
+                  {/* Group Name */}
+                  <Input
+                    id="group-name-input"
+                    label="Tên nhóm *"
+                    name="group_name"
+                    placeholder="Ví dụ: Hội yêu cây cảnh, Dev Hà Nội..."
+                    value={values.group_name}
+                    onChange={handleChange}
+                    disabled={isSubmitting}
+                    error={touched.group_name && errors.group_name}
+                  />
 
                   {/* Privacy Selector */}
-                  <div className="space-y-3">
-                    <label className="text-[11px] font-black text-primary uppercase tracking-[0.2em] ml-2 flex items-center gap-2">
-                      <Lock size={14} /> Quyền riêng tư
+                  <div className="space-y-2">
+                    <label className="block text-xs font-bold text-text-main select-none">
+                      Quyền riêng tư *
                     </label>
-                    <div className="grid grid-cols-2 gap-4">
-                      <label className="relative cursor-pointer group">
-                        <Field
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {/* Public Option */}
+                      <label
+                        className={`p-4 rounded-xl border cursor-pointer select-none transition-colors flex flex-col gap-1.5 ${
+                          values.privacy === "public"
+                            ? "border-primary bg-surface-subtle"
+                            : "border-border-main bg-surface-main hover:border-border-strong"
+                        }`}
+                      >
+                        <input
                           type="radio"
                           name="privacy"
                           value="public"
+                          checked={values.privacy === "public"}
+                          onChange={handleChange}
                           disabled={isSubmitting}
-                          className="sr-only peer"
+                          className="sr-only"
                         />
-                        <div className={`p-5 rounded-2xl bg-background-main border border-border-main transition-all peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:shadow-[0_0_20px_rgba(255,107,0,0.1)] hover:bg-surface-main ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}>
-                          <div className="flex items-center gap-3 mb-2">
-                            <div className="size-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                              <Globe size={18} />
-                            </div>
-                            <span className="text-xs font-black uppercase tracking-widest text-text-main peer-checked:text-text-main">
-                              Công khai
-                            </span>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 font-bold text-sm text-text-main">
+                            <Globe size={18} className="text-primary" />
+                            <span>Công khai</span>
                           </div>
-                          <p className="text-[10px] text-text-main leading-relaxed">
-                            Ai cũng có thể tìm thấy nhóm và xem bài viết.
-                          </p>
+                          <div
+                            className={`size-4 rounded-full border-2 flex items-center justify-center ${
+                              values.privacy === "public"
+                                ? "border-primary"
+                                : "border-border-main"
+                            }`}
+                          >
+                            {values.privacy === "public" && (
+                              <div className="size-2 rounded-full bg-primary" />
+                            )}
+                          </div>
                         </div>
-                        <div className="absolute top-4 right-4 size-4 rounded-full border-2 border-border-main peer-checked:border-primary peer-checked:after:content-[''] peer-checked:after:absolute peer-checked:after:inset-1 peer-checked:after:bg-primary peer-checked:after:rounded-full" />
+                        <p className="text-xs text-text-secondary leading-relaxed">
+                          Ai cũng có thể tìm kiếm và xem các bài viết trong nhóm.
+                        </p>
                       </label>
 
-                      <label className="relative cursor-pointer group">
-                        <Field
+                      {/* Private Option */}
+                      <label
+                        className={`p-4 rounded-xl border cursor-pointer select-none transition-colors flex flex-col gap-1.5 ${
+                          values.privacy === "private"
+                            ? "border-primary bg-surface-subtle"
+                            : "border-border-main bg-surface-main hover:border-border-strong"
+                        }`}
+                      >
+                        <input
                           type="radio"
                           name="privacy"
                           value="private"
+                          checked={values.privacy === "private"}
+                          onChange={handleChange}
                           disabled={isSubmitting}
-                          className="sr-only peer"
+                          className="sr-only"
                         />
-                        <div className={`p-5 rounded-2xl bg-background-main border border-border-main transition-all peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:shadow-[0_0_20px_rgba(255,107,0,0.1)] hover:bg-surface-main ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}>
-                          <div className="flex items-center gap-3 mb-2">
-                            <div className="size-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                              <ShieldCheck size={18} />
-                            </div>
-                            <span className="text-xs font-black uppercase tracking-widest text-text-secondary peer-checked:text-text-main">
-                              Riêng tư
-                            </span>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 font-bold text-sm text-text-main">
+                            <Lock size={18} className="text-primary" />
+                            <span>Riêng tư</span>
                           </div>
-                          <p className="text-[10px] text-text-main leading-relaxed">
-                            Chỉ thành viên mới có thể xem nội dung bên trong.
-                          </p>
+                          <div
+                            className={`size-4 rounded-full border-2 flex items-center justify-center ${
+                              values.privacy === "private"
+                                ? "border-primary"
+                                : "border-border-main"
+                            }`}
+                          >
+                            {values.privacy === "private" && (
+                              <div className="size-2 rounded-full bg-primary" />
+                            )}
+                          </div>
                         </div>
-                        <div className="absolute top-4 right-4 size-4 rounded-full border-2 border-border-main peer-checked:border-primary peer-checked:after:content-[''] peer-checked:after:absolute peer-checked:after:inset-1 peer-checked:after:bg-primary peer-checked:after:rounded-full" />
+                        <p className="text-xs text-text-secondary leading-relaxed">
+                          Chỉ thành viên mới có thể xem nội dung bên trong nhóm.
+                        </p>
                       </label>
                     </div>
                   </div>
 
-                  {/* Description TextArea */}
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center ml-2">
-                      <label className="text-[11px] font-black text-primary uppercase tracking-[0.2em] flex items-center gap-2">
-                        <AlignLeft size={14} /> Mô tả
-                      </label>
-                      <span className="text-[9px] font-bold text-text-muted uppercase tracking-tighter italic">
-                        Tùy chọn
-                      </span>
-                    </div>
-                    <Field
-                      as="textarea"
-                      name="description"
-                      placeholder="Viết vài dòng giới thiệu về nét đặc trưng của nhóm..."
-                      disabled={isSubmitting}
-                      className="w-full bg-background-main border border-border-main focus:border-primary/50 rounded-2xl py-5 px-6 text-text-main text-sm h-32 focus:outline-none transition-all shadow-inner resize-none placeholder:text-text-muted/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                    />
-                    <div className="flex justify-end pr-2">
-                      <span
-                        className={`text-[9px] font-bold tracking-widest uppercase ${values.description.length > 450
-                          ? "text-orange-500"
-                          : "text-text-muted"
-                          }`}
-                      >
-                        {values.description.length} / 500
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                  {/* Description */}
+                  <Textarea
+                    id="group-description-input"
+                    label="Mô tả nhóm"
+                    name="description"
+                    placeholder="Viết vài dòng giới thiệu về tôn chỉ và nét đặc trưng của nhóm..."
+                    rows={4}
+                    value={values.description}
+                    onChange={handleChange}
+                    disabled={isSubmitting}
+                    error={touched.description && errors.description}
+                    helperText={`${values.description.length} / 500 ký tự`}
+                  />
+                </Card>
               </div>
 
-              {/* Media Upload - Right Section */}
+              {/* Right Column: Cover Image & Actions */}
               <div className="lg:col-span-5 space-y-6">
-                <div className="bg-surface-main border border-border-main rounded-[2.5rem] p-8 shadow-2xl flex flex-col items-center">
-                  <label className="text-[11px] font-black text-primary uppercase tracking-[0.2em] self-start mb-6 ml-2 flex items-center gap-2">
-                    <Focus size={14} /> Ảnh bìa
-                  </label>
+                <Card className="p-6 md:p-8 rounded-2xl border border-border-main bg-surface-main space-y-5">
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold text-text-main select-none">
+                      Ảnh bìa nhóm *
+                    </label>
+                    <p className="text-xs text-text-secondary">
+                      Kích thước khuyến nghị 1200 x 600px (JPG/PNG, tối đa 2MB).
+                    </p>
+                  </div>
 
+                  {/* Dropzone */}
                   <div
                     onClick={() => !isSubmitting && fileInputRef.current?.click()}
-                    className={`relative w-full aspect-[4/3] rounded-3xl border-2 border-dashed border-border-main hover:border-primary/50 transition-all cursor-pointer overflow-hidden group flex items-center justify-center bg-background-main shadow-2xl ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
+                    className={`relative w-full aspect-[16/9] rounded-xl border-2 border-dashed transition-colors cursor-pointer overflow-hidden flex flex-col items-center justify-center bg-surface-subtle select-none ${
+                      touched.cover_image && errors.cover_image
+                        ? "border-danger"
+                        : "border-border-main hover:border-primary"
+                    } ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
                     {previewUrl ? (
                       <>
                         <img
                           src={previewUrl}
-                          alt="Preview"
-                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          alt="Cover Preview"
+                          className="absolute inset-0 w-full h-full object-cover"
                         />
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center backdrop-blur-[2px]">
-                          <div className="size-14 rounded-full bg-white/10 flex items-center justify-center border border-white/20 mb-3 shadow-xl">
-                            <RefreshCw
-                              className="text-white animate-spin-slow"
-                              size={24}
-                            />
-                          </div>
-                          <span className="text-[10px] font-black uppercase tracking-widest text-text-main">
+                        <div className="absolute inset-0 bg-black/60 opacity-0 hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 text-white">
+                          <ArrowsClockwise size={24} className="animate-spin-slow" />
+                          <span className="text-xs font-bold uppercase tracking-wider">
                             Thay đổi ảnh
                           </span>
                         </div>
                       </>
                     ) : (
-                      <div className="flex flex-col items-center text-center p-8">
-                        <div className="size-20 rounded-[2rem] bg-gradient-to-br from-primary/10 to-transparent flex items-center justify-center text-primary/40 mb-6 group-hover:scale-110 transition-transform duration-500 ring-1 ring-primary/5 shadow-inner">
-                          <Image size={48} />
+                      <div className="flex flex-col items-center text-center p-4 text-text-muted gap-2">
+                        <div className="size-12 rounded-xl bg-surface-main border border-border-main flex items-center justify-center text-text-muted">
+                          <Image size={24} />
                         </div>
-                        <p className="text-sm font-bold text-text-main mb-2 uppercase tracking-wide">
-                          Tải ảnh bìa chuyên nghiệp
-                        </p>
-                        <p className="text-[10px] text-text-main/60 font-bold tracking-tighter italic">
-                          Kích thước khuyên dùng 1200x600px
-                        </p>
-                      </div>
-                    )}
-                    {errors.cover_image && touched.cover_image && (
-                      <div className="absolute top-2 right-2 bg-red-500/90 text-white text-[9px] font-bold px-2 py-1 rounded-lg flex items-center gap-1 animate-bounce">
-                        <AlertCircle size={10} /> {errors.cover_image}
+                        <span className="text-xs font-bold text-text-main">
+                          Bấm để tải ảnh bìa
+                        </span>
+                        <span className="text-[11px] text-text-muted">
+                          Hỗ trợ định dạng JPG, PNG
+                        </span>
                       </div>
                     )}
                     <input
@@ -310,37 +297,32 @@ export default function CreateGroupPage() {
                       onChange={(e) => handleImageChange(e, setFieldValue)}
                     />
                   </div>
+                  {touched.cover_image && errors.cover_image && (
+                    <p className="text-xs text-danger font-medium leading-none">
+                      {errors.cover_image}
+                    </p>
+                  )}
 
-                  {/* Status & Action */}
-                  <div className="w-full mt-10 space-y-4">
-                    <div className="p-5 rounded-2xl bg-orange-500/5 border border-primary/10 flex items-start gap-3">
-                      <ShieldCheck className="text-primary mt-0.5" size={20} />
-                      <p className="text-[10px] font-medium leading-[1.6] text-text-main">
-                        Bạn sẽ trở thành <b>Quản trị viên</b> của nhóm này. Hãy
-                        đảm bảo nội dung tuân thủ chính sách của ConnectCG.
-                      </p>
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className={`w-full py-5 bg-gradient-to-r from-primary to-orange-600 text-text-main font-black rounded-2xl shadow-xl shadow-primary/20 hover:shadow-primary/30 active:scale-[0.98] transition-all uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-3 ${isSubmitting ? "opacity-70 cursor-wait" : ""
-                        }`}
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <div className="size-4 border-2 border-text-main/20 border-t-text-main rounded-full animate-spin" />
-                          <span>Đang xử lý...</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>Xác nhận & Khởi tạo</span>
-                          <Rocket size={18} />
-                        </>
-                      )}
-                    </button>
+                  {/* Notice Box */}
+                  <div className="p-3.5 rounded-xl bg-surface-subtle border border-border-main flex items-start gap-2.5">
+                    <ShieldCheck className="text-primary size-5 mt-0.5 shrink-0" />
+                    <p className="text-xs text-text-secondary leading-relaxed">
+                      Bạn sẽ trở thành <strong>Quản trị viên</strong> của nhóm này. Vui lòng đảm bảo nội dung phù hợp với tiêu chuẩn cộng đồng.
+                    </p>
                   </div>
-                </div>
+
+                  {/* Submit Button */}
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    size="lg"
+                    className="w-full rounded-xl font-bold"
+                    isLoading={isSubmitting}
+                    loadingText="Đang khởi tạo nhóm..."
+                  >
+                    Xác nhận & Khởi tạo
+                  </Button>
+                </Card>
               </div>
             </Form>
           )}
