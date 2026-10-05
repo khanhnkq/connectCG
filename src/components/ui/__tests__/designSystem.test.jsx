@@ -83,9 +83,19 @@ describe("Core Design System Primitives (Modern Flat)", () => {
   });
 
   describe("<Badge />", () => {
-    it("renders badge text with specified variant", () => {
-      render(<Badge variant="success">Active</Badge>);
-      expect(screen.getByText("Active")).toBeDefined();
+    it("renders badge text with specified variant and border-free solid styles", () => {
+      const { rerender } = render(<Badge variant="primary">Admin</Badge>);
+      const badgePrimary = screen.getByText("Admin");
+      expect(badgePrimary.className).toContain("border-0");
+      expect(badgePrimary.className).toContain("bg-primary");
+      expect(badgePrimary.className).toContain("text-white");
+      expect(badgePrimary.className).not.toContain("/10");
+
+      rerender(<Badge variant="default">Default</Badge>);
+      const badgeDefault = screen.getByText("Default");
+      expect(badgeDefault.className).toContain("border-0");
+      expect(badgeDefault.className).toContain("bg-surface-subtle");
+      expect(badgeDefault.className).toContain("text-text-main");
     });
   });
 

@@ -109,7 +109,7 @@ const ChatSidebar = React.memo(({
                                     <Badge
                                         variant="danger"
                                         size="sm"
-                                        className="absolute -top-1 -right-1 px-1.5 py-0 min-w-5 h-5 flex items-center justify-center font-black animate-in zoom-in border-2 border-background-main"
+                                        className="absolute -top-1 -right-1 px-1.5 py-0 min-w-5 h-5 flex items-center justify-center font-black animate-in zoom-in"
                                     >
                                         {conv.unreadCount}
                                     </Badge>
