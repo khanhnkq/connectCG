@@ -5,7 +5,12 @@ const FriendSuggestionService = {
     getSuggestions: async (page = 0, size = 10) => {
         try {
             const response = await api.get(`/friends/suggestions?page=${page}&size=${size}`);
-            return response.data;
+            const data = response.data || {};
+            if (typeof data === "object" && data !== null && !data.data) {
+                // Ensure dual compatibility for both response.content and response.data.content
+                data.data = data;
+            }
+            return data;
         } catch (error) {
             console.error("Error fetching friend suggestions:", error);
             throw error;

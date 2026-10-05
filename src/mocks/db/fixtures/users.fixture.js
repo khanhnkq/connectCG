@@ -1,10 +1,11 @@
 /**
  * Mock Users Fixture
- * Matches backend Spring Boot UserProfileResponse & Auth contracts
+ * Matches backend Spring Boot UserProfileDTO & Auth contracts
  */
 export const initialUsers = [
   {
     id: 1,
+    userId: 1,
     username: "khanhnkq",
     fullName: "Nguyễn Kim Quốc Khánh",
     email: "admin@connectcg.com",
@@ -12,23 +13,55 @@ export const initialUsers = [
     roles: ["ADMIN"],
     avatarUrl:
       "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80",
+    currentAvatarUrl:
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80",
     coverUrl:
+      "https://images.unsplash.com/photo-1707343843437-caacff5cfa74?w=1200&auto=format&fit=crop&q=80",
+    currentCoverUrl:
       "https://images.unsplash.com/photo-1707343843437-caacff5cfa74?w=1200&auto=format&fit=crop&q=80",
     bio: "Fullstack Developer & UI/UX enthusiast. Tác giả dự án ConnectCG.",
     cityCode: "48",
-    cityName: "Đà Nẵng",
+    cityName: "Thành phố Đà Nẵng",
     occupation: "Kỹ sư phần mềm",
     gender: "MALE",
+    dateOfBirth: "2000-01-01",
     maritalStatus: "SINGLE",
+    lookingFor: "Tìm đồng đội dự án & kết bạn",
     friendCount: 142,
+    friendsCount: 142,
     postCount: 28,
+    postsCount: 28,
     hasProfile: true,
     isLocked: false,
+    permanentLocked: false,
+    lockedUntil: null,
     onlineStatus: "ONLINE",
     createdAt: "2025-01-01T00:00:00.000Z",
+    gallery: [
+      {
+        id: 1,
+        url: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600",
+        mediaUrl: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600",
+        thumbnailUrl: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=300",
+        type: "IMAGE",
+      },
+      {
+        id: 2,
+        url: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600",
+        mediaUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600",
+        thumbnailUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=300",
+        type: "IMAGE",
+      },
+    ],
+    hobbies: [
+      { id: 1, code: "H1", name: "Công nghệ", category: "Công nghệ", icon: "💻" },
+      { id: 2, code: "H2", name: "Nhiếp ảnh", category: "Nghệ thuật", icon: "📸" },
+      { id: 3, code: "H3", name: "Thiết kế UI/UX", category: "Nghệ thuật", icon: "🎨" },
+    ],
   },
   {
     id: 2,
+    userId: 2,
     username: "hoangnam",
     fullName: "Trần Hoàng Nam",
     email: "hoangnam@example.com",
@@ -36,23 +69,54 @@ export const initialUsers = [
     roles: ["USER"],
     avatarUrl:
       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80",
+    currentAvatarUrl:
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80",
     coverUrl:
+      "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1200&auto=format&fit=crop&q=80",
+    currentCoverUrl:
       "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1200&auto=format&fit=crop&q=80",
     bio: "Đam mê nhiếp ảnh đường phố và du lịch phượt khắp Việt Nam 📸",
     cityCode: "79",
-    cityName: "TP. Hồ Chí Minh",
+    cityName: "Thành phố Hồ Chí Minh",
     occupation: "Nhiếp ảnh gia tự do",
     gender: "MALE",
+    dateOfBirth: "1998-05-12",
     maritalStatus: "SINGLE",
+    lookingFor: "Giao lưu nhiếp ảnh & phượt",
     friendCount: 98,
+    friendsCount: 98,
     postCount: 15,
+    postsCount: 15,
     hasProfile: true,
     isLocked: false,
+    permanentLocked: false,
+    lockedUntil: null,
     onlineStatus: "ONLINE",
     createdAt: "2025-02-10T00:00:00.000Z",
+    gallery: [
+      {
+        id: 3,
+        url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600",
+        mediaUrl: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600",
+        thumbnailUrl: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300",
+        type: "IMAGE",
+      },
+      {
+        id: 4,
+        url: "https://images.unsplash.com/photo-1519046904884-53103b34b206?w=600",
+        mediaUrl: "https://images.unsplash.com/photo-1519046904884-53103b34b206?w=600",
+        thumbnailUrl: "https://images.unsplash.com/photo-1519046904884-53103b34b206?w=300",
+        type: "IMAGE",
+      },
+    ],
+    hobbies: [
+      { id: 2, code: "H2", name: "Nhiếp ảnh", category: "Nghệ thuật", icon: "📸" },
+      { id: 4, code: "H4", name: "Du lịch", category: "Khám phá", icon: "✈️" },
+    ],
   },
   {
     id: 3,
+    userId: 3,
     username: "maichi",
     fullName: "Lê Mai Chi",
     email: "maichi@example.com",
@@ -60,23 +124,47 @@ export const initialUsers = [
     roles: ["USER"],
     avatarUrl:
       "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&auto=format&fit=crop&q=80",
+    currentAvatarUrl:
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&auto=format&fit=crop&q=80",
     coverUrl:
+      "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=1200&auto=format&fit=crop&q=80",
+    currentCoverUrl:
       "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=1200&auto=format&fit=crop&q=80",
     bio: "Product Designer @ TechHub. Thích thiết kế phẳng hiện đại 2026.",
     cityCode: "01",
-    cityName: "Hà Nội",
+    cityName: "Thành phố Hà Nội",
     occupation: "UI/UX Designer",
     gender: "FEMALE",
+    dateOfBirth: "2001-08-20",
     maritalStatus: "SINGLE",
+    lookingFor: "Tìm bạn cùng ngành thiết kế",
     friendCount: 215,
+    friendsCount: 215,
     postCount: 42,
+    postsCount: 42,
     hasProfile: true,
     isLocked: false,
+    permanentLocked: false,
+    lockedUntil: null,
     onlineStatus: "OFFLINE",
     createdAt: "2025-01-15T00:00:00.000Z",
+    gallery: [
+      {
+        id: 5,
+        url: "https://images.unsplash.com/photo-1542744094-3a31f272c490?w=600",
+        mediaUrl: "https://images.unsplash.com/photo-1542744094-3a31f272c490?w=600",
+        thumbnailUrl: "https://images.unsplash.com/photo-1542744094-3a31f272c490?w=300",
+        type: "IMAGE",
+      },
+    ],
+    hobbies: [
+      { id: 3, code: "H3", name: "Thiết kế UI/UX", category: "Nghệ thuật", icon: "🎨" },
+      { id: 5, code: "H5", name: "Vẽ tranh", category: "Nghệ thuật", icon: "🖌️" },
+    ],
   },
   {
     id: 4,
+    userId: 4,
     username: "quocanh",
     fullName: "Võ Quốc Anh",
     email: "quocanh@example.com",
@@ -84,23 +172,39 @@ export const initialUsers = [
     roles: ["USER"],
     avatarUrl:
       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&auto=format&fit=crop&q=80",
+    currentAvatarUrl:
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&auto=format&fit=crop&q=80",
     coverUrl:
+      "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1200&auto=format&fit=crop&q=80",
+    currentCoverUrl:
       "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1200&auto=format&fit=crop&q=80",
     bio: "Mobile App Engineer & Golang enthusiast. Thích chạy bộ buổi sáng.",
     cityCode: "48",
-    cityName: "Đà Nẵng",
+    cityName: "Thành phố Đà Nẵng",
     occupation: "Kỹ sư di động",
     gender: "MALE",
+    dateOfBirth: "1996-11-04",
     maritalStatus: "MARRIED",
+    lookingFor: "Kết nối kỹ sư công nghệ",
     friendCount: 84,
+    friendsCount: 84,
     postCount: 9,
+    postsCount: 9,
     hasProfile: true,
     isLocked: false,
+    permanentLocked: false,
+    lockedUntil: null,
     onlineStatus: "ONLINE",
     createdAt: "2025-03-01T00:00:00.000Z",
+    gallery: [],
+    hobbies: [
+      { id: 1, code: "H1", name: "Công nghệ", category: "Công nghệ", icon: "💻" },
+      { id: 6, code: "H6", name: "Chạy bộ", category: "Thể thao", icon: "🏃" },
+    ],
   },
   {
     id: 5,
+    userId: 5,
     username: "thanhhuong",
     fullName: "Đỗ Thanh Hương",
     email: "thanhhuong@example.com",
@@ -108,19 +212,34 @@ export const initialUsers = [
     roles: ["USER"],
     avatarUrl:
       "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=300&auto=format&fit=crop&q=80",
+    currentAvatarUrl:
+      "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=300&auto=format&fit=crop&q=80",
     coverUrl:
+      "https://images.unsplash.com/photo-1448375240586-882707db888b?w=1200&auto=format&fit=crop&q=80",
+    currentCoverUrl:
       "https://images.unsplash.com/photo-1448375240586-882707db888b?w=1200&auto=format&fit=crop&q=80",
     bio: "Content Creator & Yêu thích cây cảnh mini và gốm sứ mộc mạc.",
     cityCode: "01",
-    cityName: "Hà Nội",
+    cityName: "Thành phố Hà Nội",
     occupation: "Content Lead",
     gender: "FEMALE",
+    dateOfBirth: "2002-03-18",
     maritalStatus: "SINGLE",
+    lookingFor: "Giao lưu cây cảnh & gốm sứ",
     friendCount: 310,
+    friendsCount: 310,
     postCount: 56,
+    postsCount: 56,
     hasProfile: true,
     isLocked: false,
+    permanentLocked: false,
+    lockedUntil: null,
     onlineStatus: "OFFLINE",
     createdAt: "2025-02-20T00:00:00.000Z",
+    gallery: [],
+    hobbies: [
+      { id: 7, code: "H7", name: "Cây cảnh", category: "Đời sống", icon: "🌱" },
+      { id: 8, code: "H8", name: "Đọc sách", category: "Đời sống", icon: "📚" },
+    ],
   },
 ];

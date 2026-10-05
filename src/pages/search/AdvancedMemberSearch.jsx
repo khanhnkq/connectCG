@@ -1,4 +1,12 @@
-import { CircleNotch as Loader2, Check, X, UserPlus, MagnifyingGlass as Search, CaretDown as ChevronDown, ChatCircleDots } from "@phosphor-icons/react";
+import {
+  CircleNotch as Loader2,
+  Check,
+  X,
+  UserPlus,
+  MagnifyingGlass as Search,
+  CaretDown as ChevronDown,
+  ChatCircleDots,
+} from "@phosphor-icons/react";
 import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import UserSearchService from "../../services/user/UserSearchService";
@@ -48,15 +56,17 @@ export default function AdvancedMemberSearch() {
         cityCode: cityCode || null,
       };
       const response = await UserSearchService.searchMembers(params);
+      const pageData = response?.data || response || {};
+      const newItems = pageData.content || (Array.isArray(pageData) ? pageData : []);
       // Append new data if loading more pages, replace if it's the first page
       setMembers((prev) =>
         pagination.page === 0
-          ? response.data.content
-          : [...prev, ...response.data.content],
+          ? newItems
+          : [...prev, ...newItems],
       );
       setPagination((prev) => ({
         ...prev,
-        totalPages: response.data.totalPages,
+        totalPages: pageData.totalPages || 1,
       }));
     } catch (error) {
       console.error("Search failed", error);
@@ -321,8 +331,7 @@ export default function AdvancedMemberSearch() {
                   </p>
                   <button
                     onClick={handleReset}
-                    className="mt-6 text-primary font-medium hover:underline"
-                  >
+                    className="mt-6 text-primary font-medium hover:underline">
                     Xóa bộ lọc
                   </button>
                 </div>
@@ -331,13 +340,11 @@ export default function AdvancedMemberSearch() {
                   {members.map((member) => (
                     <article
                       key={member.userId}
-                      className="flex items-center gap-4 p-4 bg-surface-main rounded-xl border border-border-main hover:border-border-main/80 transition-all shadow-sm"
-                    >
+                      className="flex items-center gap-4 p-4 bg-surface-main rounded-xl border border-border-main hover:border-border-main/80 transition-all shadow-sm">
                       {/* Avatar */}
                       <Link
                         to={`/dashboard/member/${member.userId}`}
-                        className="flex-shrink-0 relative"
-                      >
+                        className="flex-shrink-0 relative">
                         <img
                           src={
                             member.avatarUrl ||
@@ -361,8 +368,7 @@ export default function AdvancedMemberSearch() {
                       <div className="flex-1 min-w-0">
                         <Link
                           to={`/dashboard/member/${member.userId}`}
-                          className="block"
-                        >
+                          className="block">
                           <h3 className="text-text-main font-bold text-lg hover:underline truncate">
                             {member.fullName}
                           </h3>
@@ -385,8 +391,7 @@ export default function AdvancedMemberSearch() {
                         {/* Always show Message button */}
                         <button
                           onClick={() => handleStartChat(member.userId)}
-                          className="px-4 py-2 rounded-lg bg-border-main hover:bg-border-main/80 text-text-main font-semibold text-sm transition-colors flex items-center gap-2"
-                        >
+                          className="px-4 py-2 rounded-lg bg-border-main hover:bg-border-main/80 text-text-main font-semibold text-sm transition-colors flex items-center gap-2">
                           <ChatCircleDots size={18} />
                           Nhắn tin
                         </button>
@@ -408,8 +413,7 @@ export default function AdvancedMemberSearch() {
                                   )
                                 }
                                 disabled={sendingRequests[member.userId]}
-                                className="px-4 py-2 rounded-lg bg-primary text-white font-semibold text-sm hover:bg-orange-600 transition-colors"
-                              >
+                                className="px-4 py-2 rounded-lg bg-primary text-white font-semibold text-sm hover:bg-orange-600 transition-colors">
                                 Chấp nhận
                               </button>
                               <button
@@ -420,8 +424,7 @@ export default function AdvancedMemberSearch() {
                                   )
                                 }
                                 disabled={sendingRequests[member.userId]}
-                                className="px-4 py-2 rounded-lg bg-background-main text-text-main font-semibold text-sm hover:bg-border-main/50 transition-colors border border-border-main"
-                              >
+                                className="px-4 py-2 rounded-lg bg-background-main text-text-main font-semibold text-sm hover:bg-border-main/50 transition-colors border border-border-main">
                                 Xóa
                               </button>
                             </div>
@@ -431,8 +434,7 @@ export default function AdvancedMemberSearch() {
                                 confirmCancelRequest(member.userId)
                               }
                               disabled={sendingRequests[member.userId]}
-                              className="px-4 py-2 rounded-lg bg-border-main text-text-main font-semibold text-sm hover:bg-border-main/80 transition-colors"
-                            >
+                              className="px-4 py-2 rounded-lg bg-border-main text-text-main font-semibold text-sm hover:bg-border-main/80 transition-colors">
                               {sendingRequests[member.userId]
                                 ? "Đang xử lý..."
                                 : "Hủy lời mời"}
@@ -444,8 +446,7 @@ export default function AdvancedMemberSearch() {
                               handleSendFriendRequest(member.userId)
                             }
                             disabled={sendingRequests[member.userId]}
-                            className="px-4 py-2 rounded-lg bg-primary/10 text-primary font-semibold text-sm hover:bg-primary/20 transition-colors flex items-center gap-2"
-                          >
+                            className="px-4 py-2 rounded-lg bg-primary/10 text-primary font-semibold text-sm hover:bg-primary/20 transition-colors flex items-center gap-2">
                             <UserPlus size={18} />
                             {sendingRequests[member.userId]
                               ? "Đang gửi..."
@@ -463,8 +464,7 @@ export default function AdvancedMemberSearch() {
                   <button
                     onClick={handleLoadMore}
                     disabled={loading}
-                    className="px-8 py-3 rounded-full bg-surface-main hover:bg-background-main text-text-main font-bold border border-border-main transition-all shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                  >
+                    className="px-8 py-3 rounded-full bg-surface-main hover:bg-background-main text-text-main font-bold border border-border-main transition-all shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
                     {loading && <Loader2 className="animate-spin h-4 w-4" />}
                     {loading ? "Đang tải..." : "Xem thêm kết quả"}
                   </button>

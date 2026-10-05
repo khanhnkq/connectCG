@@ -82,7 +82,7 @@ export const initialPosts = [
         displayOrder: 0,
       },
     ],
-    groupId: "g2",
+    groupId: 2,
     groupName: "Hội UI/UX & Thiết kế Sản phẩm",
   },
   {
@@ -113,7 +113,7 @@ export const initialPosts = [
         displayOrder: 1,
       },
     ],
-    groupId: "g4",
+    groupId: 4,
     groupName: "Hội Yêu Cây Cảnh & Không Gian Xanh",
   },
   {

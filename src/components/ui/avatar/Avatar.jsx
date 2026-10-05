@@ -84,13 +84,11 @@ export function Avatar({
       onClick={onClick}
       className={`relative inline-flex shrink-0 select-none ${
         onClick ? "cursor-pointer hover:opacity-90 transition-opacity" : ""
-      } ${className}`}
-    >
+      } ${className}`}>
       <div
         className={`${appliedSize} rounded-full overflow-hidden border border-border-main flex items-center justify-center font-bold ${
           showImage ? "bg-surface-subtle" : initialsStyle
-        }`}
-      >
+        }`}>
         {showImage ? (
           <img
             src={src}

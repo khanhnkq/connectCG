@@ -1,5 +1,10 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { MagnifyingGlass as Search, UserPlus, ForkKnife as Utensils, CaretRight as ChevronRight } from "@phosphor-icons/react";
+import {
+  MagnifyingGlass as Search,
+  UserPlus,
+  ForkKnife as Utensils,
+  CaretRight as ChevronRight,
+} from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import FriendService from "../../services/friend/FriendService";
@@ -75,7 +80,7 @@ export default function RightSidebar() {
     setSuggestionsLoading(true);
     try {
       const response = await FriendSuggestionService.getSuggestions(0, 3);
-      setSuggestions(response.data.content || []);
+      setSuggestions(response.content || []);
     } catch (error) {
       console.error("Failed to fetch suggestions", error);
     } finally {
@@ -155,8 +160,7 @@ export default function RightSidebar() {
           </h3>
           <Link
             to="/dashboard/friends?tab=suggestions"
-            className="text-primary text-xs font-bold hover:underline tracking-wide"
-          >
+            className="text-primary text-xs font-bold hover:underline tracking-wide">
             Xem tất cả
           </Link>
         </div>
@@ -169,12 +173,10 @@ export default function RightSidebar() {
             suggestions.map((suggestion) => (
               <div
                 key={suggestion.userId}
-                className="flex items-center justify-between group"
-              >
+                className="flex items-center justify-between group">
                 <Link
                   to={`/dashboard/member/${suggestion.userId}`}
-                  className="flex items-center gap-3 flex-1"
-                >
+                  className="flex items-center gap-3 flex-1">
                   <div
                     className="size-11 rounded-full bg-cover bg-center border border-transparent group-hover:border-primary transition-all"
                     style={{
@@ -182,8 +184,7 @@ export default function RightSidebar() {
                         suggestion.avatarUrl ||
                         "https://cdn-icons-png.flaticon.com/512/149/149071.png"
                       }")`,
-                    }}
-                  ></div>
+                    }}></div>
                   <div className="flex flex-col">
                     <span className="text-text-main text-sm font-bold group-hover:text-primary transition-colors cursor-pointer">
                       {suggestion.fullName || suggestion.username}
@@ -196,8 +197,7 @@ export default function RightSidebar() {
                 <button
                   onClick={() => handleAddFriend(suggestion.userId)}
                   className="size-9 rounded-full bg-surface-main border border-border-main hover:bg-primary hover:text-white flex items-center justify-center text-primary transition-all shadow-md"
-                  title="Kết bạn"
-                >
+                  title="Kết bạn">
                   <UserPlus size={20} />
                 </button>
               </div>
@@ -227,8 +227,7 @@ export default function RightSidebar() {
               <Link
                 to={`/dashboard/member/${friend.id}`}
                 key={friend.id}
-                className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-surface-main cursor-pointer transition-colors group"
-              >
+                className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-surface-main cursor-pointer transition-colors group">
                 <div className="relative">
                   <div
                     className="size-10 rounded-full bg-cover bg-center ring-2 ring-transparent group-hover:ring-primary/50 transition-all"
@@ -237,8 +236,7 @@ export default function RightSidebar() {
                         friend.avatarUrl ||
                         "https://cdn-icons-png.flaticon.com/512/149/149071.png"
                       }")`,
-                    }}
-                  ></div>
+                    }}></div>
                   {onlineUserIds.includes(friend.id) && (
                     <div className="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full border-2 border-background-main"></div>
                   )}

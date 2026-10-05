@@ -14,11 +14,22 @@ function compileRoute(pattern) {
   return { regex, paramNames };
 }
 
-// Pre-compiled handlers
-const compiledHandlers = allMockHandlers.map((h) => ({
-  ...h,
-  ...compileRoute(h.pattern),
-}));
+// Pre-compiled handlers sorted so static routes take precedence over parameterized routes
+const compiledHandlers = allMockHandlers
+  .map((h) => ({
+    ...h,
+    ...compileRoute(h.pattern),
+  }))
+  .sort((a, b) => {
+    // 1. Literal routes (fewer params) take precedence
+    const aParams = a.paramNames.length;
+    const bParams = b.paramNames.length;
+    if (aParams !== bParams) {
+      return aParams - bParams;
+    }
+    // 2. Longer patterns (more specific) come first
+    return b.pattern.length - a.pattern.length;
+  });
 
 export let mockLatency = 120; // Default simulated latency in ms
 

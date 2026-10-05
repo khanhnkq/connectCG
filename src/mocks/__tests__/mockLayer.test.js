@@ -147,7 +147,30 @@ describe("ConnectCG Standalone Mock Layer", () => {
     it("handles GET /notifications", async () => {
       const res = await axiosClient.get("/notifications");
       expect(res.status).toBe(200);
-      expect(res.data).toBeInstanceOf(Array);
+      expect(res.data.content).toBeInstanceOf(Array);
+      expect(res.data.totalPages).toBeGreaterThanOrEqual(1);
+    });
+
+    it("handles GET /users/search with Spring Page envelope", async () => {
+      const res = await axiosClient.get("/users/search?keyword=khanh");
+      expect(res.status).toBe(200);
+      expect(res.data.content).toBeInstanceOf(Array);
+      expect(res.data.content[0].userId).toBeDefined();
+      expect(res.data.totalPages).toBeGreaterThanOrEqual(1);
+    });
+
+    it("handles GET /reports with filter and Page envelope", async () => {
+      const res = await axiosClient.get("/reports?targetType=USER&status=PENDING");
+      expect(res.status).toBe(200);
+      expect(res.data.content).toBeInstanceOf(Array);
+      expect(res.data.totalPages).toBeGreaterThanOrEqual(1);
+    });
+
+    it("handles GET /friends/my-friends with Page envelope", async () => {
+      const res = await axiosClient.get("/friends/my-friends");
+      expect(res.status).toBe(200);
+      expect(res.data.content).toBeInstanceOf(Array);
+      expect(res.data.content[0].friendId || res.data.content[0].id).toBeDefined();
     });
   });
 

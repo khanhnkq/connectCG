@@ -74,9 +74,13 @@ export default function FriendsPage() {
     setSuggestionsLoading(true);
     try {
       const response = await FriendSuggestionService.getSuggestions(0, 50);
-      const formattedSuggestions = response.data.content.map((item) => ({
+      const rawList =
+        response?.data?.content ||
+        response?.content ||
+        (Array.isArray(response) ? response : []);
+      const formattedSuggestions = rawList.map((item) => ({
         ...item,
-        id: item.userId, // Map userId to id for consistent usage
+        id: item.userId || item.id, // Map userId to id for consistent usage
         type: "SUGGESTION",
       }));
       setSuggestions(formattedSuggestions);

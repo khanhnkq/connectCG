@@ -81,23 +81,11 @@ export default function Newsfeed() {
                   (posts.length < 3 && index === posts.length - 1);
 
                 return (
-                  <motion.div
-                    ref={isTrigger ? lastPostElementRef : null}
-                    key={post.id}
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-50px" }}
-                    transition={{
-                      duration: 0.35,
-                      delay: index < 3 ? index * 0.08 : 0,
-                    }}
-                  >
-                    <PostCard
-                      post={post}
-                      onDelete={handleDeletePost}
-                      onUpdate={handleUpdate}
-                    />
-                  </motion.div>
+                  <PostCard
+                    post={post}
+                    onDelete={handleDeletePost}
+                    onUpdate={handleUpdate}
+                  />
                 );
               })
             )}

@@ -125,7 +125,8 @@ class MockDatabase {
     return removed;
   }
 
-  paginate(array = [], page = 0, size = 10) {
+  paginate(target = [], page = 0, size = 10) {
+    const array = typeof target === "string" ? this.getCollection(target) : (target || []);
     const p = Math.max(0, parseInt(page, 10) || 0);
     const s = Math.max(1, parseInt(size, 10) || 10);
     const start = p * s;
@@ -144,6 +145,9 @@ class MockDatabase {
       first: p === 0,
       numberOfElements: content.length,
       empty: content.length === 0,
+      [Symbol.iterator]: function* () {
+        yield* content;
+      },
     };
   }
 }
