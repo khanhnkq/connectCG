@@ -30,3 +30,6 @@ dist-ssr
 .vercel
 .env*
 .cloudflare
+
+*storybook.log
+storybook-static

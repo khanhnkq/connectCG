@@ -1,0 +1,131 @@
+import React, { forwardRef } from "react";
+import { Loader2 } from "lucide-react";
+
+/**
+ * Modern Flat Button Primitive
+ * SYSTEM RULE:
+ * - Có icon thì KHÔNG có chữ (Icon-only Button).
+ * - Có chữ thì KHÔNG có icon (Text-only Button).
+ * 
+ * - Zero drop shadow, zero blur
+ * - Rounded-xl (12px) cho controls
+ * - 1px crisp border
+ */
+export const Button = forwardRef(
+  (
+    {
+      children,
+      icon: Icon,
+      variant = "primary",
+      size = "md",
+      isLoading = false,
+      disabled = false,
+      loadingText = "Đang xử lý...",
+      className = "",
+      type = "button",
+      "aria-label": ariaLabel,
+      ...props
+    },
+    ref
+  ) => {
+    // Tự động nhận diện nút là Icon-only hay Text-only
+    const isIconButton = Boolean(Icon) || size === "icon" || size === "iconSm";
+
+    const baseStyles =
+      "inline-flex items-center justify-center font-semibold transition-colors duration-150 select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 shrink-0";
+
+    // Kích thước chuẩn cho nút chỉ có chữ (Text-only)
+    const textSizeStyles = {
+      sm: "h-8 px-3 text-xs rounded-lg",
+      md: "h-10 px-4 text-sm rounded-xl",
+      lg: "h-12 px-6 text-base rounded-xl",
+    };
+
+    // Kích thước chuẩn cho nút chỉ có icon (Icon-only: hình vuông hoàn hảo bo góc)
+    const iconSizeStyles = {
+      sm: "size-8 p-0 rounded-lg",
+      iconSm: "size-8 p-0 rounded-lg",
+      md: "size-10 p-0 rounded-xl",
+      icon: "size-10 p-0 rounded-xl",
+      lg: "size-12 p-0 rounded-xl",
+    };
+
+    const iconGlyphSizes = {
+      sm: "size-4",
+      iconSm: "size-4",
+      md: "size-5",
+      icon: "size-5",
+      lg: "size-6",
+    };
+
+    const variantStyles = {
+      primary:
+        "bg-primary text-white hover:bg-primary-hover active:bg-primary-active border border-primary",
+      secondary:
+        "bg-surface-subtle text-text-main hover:bg-border-main/60 active:bg-border-main border border-border-main",
+      outline:
+        "bg-transparent text-text-main hover:bg-surface-subtle active:bg-border-main/50 border border-border-main",
+      ghost:
+        "bg-transparent text-text-secondary hover:text-text-main hover:bg-surface-subtle active:bg-border-main/40 border border-transparent",
+      danger:
+        "bg-danger text-white hover:bg-red-600 active:bg-red-700 border border-danger",
+    };
+
+    const appliedVariant = variantStyles[variant] || variantStyles.primary;
+    const appliedSize = isIconButton
+      ? iconSizeStyles[size] || iconSizeStyles.md
+      : textSizeStyles[size] || textSizeStyles.md;
+
+    // RULE 1: Nút có icon thì KHÔNG có chữ
+    if (isIconButton) {
+      const glyphSize = iconGlyphSizes[size] || "size-5";
+      const iconToRender = Icon || children;
+
+      return (
+        <button
+          ref={ref}
+          type={type}
+          disabled={disabled || isLoading}
+          aria-label={ariaLabel || (typeof children === "string" ? children : "Nút")}
+          className={`${baseStyles} ${appliedSize} ${appliedVariant} ${className}`}
+          {...props}
+        >
+          {isLoading ? (
+            <Loader2 className={`animate-spin ${glyphSize}`} />
+          ) : React.isValidElement(iconToRender) ? (
+            iconToRender
+          ) : typeof iconToRender === "function" ? (
+            React.createElement(iconToRender, { className: glyphSize })
+          ) : null}
+        </button>
+      );
+    }
+
+    // RULE 2: Nút có chữ thì KHÔNG có icon
+    return (
+      <button
+        ref={ref}
+        type={type}
+        disabled={disabled || isLoading}
+        aria-label={ariaLabel}
+        className={`${baseStyles} ${appliedSize} ${appliedVariant} ${className}`}
+        {...props}
+      >
+        <span>{isLoading ? loadingText : children}</span>
+      </button>
+    );
+  }
+);
+
+Button.displayName = "Button";
+
+/**
+ * Dedicated IconButton Primitive (Chỉ render Icon, không chữ)
+ */
+export const IconButton = forwardRef(({ icon, ...props }, ref) => {
+  return <Button ref={ref} icon={icon} {...props} />;
+});
+
+IconButton.displayName = "IconButton";
+
+export default Button;

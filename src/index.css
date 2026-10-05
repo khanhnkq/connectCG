@@ -12,37 +12,67 @@
 }
 
 :root {
-  --color-background: #f8f7f5;
-  --color-foreground: #0f172a;
-  --color-surface: #ffffff;
-  --color-border: #d1d5db;
-  --color-text-main: #0f172a;
-  --color-text-secondary: #334155;
-  --color-text-muted: #64748b;
-
-  --color-primary: #f47b25;
+  /* Brand Tokens - Energetic Tangerine */
+  --color-primary: #f97316;
   --color-primary-hover: #ea580c;
+  --color-primary-active: #c2410c;
+  --color-primary-subtle: #fff7ed;
 
-  --color-chat-sent: #f47b25;
-  --color-chat-received: #f1f5f9;
+  /* Surface & Canvas Tokens (Modern Flat - No Shadow, No Blur) */
+  --color-background: #fafaf9;
+  --color-foreground: #09090b;
+  --color-surface: #ffffff;
+  --color-surface-subtle: #f4f4f5;
+  --color-border: #e4e4e7;
+  --color-border-strong: #d4d4d8;
+
+  /* Typography / Text Tokens */
+  --color-text-main: #09090b;
+  --color-text-secondary: #52525b;
+  --color-text-muted: #71717a;
+
+  /* Status Colors */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #3b82f6;
+
+  /* Chat colors */
+  --color-chat-sent: #f97316;
+  --color-chat-received: #f4f4f5;
   --color-chat-bg: #ffffff;
 }
 
 .dark {
-  --color-background: #221710;
-  --color-foreground: #f8f7f5;
-  --color-surface: #342418;
-  --color-border: #493222;
-  --color-text-main: #ffffff;
-  --color-text-secondary: #cba990;
-  --color-text-muted: #684831;
+  /* Brand Tokens in Dark Mode */
+  --color-primary: #f97316;
+  --color-primary-hover: #fb923c;
+  --color-primary-active: #ea580c;
+  --color-primary-subtle: #431407;
 
-  --color-primary: #f47b25;
-  --color-primary-hover: #ea580c;
+  /* Dark Flat Canvas & Surfaces */
+  --color-background: #18181b;
+  --color-foreground: #fafafa;
+  --color-surface: #27272a;
+  --color-surface-subtle: #3f3f46;
+  --color-border: #3f3f46;
+  --color-border-strong: #52525b;
 
-  --color-chat-sent: #f47b25;
-  --color-chat-received: #3a2a20;
-  --color-chat-bg: #1a120b;
+  /* Dark Typography */
+  --color-text-main: #fafafa;
+  --color-text-secondary: #a1a1aa;
+  --color-text-muted: #71717a;
+
+  /* Dark Status Colors */
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
+  --color-danger: #f87171;
+  --color-info: #60a5fa;
+
+  /* Dark Chat */
+  --color-chat-sent: #f97316;
+  --color-chat-received: #3f3f46;
+  --color-chat-bg: #18181b;
 }
 
 /* Base styles */
@@ -53,20 +83,31 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--color-background);
   color: var(--color-text-main);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Theme configuration for Tailwind v4 */
 @theme {
   --color-primary: var(--color-primary);
   --color-primary-hover: var(--color-primary-hover);
+  --color-primary-active: var(--color-primary-active);
+  --color-primary-subtle: var(--color-primary-subtle);
+
   --color-background-main: var(--color-background);
   --color-foreground-main: var(--color-foreground);
   --color-surface-main: var(--color-surface);
+  --color-surface-subtle: var(--color-surface-subtle);
   --color-border-main: var(--color-border);
+  --color-border-strong: var(--color-border-strong);
+
   --color-text-main: var(--color-text-main);
   --color-text-secondary: var(--color-text-secondary);
   --color-text-muted: var(--color-text-muted);
+
+  --color-success: var(--color-success);
+  --color-warning: var(--color-warning);
+  --color-danger: var(--color-danger);
+  --color-info: var(--color-info);
 
   /* Legacy aliases for compatibility */
   --color-background-dark: var(--color-background);
@@ -81,8 +122,10 @@ body {
 
   --font-display: "Plus Jakarta Sans", sans-serif;
 
-  --radius: 1rem;
-  --radius-lg: 2rem;
-  --radius-xl: 3rem;
-  --radius-full: 9999px;
+  /* Corner Radius Scale - Modern Flat */
+  --radius-sm: 0.5rem;       /* 8px: tags, small pills */
+  --radius-md: 0.75rem;      /* 12px: inputs, buttons, controls */
+  --radius-lg: 1rem;         /* 16px: cards, dialogs, modals */
+  --radius-xl: 1.25rem;      /* 20px: large containers */
+  --radius-full: 9999px;     /* pills, badges, avatars */
 }
