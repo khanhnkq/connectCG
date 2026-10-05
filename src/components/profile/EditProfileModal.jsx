@@ -4,7 +4,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useDispatch } from "react-redux";
 import { updateProfileInfo } from "../../redux/slices/userSlice";
-import { toast } from "react-toastify";
+import toast from "react-hot-toast";
 import CitySelect from "../common/CitySelect";
 
 export default function EditProfileModal({ isOpen, onClose, profile }) {

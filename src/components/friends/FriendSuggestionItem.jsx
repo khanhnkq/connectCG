@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Sparkle, Star, CircleNotch, UserPlus, EyeSlash } from "@phosphor-icons/react";
 import ConfirmModal from "../common/ConfirmModal";
 
 export default function FriendSuggestionItem({
@@ -67,7 +68,7 @@ export default function FriendSuggestionItem({
                         ></div>
                         {/* Badge */}
                         <div className="absolute -bottom-1 -right-1 size-6 bg-primary rounded-full flex items-center justify-center border-2 border-surface-main shadow-lg">
-                            <span className="material-symbols-outlined text-[12px] text-white font-bold">auto_awesome</span>
+                            <Sparkle size={12} weight="fill" className="text-white" />
                         </div>
                     </div>
 
@@ -79,7 +80,7 @@ export default function FriendSuggestionItem({
                         <div className="flex items-center gap-1.5 text-xs text-text-secondary mt-0.5">
                             {suggestion.description && (
                                 <>
-                                    <span className="material-symbols-outlined text-[14px] text-primary">stars</span>
+                                    <Star size={14} weight="fill" className="text-primary shrink-0" />
                                     <span className="truncate">{suggestion.description}</span>
                                 </>
                             )}
@@ -96,12 +97,12 @@ export default function FriendSuggestionItem({
                     >
                         {isProcessing === 'adding' ? (
                             <>
-                                <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                                <CircleNotch size={16} className="animate-spin" />
                                 Đang gửi...
                             </>
                         ) : (
                             <>
-                                <span className="material-symbols-outlined text-[16px]">person_add</span>
+                                <UserPlus size={16} weight="bold" />
                                 Kết bạn
                             </>
                         )}
@@ -113,12 +114,12 @@ export default function FriendSuggestionItem({
                     >
                         {isProcessing === 'dismissing' ? (
                             <>
-                                <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                                <CircleNotch size={16} className="animate-spin" />
                                 ...
                             </>
                         ) : (
                             <>
-                                <span className="material-symbols-outlined text-[16px]">visibility_off</span>
+                                <EyeSlash size={16} />
                                 Bỏ qua
                             </>
                         )}

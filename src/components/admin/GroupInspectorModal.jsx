@@ -368,27 +368,21 @@ const GroupInspectorModal = ({
               {/* Sidebar Header */}
               <div className="p-5 border-b border-border/50 flex items-center justify-between">
                 <h3 className="text-xs font-black uppercase tracking-widest text-text-main flex items-center gap-2">
-                  <span className="material-symbols-outlined text-primary text-base">
-                    verified_user
-                  </span>
+                  <ShieldCheck size={16} className="text-primary" />
                   Chi tiết báo cáo ({reports.length})
                 </h3>
                 <button
                   onClick={onClose}
                   className="text-text-muted hover:text-text-main transition-colors"
                 >
-                  <span className="material-symbols-outlined text-sm">
-                    close
-                  </span>
+                  <X size={14} />
                 </button>
               </div>
 
               {/* History Block */}
               <div className="p-4 bg-orange-500/5 mx-4 mt-4 mb-0 rounded-md border border-orange-500/10">
                 <h4 className="text-[10px] font-black uppercase text-orange-400 tracking-wider mb-2 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-sm">
-                    history
-                  </span>
+                  <History size={14} />
                   Lịch sử bị báo cáo ({violationHistory.length})
                 </h4>
                 {violationHistory.length > 0 ? (
@@ -472,9 +466,7 @@ const GroupInspectorModal = ({
                                 }`}
                               title={`Đã gửi ${reporterStats} báo cáo`}
                             >
-                              <span className="material-symbols-outlined text-[14px] text-white leading-none">
-                                priority_high
-                              </span>
+                              <AlertCircle size={14} className="text-white shrink-0" weight="bold" />
                             </div>
                           )}
                         </div>

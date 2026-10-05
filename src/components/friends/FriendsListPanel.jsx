@@ -1,3 +1,11 @@
+import React from "react";
+import {
+  Users,
+  UserPlus,
+  UserFocus,
+  MagnifyingGlass,
+  X,
+} from "@phosphor-icons/react";
 import FriendListItem from "./FriendListItem";
 import FriendRequestItem from "./FriendRequestItem";
 import FriendSuggestionItem from "./FriendSuggestionItem";
@@ -41,13 +49,9 @@ export default function FriendsListPanel({
       <div className="p-4 md:p-5 border-b border-border-main bg-gradient-to-b from-surface-main to-background-main sticky top-0 z-10 backdrop-blur-md">
         <div className="mb-4 md:block hidden">
           <h2 className="text-xl font-bold text-text-main flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary">
-              {viewMode === "ALL"
-                ? "group"
-                : viewMode === "REQUESTS"
-                  ? "person_add"
-                  : "person_search"}
-            </span>
+            {viewMode === "ALL" && <Users size={22} className="text-primary" />}
+            {viewMode === "REQUESTS" && <UserPlus size={22} className="text-primary" />}
+            {viewMode === "SUGGESTIONS" && <UserFocus size={22} className="text-primary" />}
             {getTitle()}
           </h2>
           <p className="text-text-secondary text-sm mt-1">{getSubtitle()}</p>
@@ -56,48 +60,47 @@ export default function FriendsListPanel({
         {/* Mobile Tabs */}
         <div className="md:hidden flex gap-1 mb-4 overflow-x-auto scrollbar-hide -mx-1 px-1">
           {[
-            { id: "ALL", label: "Tất cả", icon: "group" },
+            { id: "ALL", label: "Tất cả", icon: Users },
             {
               id: "REQUESTS",
               label: "Lời mời",
-              icon: "person_add",
+              icon: UserPlus,
               badge:
                 displayedList.length && viewMode === "REQUESTS"
                   ? displayedList.length
                   : 0,
             },
-            { id: "SUGGESTIONS", label: "Gợi ý", icon: "person_search" },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => {
-                setViewMode(tab.id);
-                setActiveItem(null);
-              }}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all border ${viewMode === tab.id
-                ? "bg-primary/10 text-primary border-primary/30"
-                : "text-text-secondary border-transparent hover:bg-background-main"
-                }`}
-            >
-              <span className="material-symbols-outlined text-[18px]">
-                {tab.icon}
-              </span>
-              {tab.label}
-              {tab.id === "REQUESTS" && tab.badge > 0 && (
-                <span className="bg-primary text-[#231810] px-1.5 py-0.5 rounded text-[10px] font-black">
-                  {tab.badge}
-                </span>
-              )}
-            </button>
-          ))}
+            { id: "SUGGESTIONS", label: "Gợi ý", icon: UserFocus },
+          ].map((tab) => {
+            const TabIcon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setViewMode(tab.id);
+                  setActiveItem(null);
+                }}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all border ${viewMode === tab.id
+                  ? "bg-primary/10 text-primary border-primary/30"
+                  : "text-text-secondary border-transparent hover:bg-background-main"
+                  }`}
+              >
+                <TabIcon size={18} />
+                {tab.label}
+                {tab.id === "REQUESTS" && tab.badge > 0 && (
+                  <span className="bg-primary text-[#231810] px-1.5 py-0.5 rounded text-[10px] font-black">
+                    {tab.badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* Search */}
         <div className="relative group">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <span className="material-symbols-outlined text-text-secondary text-[20px] group-focus-within:text-primary transition-colors">
-              search
-            </span>
+            <MagnifyingGlass size={18} className="text-text-secondary group-focus-within:text-primary transition-colors" />
           </div>
           <input
             className="block w-full pl-10 pr-4 py-3 border border-border-main rounded-xl bg-background-main text-text-main placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"
@@ -111,9 +114,7 @@ export default function FriendsListPanel({
               onClick={() => setSearchTerm("")}
               className="absolute inset-y-0 right-0 pr-3 flex items-center text-text-secondary hover:text-white transition-colors"
             >
-              <span className="material-symbols-outlined text-[20px]">
-                close
-              </span>
+              <X size={18} />
             </button>
           )}
         </div>
@@ -184,9 +185,7 @@ export default function FriendsListPanel({
         ) : (
           <div className="text-center text-text-secondary py-16 flex flex-col items-center">
             <div className="size-16 rounded-full bg-[#2A1D15] border-2 border-[#3A2A20] flex items-center justify-center mb-4">
-              <span className="material-symbols-outlined text-4xl opacity-30">
-                search_off
-              </span>
+              <MagnifyingGlass size={32} className="opacity-40 text-primary" />
             </div>
             <p className="font-medium mb-1">Không tìm thấy kết quả</p>
             <p className="text-xs text-text-secondary/70">

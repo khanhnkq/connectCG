@@ -1,5 +1,5 @@
 import React from "react";
-import { Trash as Trash2, Check, Checks as CheckCheck } from "@phosphor-icons/react";
+import { Trash as Trash2, Check, Checks as CheckCheck, BellSlash, Clock } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
@@ -140,9 +140,7 @@ const NotificationList = ({
         </div>
         <div className="p-8 text-center">
           <div className="size-16 rounded-full bg-background-main border-2 border-border-main flex items-center justify-center mx-auto mb-3">
-            <span className="material-symbols-outlined text-3xl text-text-secondary/30">
-              notifications_off
-            </span>
+            <BellSlash size={30} className="text-text-secondary/30" />
           </div>
           <p className="text-text-secondary text-sm">Không có thông báo nào</p>
         </div>
@@ -202,9 +200,7 @@ const NotificationList = ({
                 {notification.content}
               </p>
               <p className="text-[10px] text-text-secondary mt-1 flex items-center gap-1">
-                <span className="material-symbols-outlined text-[11px]">
-                  schedule
-                </span>
+                <Clock size={11} />
                 {timeAgo(notification.createdAt)}
               </p>
             </div>

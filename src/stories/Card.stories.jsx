@@ -3,7 +3,7 @@ import { Card } from "../components/ui/card/Card";
 import { Button, IconButton } from "../components/ui/button/Button";
 import { Badge } from "../components/ui/badge/Badge";
 import { Avatar } from "../components/ui/avatar/Avatar";
-import { mockUsers, mockPosts } from "./mocks/apiMockData";
+import { mockPosts } from "./mocks/apiMockData";
 import { DotsThree } from "@phosphor-icons/react";
 
 export default {

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { X, MagnifyingGlass as Search, CircleNotch as Loader2 } from "@phosphor-icons/react";
 import UserProfileService from "../../services/user/UserProfileService";
 import { getIconComponent } from "../../utils/iconMap";
-import { toast } from "react-toastify";
+import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { fetchUserProfile } from "../../redux/slices/userSlice";
 

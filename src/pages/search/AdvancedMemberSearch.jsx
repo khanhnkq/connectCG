@@ -1,4 +1,4 @@
-import { CircleNotch as Loader2, Check, X, UserPlus, MagnifyingGlass as Search, CaretDown as ChevronDown } from "@phosphor-icons/react";
+import { CircleNotch as Loader2, Check, X, UserPlus, MagnifyingGlass as Search, CaretDown as ChevronDown, ChatCircleDots } from "@phosphor-icons/react";
 import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import UserSearchService from "../../services/user/UserSearchService";
@@ -387,9 +387,7 @@ export default function AdvancedMemberSearch() {
                           onClick={() => handleStartChat(member.userId)}
                           className="px-4 py-2 rounded-lg bg-border-main hover:bg-border-main/80 text-text-main font-semibold text-sm transition-colors flex items-center gap-2"
                         >
-                          <span className="material-symbols-outlined text-[18px]">
-                            chat
-                          </span>
+                          <ChatCircleDots size={18} />
                           Nhắn tin
                         </button>
 

@@ -1,5 +1,20 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  AddressBook,
+  WarningCircle,
+  ArrowLeft,
+  Sparkle,
+  Users,
+  ChatCircleDots,
+  User,
+  UserMinus,
+  CheckCircle,
+  XCircle,
+  UserPlus,
+  EyeSlash,
+  LockKey,
+} from "@phosphor-icons/react";
 import ProfileNavbar from "../profile/ProfileNavbar";
 import ProfileAbout from "../profile/ProfileAbout";
 import ProfilePhotos from "../profile/ProfilePhotos";
@@ -116,9 +131,7 @@ export default function FriendProfileDetail({
     return (
       <div className="flex-1 flex flex-col items-center justify-center text-text-secondary gap-6 p-8 text-center bg-gradient-to-br from-background-main to-surface-main">
         <div className="size-32 rounded-full bg-gradient-to-br from-surface-main to-background-main border-4 border-border-main flex items-center justify-center mb-2 shadow-2xl">
-          <span className="material-symbols-outlined text-6xl opacity-20 text-primary">
-            contacts
-          </span>
+          <AddressBook size={56} className="opacity-20 text-primary" />
         </div>
         <div>
           <h2 className="text-2xl font-bold text-text-main mb-3">
@@ -151,9 +164,7 @@ export default function FriendProfileDetail({
     return (
       <div className="h-full flex items-center justify-center bg-gradient-to-br from-background-main to-surface-main">
         <div className="text-center">
-          <span className="material-symbols-outlined text-6xl text-text-secondary/20 mb-3">
-            error
-          </span>
+          <WarningCircle size={48} className="text-text-secondary/20 mb-3 mx-auto" />
           <p className="text-text-secondary">Không có dữ liệu</p>
         </div>
       </div>
@@ -180,7 +191,7 @@ export default function FriendProfileDetail({
           onClick={() => setActiveItem(null)}
           className="xl:hidden absolute top-4 left-4 p-2.5 bg-black/50 hover:bg-black/70 rounded-xl text-white backdrop-blur-md transition-all z-10 shadow-lg"
         >
-          <span className="material-symbols-outlined">arrow_back</span>
+          <ArrowLeft size={20} />
         </button>
       </div>
 
@@ -211,9 +222,7 @@ export default function FriendProfileDetail({
           {/* Suggestion Badge */}
           {fullProfile.type === "SUGGESTION" && (
             <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary text-sm font-bold rounded-xl border border-primary/30 backdrop-blur-sm">
-              <span className="material-symbols-outlined text-[18px]">
-                auto_awesome
-              </span>
+              <Sparkle size={18} weight="fill" />
               <span>{fullProfile.reason}</span>
             </div>
           )}
@@ -221,9 +230,7 @@ export default function FriendProfileDetail({
           {/* Quick Stats */}
           {fullProfile.friendsCount > 0 && (
             <div className="mt-4 flex items-center gap-2 px-4 py-2 bg-[#2A1D15] rounded-xl border border-[#3A2A20]">
-              <span className="material-symbols-outlined text-primary text-[20px]">
-                group
-              </span>
+              <Users size={20} className="text-primary" />
               <span className="text-white font-medium text-sm">
                 {fullProfile.friendsCount} bạn bè
               </span>
@@ -241,9 +248,7 @@ export default function FriendProfileDetail({
                 }
                 className="px-6 py-3 bg-primary hover:bg-orange-600 text-[#231810] font-bold rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center gap-2 hover:scale-105"
               >
-                <span className="material-symbols-outlined text-[20px]">
-                  chat_bubble
-                </span>
+                <ChatCircleDots size={20} weight="fill" />
                 Nhắn tin
               </button>
               <button
@@ -255,9 +260,7 @@ export default function FriendProfileDetail({
                 className="px-6 py-3 bg-[#2A1D15] hover:bg-[#3A2A20] text-white font-bold rounded-xl border border-[#3A2A20] transition-all flex items-center gap-2"
                 title="Xem hồ sơ đầy đủ"
               >
-                <span className="material-symbols-outlined text-[20px]">
-                  person
-                </span>
+                <User size={20} />
                 Xem hồ sơ
               </button>
               <button
@@ -265,9 +268,7 @@ export default function FriendProfileDetail({
                 className="px-4 py-3 bg-[#2A1D15] hover:bg-red-500/20 hover:text-red-500 hover:border-red-500/30 text-white font-bold rounded-xl border border-[#3A2A20] transition-all"
                 title="Hủy kết bạn"
               >
-                <span className="material-symbols-outlined text-[20px]">
-                  person_remove
-                </span>
+                <UserMinus size={20} />
               </button>
             </>
           ) : viewMode === "REQUESTS" ? (
@@ -276,14 +277,14 @@ export default function FriendProfileDetail({
                 onClick={handleAcceptClick}
                 className="px-8 py-3 bg-primary hover:bg-orange-600 text-[#231810] font-bold rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center gap-2 hover:scale-105"
               >
-                <span className="material-symbols-outlined">check_circle</span>
+                <CheckCircle size={20} weight="fill" />
                 Chấp nhận
               </button>
               <button
                 onClick={handleRejectClick}
                 className="px-8 py-3 bg-[#2A1D15] hover:bg-red-500/20 hover:text-red-500 text-white font-bold rounded-xl border border-[#3A2A20] hover:border-red-500/30 transition-all flex items-center gap-2"
               >
-                <span className="material-symbols-outlined">cancel</span>
+                <XCircle size={20} weight="fill" />
                 Từ chối
               </button>
             </>
@@ -293,7 +294,7 @@ export default function FriendProfileDetail({
                 onClick={handleAddFriendClick}
                 className="px-8 py-3 bg-primary hover:bg-orange-600 text-[#231810] font-bold rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center gap-2 hover:scale-105"
               >
-                <span className="material-symbols-outlined">person_add</span>
+                <UserPlus size={20} weight="fill" />
                 Kết bạn
               </button>
               {viewMode === "SUGGESTIONS" && onDismissSuggestion && (
@@ -302,9 +303,7 @@ export default function FriendProfileDetail({
                   className="px-6 py-3 bg-[#2A1D15] hover:bg-neutral-700 text-text-secondary hover:text-white font-bold rounded-xl border border-[#3A2A20] transition-all flex items-center gap-2"
                   title="Ẩn gợi ý này"
                 >
-                  <span className="material-symbols-outlined">
-                    visibility_off
-                  </span>
+                  <EyeSlash size={20} />
                   Ẩn
                 </button>
               )}
@@ -324,9 +323,7 @@ export default function FriendProfileDetail({
             {activeProfileTab === "timeline" && (
               <div className="text-center py-16 bg-[#2A1D15] rounded-2xl border border-[#3A2A20]">
                 <div className="size-16 rounded-full bg-[#1A120B] border-2 border-[#3A2A20] flex items-center justify-center mx-auto mb-4">
-                  <span className="material-symbols-outlined text-4xl opacity-30 text-primary">
-                    lock
-                  </span>
+                  <LockKey size={32} className="opacity-30 text-primary" />
                 </div>
                 <p className="text-text-secondary text-sm mb-4">
                   Bài viết được hiển thị ở trang cá nhân chính.

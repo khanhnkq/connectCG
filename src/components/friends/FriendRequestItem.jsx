@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { UserPlus, Clock, CircleNotch, Check, X } from "@phosphor-icons/react";
 import ConfirmModal from "../common/ConfirmModal";
 
 export default function FriendRequestItem({
@@ -67,7 +68,7 @@ export default function FriendRequestItem({
                         ></div>
                         {/* Badge */}
                         <div className="absolute -bottom-1 -right-1 size-6 bg-primary rounded-full flex items-center justify-center border-2 border-surface-main shadow-lg">
-                            <span className="material-symbols-outlined text-[12px] text-white font-bold">person_add</span>
+                            <UserPlus size={12} weight="bold" className="text-white" />
                         </div>
                     </div>
 
@@ -76,8 +77,8 @@ export default function FriendRequestItem({
                             }`}>
                             {request.senderFullName || request.senderUsername}
                         </h3>
-                        <div className="flex items-center gap-2 mt-0.5">
-                            <span className="material-symbols-outlined text-[12px] text-text-secondary">schedule</span>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                            <Clock size={12} className="text-text-secondary" />
                             <p className="text-[11px] text-text-secondary">{request.time || 'Vừa xong'}</p>
                         </div>
                     </div>
@@ -92,12 +93,12 @@ export default function FriendRequestItem({
                     >
                         {isProcessing === 'accepting' ? (
                             <>
-                                <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                                <CircleNotch size={16} className="animate-spin" />
                                 Đang xử lý...
                             </>
                         ) : (
                             <>
-                                <span className="material-symbols-outlined text-[16px]">check</span>
+                                <Check size={16} weight="bold" />
                                 Chấp nhận
                             </>
                         )}
@@ -109,12 +110,12 @@ export default function FriendRequestItem({
                     >
                         {isProcessing === 'rejecting' ? (
                             <>
-                                <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                                <CircleNotch size={16} className="animate-spin" />
                                 ...
                             </>
                         ) : (
                             <>
-                                <span className="material-symbols-outlined text-[16px]">close</span>
+                                <X size={16} weight="bold" />
                                 Từ chối
                             </>
                         )}

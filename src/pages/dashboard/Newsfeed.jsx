@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { motion } from "framer-motion";
 
 import RightSidebar from "../../components/layout/RightSidebar";
 import PostComposer from "../../components/feed/PostComposer";

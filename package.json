@@ -30,7 +30,6 @@
     "react-hot-toast": "^2.6.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.12.0",
-    "react-toastify": "^11.0.5",
     "sockjs-client": "^1.6.1",
     "tailwind-merge": "^3.4.0",
     "yup": "^1.7.1"

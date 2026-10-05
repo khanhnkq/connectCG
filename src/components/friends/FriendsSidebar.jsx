@@ -1,9 +1,12 @@
+import React from "react";
+import { UsersThree, Users, UserPlus, UserFocus } from "@phosphor-icons/react";
+
 export default function FriendsSidebar({ viewMode, setViewMode, setActiveItem, friendsCount, requestsCount, suggestionsCount }) {
     return (
         <div className="hidden md:flex w-20 lg:w-64 flex-col border-r border-border-main bg-surface-main shrink-0">
             <div className="p-5 border-b border-border-main flex items-center gap-3">
                 <div className="size-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
-                    <span className="material-symbols-outlined">diversity_3</span>
+                    <UsersThree size={20} weight="bold" />
                 </div>
                 <span className="text-text-main font-bold text-lg hidden lg:block">Bạn bè</span>
             </div>
@@ -16,7 +19,7 @@ export default function FriendsSidebar({ viewMode, setViewMode, setActiveItem, f
                         : 'text-text-secondary hover:bg-background-main hover:text-text-main'
                         }`}
                 >
-                    <span className="material-symbols-outlined">group</span>
+                    <Users size={20} />
                     <span className="font-medium hidden lg:block">Tất cả bạn bè</span>
                     <span className="ml-auto bg-background-main px-2 py-0.5 rounded text-xs hidden lg:block">{friendsCount}</span>
                 </button>
@@ -28,7 +31,7 @@ export default function FriendsSidebar({ viewMode, setViewMode, setActiveItem, f
                         : 'text-text-secondary hover:bg-background-main hover:text-text-main'
                         }`}
                 >
-                    <span className="material-symbols-outlined">person_add</span>
+                    <UserPlus size={20} />
                     <span className="font-medium hidden lg:block">Lời mời kết bạn</span>
                     <span className={`ml-auto px-2 py-0.5 rounded text-xs hidden lg:block ${requestsCount > 0 ? 'bg-primary text-white font-bold' : 'bg-background-main text-text-main'}`}>
                         {requestsCount}
@@ -42,7 +45,7 @@ export default function FriendsSidebar({ viewMode, setViewMode, setActiveItem, f
                         : 'text-text-secondary hover:bg-background-main hover:text-text-main'
                         }`}
                 >
-                    <span className="material-symbols-outlined">person_search</span>
+                    <UserFocus size={20} />
                     <span className="font-medium hidden lg:block">Gợi ý kết bạn</span>
                     <span className="ml-auto bg-background-main px-2 py-0.5 rounded text-xs hidden lg:block">{suggestionsCount}</span>
                 </button>

@@ -1,3 +1,6 @@
+import React from "react";
+import { MapPin, CaretRight } from "@phosphor-icons/react";
+
 export default function FriendListItem({ item, isActive, onClick, viewMode }) {
     return (
         <div
@@ -27,7 +30,7 @@ export default function FriendListItem({ item, isActive, onClick, viewMode }) {
                 <div className="flex items-center gap-1.5 text-xs text-text-secondary mt-0.5">
                     {viewMode === 'SUGGESTIONS' && (
                         <>
-                            <span className="material-symbols-outlined text-[14px] text-primary">location_on</span>
+                            <MapPin size={14} weight="fill" className="text-primary shrink-0" />
                             <span className="truncate">{item.city || item.location}</span>
                         </>
                     )}
@@ -43,10 +46,10 @@ export default function FriendListItem({ item, isActive, onClick, viewMode }) {
             </div>
 
             {/* Chevron */}
-            <span className={`material-symbols-outlined text-[24px] transition-all ${isActive ? 'text-primary opacity-100' : 'text-text-secondary opacity-0 group-hover:opacity-100'
-                }`}>
-                chevron_right
-            </span>
+            <CaretRight
+                size={20}
+                className={`transition-all ${isActive ? 'text-primary opacity-100' : 'text-text-secondary opacity-0 group-hover:opacity-100'}`}
+            />
         </div>
     );
 }

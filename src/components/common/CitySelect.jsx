@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import CityService from "../../services/CityService"; // Đảm bảo đường dẫn đúng
+import { CaretDown, Check } from "@phosphor-icons/react";
+import CityService from "../../services/CityService";
 
 const CitySelect = ({
   value,
@@ -103,14 +104,12 @@ const CitySelect = ({
         />
 
         {/* Arrow Icon */}
-        <span
-          className={`absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none material-symbols-outlined transition-transform duration-200 z-30 ${
+        <CaretDown
+          size={18}
+          className={`absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none transition-transform duration-200 z-30 ${
             isOpen ? "rotate-180 text-primary" : ""
           }`}
-          style={{ fontSize: "20px" }}
-        >
-          expand_more
-        </span>
+        />
 
         {/* Dropdown Menu */}
         {isOpen && (
@@ -136,9 +135,7 @@ const CitySelect = ({
                   >
                     <span className="font-medium">{city.name}</span>
                     {value?.code === city.code && (
-                      <span className="material-symbols-outlined text-sm">
-                        check
-                      </span>
+                      <Check size={16} className="text-primary shrink-0" />
                     )}
                   </div>
                 ))}
