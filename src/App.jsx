@@ -15,8 +15,7 @@ import OnboardingPage from "./pages/registration/OnboardingPage";
 import GroupsManagement from "./pages/dashboard/GroupsManagement";
 import AdvancedMemberSearch from "./pages/search/AdvancedMemberSearch";
 import ChatInterface from "./pages/dashboard/ChatInterface";
-import UserProfile from "./pages/user/UserProfile.jsx";
-import MemberProfile from "./pages/member/MemberProfile.jsx";
+import ProfilePage from "./features/profile/ProfilePage.jsx";
 import CreateGroupPage from "./pages/dashboard/CreateGroupPage";
 import GroupDetailPage from "./pages/dashboard/GroupDetailPage";
 import EditGroupPage from "./pages/dashboard/EditGroupPage";
@@ -158,11 +157,11 @@ function App() {
             <Route path="groups/create" element={<CreateGroupPage />} />
             <Route path="groups/edit/:id" element={<EditGroupPage />} />
             <Route path="chat" element={<ChatInterface />} />
-            <Route path="my-profile" element={<UserProfile />} />
-            <Route path="member/:id" element={<MemberProfile />} />
+            <Route path="my-profile" element={<ProfilePage mode="self" />} />
+            <Route path="member/:id" element={<ProfilePage mode="member" />} />
             <Route path="feed" element={<Newsfeed />} />
             <Route path="post/:id" element={<PostDetailPage />} />
-            <Route path="profile/view" element={<MemberProfile />} />
+            <Route path="profile/view" element={<ProfilePage mode="member" />} />
             <Route path="friends" element={<FriendsPage />} />
             <Route path="settings/privacy" element={<PrivacySettings />} />
           </Route>
