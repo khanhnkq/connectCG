@@ -21,6 +21,7 @@ import { clearSession, logout } from "../redux/slices/authSlice";
 import { appConfig } from "../config/runtimeConfig";
 import axiosClient, { ensureCsrfCookie } from "../config/axiosConfig";
 import { refreshWithLock } from "../config/tokenRefresh";
+import mockStompClient from "../mocks/websocket/mockStompClient";
 
 const WebSocketContext = createContext({ stompClient: null, isConnected: false });
 
@@ -38,33 +39,37 @@ export const WebSocketProvider = ({ children }) => {
 
     console.log("WebSocket: Initializing connection...");
 
-    const client = new Client({
-      webSocketFactory: () => {
-        let url = appConfig.wsUrl;
-        if (!url) return new SockJS("/ws");
+    const isMock = import.meta.env.VITE_USE_MOCK === "true";
 
-        url = url.trim();
-        if (url.endsWith("/")) url = url.slice(0, -1);
-        if (url.includes("localhost") && url.startsWith("https:")) {
-          url = url.replace("https:", "http:");
-        }
+    const client = isMock
+      ? mockStompClient
+      : new Client({
+          webSocketFactory: () => {
+            let url = appConfig.wsUrl;
+            if (!url) return new SockJS("/ws");
 
-        return new SockJS(url);
-      },
-      beforeConnect: async () => {
-        try {
-          await ensureCsrfCookie();
-        } catch (err) {
-          console.warn("WebSocket: Failed to ensure CSRF cookie before connect", err);
-        }
-      },
-      reconnectDelay: 1000,
-      maxReconnectDelay: 30000,
-      reconnectTimeMode: ReconnectionTimeMode.EXPONENTIAL,
-      connectionTimeout: 10000,
-      heartbeatIncoming: 10000,
-      heartbeatOutgoing: 10000,
-    });
+            url = url.trim();
+            if (url.endsWith("/")) url = url.slice(0, -1);
+            if (url.includes("localhost") && url.startsWith("https:")) {
+              url = url.replace("https:", "http:");
+            }
+
+            return new SockJS(url);
+          },
+          beforeConnect: async () => {
+            try {
+              await ensureCsrfCookie();
+            } catch (err) {
+              console.warn("WebSocket: Failed to ensure CSRF cookie before connect", err);
+            }
+          },
+          reconnectDelay: 1000,
+          maxReconnectDelay: 30000,
+          reconnectTimeMode: ReconnectionTimeMode.EXPONENTIAL,
+          connectionTimeout: 10000,
+          heartbeatIncoming: 10000,
+          heartbeatOutgoing: 10000,
+        });
 
     client.onConnect = () => {
       console.log("✅ Kết nối WebSocket thành công");

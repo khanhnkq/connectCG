@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Routes, Route, Outlet } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Toaster } from "react-hot-toast";
@@ -6,6 +6,9 @@ import { WebSocketProvider } from "./context/WebSocketContext";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import GuestRoute from "./routes/GuestRoute";
+
+const isMockMode = import.meta.env.VITE_USE_MOCK === "true";
+const MockDevPanel = isMockMode ? lazy(() => import("./mocks/components/MockDevPanel")) : null;
 
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/auth/Login";
@@ -119,6 +122,11 @@ function App() {
       <Toaster {...toastConfig} />
       <WebSocketProvider>
         <GroupDeletedModal />
+        {isMockMode && MockDevPanel && (
+          <Suspense fallback={null}>
+            <MockDevPanel />
+          </Suspense>
+        )}
         <Routes>
           {/* Guest Routes - Redirect to Dashboard if already logged in */}
           <Route element={<GuestRoute />}>

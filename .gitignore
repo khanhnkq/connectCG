@@ -29,6 +29,7 @@ dist-ssr
 .deploy/
 .vercel
 .env*
+!.env.mock
 .cloudflare
 
 *storybook.log
