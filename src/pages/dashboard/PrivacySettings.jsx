@@ -1,118 +1,141 @@
 import React, { useState } from "react";
-import { Shield, Lock, Eye, UserPlus, ChatCircle as MessageCircle, Trash as Trash2, DeviceMobile as Smartphone, CaretRight as ChevronRight, ShieldCheck, Lightning as Zap, Clock, LockOpen as Unlock, EyeSlash as EyeOff, UserCheck, WarningCircle as AlertCircle, Pulse as Activity, UserMinus as UserX } from "@phosphor-icons/react";
-import { motion as Motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import {
+  ShieldCheck,
+  Shield,
+  Lock,
+  Pulse as Activity,
+  ChatCircle,
+  Lightning,
+  UserCheck,
+  LockOpen,
+  DeviceMobile,
+  UserMinus,
+  Trash,
+  WarningCircle,
+  CaretRight,
+} from "@phosphor-icons/react";
 import toast from "react-hot-toast";
 import { logoutAll } from "../../redux/slices/authSlice";
+import { Card, Badge, Button, Switch, ConfirmDialog } from "../../components/ui";
 
-const SettingToggle = ({
-  icon,
+/**
+ * Section Header Primitive for Settings
+ */
+function SectionHeader({ icon: Icon, title, description }) {
+  return (
+    <div className="flex items-center gap-3.5 mb-5">
+      <div className="size-10 rounded-xl bg-surface-subtle border border-border-main flex items-center justify-center shrink-0 text-text-main">
+        <Icon size={20} weight="bold" />
+      </div>
+      <div>
+        <h3 className="text-base font-bold text-text-main leading-tight">
+          {title}
+        </h3>
+        <p className="text-xs text-text-muted mt-0.5 leading-relaxed">
+          {description}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Modern Flat Setting Toggle Row
+ */
+function SettingToggleItem({
+  icon: Icon,
   title,
   description,
   enabled,
   onToggle,
   disabled = false,
   badge = null,
-}) => (
-  <Motion.div
-    whileHover={disabled ? {} : { y: -2 }}
-    className={`flex items-center justify-between p-5 bg-surface-main rounded-[1.5rem] shadow-sm border border-border-main/5 transition-all group ${
-      disabled ? "opacity-60 cursor-not-allowed" : "hover:shadow-md"
-    }`}
-  >
-    <div className="flex gap-5">
-      <div
-        className={`p-4 rounded-2xl transition-all duration-300 ${
-          enabled && !disabled
-            ? "bg-primary/10 text-primary shadow-inner shadow-primary/5"
-            : "bg-gray-500/5 text-text-secondary/60"
-        }`}
-      >
-        {React.createElement(icon, { size: 24, strokeWidth: enabled && !disabled ? 2.5 : 2 })}
-      </div>
-      <div className="flex flex-col justify-center">
-        <div className="flex items-center gap-2">
-          <h4 className="font-extrabold text-text-main text-lg leading-tight">
-            {title}
-          </h4>
-          {badge && (
-            <span className="px-2 py-0.5 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 text-[10px] font-black uppercase tracking-wider rounded-md border border-yellow-500/20">
-              {badge}
-            </span>
-          )}
-        </div>
-        <p className="text-sm text-text-secondary font-medium opacity-70 mt-0.5">
-          {description}
-        </p>
-      </div>
-    </div>
-    <button
-      onClick={disabled ? undefined : onToggle}
-      disabled={disabled}
-      className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-500 focus:outline-none ${
-        disabled
-          ? "bg-text-secondary/10 cursor-not-allowed"
-          : enabled
-          ? "bg-primary shadow-lg shadow-primary/20"
-          : "bg-text-secondary/20"
+  badgeVariant = "default",
+}) {
+  return (
+    <div
+      className={`flex items-start sm:items-center justify-between gap-4 p-4 rounded-xl border border-border-main bg-surface-main transition-colors ${
+        disabled ? "opacity-75" : "hover:border-border-strong"
       }`}
     >
-      <Motion.span
-        animate={{ x: enabled && !disabled ? 22 : 4 }}
-        className="inline-block h-5 w-5 rounded-full bg-white shadow-md"
-      />
+      <div className="flex items-start sm:items-center gap-3.5 min-w-0">
+        <div
+          className={`size-10 rounded-xl border flex items-center justify-center shrink-0 ${
+            enabled && !disabled
+              ? "bg-primary/10 border-primary/20 text-primary"
+              : "bg-surface-subtle border-border-main text-text-muted"
+          }`}
+        >
+          <Icon size={20} />
+        </div>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h4 className="text-sm font-bold text-text-main">{title}</h4>
+            {badge && (
+              <Badge size="sm" variant={badgeVariant}>
+                {badge}
+              </Badge>
+            )}
+          </div>
+          <p className="text-xs text-text-muted mt-0.5 leading-relaxed">
+            {description}
+          </p>
+        </div>
+      </div>
+      <div className="shrink-0 pt-1 sm:pt-0">
+        <Switch
+          checked={enabled}
+          onChange={onToggle}
+          disabled={disabled}
+          aria-label={title}
+        />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Modern Flat Quick Action Row
+ */
+function SecurityActionItem({
+  icon: Icon,
+  title,
+  status,
+  onClick,
+  disabled = false,
+}) {
+  return (
+    <button
+      type="button"
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      className={`w-full flex items-center justify-between p-3.5 rounded-xl border border-border-main bg-surface-main transition-colors text-left group ${
+        disabled
+          ? "opacity-60 cursor-not-allowed"
+          : "hover:border-border-strong hover:bg-surface-subtle/40 cursor-pointer"
+      }`}
+    >
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="size-9 rounded-lg bg-surface-subtle border border-border-main flex items-center justify-center shrink-0 text-text-muted group-hover:text-text-main transition-colors">
+          <Icon size={18} />
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-text-main truncate leading-tight">
+            {title}
+          </p>
+          <p className="text-xs text-text-muted mt-0.5 leading-none">
+            {status}
+          </p>
+        </div>
+      </div>
+      <div className="shrink-0 text-text-muted group-hover:text-text-main transition-colors pl-2">
+        <CaretRight size={16} />
+      </div>
     </button>
-  </Motion.div>
-);
-
-const SectionHeader = ({ icon, title, description }) => (
-  <div className="flex items-center gap-4 mb-8">
-    <div className="p-3 bg-primary text-[#231810] rounded-[1.2rem] shadow-lg shadow-primary/10">
-      {React.createElement(icon, { size: 22, strokeWidth: 2.5 })}
-    </div>
-    <div>
-      <h3 className="text-xl font-black text-text-main uppercase tracking-tighter">
-        {title}
-      </h3>
-      <p className="text-sm text-text-secondary font-bold opacity-50 uppercase tracking-widest">
-        {description}
-      </p>
-    </div>
-  </div>
-);
-
-const QuickAction = ({ icon, title, status, color, onClick, disabled = false }) => (
-  <button
-    onClick={disabled ? undefined : onClick}
-    disabled={disabled}
-    className={`w-full flex items-center justify-between p-5 rounded-[1.8rem] bg-surface-main transition-all duration-300 group shadow-sm border border-border-main/5 ${
-      disabled ? "opacity-60 cursor-not-allowed" : "hover:bg-background-main hover:shadow-md"
-    }`}
-  >
-    <div className="flex items-center gap-4">
-      <div
-        className={`p-3 rounded-2xl bg-background-main group-hover:bg-surface-main transition-colors ${color}`}
-      >
-        {React.createElement(icon, { size: 20 })}
-      </div>
-      <div className="text-left">
-        <p className="text-base font-black text-text-main leading-none mb-1">
-          {title}
-        </p>
-        <p className="text-[11px] text-text-secondary font-black uppercase tracking-widest opacity-60">
-          {status}
-        </p>
-      </div>
-    </div>
-    <div className="p-2 rounded-xl bg-background-main group-hover:bg-primary/10 group-hover:text-primary transition-all">
-      <ChevronRight
-        size={18}
-        className="transition-transform group-hover:translate-x-1"
-      />
-    </div>
-  </button>
-);
+  );
+}
 
 export default function PrivacySettings() {
   const dispatch = useDispatch();
@@ -122,11 +145,13 @@ export default function PrivacySettings() {
   const [settings, setSettings] = useState({
     privateAccount: false,
     activityStatus: true,
-    allowTagging: true,
     showReadReceipts: true,
-    twoFactorAuth: false,
     aiFiltering: true,
+    allowTagging: true,
   });
+
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const toggleSetting = (key) => {
     setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -134,185 +159,222 @@ export default function PrivacySettings() {
 
   const handleLogoutAll = async () => {
     try {
+      setIsLoggingOut(true);
       await dispatch(logoutAll()).unwrap();
       toast.success("Đã đăng xuất khỏi tất cả thiết bị.");
+      setShowLogoutModal(false);
       navigate("/login", { replace: true });
     } catch {
       toast.error("Không thể thu hồi các phiên đăng nhập. Vui lòng thử lại.");
+    } finally {
+      setIsLoggingOut(false);
     }
   };
 
+  const userName =
+    currentUser?.fullName || currentUser?.name || currentUser?.username || "bạn";
+
   return (
-    <div className="min-h-screen bg-background-main/30">
-      <Motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="p-10 max-w-[75rem] mx-auto pb-32"
-      >
-        {/* HERO SECTION - PRIVACY STATUS */}
-        <div className="mb-16 flex flex-col md:flex-row items-center gap-10 bg-surface-main p-10 rounded-[3rem] shadow-xl border border-border-main/10 relative overflow-hidden group">
-          {/* Background Highlight */}
-          <div className="absolute -top-24 -left-24 w-64 h-64 bg-primary/5 rounded-full blur-[100px] transition-all duration-1000 group-hover:scale-150" />
-
-          <div className="relative shrink-0 flex items-center justify-center">
-            <div className="size-36 rounded-full border-[6px] border-primary/20 bg-primary/5 relative flex items-center justify-center">
-              <ShieldCheck size={56} className="text-primary" />
+    <div className="min-h-screen bg-background-main pb-24">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+        {/* HERO STATUS CARD */}
+        <Card className="p-6 sm:p-8 bg-surface-main border-border-main">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 sm:gap-6">
+            <div className="size-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 text-primary">
+              <ShieldCheck size={36} weight="bold" />
             </div>
-            {/* Status Badge */}
-            <div className="absolute -bottom-2 -right-2 p-2.5 bg-green-500 text-white rounded-2xl shadow-lg border-4 border-surface-main">
-              <Shield size={20} />
+
+            <div className="space-y-1.5 flex-1">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <span className="text-xs font-bold uppercase tracking-wider text-primary">
+                  Trung tâm bảo mật
+                </span>
+                <Badge variant="primary" size="sm">
+                  Đang kích hoạt
+                </Badge>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-text-main tracking-tight">
+                Cài đặt quyền riêng tư & bảo mật
+              </h1>
+              <p className="text-sm text-text-secondary leading-relaxed max-w-2xl">
+                Xin chào, <span className="font-semibold text-text-main">{userName}</span>!
+                Kiểm soát ai có thể nhìn thấy nội dung của bạn, tùy chỉnh tính năng trí tuệ nhân tạo và quản lý các phiên đăng nhập an toàn.
+              </p>
             </div>
           </div>
+        </Card>
 
-          <div className="flex-1 text-center md:text-left">
-            <div className="flex items-center gap-2 mb-3 justify-center md:justify-start">
-              <span className="px-3 py-1 bg-primary/10 text-primary text-[11px] font-black uppercase tracking-widest rounded-full border border-primary/20">
-                Trung tâm bảo mật
-              </span>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-black text-text-main tracking-tighter mb-4 leading-none uppercase">
-              XIN CHÀO, {currentUser?.fullName || currentUser?.name || "BẠN"}! <br />
-              <span className="text-text-secondary opacity-50 text-2xl md:text-3xl">
-                BẢO MẬT & QUYỀN RIÊNG TƯ
-              </span>
-            </h2>
-            <p className="text-base text-text-secondary font-medium max-w-xl">
-              Một số tùy chọn bảo mật đang trong quá trình phát triển và hoàn thiện.
-              Bạn có thể quản lý các phiên đăng nhập đang hoạt động của mình ngay bên dưới.
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-          {/* MAIN SETTINGS - 8 COLS */}
-          <div className="lg:col-span-8 space-y-16">
-            <section>
+        {/* TWO-COLUMN GRID */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* MAIN SETTINGS COLUMN (8 cols) */}
+          <div className="lg:col-span-8 space-y-8">
+            {/* 1. PRIVACY PREFERENCES */}
+            <Card className="p-6 bg-surface-main border-border-main space-y-4">
               <SectionHeader
                 icon={Lock}
-                title="Privacy Preferences"
-                description="Control your visibility and reach"
+                title="Quyền riêng tư cá nhân"
+                description="Thiết lập phạm vi hiển thị và quyền tương tác của người dùng khác"
               />
-              <div className="grid grid-cols-1 gap-5">
-                <SettingToggle
+              <div className="space-y-3">
+                <SettingToggleItem
                   icon={Lock}
                   title="Tài khoản riêng tư"
-                  description="Khi bật, chỉ những người bạn phê duyệt mới có thể xem nội dung."
+                  description="Khi bật, chỉ những người bạn phê duyệt mới có thể xem nội dung bài viết và trang cá nhân."
                   enabled={settings.privateAccount}
                   onToggle={() => toggleSetting("privateAccount")}
                   disabled={true}
                   badge="Sắp có"
+                  badgeVariant="default"
                 />
-                <SettingToggle
+                <SettingToggleItem
                   icon={Activity}
                   title="Trạng thái hoạt động"
-                  description="Hiển thị chấm xanh khi bạn đang trực tuyến trên Connect."
+                  description="Hiển thị dấu hiệu trực tuyến khi bạn đang hoạt động trên ConnectCG."
                   enabled={settings.activityStatus}
                   onToggle={() => toggleSetting("activityStatus")}
                   disabled={true}
                   badge="Sắp có"
+                  badgeVariant="default"
                 />
-                <SettingToggle
-                  icon={MessageCircle}
-                  title="Thông báo đã đọc"
-                  description="Cho người khác biết khi bạn đã xem tin nhắn."
+                <SettingToggleItem
+                  icon={ChatCircle}
+                  title="Thông báo đã đọc tin nhắn"
+                  description="Cho người khác biết thời điểm bạn đã đọc tin nhắn trong cuộc hội thoại."
                   enabled={settings.showReadReceipts}
                   onToggle={() => toggleSetting("showReadReceipts")}
                   disabled={true}
                   badge="Sắp có"
+                  badgeVariant="default"
                 />
               </div>
-            </section>
+            </Card>
 
-            <section>
+            {/* 2. AI & AUTOMATION */}
+            <Card className="p-6 bg-surface-main border-border-main space-y-4">
               <SectionHeader
-                icon={Zap}
-                title="AI & Automation"
-                description="Enhanced protection powered by AI"
+                icon={Lightning}
+                title="Trí tuệ nhân tạo & Kiểm duyệt"
+                description="Bảo vệ tự động và cá nhân hóa trải nghiệm với ConnectCG AI"
               />
-              <div className="grid grid-cols-1 gap-5">
-                <SettingToggle
+              <div className="space-y-3">
+                <SettingToggleItem
                   icon={Shield}
-                  title="Lọc nội dung Toxic bằng AI"
-                  description="Tự động kiểm duyệt và gắn cờ các bài viết vi phạm chuẩn mực cộng đồng."
+                  title="Lọc nội dung độc hại bằng AI"
+                  description="Hệ thống AI tự động phân tích và gắn cờ nội dung vi phạm chuẩn mực văn minh cộng đồng."
                   enabled={settings.aiFiltering}
                   onToggle={() => toggleSetting("aiFiltering")}
                   disabled={true}
                   badge="Hệ thống tự động"
+                  badgeVariant="default"
                 />
-                <SettingToggle
+                <SettingToggleItem
                   icon={UserCheck}
-                  title="Tự động duyệt bạn bè"
-                  description="Sử dụng AI để gợi ý và duyệt những người quen biết thật sự."
+                  title="Tự động gợi ý bạn bè thông minh"
+                  description="Sử dụng mô hình phân tích ngữ nghĩa để đề xuất những kết nối học tập và công việc phù hợp."
                   enabled={settings.allowTagging}
                   onToggle={() => toggleSetting("allowTagging")}
                   disabled={true}
                   badge="Sắp có"
+                  badgeVariant="default"
                 />
               </div>
-            </section>
+            </Card>
+
+            {/* 3. ACTIVE SESSIONS & DANGER ZONE */}
+            <Card className="p-6 bg-surface-main border-border-main space-y-4">
+              <SectionHeader
+                icon={DeviceMobile}
+                title="Quản lý phiên đăng nhập"
+                description="Bảo vệ tài khoản bằng cách chấm dứt các phiên đăng nhập từ xa khi phát hiện bất thường"
+              />
+              <div className="p-4 rounded-xl border border-red-500/20 bg-red-500/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold text-text-main">
+                    Đăng xuất khỏi tất cả thiết bị
+                  </h4>
+                  <p className="text-xs text-text-secondary leading-relaxed">
+                    Hủy tất cả các phiên đăng nhập hiện tại trên máy tính, điện thoại hoặc trình duyệt khác.
+                  </p>
+                </div>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => setShowLogoutModal(true)}
+                  className="shrink-0"
+                >
+                  Đăng xuất tất cả
+                </Button>
+              </div>
+            </Card>
           </div>
 
-          {/* SIDEBAR ACTIONS - 4 COLS */}
-          <div className="lg:col-span-4 space-y-10">
-            <div className="space-y-6">
-              <h3 className="text-sm font-black text-text-main uppercase tracking-widest pl-2 opacity-40">
-                Account Security
+          {/* SIDEBAR COLUMN (4 cols) */}
+          <div className="lg:col-span-4 space-y-6">
+            {/* ACCOUNT SECURITY SHORTCUTS */}
+            <Card className="p-5 bg-surface-main border-border-main space-y-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-text-muted">
+                Bảo mật tài khoản
               </h3>
-              <div className="space-y-3">
-                <QuickAction
-                  icon={Unlock}
-                  title="Xác thực 2 yếu tố"
+              <div className="space-y-2">
+                <SecurityActionItem
+                  icon={LockOpen}
+                  title="Xác thực 2 yếu tố (2FA)"
                   status="Sắp có"
-                  color="text-orange-500"
                   disabled={true}
                 />
-                <QuickAction
-                  icon={Smartphone}
-                  title="Đăng xuất mọi thiết bị"
-                  status="Thu hồi tất cả phiên đăng nhập"
-                  color="text-blue-500"
-                  onClick={handleLogoutAll}
-                />
-                <QuickAction
-                  icon={UserX}
-                  title="Chặn người dùng"
-                  status="—"
-                  color="text-text-secondary"
+                <SecurityActionItem
+                  icon={UserMinus}
+                  title="Danh sách người dùng đã chặn"
+                  status="Chưa có người dùng nào"
                   disabled={true}
                 />
-                <QuickAction
-                  icon={Trash2}
-                  title="Quản lý dữ liệu"
+                <SecurityActionItem
+                  icon={Trash}
+                  title="Quản lý & Tải xuống dữ liệu"
                   status="Sắp có"
-                  color="text-red-500"
                   disabled={true}
                 />
               </div>
-            </div>
+            </Card>
 
-            {/* TIP CARD */}
-            <div className="bg-primary p-8 rounded-[2.5rem] text-[#231810] relative overflow-hidden group shadow-2xl shadow-primary/30 mt-12">
-              <div className="relative z-10">
-                <div className="bg-[#231810]/10 w-fit p-3 rounded-2xl mb-6 backdrop-blur-md">
-                  <AlertCircle size={32} strokeWidth={2.5} />
+            {/* SECURITY TIP CARD */}
+            <Card className="p-5 bg-surface-subtle/50 border-border-main space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="size-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 text-primary">
+                  <WarningCircle size={20} weight="bold" />
                 </div>
-                <h4 className="text-3xl font-black tracking-tighter leading-none mb-4 uppercase">
-                  Protect Your <br /> Profile!
+                <h4 className="text-sm font-bold text-text-main">
+                  Lời khuyên bảo mật
                 </h4>
-                <p className="text-base font-bold opacity-70 leading-snug mb-8">
-                  Thay đổi mật khẩu định kỳ 3 tháng một lần để đảm bảo tài khoản
-                  luôn ở trạng thái an toàn nhất.
-                </p>
-                <button className="w-full py-4 bg-[#231810] text-white rounded-[1.2rem] text-sm font-black uppercase tracking-widest hover:scale-[1.05] active:scale-[0.95] transition-all shadow-xl shadow-black/20">
-                  Update Now
-                </button>
               </div>
-              {/* Decorative Blur */}
-              <div className="absolute top-0 right-0 w-48 h-48 bg-white/20 rounded-full blur-[50px] -mr-10 -mt-10 animate-pulse" />
-            </div>
+              <p className="text-xs text-text-secondary leading-relaxed">
+                ConnectCG khuyến nghị thay đổi mật khẩu định kỳ 3 tháng một lần và không chia sẻ mật khẩu của bạn với bất kỳ ai để đảm bảo an toàn tối đa.
+              </p>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="w-full"
+                onClick={() => navigate("/dashboard/settings")}
+              >
+                Cài đặt tài khoản
+              </Button>
+            </Card>
           </div>
         </div>
-      </Motion.div>
+      </div>
+
+      {/* CONFIRM LOGOUT ALL DIALOG */}
+      <ConfirmDialog
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={handleLogoutAll}
+        isLoading={isLoggingOut}
+        title="Đăng xuất khỏi tất cả thiết bị?"
+        message="Thao tác này sẽ hủy tất cả các phiên đăng nhập khác của bạn trên mọi thiết bị và trình duyệt. Bạn sẽ cần phải đăng nhập lại."
+        confirmText="Đăng xuất tất cả"
+        cancelText="Hủy bỏ"
+        type="danger"
+      />
     </div>
   );
 }

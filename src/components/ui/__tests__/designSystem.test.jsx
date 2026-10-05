@@ -10,6 +10,7 @@ import { Input } from "../input/Input";
 import { Tabs } from "../tabs/Tabs";
 import { Modal } from "../modal/Modal";
 import { ConfirmDialog } from "../modal/ConfirmDialog";
+import { Switch } from "../switch/Switch";
 
 describe("Core Design System Primitives (Modern Flat)", () => {
   describe("<Button /> & <IconButton />", () => {
@@ -155,4 +156,46 @@ describe("Core Design System Primitives (Modern Flat)", () => {
       expect(handleClose).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe("<Switch />", () => {
+    it("renders switch with correct role, aria-checked, and handles toggle", () => {
+      const handleChange = vi.fn();
+      render(
+        <Switch
+          checked={false}
+          onChange={handleChange}
+          aria-label="Toggle notifications"
+        />
+      );
+      const switchEl = screen.getByRole("switch", {
+        name: "Toggle notifications",
+      });
+      expect(switchEl).toBeInTheDocument();
+      expect(switchEl).toHaveAttribute("aria-checked", "false");
+
+      fireEvent.click(switchEl);
+      expect(handleChange).toHaveBeenCalledWith(true);
+    });
+
+    it("does not fire onChange when disabled", () => {
+      const handleChange = vi.fn();
+      render(
+        <Switch
+          checked={true}
+          onChange={handleChange}
+          disabled
+          aria-label="Disabled switch"
+        />
+      );
+      const switchEl = screen.getByRole("switch", {
+        name: "Disabled switch",
+      });
+      expect(switchEl).toBeDisabled();
+      expect(switchEl).toHaveAttribute("aria-checked", "true");
+
+      fireEvent.click(switchEl);
+      expect(handleChange).not.toHaveBeenCalled();
+    });
+  });
 });
+

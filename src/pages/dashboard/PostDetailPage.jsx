@@ -3,8 +3,64 @@ import { useParams, useNavigate } from "react-router-dom";
 import PostCard from "../../components/feed/PostCard";
 import postService from "../../services/PostService";
 import RightSidebar from "../../components/layout/RightSidebar";
-import { ArrowLeft, CircleNotch as Loader2 } from "@phosphor-icons/react";
+import { ArrowLeft, FileX } from "@phosphor-icons/react";
 import toast from "react-hot-toast";
+import { Skeleton, EmptyState } from "../../components/ui";
+
+/**
+ * Modern Flat Skeleton for Post Detail loading state
+ */
+function PostDetailSkeleton() {
+  return (
+    <div className="bg-surface-main rounded-2xl border border-border-main p-6 space-y-4">
+      {/* Author Header */}
+      <div className="flex items-center gap-3">
+        <Skeleton rounded="full" className="size-11 shrink-0" />
+        <div className="space-y-2 flex-1">
+          <Skeleton className="h-4 w-36" />
+          <Skeleton className="h-3 w-20" />
+        </div>
+      </div>
+
+      {/* Content lines */}
+      <div className="space-y-2 py-2">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-5/6" />
+        <Skeleton className="h-4 w-2/3" />
+      </div>
+
+      {/* Media placeholder */}
+      <Skeleton className="h-64 w-full rounded-2xl" />
+
+      {/* Stats bar */}
+      <div className="pt-2 flex justify-between items-center border-t border-border-main">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-4 w-32" />
+      </div>
+
+      {/* Action buttons */}
+      <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border-main">
+        <Skeleton className="h-9 w-full rounded-xl" />
+        <Skeleton className="h-9 w-full rounded-xl" />
+        <Skeleton className="h-9 w-full rounded-xl" />
+      </div>
+
+      {/* Comment section skeleton */}
+      <div className="pt-4 border-t border-border-main space-y-3">
+        <div className="flex items-center gap-3">
+          <Skeleton rounded="full" className="size-9 shrink-0" />
+          <Skeleton className="h-10 flex-1 rounded-xl" />
+        </div>
+        <div className="flex items-start gap-3 pt-2">
+          <Skeleton rounded="full" className="size-8 shrink-0" />
+          <div className="flex-1 space-y-1.5">
+            <Skeleton className="h-14 w-full rounded-2xl" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function PostDetailPage() {
   const { id } = useParams();
@@ -21,7 +77,6 @@ export default function PostDetailPage() {
       } catch (error) {
         console.error("Error fetching post detail:", error);
         toast.error("Không tìm thấy bài viết hoặc bài viết đã bị xóa");
-        // navigate("/dashboard/feed");
       } finally {
         setLoading(false);
       }
@@ -30,7 +85,7 @@ export default function PostDetailPage() {
     if (id) {
       fetchPost();
     }
-  }, [id, navigate]);
+  }, [id]);
 
   const handleUpdatePost = async (postId, updatedData) => {
     try {
@@ -59,41 +114,38 @@ export default function PostDetailPage() {
   return (
     <div className="flex w-full relative items-start">
       <div className="flex-1 w-full">
-        <div className="max-w-4xl mx-auto w-full px-6 py-8 pb-20">
+        <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 py-6 pb-20">
+          {/* Back button */}
           <button
+            type="button"
             onClick={() => navigate("/dashboard/feed")}
-            className="flex items-center gap-2 text-text-secondary hover:text-primary transition-colors mb-6 group"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-text-secondary hover:text-text-main transition-colors mb-6 group cursor-pointer"
           >
             <ArrowLeft
-              size={20}
+              size={18}
               className="group-hover:-translate-x-1 transition-transform"
             />
-            <span className="font-medium">Quay lại</span>
+            <span>Quay lại bảng tin</span>
           </button>
 
+          {/* Main Content Area */}
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-4">
-              <Loader2 className="animate-spin text-primary" size={40} />
-              <p className="text-text-secondary">Đang tải bài viết...</p>
-            </div>
+            <PostDetailSkeleton />
           ) : post ? (
             <PostCard
               post={post}
               onUpdate={handleUpdatePost}
               onDelete={handleDeletePost}
+              defaultShowComments={true}
             />
           ) : (
-            <div className="text-center py-20 bg-surface-main rounded-[2rem] border border-border-main border-dashed">
-              <p className="text-text-secondary text-lg">
-                Bài viết không tồn tại.
-              </p>
-              <button
-                onClick={() => navigate("/dashboard/feed")}
-                className="mt-4 text-primary font-bold hover:underline"
-              >
-                Về trang chủ
-              </button>
-            </div>
+            <EmptyState
+              icon={FileX}
+              title="Không tìm thấy bài viết"
+              description="Bài viết này không tồn tại hoặc đã bị tác giả gỡ bỏ khỏi nền tảng."
+              actionText="Quay lại bảng tin"
+              onAction={() => navigate("/dashboard/feed")}
+            />
           )}
         </div>
       </div>

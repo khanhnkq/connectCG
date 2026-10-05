@@ -15,8 +15,9 @@ export function usePostActions({
   canPin = false,
   stompClient = null,
   isConnected = false,
+  defaultShowComments = false,
 }) {
-  const [showComments, setShowComments] = useState(false);
+  const [showComments, setShowComments] = useState(defaultShowComments);
   const [showMenu, setShowMenu] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);

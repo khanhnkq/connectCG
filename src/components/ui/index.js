@@ -7,3 +7,4 @@ export { Badge } from "./badge/Badge";
 export { Input, Textarea } from "./input/Input";
 export { Tabs } from "./tabs/Tabs";
 export { Skeleton, EmptyState } from "./feedback/Skeleton";
+export { Switch } from "./switch/Switch";

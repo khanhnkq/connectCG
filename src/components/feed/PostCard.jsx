@@ -20,6 +20,7 @@ import ImageLightbox from "../common/ImageLightBox";
 export default function PostCard({
   post, id, author, time, content, image, type = "feed",
   onUpdate, onDelete, isAdmin: canPin = false,
+  defaultShowComments = false,
 }) {
   const { user } = useSelector((state) => state.auth);
   const { stompClient, isConnected } = useWebSocket();
@@ -29,6 +30,7 @@ export default function PostCard({
 
   const actions = usePostActions({
     postData: data, onUpdate, onDelete, canPin, stompClient, isConnected,
+    defaultShowComments,
   });
 
   return (
