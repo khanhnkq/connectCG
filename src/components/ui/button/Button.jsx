@@ -18,6 +18,7 @@ export const Button = forwardRef(
       icon: Icon,
       variant = "primary",
       size = "md",
+      rounded = "default",
       isLoading = false,
       disabled = false,
       loadingText = "Đang xử lý...",
@@ -30,24 +31,25 @@ export const Button = forwardRef(
   ) => {
     // Tự động nhận diện nút là Icon-only hay Text-only
     const isIconButton = Boolean(Icon) || size === "icon" || size === "iconSm";
+    const isFullRounded = rounded === "full" || className.includes("rounded-full");
 
     const baseStyles =
       "inline-flex items-center justify-center font-semibold transition-colors duration-150 select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 shrink-0";
 
     // Kích thước chuẩn cho nút chỉ có chữ (Text-only)
     const textSizeStyles = {
-      sm: "h-8 px-3 text-xs rounded-lg",
-      md: "h-10 px-4 text-sm rounded-xl",
-      lg: "h-12 px-6 text-base rounded-xl",
+      sm: `h-8 px-3 text-xs ${isFullRounded ? "rounded-full" : "rounded-lg"}`,
+      md: `h-10 px-4 text-sm ${isFullRounded ? "rounded-full" : "rounded-xl"}`,
+      lg: `h-12 px-6 text-base ${isFullRounded ? "rounded-full" : "rounded-xl"}`,
     };
 
-    // Kích thước chuẩn cho nút chỉ có icon (Icon-only: hình vuông hoàn hảo bo góc)
+    // Kích thước chuẩn cho nút chỉ có icon (Icon-only: hình vuông bo góc hoặc hình tròn)
     const iconSizeStyles = {
-      sm: "size-8 p-0 rounded-lg",
-      iconSm: "size-8 p-0 rounded-lg",
-      md: "size-10 p-0 rounded-xl",
-      icon: "size-10 p-0 rounded-xl",
-      lg: "size-12 p-0 rounded-xl",
+      sm: `size-8 p-0 ${isFullRounded ? "rounded-full" : "rounded-lg"}`,
+      iconSm: `size-8 p-0 ${isFullRounded ? "rounded-full" : "rounded-lg"}`,
+      md: `size-10 p-0 ${isFullRounded ? "rounded-full" : "rounded-xl"}`,
+      icon: `size-10 p-0 ${isFullRounded ? "rounded-full" : "rounded-xl"}`,
+      lg: `size-12 p-0 ${isFullRounded ? "rounded-full" : "rounded-xl"}`,
     };
 
     const iconGlyphSizes = {
@@ -56,6 +58,14 @@ export const Button = forwardRef(
       md: "size-5",
       icon: "size-5",
       lg: "size-6",
+    };
+
+    const iconPixelSizes = {
+      sm: 16,
+      iconSm: 16,
+      md: 20,
+      icon: 20,
+      lg: 24,
     };
 
     const variantStyles = {
@@ -94,8 +104,11 @@ export const Button = forwardRef(
             <CircleNotch className={`animate-spin ${glyphSize}`} />
           ) : React.isValidElement(iconToRender) ? (
             iconToRender
-          ) : typeof iconToRender === "function" ? (
-            React.createElement(iconToRender, { className: glyphSize })
+          ) : iconToRender && (typeof iconToRender === "function" || typeof iconToRender === "object") ? (
+            React.createElement(iconToRender, {
+              className: glyphSize,
+              size: iconPixelSizes[size] || 20,
+            })
           ) : null}
         </button>
       );

@@ -32,6 +32,17 @@ describe("Core Design System Primitives (Modern Flat)", () => {
       expect(btn.textContent).toBe(""); // Strictly NO text
     });
 
+    it("renders icon-only button when icon is a forwardRef component (such as Phosphor icons)", () => {
+      const ForwardRefIcon = React.forwardRef((props, ref) => (
+        <svg ref={ref} data-testid="forwardref-icon" {...props} />
+      ));
+      render(<Button icon={ForwardRefIcon} aria-label="Thêm icon ref" />);
+      const btn = screen.getByRole("button", { name: "Thêm icon ref" });
+      expect(btn).toBeInTheDocument();
+      expect(screen.getByTestId("forwardref-icon")).toBeInTheDocument();
+      expect(btn.textContent).toBe("");
+    });
+
     it("renders loading text and disables button when text button is loading", () => {
       const handleClick = vi.fn();
       render(<Button isLoading loadingText="Đang lưu..." onClick={handleClick}>Lưu</Button>);
