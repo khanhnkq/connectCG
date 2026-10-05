@@ -1,15 +1,31 @@
-import { Shield, Warning as AlertTriangle, Tray as Inbox, ShieldCheck, CheckCircle as CheckCircle2, Trash as Trash2, CaretLeft as ChevronLeft, CaretRight as ChevronRight } from "@phosphor-icons/react";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  Shield,
+  Warning as AlertTriangle,
+  Tray as Inbox,
+  ShieldCheck,
+  CheckCircle,
+  Trash as Trash2,
+  CaretLeft,
+  CaretRight,
+} from "@phosphor-icons/react";
+import toast from "react-hot-toast";
 import AdminLayout from "../../components/layout-admin/AdminLayout";
 import postService from "../../services/PostService";
-import toast from "react-hot-toast";
-import ConfirmModal from "../../components/common/ConfirmModal";
+import {
+  Card,
+  Badge,
+  Avatar,
+  IconButton,
+  ConfirmDialog,
+  Skeleton,
+  EmptyState,
+} from "../../components/ui";
 
 const MainFeedManager = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("pending"); // 'pending' or 'audit'
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
@@ -22,7 +38,7 @@ const MainFeedManager = () => {
     onConfirm: null,
   });
 
-  const fetchPosts = React.useCallback(
+  const fetchPosts = useCallback(
     async (page = 0) => {
       try {
         setLoading(true);
@@ -37,7 +53,7 @@ const MainFeedManager = () => {
         setTotalElements(pageData.totalElements || 0);
         setCurrentPage(page);
       } catch (error) {
-        setPosts([]); // Ensure array on error
+        setPosts([]);
         console.error("Error fetching homepage posts:", error);
         toast.error("Không thể tải danh sách bài viết");
       } finally {
@@ -48,13 +64,9 @@ const MainFeedManager = () => {
   );
 
   useEffect(() => {
-    setCurrentPage(0); // Reset to first page when tab changes
+    setCurrentPage(0);
     fetchPosts(0);
   }, [activeTab, fetchPosts]);
-
-  useEffect(() => {
-    fetchPosts(currentPage);
-  }, [currentPage, fetchPosts]);
 
   useEffect(() => {
     const handlePostEvent = () => {
@@ -68,245 +80,272 @@ const MainFeedManager = () => {
     try {
       await postService.approvePost(postId);
       toast.success("Đã duyệt bài viết thành công!");
-      setPosts(posts.filter((p) => p.id !== postId));
+      setPosts((prev) => prev.filter((p) => p.id !== postId));
+      setTotalElements((prev) => Math.max(0, prev - 1));
     } catch (error) {
-      toast.error("Không thể duyệt bài viết" + error);
+      toast.error("Không thể duyệt bài viết: " + error);
     }
   };
 
   const handleDelete = (id) => {
     setConfirmConfig({
       isOpen: true,
-      postId: id,
       title: "Xóa bài viết?",
       message:
-        "Bạn có chắc chắn muốn xóa bài viết này? Hành động này không thể hoàn tác.",
+        "Bạn có chắc chắn muốn xóa bài viết này? Hành động này sẽ gỡ bỏ hoàn toàn bài viết khỏi hệ thống.",
       onConfirm: async () => {
         try {
           await postService.deletePost(id);
           toast.success("Đã xóa bài viết thành công");
-          setPosts(posts.filter((p) => p.id !== id));
+          setPosts((prev) => prev.filter((p) => p.id !== id));
+          setTotalElements((prev) => Math.max(0, prev - 1));
         } catch (error) {
-          toast.error("Lỗi dữ liệu: Không thể xóa bài viết" + error);
+          toast.error("Lỗi dữ liệu: Không thể xóa bài viết " + error);
         }
-        setConfirmConfig({ ...confirmConfig, isOpen: false });
+        setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
       },
     });
   };
 
   return (
     <AdminLayout
-      title="Hộp thư Duyệt"
+      title="Nội dung & Bài viết"
       activeTab="Content"
-      brandName="Social Admin"
+      brandName="Connect Admin"
     >
-      <div className="p-8 space-y-8">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-black text-text-main tracking-tight">
-              {activeTab === "pending"
-                ? "Hộp thư Chờ Duyệt"
-                : "Hộp thư Kiểm Tra (Toxic)"}
-            </h2>
-            <p className="text-text-muted text-sm font-medium">
-              {activeTab === "pending"
-                ? "Xử lý các bài viết bị AI đánh dấu vi phạm hoặc lỗi kiểm tra"
-                : "Các bài viết ĐÃ DUYỆT nhưng AI phát hiện nội dung nhạy cảm"}
-            </p>
-          </div>
+      <div className="p-6 md:p-8 space-y-6">
+        {/* Header & Tab Selector */}
+        <Card className="p-6 bg-surface-main border-border-main">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="size-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+                <Shield size={24} weight="bold" />
+              </div>
+              <div>
+                <h2 className="text-xl font-extrabold text-text-main tracking-tight">
+                  {activeTab === "pending"
+                    ? "Hộp thư chờ duyệt"
+                    : "Hộp thư kiểm tra lại (AI Flagged)"}
+                </h2>
+                <p className="text-xs text-text-muted mt-0.5">
+                  {activeTab === "pending"
+                    ? "Kiểm duyệt các bài viết bị hệ thống AI đánh dấu nghi vấn vi phạm"
+                    : "Rà soát các bài viết đã duyệt nhưng phát hiện dấu hiệu nhạy cảm"}
+                </p>
+              </div>
+            </div>
 
-          <div className="flex bg-background-main p-1 rounded-xl border border-border-main">
-            <button
-              onClick={() => setActiveTab("pending")}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
-                activeTab === "pending"
-                  ? "bg-primary text-[#231810] shadow-sm"
-                  : "text-text-secondary hover:text-text-main"
-              }`}
-            >
-              <Shield size={14} />
-              Chờ Duyệt
-            </button>
-            <button
-              onClick={() => setActiveTab("audit")}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
-                activeTab === "audit"
-                  ? "bg-green-500 text-white shadow-sm"
-                  : "text-text-secondary hover:text-text-main"
-              }`}
-            >
-              <AlertTriangle size={14} />
-              Kiểm Tra Lại
-            </button>
+            {/* Pill Tab Switcher */}
+            <div className="flex bg-surface-subtle p-1 rounded-xl border border-border-main shrink-0">
+              <button
+                type="button"
+                onClick={() => setActiveTab("pending")}
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-2 ${
+                  activeTab === "pending"
+                    ? "bg-primary text-white"
+                    : "text-text-muted hover:text-text-main"
+                }`}
+              >
+                <Shield size={14} />
+                <span>Chờ duyệt</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("audit")}
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-2 ${
+                  activeTab === "audit"
+                    ? "bg-primary text-white"
+                    : "text-text-muted hover:text-text-main"
+                }`}
+              >
+                <AlertTriangle size={14} />
+                <span>Kiểm tra lại</span>
+              </button>
+            </div>
           </div>
-        </div>
+        </Card>
 
         {/* Content Table */}
-        <div className="bg-surface-main rounded-2xl overflow-hidden shadow-sm border border-border-main">
-          <table className="w-full text-left">
-            <thead className="bg-background-main text-xs uppercase font-bold text-text-secondary tracking-wider border-b border-border-main">
-              <tr>
-                <th className="px-6 py-4">Người đăng</th>
-                <th className="px-6 py-4">Nội dung</th>
-                <th className="px-6 py-4">Lý do AI</th>
-                {activeTab === "audit" && (
-                  <th className="px-6 py-4 text-orange-400">Người duyệt</th>
-                )}
-                <th className="px-6 py-4 text-right">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody className="text-sm">
-              {loading ? (
+        <Card className="overflow-hidden border-border-main">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-surface-subtle text-[11px] uppercase font-bold text-text-secondary tracking-wider border-b border-border-main">
                 <tr>
-                  <td
-                    colSpan="5"
-                    className="px-6 py-10 text-center text-text-muted"
-                  >
-                    Đang tải danh sách...
-                  </td>
+                  <th className="px-5 py-3.5">Người đăng</th>
+                  <th className="px-5 py-3.5">Nội dung bài viết</th>
+                  <th className="px-5 py-3.5">Cảnh báo AI</th>
+                  {activeTab === "audit" && (
+                    <th className="px-5 py-3.5">Người duyệt</th>
+                  )}
+                  <th className="px-5 py-3.5 text-right">Thao tác</th>
                 </tr>
-              ) : posts.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan="5"
-                    className="px-6 py-15 text-center text-text-muted"
-                  >
-                    <div className="flex flex-col items-center gap-3">
-                      <Inbox size={48} className="opacity-20" />
-                      <p>Hiện tại không có mục nào cần xử lý.</p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                posts.map((post) => (
-                  <tr
-                    key={post.id}
-                    className="hover:bg-surface-main/60 transition-colors text-text-main group border-b border-border-main/50 last:border-0"
-                  >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="size-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black overflow-hidden shadow-sm border border-border-main">
-                          {post.authorAvatar ? (
-                            <img src={post.authorAvatar} alt="" />
-                          ) : (
-                            post.authorFullName?.charAt(0) || "U"
-                          )}
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="font-bold text-sm text-text-main">
-                            {post.authorFullName || "Anonymous"}
-                          </span>
-                          <span className="text-xs text-text-secondary opacity-60 italic">
-                            {post.visibility}
-                          </span>
-                          {post.authorLockedUntil &&
-                            new Date(post.authorLockedUntil) > new Date() && (
-                              <div className="flex items-center gap-1.5 mt-1">
-                                <span className="text-[10px] bg-red-500/10 text-red-500 px-1 rounded font-bold uppercase">
-                                  Locked
-                                </span>
-                              </div>
-                            )}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 max-w-sm">
-                      <p className="truncate text-text-secondary italic text-sm">
-                        "{post.content}"
-                      </p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col gap-1">
-                        <span
-                          className={`px-3 py-1 text-xs font-bold uppercase rounded-lg border w-fit ${
-                            post.aiStatus === "TOXIC"
-                              ? "bg-red-500/10 text-red-500 border-red-500/20"
-                              : "bg-orange-500/10 text-orange-500 border-orange-500/20"
-                          }`}
-                        >
-                          {post.aiStatus}
-                        </span>
-                        {post.aiReason && (
-                          <span className="text-xs text-text-secondary italic max-w-[150px] truncate">
-                            {post.aiReason}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    {activeTab === "audit" && (
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2 text-xs font-bold text-orange-500/80">
-                          <ShieldCheck size={14} />
-                          {post.approvedByFullName || "System"}
+              </thead>
+              <tbody className="text-sm divide-y divide-border-main">
+                {loading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <tr key={i}>
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-3">
+                          <Skeleton rounded="full" className="size-10 shrink-0" />
+                          <div className="space-y-1.5">
+                            <Skeleton className="h-4 w-28" />
+                            <Skeleton className="h-3 w-16" />
+                          </div>
                         </div>
                       </td>
-                    )}
-                    <td className="px-6 py-4 text-right flex justify-end gap-3">
-                      {activeTab === "pending" && (
-                        <button
-                          onClick={() => handleApprove(post.id)}
-                          className="size-10 bg-surface-main hover:bg-green-500 text-green-500 hover:text-white transition-all rounded-xl flex items-center justify-center shadow-sm border border-border-main hover:border-transparent"
-                          title="Phê duyệt"
-                        >
-                          <CheckCircle2 size={20} />
-                        </button>
+                      <td className="px-5 py-4">
+                        <Skeleton className="h-4 w-64" />
+                      </td>
+                      <td className="px-5 py-4">
+                        <Skeleton className="h-6 w-20 rounded-full" />
+                      </td>
+                      {activeTab === "audit" && (
+                        <td className="px-5 py-4">
+                          <Skeleton className="h-4 w-24" />
+                        </td>
                       )}
-                      <button
-                        onClick={() => handleDelete(post.id)}
-                        className="size-10 bg-surface-main hover:bg-red-500 text-red-500 hover:text-white transition-all rounded-xl flex items-center justify-center shadow-sm border border-border-main hover:border-transparent"
-                        title="Xóa vĩnh viễn"
-                      >
-                        <Trash2 size={20} />
-                      </button>
+                      <td className="px-5 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Skeleton className="size-8 rounded-xl" />
+                          <Skeleton className="size-8 rounded-xl" />
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : posts.length === 0 ? (
+                  <tr>
+                    <td colSpan={activeTab === "audit" ? 5 : 4} className="p-8">
+                      <EmptyState
+                        icon={Inbox}
+                        title="Không có mục nào cần xử lý"
+                        description={
+                          activeTab === "pending"
+                            ? "Hiện tại không có bài viết nào đang chờ kiểm duyệt."
+                            : "Không có bài viết nào trong danh sách kiểm tra lại."
+                        }
+                      />
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination Controls */}
-        <div className="flex justify-between items-center bg-surface/20 p-6 rounded-2xl border border-border/50">
-          <div className="text-text-muted text-xs font-bold">
-            Hiển thị <span className="text-text-main">{posts.length}</span> trên{" "}
-            <span className="text-text-main">{totalElements}</span> bài viết
+                ) : (
+                  posts.map((post) => (
+                    <tr
+                      key={post.id}
+                      className="hover:bg-surface-subtle/50 transition-colors text-text-main group"
+                    >
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar
+                            src={post.authorAvatar}
+                            name={post.authorFullName || "User"}
+                            size="md"
+                          />
+                          <div className="min-w-0">
+                            <p className="font-bold text-sm truncate text-text-main">
+                              {post.authorFullName || "Người dùng ẩn danh"}
+                            </p>
+                            <span className="text-xs text-text-muted font-medium">
+                              {post.visibility || "PUBLIC"}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4 max-w-sm">
+                        <p className="line-clamp-2 text-text-secondary text-xs leading-relaxed font-medium">
+                          "{post.content}"
+                        </p>
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="flex flex-col items-start gap-1">
+                          <Badge
+                            variant={post.aiStatus === "TOXIC" ? "danger" : "warning"}
+                            size="sm"
+                          >
+                            {post.aiStatus || "Cảnh báo"}
+                          </Badge>
+                          {post.aiReason && (
+                            <span className="text-[11px] text-text-muted truncate max-w-[160px]">
+                              {post.aiReason}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      {activeTab === "audit" && (
+                        <td className="px-5 py-4">
+                          <div className="flex items-center gap-1.5 text-xs font-semibold text-text-muted">
+                            <ShieldCheck size={14} className="text-primary" />
+                            <span>{post.approvedByFullName || "Hệ thống"}</span>
+                          </div>
+                        </td>
+                      )}
+                      <td className="px-5 py-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          {activeTab === "pending" && (
+                            <IconButton
+                              variant="secondary"
+                              size="sm"
+                              icon={CheckCircle}
+                              aria-label="Phê duyệt bài viết"
+                              onClick={() => handleApprove(post.id)}
+                            />
+                          )}
+                          <IconButton
+                            variant="danger"
+                            size="sm"
+                            icon={Trash2}
+                            aria-label="Xóa bài viết vi phạm"
+                            onClick={() => handleDelete(post.id)}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setCurrentPage((prev) => Math.max(0, prev - 1))}
-              disabled={currentPage === 0 || loading}
-              className="p-2 bg-background border border-border/50 rounded-lg text-text-muted hover:text-text-main disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <div className="flex items-center px-4 bg-background border border-border/50 rounded-lg text-[10px] font-black text-text-main uppercase tracking-widest">
-              Trang {currentPage + 1} / {totalPages || 1}
+
+          {/* Flat Pagination Footer */}
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 bg-surface-subtle/30 px-5 py-3 border-t border-border-main">
+            <div className="text-text-muted text-xs font-medium">
+              Hiển thị <span className="text-text-main font-bold">{posts.length}</span>{" "}
+              trên <span className="text-text-main font-bold">{totalElements}</span> bài viết
             </div>
-            <button
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1))
-              }
-              disabled={currentPage >= totalPages - 1 || loading}
-              className="p-2 bg-background border border-border/50 rounded-lg text-text-muted hover:text-text-main disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-            >
-              <ChevronRight size={20} />
-            </button>
+            <div className="flex items-center gap-2">
+              <IconButton
+                variant="secondary"
+                size="sm"
+                icon={CaretLeft}
+                aria-label="Trang trước"
+                disabled={currentPage === 0 || loading}
+                onClick={() => fetchPosts(Math.max(0, currentPage - 1))}
+              />
+              <span className="text-xs font-bold text-text-main px-3 py-1 bg-surface-main rounded-xl border border-border-main">
+                {currentPage + 1} / {totalPages || 1}
+              </span>
+              <IconButton
+                variant="secondary"
+                size="sm"
+                icon={CaretRight}
+                aria-label="Trang sau"
+                disabled={currentPage >= totalPages - 1 || loading}
+                onClick={() => fetchPosts(currentPage + 1)}
+              />
+            </div>
           </div>
-        </div>
-
-        {/* Shared Confirmation Modal */}
-        <ConfirmModal
-          isOpen={confirmConfig.isOpen}
-          title={confirmConfig.title}
-          message={confirmConfig.message}
-          type="danger"
-          onConfirm={confirmConfig.onConfirm}
-          onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
-          confirmText="Xác nhận Xóa"
-        />
+        </Card>
       </div>
+
+      {/* Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={confirmConfig.isOpen}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        type="danger"
+        confirmText="Xác nhận xóa"
+        cancelText="Hủy bỏ"
+        onConfirm={confirmConfig.onConfirm}
+        onClose={() => setConfirmConfig((prev) => ({ ...prev, isOpen: false }))}
+      />
     </AdminLayout>
   );
 };

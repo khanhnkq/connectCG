@@ -67,7 +67,7 @@ const GroupInspectorModal = ({
   const hasReports = reports && reports.length > 0;
 
   return (
-    <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-black/60 animate-in fade-in duration-200">
       {inspectorData.loading ? (
         <div className="flex flex-col items-center gap-4">
           <div className="size-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
@@ -78,7 +78,7 @@ const GroupInspectorModal = ({
       ) : (
         <div
           className={`bg-surface-main w-full ${hasReports ? "max-w-[75rem]" : "max-w-5xl"
-            } h-[85vh] rounded-[2.5rem] shadow-2xl overflow-hidden flex animate-in zoom-in-95 duration-300`}
+            } h-[85vh] rounded-2xl border border-border-main overflow-hidden flex animate-in zoom-in-95 duration-200`}
         >
           {/* MAIN CONTENT AREA */}
           <div className="flex-1 flex flex-col min-w-0">
@@ -97,7 +97,7 @@ const GroupInspectorModal = ({
               {!hasReports && (
                 <button
                   onClick={onClose}
-                  className="absolute top-6 right-6 size-10 rounded-full bg-black/40 text-white backdrop-blur-md flex items-center justify-center hover:bg-black/60 transition-all border border-white/10 z-10"
+                  className="absolute top-6 right-6 size-10 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-all border border-white/20 z-10"
                 >
                   <X size={20} />
                 </button>
@@ -106,11 +106,11 @@ const GroupInspectorModal = ({
               <div className="absolute bottom-6 left-8 right-8 flex items-end justify-between">
                 <div>
                   <div className="flex items-center gap-3 mb-2">
-                    <h2 className="text-3xl font-black text-white tracking-tight drop-shadow-md">
+                    <h2 className="text-3xl font-black text-white tracking-tight">
                       {inspectorData.group?.name}
                     </h2>
                     <span
-                      className={`px-3 py-1 text-xs font-black uppercase rounded-lg border backdrop-blur-md ${inspectorData.group?.privacy === "PUBLIC"
+                      className={`px-3 py-1 text-xs font-black uppercase rounded-lg border ${inspectorData.group?.privacy === "PUBLIC"
                           ? "bg-green-500/20 text-green-400 border-green-500/20"
                           : "bg-orange-500/20 text-orange-400 border-orange-500/20"
                         }`}
@@ -120,7 +120,7 @@ const GroupInspectorModal = ({
                         : "RIÊNG TƯ"}
                     </span>
                   </div>
-                  <p className="text-white/90 text-sm max-w-2xl line-clamp-1 font-medium drop-shadow-sm">
+                  <p className="text-white/90 text-sm max-w-2xl line-clamp-1 font-medium">
                     {inspectorData.group?.description || "Chưa có mô tả."}
                   </p>
                 </div>
@@ -562,7 +562,7 @@ const GroupInspectorModal = ({
                         onClick={() =>
                           onAction && onAction(inspectorData.group)
                         }
-                        className="flex-1 py-3 bg-[#ff3b3b] hover:bg-[#ff3b3b]/90 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-[0_0_15px_rgba(255,59,59,0.3)] text-xs"
+                        className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all text-xs"
                       >
                         <Trash2 size={16} />
                         {actionLabel}

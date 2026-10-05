@@ -620,12 +620,11 @@ const AdminReportsManagement = () => {
     <AdminLayout
       title="Quản lý báo cáo"
       activeTab="Reports"
-      brandName="Social Admin"
+      brandName="Connect Admin"
     >
       <div className="p-8 space-y-6 relative min-h-screen">
         {/* HEADER */}
-        {/* HEADER */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 bg-surface-main p-6 rounded-2xl border border-border-main shadow-sm">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 bg-surface-main p-6 rounded-2xl border border-border-main">
           <div>
             <h2 className="text-2xl font-extrabold text-text-main tracking-tight flex items-center gap-3">
               Báo cáo vi phạm
@@ -641,22 +640,26 @@ const AdminReportsManagement = () => {
 
           <div className="flex items-center gap-3">
             {/* STATUS FILTER */}
-            <div className="flex bg-background-main p-1 rounded-xl border border-border-main">
+            <div className="flex bg-surface-subtle p-1 rounded-xl border border-border-main">
               <button
+                type="button"
                 onClick={() => setFilterStatus("PENDING")}
-                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${filterStatus === "PENDING"
-                  ? "bg-primary text-[#231810] shadow-sm"
-                  : "text-text-secondary hover:text-text-main"
-                  }`}
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  filterStatus === "PENDING"
+                    ? "bg-primary text-white"
+                    : "text-text-muted hover:text-text-main"
+                }`}
               >
                 Đang chờ
               </button>
               <button
+                type="button"
                 onClick={() => setFilterStatus("RESOLVED")}
-                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${filterStatus === "RESOLVED"
-                  ? "bg-green-500 text-white shadow-sm"
-                  : "text-text-secondary hover:text-text-main"
-                  }`}
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  filterStatus === "RESOLVED"
+                    ? "bg-primary text-white"
+                    : "text-text-muted hover:text-text-main"
+                }`}
               >
                 Đã xong
               </button>
@@ -664,10 +667,11 @@ const AdminReportsManagement = () => {
 
             {/* SORT BUTTON */}
             <button
+              type="button"
               onClick={() =>
                 setSortOrder(sortOrder === "desc" ? "asc" : "desc")
               }
-              className="px-4 py-2 rounded-xl bg-background-main border border-border-main text-text-secondary hover:text-text-main transition-all font-bold text-xs flex items-center gap-2"
+              className="px-4 py-2 rounded-xl bg-surface-subtle border border-border-main text-text-secondary hover:text-text-main transition-colors font-bold text-xs flex items-center gap-2 cursor-pointer"
               title={sortOrder === "desc" ? "Cũ nhất" : "Mới nhất"}
             >
               {sortOrder === "desc" ? (
@@ -681,20 +685,19 @@ const AdminReportsManagement = () => {
         </div>
 
         {/* TABS */}
-        <div className="flex gap-10 px-6">
+        <div className="flex gap-8 px-2 border-b border-border-main">
           {Object.entries(TABS).map(([key, label]) => (
             <button
               key={key}
+              type="button"
               onClick={() => setActiveTab(key)}
-              className={`pb-4 text-xs font-black uppercase tracking-[0.15em] transition-all relative ${activeTab === key
-                ? "text-primary"
-                : "text-text-muted hover:text-text-main"
-                }`}
+              className={`pb-3 text-xs font-black uppercase tracking-wider transition-colors relative cursor-pointer ${
+                activeTab === key
+                  ? "text-primary border-b-2 border-primary"
+                  : "text-text-muted hover:text-text-main"
+              }`}
             >
               {label}
-              {activeTab === key && (
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-full shadow-lg shadow-primary/40" />
-              )}
             </button>
           ))}
         </div>

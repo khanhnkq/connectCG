@@ -1,14 +1,52 @@
-import { Warning as AlertTriangle, Eye, Pencil, Trash as Trash2, MagnifyingGlass as Search, Users, CaretDown as ChevronDown } from "@phosphor-icons/react";
 import React, { useState, useEffect } from "react";
-import AdminLayout from "../../components/layout-admin/AdminLayout";
-import * as Yup from "yup";
+import {
+  Users,
+  Eye,
+  Trash as Trash2,
+  MagnifyingGlass as Search,
+  CaretDown as ChevronDown,
+} from "@phosphor-icons/react";
 import toast from "react-hot-toast";
-import ConfirmModal from "../../components/common/ConfirmModal";
+import AdminLayout from "../../components/layout-admin/AdminLayout";
 import { findAllGroup, deleteGroup } from "../../services/groups/GroupService";
 import GroupInspectorModal from "../../components/admin/GroupInspectorModal";
+import {
+  Card,
+  Badge,
+  Button,
+  IconButton,
+  ConfirmDialog,
+  Skeleton,
+  EmptyState,
+} from "../../components/ui";
+
+/**
+ * Modern Flat Skeleton for Group Cards in Admin
+ */
+function GroupCardSkeleton() {
+  return (
+    <Card className="overflow-hidden flex flex-col h-full border-border-main">
+      <Skeleton className="h-44 w-full rounded-none" />
+      <div className="p-5 space-y-4 flex flex-col flex-1">
+        <div className="space-y-2">
+          <Skeleton className="h-5 w-40" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-3/4" />
+        </div>
+        <div className="grid grid-cols-2 gap-3 pt-2">
+          <Skeleton className="h-14 w-full rounded-xl" />
+          <Skeleton className="h-14 w-full rounded-xl" />
+        </div>
+        <div className="pt-4 border-t border-border-main flex justify-end gap-2 mt-auto">
+          <Skeleton className="h-8 w-20 rounded-xl" />
+          <Skeleton className="size-8 rounded-xl" />
+        </div>
+      </div>
+    </Card>
+  );
+}
 
 const AdminGroupsManager = () => {
-  // 1. Initial State with Owners
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -29,13 +67,11 @@ const AdminGroupsManager = () => {
     setInspectingGroupId(null);
   };
 
-  // Mock report data added to the second group
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await findAllGroup(0, 1000); // Fetch all for admin
-        // Handle paginated response (Spring Boot Page<T>) or direct array
+        const response = await findAllGroup(0, 1000);
         const list = Array.isArray(response)
           ? response
           : response.content || [];
@@ -62,13 +98,12 @@ const AdminGroupsManager = () => {
     setConfirmConfig({
       isOpen: true,
       title: "Vô hiệu hóa nhóm?",
-      message: `Bạn sắp vô hiệu hóa "${name}". Nhóm sẽ bị ẩn khỏi bảng tin công khai và hạn chế thành viên mới.`,
+      message: `Bạn sắp vô hiệu hóa "${name}". Nhóm sẽ bị ẩn khỏi danh sách công khai và hạn chế thành viên mới.`,
       onConfirm: async () => {
         try {
           await deleteGroup(id);
-          setGroups(groups.filter((g) => g.id !== id));
+          setGroups((prev) => prev.filter((g) => g.id !== id));
           toast.success("Đã xóa nhóm thành công");
-          // If expecting, close inspector too
           if (inspectingGroupId === id) {
             setInspectingGroupId(null);
           }
@@ -76,7 +111,7 @@ const AdminGroupsManager = () => {
           console.error("Failed to delete group:", error);
           toast.error("Không thể xóa nhóm");
         }
-        setConfirmConfig({ ...confirmConfig, isOpen: false });
+        setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
       },
     });
   };
@@ -85,172 +120,195 @@ const AdminGroupsManager = () => {
     <AdminLayout
       title="Quản lý nhóm"
       activeTab="Groups"
-      brandName="Social Admin"
+      brandName="Connect Admin"
     >
-      <div className="p-8 space-y-8">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-surface-main p-6 rounded-2xl border border-border-main shadow-sm">
-          <div className="flex items-center gap-3">
-            <Users className="text-primary size-8" />
-            <h2 className="text-2xl font-extrabold text-text-main tracking-tight">
-              Danh sách cộng đồng
-            </h2>
-          </div>
-          <div className="flex flex-wrap gap-4 w-full md:w-auto flex-1 max-w-2xl justify-end">
-            <div className="relative min-w-[200px]">
-              <select
-                value={privacyFilter}
-                onChange={(e) => setPrivacyFilter(e.target.value)}
-                className="w-full bg-background-main rounded-2xl py-3 px-5 text-sm text-text-main focus:outline-none focus:ring-4 focus:ring-primary/5 transition-all appearance-none cursor-pointer font-bold border border-border-main"
-              >
-                <option value="">Tất cả quyền riêng tư</option>
-                <option value="public">Công khai (Public)</option>
-                <option value="private">Riêng tư (Private)</option>
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none size-4" />
+      <div className="p-6 md:p-8 space-y-6">
+        {/* Header & Filter Card */}
+        <Card className="p-6 bg-surface-main border-border-main">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="size-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+                <Users size={24} weight="bold" />
+              </div>
+              <div>
+                <h2 className="text-xl font-extrabold text-text-main tracking-tight">
+                  Danh sách cộng đồng
+                </h2>
+                <p className="text-xs text-text-muted mt-0.5">
+                  Quản lý và kiểm duyệt các hội nhóm đang hoạt động trên hệ thống ({groups.length} nhóm)
+                </p>
+              </div>
             </div>
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted size-4" />
-              <input
-                type="text"
-                placeholder="Tìm kiếm nhóm..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-background-main rounded-2xl py-3 pl-12 pr-5 text-sm text-text-main focus:outline-none focus:ring-4 focus:ring-primary/5 transition-all font-medium border border-border-main"
+
+            {/* Controls */}
+            <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto flex-1 max-w-2xl justify-end">
+              <div className="relative min-w-[180px]">
+                <select
+                  value={privacyFilter}
+                  onChange={(e) => setPrivacyFilter(e.target.value)}
+                  className="w-full bg-surface-subtle rounded-xl py-2.5 px-4 text-xs text-text-main focus:outline-none focus:border-border-strong appearance-none cursor-pointer font-semibold border border-border-main transition-colors"
+                >
+                  <option value="">Tất cả quyền riêng tư</option>
+                  <option value="public">Công khai (Public)</option>
+                  <option value="private">Riêng tư (Private)</option>
+                </select>
+                <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none size-3.5" />
+              </div>
+
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted size-4" />
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm nhóm theo tên, mô tả..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full bg-surface-subtle rounded-xl py-2.5 pl-10 pr-4 text-xs text-text-main focus:outline-none focus:border-border-strong font-medium border border-border-main transition-colors"
+                />
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* Groups Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {loading ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <GroupCardSkeleton key={i} />
+            ))
+          ) : filteredGroups.length === 0 ? (
+            <div className="col-span-full">
+              <EmptyState
+                icon={Users}
+                title="Không tìm thấy nhóm nào"
+                description={
+                  searchTerm || privacyFilter
+                    ? "Không có nhóm nào phù hợp với điều kiện lọc hiện tại."
+                    : "Hệ thống chưa có nhóm nào được tạo."
+                }
               />
             </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {loading && (
-            <div className="col-span-full text-center py-12 text-text-muted animate-pulse">
-              Đang tải dữ liệu...
-            </div>
-          )}
-
-          {!loading && filteredGroups.length === 0 && (
-            <div className="col-span-full text-center py-12 text-text-muted italic">
-              Không tìm thấy nhóm nào
-            </div>
-          )}
-
-          {!loading &&
+          ) : (
             filteredGroups.map((group, index) => (
-              <div
+              <Card
                 key={group.id}
-                className="bg-surface-main rounded-2xl overflow-hidden group hover:bg-surface-main/80 transition-all shadow-sm hover:shadow-md flex flex-col h-full"
+                className="overflow-hidden flex flex-col h-full border-border-main hover:border-border-strong transition-colors"
               >
-                <div className="h-44 relative overflow-hidden">
+                {/* Cover Image */}
+                <div className="h-44 relative overflow-hidden bg-surface-subtle">
                   <img
                     src={
                       group.image ||
                       `https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=800&q=80`
                     }
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     alt=""
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-80"></div>
-                  <div className="absolute top-4 right-4 flex gap-2">
-                    <span
-                      className={`px-3 py-1.5 text-[10px] font-black uppercase rounded-xl border backdrop-blur-md ${
+                  <div className="absolute inset-0 bg-gradient-to-t from-surface-main via-transparent to-transparent opacity-80" />
+
+                  {/* Top Badges */}
+                  <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                    <Badge
+                      variant={
                         group.privacy?.toLowerCase() === "public"
-                          ? "bg-green-500/10 text-green-500 border-green-500/10"
-                          : "bg-orange-500/10 text-orange-500 border-orange-500/10"
-                      }`}
+                          ? "success"
+                          : "warning"
+                      }
+                      size="sm"
                     >
                       {group.privacy?.toLowerCase() === "public"
-                        ? "CÔNG KHAI"
-                        : "RIÊNG TƯ"}
-                    </span>
+                        ? "Công khai"
+                        : "Riêng tư"}
+                    </Badge>
                     {group.is_deleted && (
-                      <span className="px-2.5 py-1 text-[9px] font-black uppercase rounded-lg bg-red-500 text-white border border-white/20">
+                      <Badge variant="danger" size="sm">
                         Đã xóa
-                      </span>
+                      </Badge>
                     )}
                   </div>
-                  <div className="absolute bottom-4 left-6 flex items-center gap-3">
-                    <div className="size-8 rounded-full bg-primary flex items-center justify-center text-[10px] font-black text-white shadow-lg">
+
+                  {/* Owner Label */}
+                  <div className="absolute bottom-3 left-4 flex items-center gap-2.5">
+                    <div className="size-6 rounded-full bg-primary flex items-center justify-center text-[10px] font-bold text-white">
                       {index + 1}
                     </div>
                     <div>
-                      <p className="text-[10px] text-white/60 font-black uppercase tracking-tighter leading-none">
-                        Chủ sở hữu
+                      <p className="text-[10px] text-white/70 font-semibold uppercase tracking-wider leading-none">
+                        Chủ nhóm
                       </p>
-                      <p className="text-xs text-white font-bold">
-                        {group.ownerName}
+                      <p className="text-xs text-white font-bold truncate max-w-[180px]">
+                        {group.ownerName || "Chưa rõ"}
                       </p>
                     </div>
                   </div>
                 </div>
-                <div className="p-6 space-y-4 flex flex-col flex-1">
+
+                {/* Body Content */}
+                <div className="p-5 space-y-4 flex flex-col flex-1">
                   <div>
-                    <div className="flex justify-between items-start">
-                      <h4 className="text-xl font-black text-text-main group-hover:text-primary transition-colors">
-                        {group.name}
-                      </h4>
-                    </div>
-                    <p className="text-sm text-text-secondary line-clamp-2 mt-3 font-medium leading-relaxed">
-                      {group.description || "Chưa có mô tả"}
+                    <h4 className="text-base font-bold text-text-main line-clamp-1">
+                      {group.name}
+                    </h4>
+                    <p className="text-xs text-text-secondary line-clamp-2 mt-1.5 leading-relaxed">
+                      {group.description || "Chưa có mô tả cho nhóm này."}
                     </p>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-background-main/50 p-4 rounded-2xl border border-border-main/50">
-                      <p className="text-xs text-text-secondary font-bold uppercase tracking-wider mb-1.5">
+
+                  {/* Info Cards */}
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    <div className="bg-surface-subtle p-3 rounded-xl border border-border-main">
+                      <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider mb-1">
                         Ngày tạo
                       </p>
-                      <p className="text-sm text-text-main font-bold">
+                      <p className="text-xs text-text-main font-semibold">
                         {group.createdAt
-                          ? new Date(group.createdAt).toLocaleDateString()
+                          ? new Date(group.createdAt).toLocaleDateString("vi-VN")
                           : "N/A"}
                       </p>
                     </div>
-                    <div className="bg-background-main/50 p-4 rounded-2xl border border-border-main/50">
-                      <p className="text-xs text-text-secondary font-bold uppercase tracking-wider mb-1.5">
-                        Media ID
+                    <div className="bg-surface-subtle p-3 rounded-xl border border-border-main">
+                      <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider mb-1">
+                        Ảnh bìa ID
                       </p>
-                      <p className="text-sm text-text-main font-bold truncate">
-                        {group.cover_media_id || "None"}
+                      <p className="text-xs text-text-main font-semibold truncate">
+                        {group.cover_media_id || "Mặc định"}
                       </p>
                     </div>
                   </div>
-                  <div className="pt-4 border-t border-border/30 flex justify-end items-center mt-auto">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleInspect(group)}
-                        className="px-4 py-2 bg-surface-main hover:bg-background-main rounded-xl text-text-main transition-all font-bold flex items-center gap-2 shadow-sm hover:shadow-md"
-                        title="Xem chi tiết"
-                      >
-                        <Eye size={18} />
-                        <span className="text-xs uppercase tracking-wider font-bold">
-                          Chi tiết
-                        </span>
-                      </button>
 
-                      <button
-                        onClick={() => handleDeactivate(group.id, group.name)}
-                        className="size-10 bg-surface-main hover:bg-red-500 hover:text-white rounded-xl text-red-500 flex items-center justify-center transition-all shadow-sm hover:shadow-md"
-                        title="Xóa nhóm"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
+                  {/* Footer Actions */}
+                  <div className="pt-4 border-t border-border-main flex justify-end items-center gap-2 mt-auto">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleInspect(group)}
+                    >
+                      Chi tiết
+                    </Button>
+                    <IconButton
+                      variant="danger"
+                      size="sm"
+                      icon={Trash2}
+                      aria-label="Xóa nhóm"
+                      onClick={() => handleDeactivate(group.id, group.name)}
+                    />
                   </div>
                 </div>
-              </div>
-            ))}
+              </Card>
+            ))
+          )}
         </div>
       </div>
 
-      {/* Shared Confirmation Modal */}
-      <ConfirmModal
+      {/* Confirmation Dialog */}
+      <ConfirmDialog
         isOpen={confirmConfig.isOpen}
         title={confirmConfig.title}
         message={confirmConfig.message}
         type="danger"
         onConfirm={confirmConfig.onConfirm}
-        onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
+        onClose={() => setConfirmConfig((prev) => ({ ...prev, isOpen: false }))}
         confirmText="Xác nhận"
+        cancelText="Hủy bỏ"
       />
 
       {/* Group Inspector Modal */}
