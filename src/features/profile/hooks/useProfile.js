@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import toast from "react-hot-toast";
 
@@ -15,6 +15,8 @@ import FriendRequestService from "../../../services/friend/FriendRequestService"
 import ChatService from "../../../services/chat/ChatService";
 import PostService from "../../../services/PostService";
 import { uploadAvatar, uploadCover } from "../../../utils/uploadImage";
+
+const VALID_TABS = ["timeline", "about", "media", "hobbies", "friends"];
 
 /**
  * Unified Profile Hook (SRP)
@@ -58,8 +60,38 @@ export function useProfile(param, modeParam = "auto") {
   const [memberProfile, setMemberProfile] = useState(null);
   const [loadingMember, setLoadingMember] = useState(!isOwner);
 
-  // Active navigation tab
-  const [activeTab, setActiveTab] = useState("timeline");
+  // Active navigation tab synchronized with URL search params
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlTab = searchParams.get("tab");
+  const initialTab = VALID_TABS.includes(urlTab) ? urlTab : "timeline";
+
+  const [activeTab, setActiveTabState] = useState(initialTab);
+
+  // Sync state if URL search param changes (e.g. browser back/forward)
+  useEffect(() => {
+    if (urlTab && VALID_TABS.includes(urlTab) && urlTab !== activeTab) {
+      setActiveTabState(urlTab);
+    }
+  }, [urlTab, activeTab]);
+
+  const setActiveTab = useCallback(
+    (newTab) => {
+      setActiveTabState(newTab);
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (newTab === "timeline") {
+            next.delete("tab");
+          } else {
+            next.set("tab", newTab);
+          }
+          return next;
+        },
+        { replace: true }
+      );
+    },
+    [setSearchParams]
+  );
 
   // Upload states
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -67,6 +99,7 @@ export function useProfile(param, modeParam = "auto") {
 
   // Modal dialog states
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editFlow, setEditFlow] = useState("basic");
   const [showReportModal, setShowReportModal] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState({
     isOpen: false,
@@ -455,6 +488,8 @@ export function useProfile(param, modeParam = "auto") {
     startChat,
     isEditModalOpen,
     setIsEditModalOpen,
+    editFlow,
+    setEditFlow,
     showReportModal,
     setShowReportModal,
     confirmDialog,

@@ -3,7 +3,6 @@ import { renderHook, act } from "@testing-library/react";
 import { useFeed } from "../hooks/useFeed";
 import { usePostActions } from "../hooks/usePostActions";
 import postService from "../../../services/PostService";
-import reportService from "../../../services/ReportService";
 
 describe("Feed Custom Hooks", () => {
   beforeEach(() => {
@@ -95,6 +94,58 @@ describe("Feed Custom Hooks", () => {
       });
       expect(result.current.posts).toHaveLength(1);
       expect(result.current.posts[0].id).toBe(1);
+    });
+
+    it("maintains stable fetcher reference and avoids redundant calls on re-renders", async () => {
+      const fetcher1 = vi.fn().mockResolvedValue({
+        data: { content: [{ id: 1, content: "Post 1" }], last: false },
+      });
+      const fetcher2 = vi.fn().mockResolvedValue({
+        data: { content: [{ id: 1, content: "Post 1" }], last: false },
+      });
+
+      const { rerender } = renderHook(
+        ({ fetcher }) => useFeed({ fetcher, pageSize: 5, autoFetch: true }),
+        { initialProps: { fetcher: fetcher1 } }
+      );
+
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      expect(fetcher1).toHaveBeenCalledTimes(1);
+
+      // Re-render with new function identity
+      rerender({ fetcher: fetcher2 });
+
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      expect(fetcher2).not.toHaveBeenCalled();
+    });
+
+    it("cleans up observer on unmount safely", () => {
+      const disconnectMock = vi.fn();
+      class MockIntersectionObserver {
+        constructor() {
+          this.observe = vi.fn();
+          this.disconnect = disconnectMock;
+        }
+      }
+      window.IntersectionObserver = MockIntersectionObserver;
+
+      const { result, unmount } = renderHook(() =>
+        useFeed({ autoFetch: false })
+      );
+
+      const dummyNode = document.createElement("div");
+      act(() => {
+        result.current.lastPostElementRef(dummyNode);
+      });
+
+      unmount();
+      expect(disconnectMock).toHaveBeenCalled();
     });
   });
 
@@ -197,6 +248,126 @@ describe("Feed Custom Hooks", () => {
       });
       expect(result.current.showShareModal).toBe(false);
       expect(result.current.showReportModal).toBe(true);
+    });
+
+    it("does not attach window event listeners for individual posts", () => {
+      const addEventListenerSpy = vi.spyOn(window, "addEventListener");
+      const postData = { id: 500, reactCount: 0 };
+
+      renderHook(() => usePostActions({ postData }));
+
+      // usePostActions must NOT add reactionEvent, commentEvent or postEvent to window
+      const calls = addEventListenerSpy.mock.calls.map((call) => call[0]);
+      expect(calls).not.toContain("reactionEvent");
+      expect(calls).not.toContain("commentEvent");
+      expect(calls).not.toContain("postEvent");
+    });
+
+    it("synchronizes local reaction and counters when postData props change", () => {
+      let currentPostData = {
+        id: 600,
+        currentUserReaction: null,
+        reactCount: 1,
+        commentCount: 2,
+        shareCount: 3,
+      };
+
+      const { result, rerender } = renderHook(
+        ({ data }) => usePostActions({ postData: data }),
+        { initialProps: { data: currentPostData } }
+      );
+
+      expect(result.current.localReactCount).toBe(1);
+      expect(result.current.localCommentCount).toBe(2);
+      expect(result.current.localShareCount).toBe(3);
+
+      // Parent updates props with new counts from centralized feed
+      currentPostData = {
+        id: 600,
+        currentUserReaction: "LIKE",
+        reactCount: 20,
+        commentCount: 10,
+        shareCount: 5,
+      };
+      rerender({ data: currentPostData });
+
+      expect(result.current.localReaction).toBe("LIKE");
+      expect(result.current.localReactCount).toBe(20);
+      expect(result.current.localCommentCount).toBe(10);
+      expect(result.current.localShareCount).toBe(5);
+    });
+  });
+
+  describe("useFeed centralized realtime sync", () => {
+    it("updates post reactCount and commentCount on window postEvent", async () => {
+      const initialPosts = [
+        { id: 10, content: "Bài 10", reactCount: 2, commentCount: 0 },
+        { id: 20, content: "Bài 20", reactCount: 5, commentCount: 3 },
+      ];
+
+      const { result } = renderHook(() =>
+        useFeed({ autoFetch: false, initialPosts, enableRealtime: true })
+      );
+
+      expect(result.current.posts[0].reactCount).toBe(2);
+
+      // Simulate centralized realtime event for post 10
+      act(() => {
+        window.dispatchEvent(
+          new CustomEvent("postEvent", {
+            detail: {
+              postId: 10,
+              newReactCount: 15,
+              newCommentCount: 4,
+            },
+          })
+        );
+      });
+
+      expect(result.current.posts[0].reactCount).toBe(15);
+      expect(result.current.posts[0].commentCount).toBe(4);
+      // Post 20 should remain untouched
+      expect(result.current.posts[1].reactCount).toBe(5);
+    });
+
+    it("removes deleted post when postEvent with action DELETED is dispatched", async () => {
+      const initialPosts = [
+        { id: 100, content: "Bài 100" },
+        { id: 200, content: "Bài 200" },
+      ];
+
+      const { result } = renderHook(() =>
+        useFeed({ autoFetch: false, initialPosts, enableRealtime: true })
+      );
+
+      expect(result.current.posts).toHaveLength(2);
+
+      act(() => {
+        window.dispatchEvent(
+          new CustomEvent("postEvent", {
+            detail: {
+              postId: 100,
+              action: "DELETED",
+            },
+          })
+        );
+      });
+
+      expect(result.current.posts).toHaveLength(1);
+      expect(result.current.posts[0].id).toBe(200);
+    });
+
+    it("cleans up postEvent listener on unmount", () => {
+      const removeEventListenerSpy = vi.spyOn(window, "removeEventListener");
+
+      const { unmount } = renderHook(() =>
+        useFeed({ autoFetch: false, initialPosts: [], enableRealtime: true })
+      );
+
+      unmount();
+
+      const calls = removeEventListenerSpy.mock.calls.map((call) => call[0]);
+      expect(calls).toContain("postEvent");
     });
   });
 });

@@ -11,6 +11,7 @@ export function ProfileHeader({
   profile,
   isOwner = false,
   onEditProfile,
+  onOpenMediaFlow,
   onAvatarChange,
   onCoverChange,
   isUploadingAvatar = false,
@@ -83,7 +84,13 @@ export function ProfileHeader({
                 <Button
                   variant="secondary"
                   size="sm"
-                  onClick={() => coverInputRef.current?.click()}
+                  onClick={() => {
+                    if (onOpenMediaFlow) {
+                      onOpenMediaFlow("cover");
+                    } else {
+                      coverInputRef.current?.click();
+                    }
+                  }}
                   disabled={isUploadingCover}
                   isLoading={isUploadingCover}
                   className="bg-black/60 hover:bg-black/80 text-white border-white/20"
@@ -117,7 +124,13 @@ export function ProfileHeader({
                     />
                     <button
                       type="button"
-                      onClick={() => avatarInputRef.current?.click()}
+                      onClick={() => {
+                        if (onOpenMediaFlow) {
+                          onOpenMediaFlow("avatar");
+                        } else {
+                          avatarInputRef.current?.click();
+                        }
+                      }}
                       disabled={isUploadingAvatar}
                       aria-label="Thay đổi ảnh đại diện"
                       className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white disabled:opacity-100"

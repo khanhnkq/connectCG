@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 import FriendService from '../services/friend/FriendService';
@@ -15,19 +15,11 @@ export function useFriends(userId = null, initialParams = {}) {
     const [hasMore, setHasMore] = useState(true);
     const [filters, setFilters] = useState({ name: "", ...initialParams });
 
+    // Cache pending requests to prevent N+1 queries during infinite scroll pagination
+    const pendingRequestMapRef = useRef(null);
+
     // Constants
     const PAGE_SIZE = 12; // Reasonable size for grid
-
-    // Reset list when filters change (search or userId changes)
-    useEffect(() => {
-        setFriends([]);
-        setPage(0);
-        setHasMore(true);
-        // Does not trigger fetch here, fetch is triggered by loadMore or initial effect depending on design
-        // Actually, let's trigger fetch here or let the infinite scroll component do it.
-        // Better pattern: Filter change -> Reset -> Trigger Fetch Page 0
-        fetchFriends(0, filters.name, true);
-    }, [userId, filters.name]); // Re-fetch if user or search term changes
 
     const fetchFriends = useCallback(async (pageToFetch, searchName, isReset = false) => {
         setIsLoading(true);
@@ -47,25 +39,27 @@ export function useFriends(userId = null, initialParams = {}) {
 
             let newFriends = (response.data.content || response.data || []).map(f => ({ ...f, type: 'FRIEND' }));
 
-            // Enrichment Logic (Same as before)
+            // Enrichment Logic for viewing another user's friends list
             if (userId && user) {
-                // ... (Keeping enrichment logic simple for brevity, assumed copied or we can keep it if needed)
-                // For infinite scroll, enrichment might be expensive per chunk.
-                // Let's copy the enrichment logic but ensure it runs on the new chunk only.
                 try {
-                    const pendingResponse = await FriendRequestService.getPendingRequests(0, 100);
-                    const pendingRequests = pendingResponse.data.content || [];
-                    const requestMap = new Map();
-                    pendingRequests.forEach(req => {
-                        requestMap.set(req.senderId, {
-                            isRequestReceiver: true,
-                            requestId: req.requestId
+                    // Only fetch pending requests once per reset or if not yet cached
+                    if (!pendingRequestMapRef.current || isReset) {
+                        const pendingResponse = await FriendRequestService.getPendingRequests(0, 100);
+                        const pendingRequests = pendingResponse.data?.content || pendingResponse.data || [];
+                        const requestMap = new Map();
+                        pendingRequests.forEach(req => {
+                            requestMap.set(req.senderId, {
+                                isRequestReceiver: true,
+                                requestId: req.requestId
+                            });
                         });
-                    });
+                        pendingRequestMapRef.current = requestMap;
+                    }
 
+                    const requestMap = pendingRequestMapRef.current;
                     newFriends = newFriends.map(friend => {
                         if (friend.relationshipStatus === 'PENDING') {
-                            const requestInfo = requestMap.get(friend.id);
+                            const requestInfo = requestMap?.get(friend.id);
                             if (requestInfo) {
                                 return { ...friend, ...requestInfo };
                             } else {
@@ -103,7 +97,15 @@ export function useFriends(userId = null, initialParams = {}) {
         } finally {
             setIsLoading(false);
         }
-    }, [userId, user]); // Removed dependencies to avoid loops, controlled by useEffect
+    }, [userId, user]);
+
+    // Reset list and re-fetch when filters or userId change
+    useEffect(() => {
+        setFriends([]);
+        setPage(0);
+        setHasMore(true);
+        fetchFriends(0, filters.name, true);
+    }, [userId, filters.name, fetchFriends]);
 
     const loadMore = useCallback(() => {
         if (!isLoading && hasMore) {

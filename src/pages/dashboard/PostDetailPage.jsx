@@ -87,6 +87,39 @@ export default function PostDetailPage() {
     }
   }, [id]);
 
+  // Centralized realtime listener for this specific post
+  useEffect(() => {
+    if (!id) return undefined;
+
+    const handleDetailEvent = (e) => {
+      const detail = e.detail;
+      if (!detail) return;
+      if (String(detail.postId) !== String(id)) return;
+
+      // If this post was deleted
+      if (detail.action === "DELETED" && !detail.commentId) {
+        toast.error("Bài viết này đã bị xóa");
+        navigate("/dashboard/feed");
+        return;
+      }
+
+      setPost((prev) => {
+        if (!prev) return prev;
+        const updated = { ...prev };
+        if (typeof detail.newReactCount === "number") updated.reactCount = detail.newReactCount;
+        if (typeof detail.newCommentCount === "number") updated.commentCount = detail.newCommentCount;
+        if (typeof detail.newShareCount === "number") updated.shareCount = detail.newShareCount;
+        if (detail.post) Object.assign(updated, detail.post);
+        return updated;
+      });
+    };
+
+    window.addEventListener("postEvent", handleDetailEvent);
+    return () => {
+      window.removeEventListener("postEvent", handleDetailEvent);
+    };
+  }, [id, navigate]);
+
   const handleUpdatePost = async (postId, updatedData) => {
     try {
       const response = await postService.updatePost(postId, updatedData);

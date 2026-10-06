@@ -6,41 +6,49 @@ import { WebSocketProvider } from "./context/WebSocketContext";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import GuestRoute from "./routes/GuestRoute";
+import PageLoadingFallback from "./components/common/PageLoadingFallback";
+import { ThemeProvider } from "./context/ThemeContext";
+import GroupDeletedModal from "./components/common/GroupDeletedModal";
+import { toastConfig } from "./config/toastConfig";
+import { clearSession, initializeAuth } from "./redux/slices/authSlice";
 
 const isMockMode = import.meta.env.VITE_USE_MOCK === "true";
 const MockDevPanel = isMockMode ? lazy(() => import("./mocks/components/MockDevPanel")) : null;
 
-import LandingPage from "./pages/LandingPage";
-import Login from "./pages/auth/Login";
-import ForgotPassword from "./pages/auth/ForgotPassword";
-import Step1 from "./pages/registration/Step1";
-import OnboardingPage from "./pages/registration/OnboardingPage";
-import GroupsManagement from "./pages/dashboard/GroupsManagement";
-import AdvancedMemberSearch from "./pages/search/AdvancedMemberSearch";
-import ChatInterface from "./pages/dashboard/ChatInterface";
-import ProfilePage from "./features/profile/ProfilePage.jsx";
-import CreateGroupPage from "./pages/dashboard/CreateGroupPage";
-import GroupDetailPage from "./pages/dashboard/GroupDetailPage";
-import EditGroupPage from "./pages/dashboard/EditGroupPage";
-import Newsfeed from "./pages/dashboard/Newsfeed";
-import FriendsPage from "./pages/dashboard/FriendsPage";
-import PrivacySettings from "./pages/dashboard/PrivacySettings";
-import AdminGroupsManager from "./pages/admin-website/AdminGroupsManager.jsx";
-import AdminMembersManager from "./pages/admin-website/AdminMembersManager.jsx";
-import MainFeedManager from "./pages/admin-website/MainFeedManager.jsx";
-import AdminReportsManager from "./pages/admin-website/AdminReportsManager.jsx";
-import ResetPassword from "./pages/auth/ResetPassword";
-import VerifyEmail from "./pages/auth/VerifyEmail";
-import OAuth2RedirectHandler from "./pages/auth/OAuth2RedirectHandler";
-import TermsOfService from "./pages/auth/TermsOfService";
-import { ThemeProvider } from "./context/ThemeContext";
+// --- Route-based Code Splitting (React.lazy) ---
+// Auth & Public Pages
+const LandingPage = lazy(() => import("./pages/LandingPage"));
+const Login = lazy(() => import("./pages/auth/Login"));
+const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
+const VerifyEmail = lazy(() => import("./pages/auth/VerifyEmail"));
+const Step1 = lazy(() => import("./pages/registration/Step1"));
+const TermsOfService = lazy(() => import("./pages/auth/TermsOfService"));
+const OAuth2RedirectHandler = lazy(() => import("./pages/auth/OAuth2RedirectHandler"));
 
-import GroupDeletedModal from "./components/common/GroupDeletedModal";
+// Onboarding Route
+const OnboardingPage = lazy(() => import("./pages/registration/OnboardingPage"));
 
-import { toastConfig } from "./config/toastConfig";
+// Main Dashboard Routes
+const Newsfeed = lazy(() => import("./pages/dashboard/Newsfeed"));
+const PostDetailPage = lazy(() => import("./pages/dashboard/PostDetailPage"));
+const ProfilePage = lazy(() => import("./features/profile/ProfilePage.jsx"));
+const FriendsPage = lazy(() => import("./pages/dashboard/FriendsPage"));
+const PrivacySettings = lazy(() => import("./pages/dashboard/PrivacySettings"));
 
-import PostDetailPage from "./pages/dashboard/PostDetailPage";
-import { clearSession, initializeAuth } from "./redux/slices/authSlice";
+// Complex Modules (Chat, Groups, Search)
+const ChatInterface = lazy(() => import("./pages/dashboard/ChatInterface"));
+const GroupsManagement = lazy(() => import("./pages/dashboard/GroupsManagement"));
+const GroupDetailPage = lazy(() => import("./pages/dashboard/GroupDetailPage"));
+const CreateGroupPage = lazy(() => import("./pages/dashboard/CreateGroupPage"));
+const EditGroupPage = lazy(() => import("./pages/dashboard/EditGroupPage"));
+const AdvancedMemberSearch = lazy(() => import("./pages/search/AdvancedMemberSearch"));
+
+// Admin Portal Routes
+const AdminGroupsManager = lazy(() => import("./pages/admin-website/AdminGroupsManager.jsx"));
+const AdminMembersManager = lazy(() => import("./pages/admin-website/AdminMembersManager.jsx"));
+const MainFeedManager = lazy(() => import("./pages/admin-website/MainFeedManager.jsx"));
+const AdminReportsManager = lazy(() => import("./pages/admin-website/AdminReportsManager.jsx"));
 
 function App() {
   const dispatch = useDispatch();
@@ -127,80 +135,82 @@ function App() {
             <MockDevPanel />
           </Suspense>
         )}
-        <Routes>
-          {/* Guest Routes - Redirect to Dashboard if already logged in */}
-          <Route element={<GuestRoute />}>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/verify-email" element={<VerifyEmail />} />
-            <Route path="/registration/step-1" element={<Step1 />} />
-            <Route path="/terms" element={<TermsOfService />} />
-          </Route>
+        <Suspense fallback={<PageLoadingFallback />}>
+          <Routes>
+            {/* Guest Routes - Redirect to Dashboard if already logged in */}
+            <Route element={<GuestRoute />}>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/verify-email" element={<VerifyEmail />} />
+              <Route path="/registration/step-1" element={<Step1 />} />
+              <Route path="/terms" element={<TermsOfService />} />
+            </Route>
 
-          <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
+            <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
 
-          {/* Protected Onboarding Route */}
-          <Route
-            path="/onboarding"
-            element={
-              <ProtectedRoute>
-                <OnboardingPage />
-              </ProtectedRoute>
-            }
-          />
+            {/* Protected Onboarding Route */}
+            <Route
+              path="/onboarding"
+              element={
+                <ProtectedRoute>
+                  <OnboardingPage />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Protected Dashboard Routes with Layout */}
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <DashboardLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route path="groups" element={<GroupsManagement />} />
-            <Route path="groups/:id" element={<GroupDetailPage />} />
-            <Route path="groups/create" element={<CreateGroupPage />} />
-            <Route path="groups/edit/:id" element={<EditGroupPage />} />
-            <Route path="chat" element={<ChatInterface />} />
-            <Route path="my-profile" element={<ProfilePage mode="self" />} />
-            <Route path="member/:id" element={<ProfilePage mode="member" />} />
-            <Route path="feed" element={<Newsfeed />} />
-            <Route path="post/:id" element={<PostDetailPage />} />
-            <Route path="profile/view" element={<ProfilePage mode="member" />} />
-            <Route path="friends" element={<FriendsPage />} />
-            <Route path="settings/privacy" element={<PrivacySettings />} />
-          </Route>
+            {/* Protected Dashboard Routes with Layout */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route path="groups" element={<GroupsManagement />} />
+              <Route path="groups/:id" element={<GroupDetailPage />} />
+              <Route path="groups/create" element={<CreateGroupPage />} />
+              <Route path="groups/edit/:id" element={<EditGroupPage />} />
+              <Route path="chat" element={<ChatInterface />} />
+              <Route path="my-profile" element={<ProfilePage mode="self" />} />
+              <Route path="member/:id" element={<ProfilePage mode="member" />} />
+              <Route path="feed" element={<Newsfeed />} />
+              <Route path="post/:id" element={<PostDetailPage />} />
+              <Route path="profile/view" element={<ProfilePage mode="member" />} />
+              <Route path="friends" element={<FriendsPage />} />
+              <Route path="settings/privacy" element={<PrivacySettings />} />
+            </Route>
 
-          {/* Search Routes - Assuming they share Dashboard layout, if not, keep separate */}
-          <Route
-            path="/search/members"
-            element={
-              <ProtectedRoute>
-                <DashboardLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<AdvancedMemberSearch />} />
-          </Route>
+            {/* Search Routes - Assuming they share Dashboard layout, if not, keep separate */}
+            <Route
+              path="/search/members"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<AdvancedMemberSearch />} />
+            </Route>
 
-          {/* Admin Routes - Protected with ADMIN role */}
-          <Route
-            path="/admin-website"
-            element={
-              <ProtectedRoute roles={["ADMIN"]}>
-                <Outlet />
-              </ProtectedRoute>
-            }
-          >
-            <Route path="groups" element={<AdminGroupsManager />} />
-            <Route path="members" element={<AdminMembersManager />} />
-            <Route path="contents" element={<MainFeedManager />} />
-            <Route path="reports" element={<AdminReportsManager />} />
-          </Route>
-        </Routes>
+            {/* Admin Routes - Protected with ADMIN role */}
+            <Route
+              path="/admin-website"
+              element={
+                <ProtectedRoute roles={["ADMIN"]}>
+                  <Outlet />
+                </ProtectedRoute>
+              }
+            >
+              <Route path="groups" element={<AdminGroupsManager />} />
+              <Route path="members" element={<AdminMembersManager />} />
+              <Route path="contents" element={<MainFeedManager />} />
+              <Route path="reports" element={<AdminReportsManager />} />
+            </Route>
+          </Routes>
+        </Suspense>
       </WebSocketProvider>
     </ThemeProvider>
   );

@@ -2,15 +2,18 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import postService from "../../../services/PostService";
 import toast from "react-hot-toast";
 
+const defaultFetcher = (page, size) => postService.getPublicHomepagePosts(page, size);
+
 /**
  * Custom Hook for Feed & Infinite Scrolling
  * Manages post listing, pagination, loading states, deduplication, and intersection observer.
  */
 export function useFeed({
-  fetcher = (page, size) => postService.getPublicHomepagePosts(page, size),
+  fetcher = defaultFetcher,
   pageSize = 10,
   initialPosts = [],
   autoFetch = true,
+  enableRealtime = true,
 } = {}) {
   const [posts, setPosts] = useState(initialPosts);
   const [page, setPage] = useState(0);
@@ -18,8 +21,20 @@ export function useFeed({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Keep fetcher reference stable to prevent cascading re-fetch cycles
+  const fetcherRef = useRef(fetcher);
+  fetcherRef.current = fetcher;
+
   // Intersection observer for infinite scroll
   const observerRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, []);
 
   const lastPostElementRef = useCallback(
     (node) => {
@@ -43,7 +58,8 @@ export function useFeed({
         setLoading(true);
         setError(null);
 
-        const response = await fetcher(pageToFetch, pageSize);
+        const currentFetcher = fetcherRef.current || defaultFetcher;
+        const response = await currentFetcher(pageToFetch, pageSize);
         const data = response?.data;
         const newPosts = Array.isArray(data)
           ? data
@@ -66,7 +82,7 @@ export function useFeed({
         setLoading(false);
       }
     },
-    [fetcher, pageSize]
+    [pageSize]
   );
 
   useEffect(() => {
@@ -84,6 +100,48 @@ export function useFeed({
       setPage((prev) => prev + 1);
     }
   }, [hasMore, loading]);
+
+  // Centralized realtime post updates (reactions, comments, shares, updates, deletes)
+  useEffect(() => {
+    if (!enableRealtime) return undefined;
+
+    const handleFeedEvent = (e) => {
+      const detail = e.detail;
+      if (!detail) return;
+
+      const { postId, action, newReactCount, newCommentCount, newShareCount, post: updatedPost } = detail;
+      if (!postId) return;
+
+      setPosts((prevPosts) => {
+        // If post deleted by author or moderation
+        if (action === "DELETED" && !detail.commentId) {
+          return prevPosts.filter((p) => String(p.id) !== String(postId));
+        }
+
+        const index = prevPosts.findIndex((p) => String(p.id) === String(postId));
+        if (index === -1) return prevPosts;
+
+        const currentPost = prevPosts[index];
+        const updated = { ...currentPost };
+
+        if (typeof newReactCount === "number") updated.reactCount = newReactCount;
+        if (typeof newCommentCount === "number") updated.commentCount = newCommentCount;
+        if (typeof newShareCount === "number") updated.shareCount = newShareCount;
+        if (updatedPost) {
+          Object.assign(updated, updatedPost);
+        }
+
+        const next = [...prevPosts];
+        next[index] = updated;
+        return next;
+      });
+    };
+
+    window.addEventListener("postEvent", handleFeedEvent);
+    return () => {
+      window.removeEventListener("postEvent", handleFeedEvent);
+    };
+  }, [enableRealtime]);
 
   const prependPost = useCallback((newPost) => {
     if (!newPost) return;

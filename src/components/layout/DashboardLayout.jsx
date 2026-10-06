@@ -1,11 +1,12 @@
 import UserNavbar from "./UserNavbar";
 
-import React from "react";
+import React, { Suspense } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import MobileBottomNav from "./MobileBottomNav";
 import MobileMenuDrawer from "./MobileMenuDrawer";
 import { useWebSocket } from "../../context/WebSocketContext";
+import PageLoadingFallback from "../common/PageLoadingFallback";
 
 export default function DashboardLayout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
@@ -30,7 +31,9 @@ export default function DashboardLayout() {
           </div>
         )}
         <main className="flex-1 h-full overflow-y-auto relative scroll-smooth bg-background-main transition-colors duration-300">
-          <Outlet />
+          <Suspense fallback={<PageLoadingFallback fullScreen={false} />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
 

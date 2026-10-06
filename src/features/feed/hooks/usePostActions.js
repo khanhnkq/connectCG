@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import postService from "../../../services/PostService";
 import reportService from "../../../services/ReportService";
 import toast from "react-hot-toast";
@@ -12,9 +12,9 @@ export function usePostActions({
   postData,
   onUpdate,
   onDelete,
-  canPin = false,
-  stompClient = null,
-  isConnected = false,
+  canPin: _canPin = false,
+  stompClient: _stompClient = null,
+  isConnected: _isConnected = false,
   defaultShowComments = false,
 }) {
   const [showComments, setShowComments] = useState(defaultShowComments);
@@ -31,84 +31,20 @@ export function usePostActions({
   const [localCommentCount, setLocalCommentCount] = useState(postData?.commentCount ?? 0);
   const [localShareCount, setLocalShareCount] = useState(postData?.shareCount ?? 0);
 
-  // Sync prop changes from server
-  useEffect(() => {
+  // Sync prop changes directly during render phase (React recommended pattern to eliminate cascading effects)
+  const [prevPostData, setPrevPostData] = useState(postData);
+  if (
+    postData?.currentUserReaction !== prevPostData?.currentUserReaction ||
+    postData?.reactCount !== prevPostData?.reactCount ||
+    postData?.commentCount !== prevPostData?.commentCount ||
+    postData?.shareCount !== prevPostData?.shareCount
+  ) {
+    setPrevPostData(postData);
     setLocalReaction(postData?.currentUserReaction ?? null);
     setLocalReactCount(postData?.reactCount ?? 0);
     setLocalCommentCount(postData?.commentCount ?? 0);
     setLocalShareCount(postData?.shareCount ?? 0);
-  }, [
-    postData?.currentUserReaction,
-    postData?.reactCount,
-    postData?.commentCount,
-    postData?.shareCount,
-  ]);
-
-  // STOMP WebSocket topic subscription when comments are open
-  useEffect(() => {
-    if (!stompClient || !isConnected || !postData?.id || !showComments) return undefined;
-
-    const dispatchEvent = (eventName) => (message) => {
-      try {
-        window.dispatchEvent(
-          new CustomEvent(eventName, { detail: JSON.parse(message.body) })
-        );
-      } catch (err) {
-        console.error("Error parsing realtime message:", err);
-      }
-    };
-
-    const subscriptions = [
-      stompClient.subscribe(
-        `/topic/posts/${postData.id}/reactions`,
-        dispatchEvent("reactionEvent")
-      ),
-      stompClient.subscribe(
-        `/topic/posts/${postData.id}/comments`,
-        dispatchEvent("commentEvent")
-      ),
-    ];
-
-    return () => {
-      subscriptions.forEach((sub) => sub.unsubscribe());
-    };
-  }, [stompClient, isConnected, postData?.id, showComments]);
-
-  // Realtime reaction event listener
-  useEffect(() => {
-    const handleReactionEvent = (e) => {
-      const { postId, newReactCount } = e.detail;
-      if (postId === postData?.id) {
-        setLocalReactCount(newReactCount);
-      }
-    };
-    window.addEventListener("reactionEvent", handleReactionEvent);
-    return () => window.removeEventListener("reactionEvent", handleReactionEvent);
-  }, [postData?.id]);
-
-  // Realtime comment event listener
-  useEffect(() => {
-    const handleCommentEvent = (e) => {
-      const { postId, newCommentCount } = e.detail;
-      if (postId === postData?.id) {
-        setLocalCommentCount(newCommentCount);
-      }
-    };
-    window.addEventListener("commentEvent", handleCommentEvent);
-    return () => window.removeEventListener("commentEvent", handleCommentEvent);
-  }, [postData?.id]);
-
-  // Realtime post updated event listener (for shareCount)
-  useEffect(() => {
-    const handlePostEvent = (e) => {
-      const { action, postId, post: updatedPost } = e.detail;
-      if (postId === postData?.id && action === "UPDATED" && updatedPost) {
-        setLocalShareCount(updatedPost.shareCount || 0);
-      }
-    };
-    window.addEventListener("postEvent", handlePostEvent);
-    return () => window.removeEventListener("postEvent", handlePostEvent);
-  }, [postData?.id]);
+  }
 
   // Optimistic React / Unreact
   const handleReact = useCallback(

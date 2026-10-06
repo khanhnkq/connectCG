@@ -276,7 +276,13 @@ export const WebSocketProvider = ({ children }) => {
 
     return () => {
       console.log("WebSocket: Cleaning up connection...");
-      client.deactivate();
+      setIsConnected(false);
+      setStompClient(null);
+      try {
+        client.deactivate();
+      } catch (err) {
+        console.warn("WebSocket: Error during deactivate:", err);
+      }
     };
   }, [isAuthenticated, user?.id, navigate, dispatch]);
 

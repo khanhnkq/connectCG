@@ -21,6 +21,27 @@ export default defineConfig({
   define: {
     global: "window"
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': [
+            'react',
+            'react-dom',
+            'react-router-dom',
+            '@reduxjs/toolkit',
+            'react-redux',
+          ],
+          'vendor-icons': ['@phosphor-icons/react'],
+          'vendor-firebase': ['firebase/app', 'firebase/database'],
+          'vendor-stomp': ['@stomp/stompjs', 'sockjs-client'],
+          'vendor-motion': ['framer-motion'],
+          'vendor-forms': ['formik', 'yup'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 600,
+  },
   test: {
     projects: [{
       extends: true,

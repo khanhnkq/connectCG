@@ -12,7 +12,7 @@ import ProfileAbout from "../../components/profile/ProfileAbout";
 import ProfileLibrary from "../../components/profile/ProfileLibrary";
 import ProfileHobbies from "../../components/profile/ProfileHobbies";
 import ProfileFriends from "../../components/profile/ProfileFriends";
-import EditProfileModal from "../../components/profile/EditProfileModal";
+import ProfileEditModal from "./components/ProfileEditModal";
 import ReportModal from "../../components/report/ReportModal";
 import { ConfirmDialog } from "../../components/ui/modal/ConfirmDialog";
 import { Button } from "../../components/ui/button/Button";
@@ -51,6 +51,8 @@ export function ProfilePage({ mode = "auto", userId = null }) {
     startChat,
     isEditModalOpen,
     setIsEditModalOpen,
+    editFlow,
+    setEditFlow,
     showReportModal,
     setShowReportModal,
     confirmDialog,
@@ -98,7 +100,14 @@ export function ProfilePage({ mode = "auto", userId = null }) {
       <ProfileHeader
         profile={profile}
         isOwner={isOwner}
-        onEditProfile={() => setIsEditModalOpen(true)}
+        onEditProfile={() => {
+          setEditFlow("basic");
+          setIsEditModalOpen(true);
+        }}
+        onOpenMediaFlow={() => {
+          setEditFlow("media");
+          setIsEditModalOpen(true);
+        }}
         onAvatarChange={handleAvatarChange}
         onCoverChange={handleCoverChange}
         isUploadingAvatar={isUploadingAvatar}
@@ -202,10 +211,11 @@ export function ProfilePage({ mode = "auto", userId = null }) {
       {/* Owner Modals */}
       {isOwner && (
         <>
-          <EditProfileModal
+          <ProfileEditModal
             isOpen={isEditModalOpen}
             onClose={() => setIsEditModalOpen(false)}
             profile={profile}
+            initialFlow={editFlow}
           />
           <ConfirmDialog
             isOpen={deleteModal.isOpen}

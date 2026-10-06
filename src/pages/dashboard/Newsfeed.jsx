@@ -4,8 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import RightSidebar from "../../components/layout/RightSidebar";
 import PostComposer from "../../components/feed/PostComposer";
 import PostCard from "../../components/feed/PostCard";
-import ConfirmModal from "../../components/common/ConfirmModal";
-import { EmptyState, Skeleton } from "../../components/ui";
+import { EmptyState, Skeleton, ConfirmDialog } from "../../components/ui";
 
 import { usePostManagement } from "../../hooks/usePostManagement";
 import { useFeed } from "../../features/feed/hooks/useFeed";
@@ -81,11 +80,17 @@ export default function Newsfeed() {
                   (posts.length < 3 && index === posts.length - 1);
 
                 return (
-                  <PostCard
-                    post={post}
-                    onDelete={handleDeletePost}
-                    onUpdate={handleUpdate}
-                  />
+                  <div
+                    key={post.id || `post-${index}`}
+                    ref={isTrigger ? lastPostElementRef : null}
+                    className="w-full"
+                  >
+                    <PostCard
+                      post={post}
+                      onDelete={handleDeletePost}
+                      onUpdate={handleUpdate}
+                    />
+                  </div>
                 );
               })
             )}
@@ -107,8 +112,8 @@ export default function Newsfeed() {
 
       <RightSidebar />
 
-      {/* Delete Confirmation Modal */}
-      <ConfirmModal
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
         isOpen={deleteModal.isOpen}
         onClose={() => setDeleteModal({ isOpen: false, postId: null })}
         onConfirm={confirmDelete}

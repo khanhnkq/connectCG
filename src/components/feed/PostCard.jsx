@@ -1,7 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { PushPin } from "@phosphor-icons/react";
-import { useWebSocket } from "../../context/WebSocketContext";
 import { usePostActions } from "../../features/feed/hooks/usePostActions";
 import { normalizePostData, REPORT_REASONS } from "../../features/feed/utils/feedUtils";
 
@@ -23,13 +22,12 @@ export default function PostCard({
   defaultShowComments = false,
 }) {
   const { user } = useSelector((state) => state.auth);
-  const { stompClient, isConnected } = useWebSocket();
   const data = normalizePostData(post, { id, author, time, content, image });
   const isShared = Boolean(post?.originalPost);
   const displayPost = isShared ? post.originalPost : post;
 
   const actions = usePostActions({
-    postData: data, onUpdate, onDelete, canPin, stompClient, isConnected,
+    postData: data, onUpdate, onDelete, canPin,
     defaultShowComments,
   });
 
