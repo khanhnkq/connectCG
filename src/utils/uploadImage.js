@@ -261,6 +261,9 @@ export const normalizeMediaUrl = (url) => {
     if (url.includes('localhost:8080/api/v1/media/view/') && !appConfig.apiBaseUrl?.includes('localhost:8080')) {
         return url.replace(/https?:\/\/localhost:8080\/api\/v1\/media\/view\//, mediaViewBase);
     }
+    if (url.includes('connect-media.quizken.com/api/v1/media/view/')) {
+        return url.replace(/https?:\/\/connect-media\.quizken\.com\/api\/v1\/media\/view\//, mediaViewBase);
+    }
     return url;
 };
 

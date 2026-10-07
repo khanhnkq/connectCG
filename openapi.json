@@ -25,17 +25,6 @@
     "cookieAuth" : [ ]
   } ],
   "paths" : {
-    "/api/v1/auth/refresh" : {
-      "post" : {
-        "tags" : [ "Auth" ],
-        "operationId" : "auth_refresh",
-        "responses" : {
-          "200" : {
-            "description" : "Thành công"
-          }
-        }
-      }
-    },
     "/api/v1/auth/profile" : {
       "post" : {
         "tags" : [ "Auth" ],
@@ -181,10 +170,10 @@
         }
       }
     },
-    "/api/v1/auth/csrf" : {
-      "get" : {
+    "/api/v1/auth/refresh" : {
+      "post" : {
         "tags" : [ "Auth" ],
-        "operationId" : "auth_csrf",
+        "operationId" : "auth_refresh",
         "responses" : {
           "200" : {
             "description" : "Thành công"
@@ -203,6 +192,17 @@
         }
       }
     },
+    "/api/v1/auth/csrf" : {
+      "get" : {
+        "tags" : [ "Auth" ],
+        "operationId" : "auth_csrf",
+        "responses" : {
+          "200" : {
+            "description" : "Thành công"
+          }
+        }
+      }
+    },
     "/api/v1/auth/logout-all" : {
       "post" : {
         "tags" : [ "Auth" ],
@@ -214,21 +214,13 @@
         }
       }
     },
-    "/api/v1/posts/admin/audit" : {
-      "get" : {
+    "/api/v1/posts/{id}/approve" : {
+      "post" : {
         "tags" : [ "Post" ],
-        "operationId" : "post_getAuditHomepagePosts",
+        "operationId" : "post_approvePost",
         "parameters" : [ {
-          "name" : "page",
-          "in" : "query",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        }, {
-          "name" : "size",
-          "in" : "query",
+          "name" : "id",
+          "in" : "path",
           "required" : true,
           "schema" : {
             "type" : "integer",
@@ -237,14 +229,7 @@
         } ],
         "responses" : {
           "200" : {
-            "description" : "Thành công",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/GroupPostDTO"
-                }
-              }
-            }
+            "description" : "Thành công"
           }
         }
       }
@@ -284,10 +269,72 @@
         }
       }
     },
-    "/api/v1/posts" : {
+    "/api/v1/posts/admin/audit" : {
       "get" : {
         "tags" : [ "Post" ],
-        "operationId" : "post_getNewsfeedPosts",
+        "operationId" : "post_getAuditHomepagePosts",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Thành công",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/GroupPostDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/posts/user/{id}" : {
+      "get" : {
+        "tags" : [ "Post" ],
+        "operationId" : "post_getUserProfilePosts",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Thành công",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/GroupPostDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/posts/public/homepage" : {
+      "get" : {
+        "tags" : [ "Post" ],
+        "operationId" : "post_getPublicHomepagePosts",
         "parameters" : [ {
           "name" : "page",
           "in" : "query",
@@ -310,15 +357,26 @@
             "description" : "Thành công"
           }
         }
-      },
+      }
+    },
+    "/api/v1/posts/{id}/react" : {
       "post" : {
         "tags" : [ "Post" ],
-        "operationId" : "post_createPost",
+        "operationId" : "post_reactToPost",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
         "requestBody" : {
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/CreatePostRequest"
+                "$ref" : "#/components/schemas/ReactionRequest"
               }
             }
           },
@@ -326,14 +384,25 @@
         },
         "responses" : {
           "200" : {
-            "description" : "Thành công",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/GroupPostDTO"
-                }
-              }
-            }
+            "description" : "Thành công"
+          }
+        }
+      },
+      "delete" : {
+        "tags" : [ "Post" ],
+        "operationId" : "post_unReactToPost",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Thành công"
           }
         }
       }
@@ -418,13 +487,21 @@
         }
       }
     },
-    "/api/v1/posts/{id}/reject" : {
-      "post" : {
+    "/api/v1/posts" : {
+      "get" : {
         "tags" : [ "Post" ],
-        "operationId" : "post_rejectPost",
+        "operationId" : "post_getNewsfeedPosts",
         "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
+          "name" : "page",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
           "required" : true,
           "schema" : {
             "type" : "integer",
@@ -434,6 +511,32 @@
         "responses" : {
           "200" : {
             "description" : "Thành công"
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Post" ],
+        "operationId" : "post_createPost",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreatePostRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Thành công",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/GroupPostDTO"
+                }
+              }
+            }
           }
         }
       }
@@ -475,116 +578,13 @@
         }
       }
     },
-    "/api/v1/posts/{id}/approve" : {
+    "/api/v1/posts/{id}/reject" : {
       "post" : {
         "tags" : [ "Post" ],
-        "operationId" : "post_approvePost",
+        "operationId" : "post_rejectPost",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Thành công"
-          }
-        }
-      }
-    },
-    "/api/v1/posts/{id}/react" : {
-      "post" : {
-        "tags" : [ "Post" ],
-        "operationId" : "post_reactToPost",
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/ReactionRequest"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "Thành công"
-          }
-        }
-      },
-      "delete" : {
-        "tags" : [ "Post" ],
-        "operationId" : "post_unReactToPost",
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Thành công"
-          }
-        }
-      }
-    },
-    "/api/v1/posts/user/{id}" : {
-      "get" : {
-        "tags" : [ "Post" ],
-        "operationId" : "post_getUserProfilePosts",
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Thành công",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/GroupPostDTO"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/posts/public/homepage" : {
-      "get" : {
-        "tags" : [ "Post" ],
-        "operationId" : "post_getPublicHomepagePosts",
-        "parameters" : [ {
-          "name" : "page",
-          "in" : "query",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        }, {
-          "name" : "size",
-          "in" : "query",
           "required" : true,
           "schema" : {
             "type" : "integer",
@@ -688,102 +688,6 @@
         }
       }
     },
-    "/api/v1/groups/{id}/posts/{postId}/reject" : {
-      "post" : {
-        "tags" : [ "Group" ],
-        "operationId" : "group_rejectPost",
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        }, {
-          "name" : "postId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Thành công"
-          }
-        }
-      }
-    },
-    "/api/v1/groups/{id}/leave" : {
-      "delete" : {
-        "tags" : [ "Group" ],
-        "operationId" : "group_leaveGroup",
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Thành công"
-          }
-        }
-      }
-    },
-    "/api/v1/groups/{id}/join" : {
-      "post" : {
-        "tags" : [ "Group" ],
-        "operationId" : "group_joinGroup",
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Thành công"
-          }
-        }
-      }
-    },
-    "/api/v1/groups/{id}/ban/{userId}" : {
-      "post" : {
-        "tags" : [ "Group" ],
-        "operationId" : "group_banMember",
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        }, {
-          "name" : "userId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Thành công"
-          }
-        }
-      }
-    },
     "/api/v1/groups/{id}" : {
       "get" : {
         "tags" : [ "Group" ],
@@ -857,10 +761,10 @@
         }
       }
     },
-    "/api/v1/groups/{id}/posts/{postId}/approve" : {
-      "post" : {
+    "/api/v1/groups/{id}/members" : {
+      "get" : {
         "tags" : [ "Group" ],
-        "operationId" : "group_approvePost",
+        "operationId" : "group_getMembers",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -869,15 +773,51 @@
             "type" : "integer",
             "format" : "int32"
           }
-        }, {
-          "name" : "postId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
         } ],
+        "responses" : {
+          "200" : {
+            "description" : "Thành công",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TungGroupMemberDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/groups" : {
+      "get" : {
+        "tags" : [ "Group" ],
+        "operationId" : "group_getAll",
+        "responses" : {
+          "200" : {
+            "description" : "Thành công",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/GroupDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Group" ],
+        "operationId" : "group_create",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateGroup"
+              }
+            }
+          },
+          "required" : true
+        },
         "responses" : {
           "200" : {
             "description" : "Thành công"
@@ -934,36 +874,6 @@
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "/api/v1/groups/{id}/invite" : {
-      "post" : {
-        "tags" : [ "Group" ],
-        "operationId" : "group_inviteMembers",
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/List"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "Thành công"
           }
         }
       }
@@ -1269,6 +1179,34 @@
         }
       }
     },
+    "/api/v1/groups/{id}/posts/{postId}/approve" : {
+      "post" : {
+        "tags" : [ "Group" ],
+        "operationId" : "group_approvePost",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "postId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Thành công"
+          }
+        }
+      }
+    },
     "/api/v1/groups/my-groups" : {
       "get" : {
         "tags" : [ "Group" ],
@@ -1359,10 +1297,40 @@
         }
       }
     },
-    "/api/v1/groups/{id}/members" : {
-      "get" : {
+    "/api/v1/groups/{id}/invite" : {
+      "post" : {
         "tags" : [ "Group" ],
-        "operationId" : "group_getMembers",
+        "operationId" : "group_inviteMembers",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/List"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Thành công"
+          }
+        }
+      }
+    },
+    "/api/v1/groups/{id}/leave" : {
+      "delete" : {
+        "tags" : [ "Group" ],
+        "operationId" : "group_leaveGroup",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -1374,48 +1342,80 @@
         } ],
         "responses" : {
           "200" : {
-            "description" : "Thành công",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/TungGroupMemberDTO"
-                }
-              }
-            }
+            "description" : "Thành công"
           }
         }
       }
     },
-    "/api/v1/groups" : {
-      "get" : {
-        "tags" : [ "Group" ],
-        "operationId" : "group_getAll",
-        "responses" : {
-          "200" : {
-            "description" : "Thành công",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/GroupDTO"
-                }
-              }
-            }
-          }
-        }
-      },
+    "/api/v1/groups/{id}/join" : {
       "post" : {
         "tags" : [ "Group" ],
-        "operationId" : "group_create",
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/CreateGroup"
-              }
-            }
-          },
-          "required" : true
-        },
+        "operationId" : "group_joinGroup",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Thành công"
+          }
+        }
+      }
+    },
+    "/api/v1/groups/{id}/ban/{userId}" : {
+      "post" : {
+        "tags" : [ "Group" ],
+        "operationId" : "group_banMember",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "userId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Thành công"
+          }
+        }
+      }
+    },
+    "/api/v1/groups/{id}/posts/{postId}/reject" : {
+      "post" : {
+        "tags" : [ "Group" ],
+        "operationId" : "group_rejectPost",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "postId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
         "responses" : {
           "200" : {
             "description" : "Thành công"
@@ -1539,22 +1539,42 @@
         }
       }
     },
-    "/api/v1/friends/{friendId}" : {
-      "delete" : {
+    "/api/v1/friends/my-friends" : {
+      "get" : {
         "tags" : [ "FriendRest" ],
-        "operationId" : "friendrest_unfriend",
+        "operationId" : "friendrest_getMyFriends",
         "parameters" : [ {
-          "name" : "friendId",
-          "in" : "path",
-          "required" : true,
+          "name" : "name",
+          "in" : "query",
+          "required" : false,
           "schema" : {
-            "type" : "integer",
-            "format" : "int32"
+            "type" : "string"
+          }
+        }, {
+          "name" : "gender",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "cityCode",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
           }
         } ],
         "responses" : {
           "200" : {
-            "description" : "Thành công"
+            "description" : "Thành công",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FriendDTO"
+                }
+              }
+            }
           }
         }
       }
@@ -1607,42 +1627,22 @@
         }
       }
     },
-    "/api/v1/friends/my-friends" : {
-      "get" : {
+    "/api/v1/friends/{friendId}" : {
+      "delete" : {
         "tags" : [ "FriendRest" ],
-        "operationId" : "friendrest_getMyFriends",
+        "operationId" : "friendrest_unfriend",
         "parameters" : [ {
-          "name" : "name",
-          "in" : "query",
-          "required" : false,
+          "name" : "friendId",
+          "in" : "path",
+          "required" : true,
           "schema" : {
-            "type" : "string"
-          }
-        }, {
-          "name" : "gender",
-          "in" : "query",
-          "required" : false,
-          "schema" : {
-            "type" : "string"
-          }
-        }, {
-          "name" : "cityCode",
-          "in" : "query",
-          "required" : false,
-          "schema" : {
-            "type" : "string"
+            "type" : "integer",
+            "format" : "int32"
           }
         } ],
         "responses" : {
           "200" : {
-            "description" : "Thành công",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/FriendDTO"
-                }
-              }
-            }
+            "description" : "Thành công"
           }
         }
       }
@@ -1702,6 +1702,26 @@
         }
       }
     },
+    "/api/v1/friend-requests/cancel/{receiverId}" : {
+      "delete" : {
+        "tags" : [ "FriendRequest" ],
+        "operationId" : "friendrequest_cancelRequest",
+        "parameters" : [ {
+          "name" : "receiverId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Thành công"
+          }
+        }
+      }
+    },
     "/api/v1/friend-requests/{requestId}/reject" : {
       "post" : {
         "tags" : [ "FriendRequest" ],
@@ -1729,54 +1749,6 @@
         "parameters" : [ {
           "name" : "receiverId",
           "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Thành công"
-          }
-        }
-      }
-    },
-    "/api/v1/friend-requests/cancel/{receiverId}" : {
-      "delete" : {
-        "tags" : [ "FriendRequest" ],
-        "operationId" : "friendrequest_cancelRequest",
-        "parameters" : [ {
-          "name" : "receiverId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Thành công"
-          }
-        }
-      }
-    },
-    "/api/v1/friends/suggestions" : {
-      "get" : {
-        "tags" : [ "FriendSuggestion" ],
-        "operationId" : "friendsuggestion_getSuggestions",
-        "parameters" : [ {
-          "name" : "page",
-          "in" : "query",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        }, {
-          "name" : "size",
-          "in" : "query",
           "required" : true,
           "schema" : {
             "type" : "integer",
@@ -1821,29 +1793,38 @@
         }
       }
     },
-    "/api/v1/chat/{roomId}/name" : {
-      "put" : {
-        "tags" : [ "Chat" ],
-        "operationId" : "chat_renameRoom",
+    "/api/v1/friends/suggestions" : {
+      "get" : {
+        "tags" : [ "FriendSuggestion" ],
+        "operationId" : "friendsuggestion_getSuggestions",
         "parameters" : [ {
-          "name" : "roomId",
-          "in" : "path",
+          "name" : "page",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
           "required" : true,
           "schema" : {
             "type" : "integer",
             "format" : "int32"
           }
         } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/String"
-              }
-            }
-          },
-          "required" : true
-        },
+        "responses" : {
+          "200" : {
+            "description" : "Thành công"
+          }
+        }
+      }
+    },
+    "/api/v1/chat/my" : {
+      "get" : {
+        "tags" : [ "Chat" ],
+        "operationId" : "chat_getMyChatRooms",
         "responses" : {
           "200" : {
             "description" : "Thành công",
@@ -1858,70 +1839,10 @@
         }
       }
     },
-    "/api/v1/chat/{roomId}/read" : {
+    "/api/v1/chat/{roomId}/avatar" : {
       "put" : {
         "tags" : [ "Chat" ],
-        "operationId" : "chat_markAsRead",
-        "parameters" : [ {
-          "name" : "roomId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Thành công"
-          }
-        }
-      }
-    },
-    "/api/v1/chat/{roomId}/leave" : {
-      "post" : {
-        "tags" : [ "Chat" ],
-        "operationId" : "chat_leaveRoom",
-        "parameters" : [ {
-          "name" : "roomId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Thành công"
-          }
-        }
-      }
-    },
-    "/api/v1/chat/{roomId}" : {
-      "delete" : {
-        "tags" : [ "Chat" ],
-        "operationId" : "chat_deleteRoom",
-        "parameters" : [ {
-          "name" : "roomId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Thành công"
-          }
-        }
-      }
-    },
-    "/api/v1/chat/{roomId}/invite" : {
-      "post" : {
-        "tags" : [ "Chat" ],
-        "operationId" : "chat_inviteMembers",
+        "operationId" : "chat_updateAvatar",
         "parameters" : [ {
           "name" : "roomId",
           "in" : "path",
@@ -2010,10 +1931,31 @@
         }
       }
     },
-    "/api/v1/chat/{roomId}/avatar" : {
-      "put" : {
+    "/api/v1/chat/last-message" : {
+      "post" : {
         "tags" : [ "Chat" ],
-        "operationId" : "chat_updateAvatar",
+        "operationId" : "chat_updateLastMessageAt",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Map"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Thành công"
+          }
+        }
+      }
+    },
+    "/api/v1/chat/{roomId}/invite" : {
+      "post" : {
+        "tags" : [ "Chat" ],
+        "operationId" : "chat_inviteMembers",
         "parameters" : [ {
           "name" : "roomId",
           "in" : "path",
@@ -2043,6 +1985,26 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/v1/chat/{roomId}/clear" : {
+      "put" : {
+        "tags" : [ "Chat" ],
+        "operationId" : "chat_clearHistory",
+        "parameters" : [ {
+          "name" : "roomId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Thành công"
           }
         }
       }
@@ -2082,10 +2044,10 @@
         }
       }
     },
-    "/api/v1/chat/{roomId}/clear" : {
+    "/api/v1/chat/{roomId}/read" : {
       "put" : {
         "tags" : [ "Chat" ],
-        "operationId" : "chat_clearHistory",
+        "operationId" : "chat_markAsRead",
         "parameters" : [ {
           "name" : "roomId",
           "in" : "path",
@@ -2102,31 +2064,29 @@
         }
       }
     },
-    "/api/v1/chat/last-message" : {
-      "post" : {
+    "/api/v1/chat/{roomId}/name" : {
+      "put" : {
         "tags" : [ "Chat" ],
-        "operationId" : "chat_updateLastMessageAt",
+        "operationId" : "chat_renameRoom",
+        "parameters" : [ {
+          "name" : "roomId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
         "requestBody" : {
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Map"
+                "$ref" : "#/components/schemas/String"
               }
             }
           },
           "required" : true
         },
-        "responses" : {
-          "200" : {
-            "description" : "Thành công"
-          }
-        }
-      }
-    },
-    "/api/v1/chat/my" : {
-      "get" : {
-        "tags" : [ "Chat" ],
-        "operationId" : "chat_getMyChatRooms",
         "responses" : {
           "200" : {
             "description" : "Thành công",
@@ -2141,10 +2101,50 @@
         }
       }
     },
-    "/api/v1/users/avatar" : {
+    "/api/v1/chat/{roomId}/leave" : {
+      "post" : {
+        "tags" : [ "Chat" ],
+        "operationId" : "chat_leaveRoom",
+        "parameters" : [ {
+          "name" : "roomId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Thành công"
+          }
+        }
+      }
+    },
+    "/api/v1/chat/{roomId}" : {
+      "delete" : {
+        "tags" : [ "Chat" ],
+        "operationId" : "chat_deleteRoom",
+        "parameters" : [ {
+          "name" : "roomId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Thành công"
+          }
+        }
+      }
+    },
+    "/api/v1/users/cover" : {
       "post" : {
         "tags" : [ "UserProfile" ],
-        "operationId" : "userprofile_updateAvatar",
+        "operationId" : "userprofile_updateCover",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -2169,10 +2169,59 @@
         }
       }
     },
-    "/api/v1/users/cover" : {
+    "/api/v1/users/profile" : {
+      "put" : {
+        "tags" : [ "UserProfile" ],
+        "operationId" : "userprofile_updateProfileInfo",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateProfileRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Thành công",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserProfileDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/hobbies" : {
+      "put" : {
+        "tags" : [ "UserProfile" ],
+        "operationId" : "userprofile_updateUserHobbies",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/List"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Thành công"
+          }
+        }
+      }
+    },
+    "/api/v1/users/avatar" : {
       "post" : {
         "tags" : [ "UserProfile" ],
-        "operationId" : "userprofile_updateCover",
+        "operationId" : "userprofile_updateAvatar",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -2294,75 +2343,6 @@
         }
       }
     },
-    "/api/v1/users/profile" : {
-      "put" : {
-        "tags" : [ "UserProfile" ],
-        "operationId" : "userprofile_updateProfileInfo",
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/UpdateProfileRequest"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "Thành công",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/UserProfileDTO"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/users/hobbies" : {
-      "put" : {
-        "tags" : [ "UserProfile" ],
-        "operationId" : "userprofile_updateUserHobbies",
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/List"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "Thành công"
-          }
-        }
-      }
-    },
-    "/api/v1/notifications/{id}/read" : {
-      "put" : {
-        "tags" : [ "TungNotification" ],
-        "operationId" : "tungnotification_markAsRead",
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Thành công"
-          }
-        }
-      }
-    },
     "/api/v1/notifications" : {
       "get" : {
         "tags" : [ "TungNotification" ],
@@ -2413,6 +2393,26 @@
       "delete" : {
         "tags" : [ "TungNotification" ],
         "operationId" : "tungnotification_deleteNotification",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Thành công"
+          }
+        }
+      }
+    },
+    "/api/v1/notifications/{id}/read" : {
+      "put" : {
+        "tags" : [ "TungNotification" ],
+        "operationId" : "tungnotification_markAsRead",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -2837,6 +2837,16 @@
           }
         }
       },
+      "ReactionRequest" : {
+        "required" : [ "reaction" ],
+        "type" : "object",
+        "properties" : {
+          "reaction" : {
+            "pattern" : "LIKE|LOVE|HAHA|WOW|SAD|ANGRY",
+            "type" : "string"
+          }
+        }
+      },
       "CreatePostRequest" : {
         "required" : [ "content" ],
         "type" : "object",
@@ -2863,38 +2873,6 @@
             "items" : {
               "type" : "string"
             }
-          }
-        }
-      },
-      "ReactionRequest" : {
-        "required" : [ "reaction" ],
-        "type" : "object",
-        "properties" : {
-          "reaction" : {
-            "pattern" : "LIKE|LOVE|HAHA|WOW|SAD|ANGRY",
-            "type" : "string"
-          }
-        }
-      },
-      "CreateCommentRequest" : {
-        "type" : "object",
-        "properties" : {
-          "content" : {
-            "maxLength" : 2000,
-            "minLength" : 0,
-            "type" : "string"
-          },
-          "parentId" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "imageUrl" : {
-            "maxLength" : 2048,
-            "minLength" : 0,
-            "type" : "string"
-          },
-          "contentOrImagePresent" : {
-            "type" : "boolean"
           }
         }
       },
@@ -2934,6 +2912,79 @@
             "items" : {
               "$ref" : "#/components/schemas/CommentDTO"
             }
+          }
+        }
+      },
+      "CreateCommentRequest" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "maxLength" : 2000,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "parentId" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "imageUrl" : {
+            "maxLength" : 2048,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "contentOrImagePresent" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "CreateGroup" : {
+        "required" : [ "name", "privacy" ],
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "maxLength" : 100,
+            "minLength" : 3,
+            "type" : "string"
+          },
+          "description" : {
+            "maxLength" : 500,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "privacy" : {
+            "pattern" : "PUBLIC|PRIVATE",
+            "type" : "string"
+          },
+          "image" : {
+            "type" : "string"
+          }
+        }
+      },
+      "TungGroupMemberDTO" : {
+        "type" : "object",
+        "properties" : {
+          "userId" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "username" : {
+            "type" : "string"
+          },
+          "fullName" : {
+            "type" : "string"
+          },
+          "avatarUrl" : {
+            "type" : "string"
+          },
+          "role" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "joinedAt" : {
+            "type" : "string",
+            "format" : "date-time"
           }
         }
       },
@@ -2994,57 +3045,6 @@
           "memberCount" : {
             "type" : "integer",
             "format" : "int64"
-          }
-        }
-      },
-      "TungGroupMemberDTO" : {
-        "type" : "object",
-        "properties" : {
-          "userId" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "username" : {
-            "type" : "string"
-          },
-          "fullName" : {
-            "type" : "string"
-          },
-          "avatarUrl" : {
-            "type" : "string"
-          },
-          "role" : {
-            "type" : "string"
-          },
-          "status" : {
-            "type" : "string"
-          },
-          "joinedAt" : {
-            "type" : "string",
-            "format" : "date-time"
-          }
-        }
-      },
-      "CreateGroup" : {
-        "required" : [ "name", "privacy" ],
-        "type" : "object",
-        "properties" : {
-          "name" : {
-            "maxLength" : 100,
-            "minLength" : 3,
-            "type" : "string"
-          },
-          "description" : {
-            "maxLength" : 500,
-            "minLength" : 0,
-            "type" : "string"
-          },
-          "privacy" : {
-            "pattern" : "PUBLIC|PRIVATE",
-            "type" : "string"
-          },
-          "image" : {
-            "type" : "string"
           }
         }
       },
@@ -3388,6 +3388,39 @@
           }
         }
       },
+      "UpdateProfileRequest" : {
+        "type" : "object",
+        "properties" : {
+          "fullName" : {
+            "type" : "string"
+          },
+          "bio" : {
+            "type" : "string"
+          },
+          "occupation" : {
+            "type" : "string"
+          },
+          "maritalStatus" : {
+            "type" : "string"
+          },
+          "lookingFor" : {
+            "type" : "string"
+          },
+          "gender" : {
+            "type" : "string"
+          },
+          "dateOfBirth" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "cityCode" : {
+            "type" : "string"
+          },
+          "cityName" : {
+            "type" : "string"
+          }
+        }
+      },
       "MemberSearchResponse" : {
         "type" : "object",
         "properties" : {
@@ -3432,39 +3465,6 @@
           "mutualFriends" : {
             "type" : "integer",
             "format" : "int64"
-          }
-        }
-      },
-      "UpdateProfileRequest" : {
-        "type" : "object",
-        "properties" : {
-          "fullName" : {
-            "type" : "string"
-          },
-          "bio" : {
-            "type" : "string"
-          },
-          "occupation" : {
-            "type" : "string"
-          },
-          "maritalStatus" : {
-            "type" : "string"
-          },
-          "lookingFor" : {
-            "type" : "string"
-          },
-          "gender" : {
-            "type" : "string"
-          },
-          "dateOfBirth" : {
-            "type" : "string",
-            "format" : "date"
-          },
-          "cityCode" : {
-            "type" : "string"
-          },
-          "cityName" : {
-            "type" : "string"
           }
         }
       },
