@@ -8,6 +8,10 @@ const FirebaseChatService = {
      * @param {object} message - { senderId, senderName, text, type, imageUrl }
      */
     sendMessage: async (roomKey, message) => {
+        if (!db) {
+            console.warn("Firebase Database is not initialized.");
+            return null;
+        }
         const messagesRef = ref(db, `messages/${roomKey}`);
         return push(messagesRef, {
             ...message,
@@ -23,6 +27,10 @@ const FirebaseChatService = {
      * @param {number} limit - Số lượng tin nhắn lấy ban đầu (mặc định 50)
      */
     subscribeToMessages: (roomKey, callback, limit = 50) => {
+        if (!db) {
+            console.warn("Firebase Database is not initialized.");
+            return () => {};
+        }
         const messagesRef = ref(db, `messages/${roomKey}`);
 
         // Sử dụng limitToLast để lấy lịch sử gần nhất
@@ -57,6 +65,7 @@ const FirebaseChatService = {
      * Xóa toàn bộ tin nhắn trong phòng
      */
     deleteMessages: async (roomKey) => {
+        if (!db) return null;
         const messagesRef = ref(db, `messages/${roomKey}`);
         return remove(messagesRef);
     },
@@ -65,6 +74,7 @@ const FirebaseChatService = {
      * Xóa một tin nhắn cụ thể
      */
     deleteMessage: async (roomKey, messageId) => {
+        if (!db) return null;
         const messageRef = ref(db, `messages/${roomKey}/${messageId}`);
         return remove(messageRef);
     },
@@ -73,6 +83,7 @@ const FirebaseChatService = {
      * Lấy tin nhắn cuối cùng của phòng
      */
     getLastMessage: async (roomKey) => {
+        if (!db) return null;
         try {
             const messagesRef = ref(db, `messages/${roomKey}`);
             const lastMsgQuery = query(messagesRef, orderByKey(), limitToLast(1));
@@ -96,6 +107,7 @@ const FirebaseChatService = {
      * @returns {Promise<Array>} - Danh sách tin nhắn có hình ảnh
      */
     getMediaMessages: async (roomKey, limit = 20, minTimestamp = 0) => {
+        if (!db) return [];
         try {
             const messagesRef = ref(db, `messages/${roomKey}`);
 
