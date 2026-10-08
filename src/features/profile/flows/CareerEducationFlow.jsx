@@ -67,7 +67,7 @@ export function CareerEducationFlow({ profile, onSave, isLoading = false }) {
               type="button"
               disabled={isLoading}
               onClick={() => formik.setFieldValue("occupation", item)}
-              className="px-3 py-1.5 text-xs font-medium rounded-xl border border-border-main bg-surface-main hover:bg-surface-subtle text-text-secondary hover:text-text-main transition-colors"
+              className="px-3 py-1.5 text-xs font-medium rounded-xl border-0 bg-surface-subtle hover:bg-surface-subtle/80 text-text-secondary hover:text-text-main transition-colors"
             >
               {item}
             </button>
@@ -76,7 +76,7 @@ export function CareerEducationFlow({ profile, onSave, isLoading = false }) {
       </div>
 
       {/* Helpful Hint Card */}
-      <Card className="p-4 bg-surface-subtle border-border-main">
+      <Card className="p-4 bg-surface-subtle border-0">
         <h4 className="text-xs font-bold text-text-main mb-1">Mẹo mở rộng quan hệ</h4>
         <p className="text-xs text-text-secondary leading-relaxed">
           Ghi rõ lĩnh vực chuyên môn của bạn giúp thuật toán ConnectCG gợi ý những người bạn có cùng mối quan tâm hoặc đang tìm kiếm đối tác trong ngành.

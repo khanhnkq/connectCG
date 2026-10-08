@@ -30,7 +30,7 @@ export function GroupMembersTab({
       </div>
 
       {/* Member List Card */}
-      <Card className="border-border-main bg-surface-main overflow-hidden divide-y divide-border-main p-0">
+      <Card className="border-0 bg-surface-main overflow-hidden p-0">
         {members.length > 0 ? (
           members.map((member) => {
             const isSelf = Number(member.userId) === Number(currentUserId);
@@ -51,7 +51,7 @@ export function GroupMembersTab({
                     src={member.avatarUrl}
                     name={member.fullName || member.username}
                     size="md"
-                    className="border border-border-main"
+                    className="border-0"
                   />
                   <div>
                     <div className="flex items-center gap-2">

@@ -70,7 +70,7 @@ describe("Core Design System Primitives (Modern Flat)", () => {
 
   describe("<Card />", () => {
     it("renders compound header, body, and footer", () => {
-      render(
+      const { container } = render(
         <Card>
           <Card.Header title="Card Title" />
           <Card.Body>Card Content</Card.Body>
@@ -80,6 +80,9 @@ describe("Core Design System Primitives (Modern Flat)", () => {
       expect(screen.getByText("Card Title")).toBeDefined();
       expect(screen.getByText("Card Content")).toBeDefined();
       expect(screen.getByText("Card Footer")).toBeDefined();
+      const cardEl = container.firstChild;
+      expect(cardEl.className).toContain("border-0");
+      expect(cardEl.className).not.toContain("border-border-main");
     });
   });
 

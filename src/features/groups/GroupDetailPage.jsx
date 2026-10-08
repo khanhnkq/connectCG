@@ -99,7 +99,7 @@ export function GroupDetailPage({ groupId }) {
       />
 
       {/* Tabs navigation */}
-      <div className="border-b border-border-main bg-surface-main sticky top-0 z-30">
+      <div className="border-0 bg-surface-main sticky top-0 z-30 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5">
           <Tabs value={activeTab} onChange={setActiveTab}>
             <Tabs.List className="w-fit">
@@ -163,7 +163,7 @@ export function GroupDetailPage({ groupId }) {
 
         {(activeTab === "Ảnh" || activeTab === "Sự kiện") && (
           <div className="max-w-md mx-auto py-12">
-            <Card className="p-8 text-center border-border-main bg-surface-main">
+            <Card className="p-8 text-center border-0 bg-surface-main shadow-sm">
               <h4 className="font-bold text-text-main text-sm">Tính năng đang hoàn thiện</h4>
               <p className="text-xs text-text-secondary mt-1">
                 Khu vực {activeTab.toLowerCase()} của nhóm sẽ sớm được cập nhật.

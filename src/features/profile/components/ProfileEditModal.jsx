@@ -104,7 +104,7 @@ export function ProfileEditModal({
       <Modal.Body className="p-0">
         <div className="flex flex-col sm:flex-row min-h-[460px]">
           {/* Navigation Flow Sidebar */}
-          <div className="w-full sm:w-56 p-4 border-b sm:border-b-0 sm:border-r border-border-main bg-surface-subtle shrink-0 space-y-1.5">
+          <div className="w-full sm:w-56 p-4 bg-surface-subtle shrink-0 space-y-1.5">
             <span className="text-[11px] font-bold uppercase tracking-wider text-text-muted px-2 block mb-2">
               Danh mục
             </span>

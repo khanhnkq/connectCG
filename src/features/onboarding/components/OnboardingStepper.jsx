@@ -36,12 +36,12 @@ export default function OnboardingStepper({ activeStep }) {
               }`}
             >
               <div
-                className={`size-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-colors border ${
+                className={`size-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-colors border-0 ${
                   isCompleted
-                    ? "bg-primary border-primary text-white"
+                    ? "bg-primary text-white"
                     : isCurrent
-                    ? "bg-primary/10 border-primary text-primary"
-                    : "bg-surface-subtle border-border-main text-text-muted"
+                    ? "bg-primary/10 text-primary"
+                    : "bg-surface-subtle text-text-muted"
                 }`}
               >
                 {isCompleted ? <Check size={14} weight="bold" /> : step.id}
@@ -61,7 +61,7 @@ export default function OnboardingStepper({ activeStep }) {
       </div>
 
       {/* Progress Bar Track */}
-      <div className="w-full h-1.5 bg-surface-subtle border border-border-main rounded-full overflow-hidden">
+      <div className="w-full h-1.5 bg-surface-subtle border-0 rounded-full overflow-hidden">
         <div
           className="h-full bg-primary transition-all duration-300 ease-out"
           style={{ width: `${progressPercent}%` }}

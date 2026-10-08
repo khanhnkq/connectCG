@@ -3,8 +3,8 @@ import { UsersThree, Users, UserPlus, UserFocus } from "@phosphor-icons/react";
 
 export default function FriendsSidebar({ viewMode, setViewMode, setActiveItem, friendsCount, requestsCount, suggestionsCount }) {
     return (
-        <div className="hidden md:flex w-20 lg:w-64 flex-col border-r border-border-main bg-surface-main shrink-0">
-            <div className="p-5 border-b border-border-main flex items-center gap-3">
+        <div className="hidden md:flex w-20 lg:w-64 flex-col bg-surface-main shrink-0">
+            <div className="p-5 flex items-center gap-3">
                 <div className="size-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
                     <UsersThree size={20} weight="bold" />
                 </div>
@@ -15,7 +15,7 @@ export default function FriendsSidebar({ viewMode, setViewMode, setActiveItem, f
                 <button
                     onClick={() => { setViewMode('ALL'); setActiveItem(null); }}
                     className={`w-full p-3 rounded-xl flex items-center gap-3 transition-all ${viewMode === 'ALL'
-                        ? 'bg-primary/10 text-primary border border-primary/20'
+                        ? 'bg-primary/10 text-primary'
                         : 'text-text-secondary hover:bg-background-main hover:text-text-main'
                         }`}
                 >
@@ -27,7 +27,7 @@ export default function FriendsSidebar({ viewMode, setViewMode, setActiveItem, f
                 <button
                     onClick={() => { setViewMode('REQUESTS'); setActiveItem(null); }}
                     className={`w-full p-3 rounded-xl flex items-center gap-3 transition-all ${viewMode === 'REQUESTS'
-                        ? 'bg-primary/10 text-primary border border-primary/20'
+                        ? 'bg-primary/10 text-primary'
                         : 'text-text-secondary hover:bg-background-main hover:text-text-main'
                         }`}
                 >
@@ -41,7 +41,7 @@ export default function FriendsSidebar({ viewMode, setViewMode, setActiveItem, f
                 <button
                     onClick={() => { setViewMode('SUGGESTIONS'); setActiveItem(null); }}
                     className={`w-full p-3 rounded-xl flex items-center gap-3 transition-all ${viewMode === 'SUGGESTIONS'
-                        ? 'bg-primary/10 text-primary border border-primary/20'
+                        ? 'bg-primary/10 text-primary'
                         : 'text-text-secondary hover:bg-background-main hover:text-text-main'
                         }`}
                 >

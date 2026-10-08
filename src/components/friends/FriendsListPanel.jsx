@@ -43,10 +43,10 @@ export default function FriendsListPanel({
   return (
     <div
       className={`${activeItem ? "hidden xl:flex" : "flex"
-        } w-full md:w-80 lg:w-96 flex-col border-r border-border-main bg-surface-main shrink-0`}
+        } w-full md:w-80 lg:w-96 flex-col bg-surface-main shrink-0`}
     >
       {/* Header */}
-      <div className="p-4 md:p-5 border-b border-border-main bg-gradient-to-b from-surface-main to-background-main sticky top-0 z-10 backdrop-blur-md">
+      <div className="p-4 md:p-5 bg-gradient-to-b from-surface-main to-background-main sticky top-0 z-10 backdrop-blur-md">
         <div className="mb-4 md:block hidden">
           <h2 className="text-xl font-bold text-text-main flex items-center gap-2">
             {viewMode === "ALL" && <Users size={22} className="text-primary" />}
@@ -80,9 +80,9 @@ export default function FriendsListPanel({
                   setViewMode(tab.id);
                   setActiveItem(null);
                 }}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all border ${viewMode === tab.id
-                  ? "bg-primary/10 text-primary border-primary/30"
-                  : "text-text-secondary border-transparent hover:bg-background-main"
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all border-0 ${viewMode === tab.id
+                  ? "bg-primary/10 text-primary"
+                  : "text-text-secondary hover:bg-background-main"
                   }`}
               >
                 <TabIcon size={18} />
@@ -103,7 +103,7 @@ export default function FriendsListPanel({
             <MagnifyingGlass size={18} className="text-text-secondary group-focus-within:text-primary transition-colors" />
           </div>
           <input
-            className="block w-full pl-10 pr-4 py-3 border border-border-main rounded-xl bg-background-main text-text-main placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"
+            className="block w-full pl-10 pr-4 py-3 border-0 rounded-xl bg-surface-subtle text-text-main placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:bg-surface-main transition-all text-sm"
             placeholder="Tìm kiếm..."
             type="text"
             value={searchTerm}
@@ -184,7 +184,7 @@ export default function FriendsListPanel({
           })
         ) : (
           <div className="text-center text-text-secondary py-16 flex flex-col items-center">
-            <div className="size-16 rounded-full bg-[#2A1D15] border-2 border-[#3A2A20] flex items-center justify-center mb-4">
+            <div className="size-16 rounded-full bg-surface-subtle border-0 flex items-center justify-center mb-4">
               <MagnifyingGlass size={32} className="opacity-40 text-primary" />
             </div>
             <p className="font-medium mb-1">Không tìm thấy kết quả</p>

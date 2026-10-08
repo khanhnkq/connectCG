@@ -12,7 +12,7 @@ const ChatDropdownWrapper = ({ isOpen, onClose }) => {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 10, scale: 0.95 }}
           transition={{ duration: 0.2 }}
-          className="absolute right-0 top-full mt-2 w-80 md:w-96 z-50 origin-top-right shadow-none rounded-2xl bg-surface-main border border-border-main overflow-hidden"
+          className="absolute right-0 top-full mt-2 w-80 md:w-96 z-50 origin-top-right shadow-xl rounded-2xl bg-surface-main border-0 overflow-hidden"
         >
           <ChatDropdown onClose={onClose} />
         </motion.div>

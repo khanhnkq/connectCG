@@ -25,20 +25,20 @@ export default function PostReactions({
               <img
                 src={REACTION_ASSETS.LIKE}
                 alt="Thích"
-                className="size-4.5 border border-surface-main rounded-full bg-surface-main relative z-30 object-cover shrink-0"
+                className="size-4.5 ring-2 ring-surface-main rounded-full bg-surface-main relative z-30 object-cover shrink-0"
               />
               {reactCount > 1 && (
                 <img
                   src={REACTION_ASSETS.LOVE}
                   alt="Yêu thích"
-                  className="size-4.5 -mr-1.5 border border-surface-main rounded-full bg-surface-main relative z-20 object-cover shrink-0"
+                  className="size-4.5 -mr-1.5 ring-2 ring-surface-main rounded-full bg-surface-main relative z-20 object-cover shrink-0"
                 />
               )}
               {reactCount > 5 && (
                 <img
                   src={REACTION_ASSETS.HAHA}
                   alt="Haha"
-                  className="size-4.5 -mr-1.5 border border-surface-main rounded-full bg-surface-main relative z-10 object-cover shrink-0"
+                  className="size-4.5 -mr-1.5 ring-2 ring-surface-main rounded-full bg-surface-main relative z-10 object-cover shrink-0"
                 />
               )}
             </div>

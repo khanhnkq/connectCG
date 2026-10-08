@@ -129,14 +129,14 @@ const ProfileFriends = ({ profile, isOwner }) => {
   };
 
   return (
-    <div className="bg-surface-main rounded-2xl border border-border-main shadow-sm overflow-hidden">
+    <div className="bg-surface-main rounded-2xl border-0 shadow-sm overflow-hidden">
       {/* Header */}
       <div className="p-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-8">
           <div>
             <h3 className="text-text-main font-black text-2xl tracking-tight flex items-center gap-2">
               {isOwner ? "Bạn bè" : "Danh sách bạn bè"}
-              <span className="bg-surface-main px-3 py-1 rounded-full text-xs font-bold text-text-secondary border border-border-main">
+              <span className="bg-surface-subtle px-3 py-1 rounded-full text-xs font-bold text-text-secondary border-0">
                 {profile?.friendsCount || 0}
               </span>
             </h3>
@@ -150,7 +150,7 @@ const ProfileFriends = ({ profile, isOwner }) => {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="block w-full pl-11 pr-4 py-3 bg-surface-main hover:bg-background-main border border-border-main focus:border-primary/50 rounded-2xl leading-5 text-text-main placeholder-text-secondary focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium"
+              className="block w-full pl-11 pr-4 py-3 bg-surface-subtle hover:bg-surface-subtle/80 border-0 focus:ring-2 focus:ring-primary focus:bg-surface-main rounded-2xl leading-5 text-text-main placeholder-text-secondary outline-none transition-all font-medium"
               placeholder="Tìm kiếm bạn bè..."
             />
           </div>
@@ -169,7 +169,7 @@ const ProfileFriends = ({ profile, isOwner }) => {
                 whileHover={{ y: -4 }}
                 key={friend.id}
                 ref={index === friends.length - 1 ? lastFriendElementRef : null}
-                className="group relative flex flex-col items-center p-5 bg-gradient-to-br from-surface-main/90 via-surface-main/60 to-background-main/90 backdrop-blur-md rounded-3xl border border-border-main/50 hover:border-primary/30 transition-all duration-300 shadow-sm hover:shadow-xl hover:-translate-y-1"
+                className="group relative flex flex-col items-center p-5 bg-gradient-to-br from-surface-main/90 via-surface-main/60 to-background-main/90 backdrop-blur-md rounded-3xl border-0 transition-all duration-300 shadow-sm hover:shadow-xl hover:-translate-y-1"
               >
                 {/* Avatar Section */}
                 <div
@@ -187,7 +187,7 @@ const ProfileFriends = ({ profile, isOwner }) => {
                       }}
                     />
                     {friend.isOnline && (
-                      <div className="absolute -bottom-1 -right-1 size-5 bg-green-500 rounded-full border-4 border-surface-main shadow-sm z-10" />
+                      <div className="absolute -bottom-1 -right-1 size-5 bg-green-500 rounded-full ring-4 ring-surface-main shadow-sm z-10" />
                     )}
                   </div>
                 </div>
@@ -201,7 +201,7 @@ const ProfileFriends = ({ profile, isOwner }) => {
                     {friend.fullName}
                   </h4>
                   {friend.occupation ? (
-                    <span className="text-text-secondary/70 text-xs font-semibold uppercase tracking-wider mt-1 px-2 py-0.5 bg-background-main/50 rounded-lg border border-border-main/30">
+                    <span className="text-text-secondary/70 text-xs font-semibold uppercase tracking-wider mt-1 px-2 py-0.5 bg-background-main/50 rounded-lg border-0">
                       {friend.occupation}
                     </span>
                   ) : (
@@ -214,14 +214,14 @@ const ProfileFriends = ({ profile, isOwner }) => {
                 {/* Relationship Badge or Actions */}
                 <div className="w-full mt-auto">
                   {friend.relationshipStatus === "SELF" ? (
-                    <div className="w-full py-2.5 bg-primary/5 text-primary text-sm font-bold rounded-xl border border-primary/20 text-center">
+                    <div className="w-full py-2.5 bg-primary/10 text-primary text-sm font-bold rounded-xl border-0 text-center">
                       Bạn
                     </div>
                   ) : friend.relationshipStatus === "FRIEND" ? (
                     <div className="flex gap-2">
                       <button
                         onClick={() => navigate(`/dashboard/chat`)}
-                        className="flex-1 py-2.5 bg-primary text-text-main font-bold text-sm rounded-xl hover:bg-orange-600 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 group/btn"
+                        className="flex-1 py-2.5 bg-primary text-text-main font-bold text-sm rounded-xl hover:bg-orange-600 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 group/btn border-0"
                       >
                         <MessageCircle
                           size={18}
@@ -231,7 +231,7 @@ const ProfileFriends = ({ profile, isOwner }) => {
                       </button>
                       <button
                         onClick={() => confirmUnfriend(friend)}
-                        className="p-2.5 bg-background-main/50 hover:bg-status-error/10 text-text-secondary hover:text-status-error border border-border-main/50 hover:border-status-error/30 rounded-xl transition-all"
+                        className="p-2.5 bg-surface-subtle hover:bg-status-error/10 text-text-secondary hover:text-status-error border-0 rounded-xl transition-all"
                         title="Hủy kết bạn"
                       >
                         <UserMinus size={18} />
@@ -241,14 +241,14 @@ const ProfileFriends = ({ profile, isOwner }) => {
                     <div className="flex gap-2">
                       <button
                         onClick={() => confirmAcceptRequest(friend)}
-                        className="flex-1 py-2.5 bg-primary text-text-main font-bold text-sm rounded-xl hover:bg-orange-600 transition-all shadow-md flex items-center justify-center gap-2"
+                        className="flex-1 py-2.5 bg-primary text-text-main font-bold text-sm rounded-xl hover:bg-orange-600 transition-all shadow-md flex items-center justify-center gap-2 border-0"
                       >
                         <Check size={18} />
                         Đồng ý
                       </button>
                       <button
                         onClick={() => confirmRejectRequest(friend)}
-                        className="p-2.5 bg-background-main/50 border border-border-main/50 text-text-secondary rounded-xl hover:bg-status-error/10 hover:text-status-error transition-all"
+                        className="p-2.5 bg-surface-subtle border-0 text-text-secondary rounded-xl hover:bg-status-error/10 hover:text-status-error transition-all"
                       >
                         <X size={18} />
                       </button>
@@ -256,7 +256,7 @@ const ProfileFriends = ({ profile, isOwner }) => {
                   ) : friend.relationshipStatus === "PENDING" ? (
                     <button
                       onClick={() => confirmCancelRequest(friend)}
-                      className="w-full py-2.5 bg-surface-main border border-border-main/50 text-text-secondary font-bold text-sm rounded-xl hover:bg-background-main hover:text-status-error transition-all flex items-center justify-center gap-2"
+                      className="w-full py-2.5 bg-surface-subtle border-0 text-text-secondary font-bold text-sm rounded-xl hover:bg-surface-subtle/80 hover:text-status-error transition-all flex items-center justify-center gap-2"
                     >
                       <UserX size={18} />
                       Thu hồi
@@ -264,7 +264,7 @@ const ProfileFriends = ({ profile, isOwner }) => {
                   ) : (
                     <button
                       onClick={() => handleSendFriendRequest(friend.id)}
-                      className="w-full py-2.5 bg-background-main hover:bg-primary border border-primary/20 hover:border-primary text-primary hover:text-text-main font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm hover:shadow-primary/20"
+                      className="w-full py-2.5 bg-surface-subtle hover:bg-primary border-0 text-primary hover:text-text-main font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm hover:shadow-primary/20"
                     >
                       <UserPlus size={18} />
                       Kết bạn
@@ -278,7 +278,7 @@ const ProfileFriends = ({ profile, isOwner }) => {
           !isLoading && (
             <div className="text-center py-20 flex flex-col items-center justify-center">
               {/* Empty State Logic */}
-              <div className="size-20 rounded-full bg-background-main border-2 border-border-main flex items-center justify-center mb-4">
+              <div className="size-20 rounded-full bg-surface-subtle border-0 flex items-center justify-center mb-4">
                 <UserSearch className="text-text-secondary/30" size={40} />
               </div>
               <h4 className="text-text-main font-bold text-lg mb-2">
@@ -298,7 +298,7 @@ const ProfileFriends = ({ profile, isOwner }) => {
               {isOwner && !searchTerm && (
                 <button
                   onClick={() => navigate("/dashboard/friends")}
-                  className="px-6 py-2.5 bg-primary hover:bg-orange-600 text-text-main font-bold rounded-xl transition-all"
+                  className="px-6 py-2.5 bg-primary hover:bg-orange-600 text-text-main font-bold rounded-xl transition-all border-0"
                 >
                   Tìm kiếm bạn bè
                 </button>
@@ -306,7 +306,7 @@ const ProfileFriends = ({ profile, isOwner }) => {
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm("")}
-                  className="px-6 py-2.5 bg-surface-main border border-border-main hover:bg-surface-hover text-text-main font-bold rounded-xl transition-all"
+                  className="px-6 py-2.5 bg-surface-subtle hover:bg-surface-subtle/80 text-text-main font-bold rounded-xl transition-all border-0"
                 >
                   Xóa tìm kiếm
                 </button>

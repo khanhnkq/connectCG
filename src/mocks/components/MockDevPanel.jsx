@@ -59,9 +59,9 @@ export function MockDevPanel() {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-[9999] w-80 bg-surface-main border border-border-main rounded-2xl p-4 space-y-4 select-none animate-in fade-in zoom-in-95 duration-150">
+    <div className="fixed bottom-4 right-4 z-[9999] w-80 bg-surface-main border-0 shadow-2xl rounded-2xl p-4 space-y-4 select-none animate-in fade-in zoom-in-95 duration-150">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border-main pb-3">
+      <div className="flex items-center justify-between pb-3">
         <div className="flex items-center gap-2">
           <Wrench className="text-primary size-5" />
           <h4 className="text-xs font-bold text-text-main uppercase tracking-wider">
@@ -71,7 +71,7 @@ export function MockDevPanel() {
         <button
           type="button"
           onClick={() => setIsOpen(false)}
-          className="size-7 rounded-lg text-text-muted hover:text-text-main hover:bg-surface-subtle flex items-center justify-center cursor-pointer transition-colors"
+          className="size-7 rounded-lg text-text-muted hover:text-text-main hover:bg-surface-subtle flex items-center justify-center cursor-pointer transition-colors border-0 bg-transparent"
           aria-label="Đóng"
         >
           <X size={16} />
@@ -87,7 +87,7 @@ export function MockDevPanel() {
           <select
             value={currentUser.id}
             onChange={(e) => handleUserChange(e.target.value)}
-            className="w-full h-9 bg-surface-subtle text-text-main text-xs rounded-xl px-3 border border-border-main outline-none cursor-pointer appearance-none pr-8 font-medium"
+            className="w-full h-9 bg-surface-subtle text-text-main text-xs rounded-xl px-3 border-0 outline-none cursor-pointer appearance-none pr-8 font-medium"
           >
             {allUsers.map((u) => (
               <option key={u.id} value={u.id}>
@@ -114,10 +114,10 @@ export function MockDevPanel() {
               key={item.val}
               type="button"
               onClick={() => handleLatencyChange(item.val)}
-              className={`h-7 rounded-lg text-[11px] font-bold cursor-pointer transition-colors ${
+              className={`h-7 rounded-lg text-[11px] font-bold cursor-pointer transition-colors border-0 ${
                 currentLatency === item.val
-                  ? "bg-primary text-white border-0"
-                  : "bg-surface-subtle text-text-secondary border border-border-main hover:text-text-main"
+                  ? "bg-primary text-white"
+                  : "bg-surface-subtle text-text-secondary hover:text-text-main hover:bg-surface-subtle/80"
               }`}
             >
               {item.label}
@@ -127,11 +127,11 @@ export function MockDevPanel() {
       </div>
 
       {/* Action Buttons */}
-      <div className="pt-2 border-t border-border-main flex gap-2">
+      <div className="pt-2 flex gap-2">
         <button
           type="button"
           onClick={handleTriggerNotification}
-          className="flex-1 h-8 rounded-xl bg-surface-subtle border border-border-main text-text-main hover:bg-surface-subtle/80 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+          className="flex-1 h-8 rounded-xl bg-surface-subtle border-0 text-text-main hover:bg-surface-subtle/80 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
           title="Gửi thông báo mô phỏng qua WebSocket"
         >
           <Bell size={14} className="text-primary" />
@@ -141,7 +141,7 @@ export function MockDevPanel() {
         <button
           type="button"
           onClick={handleResetData}
-          className="flex-1 h-8 rounded-xl bg-surface-subtle border border-border-main text-danger hover:bg-danger hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+          className="flex-1 h-8 rounded-xl bg-surface-subtle border-0 text-danger hover:bg-danger hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
           title="Khôi phục database về dữ liệu ban đầu"
         >
           <ArrowsClockwise size={14} />

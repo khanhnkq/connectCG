@@ -15,7 +15,7 @@ export default function AccountLockedDialog({ isOpen, message, onClose }) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="sm">
       <Modal.Body className="p-6 text-center space-y-4">
-        <div className="size-14 rounded-2xl bg-danger/10 border border-danger/20 flex items-center justify-center mx-auto text-danger">
+        <div className="size-14 rounded-2xl bg-danger/10 border-0 flex items-center justify-center mx-auto text-danger">
           <Lock size={28} />
         </div>
 
@@ -33,7 +33,7 @@ export default function AccountLockedDialog({ isOpen, message, onClose }) {
         </div>
       </Modal.Body>
 
-      <Modal.Footer className="p-4 bg-surface-subtle border-t border-border-main flex justify-end">
+      <Modal.Footer className="p-4 bg-surface-subtle border-0 flex justify-end">
         <Button
           variant="danger"
           size="md"

@@ -44,10 +44,10 @@ export const Input = forwardRef(
             ref={ref}
             id={inputId}
             disabled={disabled}
-            className={`w-full h-10 bg-surface-main text-text-main text-sm rounded-xl border transition-colors placeholder:text-text-muted disabled:bg-surface-subtle disabled:cursor-not-allowed disabled:text-text-muted ${
+            className={`w-full h-10 bg-surface-subtle text-text-main text-sm rounded-xl border-0 transition-all placeholder:text-text-muted disabled:opacity-50 disabled:cursor-not-allowed ${
               error
-                ? "border-danger focus:border-danger focus:ring-1 focus:ring-danger"
-                : "border-border-main focus:border-primary focus:ring-1 focus:ring-primary"
+                ? "ring-2 ring-danger focus:ring-2 focus:ring-danger"
+                : "focus:bg-surface-main focus:ring-2 focus:ring-primary"
             } ${LeftIcon ? "pl-10" : "pl-3.5"} ${
               RightIcon || props.rightElement ? "pr-10" : "pr-3.5"
             } outline-none ${className}`}
@@ -94,10 +94,10 @@ export const Textarea = forwardRef(
           id={textareaId}
           rows={rows}
           disabled={disabled}
-          className={`w-full bg-surface-main text-text-main text-sm rounded-xl p-3.5 border transition-colors placeholder:text-text-muted disabled:bg-surface-subtle disabled:cursor-not-allowed disabled:text-text-muted resize-none ${
+          className={`w-full bg-surface-subtle text-text-main text-sm rounded-xl p-3.5 border-0 transition-all placeholder:text-text-muted disabled:opacity-50 disabled:cursor-not-allowed resize-none ${
             error
-              ? "border-danger focus:border-danger focus:ring-1 focus:ring-danger"
-              : "border-border-main focus:border-primary focus:ring-1 focus:ring-primary"
+              ? "ring-2 ring-danger focus:ring-2 focus:ring-danger"
+              : "focus:bg-surface-main focus:ring-2 focus:ring-primary"
           } outline-none ${className}`}
           {...props}
         />

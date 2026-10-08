@@ -14,12 +14,12 @@ const SharedPostContent = ({ post }) => {
   return (
     <Link
       to={`/dashboard/post/${post.id}`}
-      className="block mx-5 mb-4 border border-border-main rounded-lg p-4 bg-background-main/50 hover:bg-background-main transition-all group"
+      className="block mx-5 mb-4 rounded-xl p-4 bg-surface-subtle hover:bg-surface-subtle/80 transition-all group"
     >
       {/* Header nhỏ của bài gốc */}
       <div className="flex items-center gap-2 mb-2">
         <div
-          className="bg-center bg-no-repeat bg-cover rounded-full size-8 flex-shrink-0 border border-border-main"
+          className="bg-center bg-no-repeat bg-cover rounded-full size-8 flex-shrink-0"
           style={{ backgroundImage: `url("${post.authorAvatar}")` }}
         ></div>
         <div className="flex flex-col">

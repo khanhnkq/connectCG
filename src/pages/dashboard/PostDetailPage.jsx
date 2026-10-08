@@ -12,7 +12,7 @@ import { Skeleton, EmptyState } from "../../components/ui";
  */
 function PostDetailSkeleton() {
   return (
-    <div className="bg-surface-main rounded-2xl border border-border-main p-6 space-y-4">
+    <div className="bg-surface-main rounded-2xl border-0 p-6 space-y-4">
       {/* Author Header */}
       <div className="flex items-center gap-3">
         <Skeleton rounded="full" className="size-11 shrink-0" />
@@ -33,20 +33,20 @@ function PostDetailSkeleton() {
       <Skeleton className="h-64 w-full rounded-2xl" />
 
       {/* Stats bar */}
-      <div className="pt-2 flex justify-between items-center border-t border-border-main">
+      <div className="pt-2 flex justify-between items-center border-0">
         <Skeleton className="h-4 w-24" />
         <Skeleton className="h-4 w-32" />
       </div>
 
       {/* Action buttons */}
-      <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border-main">
+      <div className="grid grid-cols-3 gap-2 pt-2 border-0">
         <Skeleton className="h-9 w-full rounded-xl" />
         <Skeleton className="h-9 w-full rounded-xl" />
         <Skeleton className="h-9 w-full rounded-xl" />
       </div>
 
       {/* Comment section skeleton */}
-      <div className="pt-4 border-t border-border-main space-y-3">
+      <div className="pt-4 border-0 space-y-3">
         <div className="flex items-center gap-3">
           <Skeleton rounded="full" className="size-9 shrink-0" />
           <Skeleton className="h-10 flex-1 rounded-xl" />

@@ -71,7 +71,7 @@ export const Folder = ({
       </div>
 
       {isExpanded && (
-        <div className="relative ml-2.5 pl-2.5 border-l border-border-main">
+        <div className="relative ml-2.5 pl-2.5 border-0">
           {children}
         </div>
       )}

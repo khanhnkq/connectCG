@@ -42,17 +42,17 @@ export default function RadioPillGroup({
               type="button"
               disabled={disabled}
               onClick={() => onChange?.(option.value)}
-              className={`p-3.5 rounded-xl border text-center flex flex-col items-center justify-center gap-2 transition-all cursor-pointer select-none ${
+              className={`p-3.5 rounded-xl border-0 text-center flex flex-col items-center justify-center gap-2 transition-all cursor-pointer select-none ${
                 isSelected
-                  ? "border-primary bg-primary/10 text-primary ring-1 ring-primary"
-                  : "border-border-main bg-surface-main hover:bg-surface-subtle text-text-secondary hover:text-text-main"
+                  ? "bg-primary text-white font-bold shadow-sm"
+                  : "bg-surface-subtle hover:bg-surface-subtle/80 text-text-secondary hover:text-text-main"
               } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {Icon && (
                 <Icon
                   size={24}
                   className={`transition-colors shrink-0 ${
-                    isSelected ? "text-primary" : "text-text-muted"
+                    isSelected ? "text-white" : "text-text-muted"
                   }`}
                   weight={isSelected ? "bold" : "regular"}
                 />

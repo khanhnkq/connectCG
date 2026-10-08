@@ -1,10 +1,9 @@
 import React from "react";
 
 /**
- * Modern Flat Card Primitive
- * - Zero drop shadow, zero blur
+ * Modern Flat Card Primitive (Seamless / Border-free)
+ * - Zero drop shadow, zero blur, zero border
  * - Rounded-2xl (16px)
- * - 1px crisp border
  * - Compound components: Card, Card.Header, Card.Body, Card.Footer
  */
 export function Card({
@@ -17,9 +16,9 @@ export function Card({
   return (
     <div
       onClick={onClick}
-      className={`bg-surface-main border border-border-main rounded-2xl overflow-hidden ${
+      className={`bg-surface-main rounded-2xl overflow-hidden border-0 ${
         interactive || onClick
-          ? "cursor-pointer hover:border-border-strong active:bg-surface-subtle/50 transition-colors"
+          ? "cursor-pointer hover:bg-surface-subtle/40 active:bg-surface-subtle/70 transition-colors"
           : ""
       } ${className}`}
       {...props}
@@ -38,7 +37,7 @@ Card.Header = function CardHeader({
 }) {
   return (
     <div
-      className={`px-6 py-4 border-b border-border-main flex items-center justify-between gap-4 ${className}`}
+      className={`px-6 py-4 flex items-center justify-between gap-4 ${className}`}
     >
       <div>
         {title && (
@@ -63,7 +62,7 @@ Card.Body = function CardBody({ children, className = "" }) {
 Card.Footer = function CardFooter({ children, className = "" }) {
   return (
     <div
-      className={`px-6 py-3.5 border-t border-border-main bg-surface-subtle/30 flex items-center justify-between gap-4 ${className}`}
+      className={`px-6 py-3.5 bg-surface-subtle/30 flex items-center justify-between gap-4 ${className}`}
     >
       {children}
     </div>

@@ -60,7 +60,7 @@ export function ProfileHeader({
   const displayName = profile?.fullName || profile?.username || "Người dùng";
 
   return (
-    <div className="bg-surface-main border-b border-border-main">
+    <div className="bg-surface-main">
       <div className="w-full max-w-6xl mx-auto">
         {/* Cover Photo */}
         <div className="relative w-full h-64 md:h-80 lg:h-96 group overflow-hidden rounded-b-3xl bg-surface-subtle">
@@ -93,7 +93,7 @@ export function ProfileHeader({
                   }}
                   disabled={isUploadingCover}
                   isLoading={isUploadingCover}
-                  className="bg-black/60 hover:bg-black/80 text-white border-white/20"
+                  className="bg-black/60 hover:bg-black/80 text-white border-0"
                 >
                   {isUploadingCover ? "Đang tải lên..." : "Thay đổi ảnh bìa"}
                 </Button>
@@ -107,7 +107,7 @@ export function ProfileHeader({
           <div className="flex flex-col md:flex-row items-start md:items-end -mt-16 md:-mt-12 gap-6 relative z-10 mb-6">
             {/* Avatar Section */}
             <div className="relative shrink-0">
-              <div className="size-32 md:size-44 rounded-full border-4 border-surface-main bg-background-main p-1 relative group overflow-hidden">
+              <div className="size-32 md:size-44 rounded-full ring-4 ring-surface-main bg-background-main p-1 relative group overflow-hidden">
                 <div
                   className="w-full h-full rounded-full bg-cover bg-center transition-opacity"
                   style={{ backgroundImage: `url("${avatarUrl}")` }}
@@ -148,7 +148,7 @@ export function ProfileHeader({
 
               {/* Online Status Dot */}
               <div
-                className="absolute bottom-2 md:bottom-4 right-2 md:right-4 size-5 md:size-6 bg-emerald-500 border-4 border-surface-main rounded-full"
+                className="absolute bottom-2 md:bottom-4 right-2 md:right-4 size-5 md:size-6 bg-emerald-500 ring-4 ring-surface-main rounded-full"
                 title="Đang hoạt động"
               />
             </div>
@@ -209,7 +209,7 @@ export function ProfileHeader({
                         variant="secondary"
                         onClick={onConfirmUnfriend}
                         title="Click để hủy kết bạn"
-                        className="flex-1 md:flex-none hover:border-danger hover:text-danger"
+                        className="flex-1 md:flex-none hover:text-danger hover:bg-status-error/10"
                       >
                         Đã là bạn bè
                       </Button>
@@ -226,7 +226,7 @@ export function ProfileHeader({
                         <Button
                           variant="secondary"
                           onClick={onConfirmRejectRequest}
-                          className="hover:border-danger hover:text-danger"
+                          className="hover:text-danger hover:bg-status-error/10"
                         >
                           Từ chối
                         </Button>
@@ -235,7 +235,7 @@ export function ProfileHeader({
                       <Button
                         variant="secondary"
                         onClick={onConfirmCancelRequest}
-                        className="flex-1 md:flex-none hover:border-danger hover:text-danger"
+                        className="flex-1 md:flex-none hover:text-danger hover:bg-status-error/10"
                       >
                         Thu hồi lời mời
                       </Button>
@@ -266,7 +266,7 @@ export function ProfileHeader({
                       aria-label="Báo cáo người dùng"
                       onClick={onOpenReport}
                       title="Báo cáo người dùng"
-                      className="hover:border-danger hover:text-danger"
+                      className="hover:text-danger hover:bg-status-error/10"
                     />
                   </>
                 )}

@@ -22,17 +22,17 @@ export function ConfirmDialog({
   const themes = {
     danger: {
       icon: <WarningCircle className="size-6 text-danger" />,
-      iconBg: "bg-red-500/10 border-red-500/20",
+      iconBg: "bg-red-500/10",
       buttonVariant: "danger",
     },
     warning: {
       icon: <Warning className="size-6 text-warning" />,
-      iconBg: "bg-amber-500/10 border-amber-500/20",
+      iconBg: "bg-amber-500/10",
       buttonVariant: "primary",
     },
     info: {
       icon: <Info className="size-6 text-info" />,
-      iconBg: "bg-blue-500/10 border-blue-500/20",
+      iconBg: "bg-blue-500/10",
       buttonVariant: "primary",
     },
   };
@@ -43,7 +43,7 @@ export function ConfirmDialog({
     <Modal isOpen={isOpen} onClose={onClose} size="sm">
       <div className="p-6 text-center space-y-4">
         <div
-          className={`size-14 rounded-2xl mx-auto flex items-center justify-center border ${theme.iconBg}`}
+          className={`size-14 rounded-2xl mx-auto flex items-center justify-center ${theme.iconBg}`}
         >
           {theme.icon}
         </div>

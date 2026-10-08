@@ -130,7 +130,7 @@ export default function FriendProfileDetail({
   if (!activeItem) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center text-text-secondary gap-6 p-8 text-center bg-gradient-to-br from-background-main to-surface-main">
-        <div className="size-32 rounded-full bg-gradient-to-br from-surface-main to-background-main border-4 border-border-main flex items-center justify-center mb-2 shadow-2xl">
+        <div className="size-32 rounded-full bg-gradient-to-br from-surface-main to-background-main border-0 flex items-center justify-center mb-2 shadow-2xl">
           <AddressBook size={56} className="opacity-20 text-primary" />
         </div>
         <div>
@@ -189,7 +189,7 @@ export default function FriendProfileDetail({
         {/* Back Button */}
         <button
           onClick={() => setActiveItem(null)}
-          className="xl:hidden absolute top-4 left-4 p-2.5 bg-black/50 hover:bg-black/70 rounded-xl text-white backdrop-blur-md transition-all z-10 shadow-lg"
+          className="xl:hidden absolute top-4 left-4 p-2.5 bg-black/50 hover:bg-black/70 rounded-xl text-white backdrop-blur-md transition-all z-10 shadow-lg border-0"
         >
           <ArrowLeft size={20} />
         </button>
@@ -199,7 +199,7 @@ export default function FriendProfileDetail({
       <div className="px-6 md:px-8 pb-8 -mt-20 relative">
         {/* Avatar & Name */}
         <div className="flex flex-col items-center">
-          <div className="size-32 md:size-36 rounded-2xl bg-gradient-to-br from-surface-main to-background-main p-1.5 border-4 border-background-main shadow-2xl mb-4 relative z-10 group">
+          <div className="size-32 md:size-36 rounded-2xl bg-gradient-to-br from-surface-main to-background-main p-1.5 ring-4 ring-background-main shadow-2xl mb-4 relative z-10 group">
             <div
               className="w-full h-full rounded-xl bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
               style={{
@@ -221,7 +221,7 @@ export default function FriendProfileDetail({
 
           {/* Suggestion Badge */}
           {fullProfile.type === "SUGGESTION" && (
-            <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary text-sm font-bold rounded-xl border border-primary/30 backdrop-blur-sm">
+            <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary text-sm font-bold rounded-xl border-0 backdrop-blur-sm">
               <Sparkle size={18} weight="fill" />
               <span>{fullProfile.reason}</span>
             </div>
@@ -229,7 +229,7 @@ export default function FriendProfileDetail({
 
           {/* Quick Stats */}
           {fullProfile.friendsCount > 0 && (
-            <div className="mt-4 flex items-center gap-2 px-4 py-2 bg-[#2A1D15] rounded-xl border border-[#3A2A20]">
+            <div className="mt-4 flex items-center gap-2 px-4 py-2 bg-surface-subtle rounded-xl border-0">
               <Users size={20} className="text-primary" />
               <span className="text-white font-medium text-sm">
                 {fullProfile.friendsCount} bạn bè
@@ -246,7 +246,7 @@ export default function FriendProfileDetail({
                 onClick={() =>
                   onStartChat(fullProfile.userId || fullProfile.id)
                 }
-                className="px-6 py-3 bg-primary hover:bg-orange-600 text-[#231810] font-bold rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center gap-2 hover:scale-105"
+                className="px-6 py-3 bg-primary hover:bg-orange-600 text-[#231810] font-bold rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center gap-2 hover:scale-105 border-0"
               >
                 <ChatCircleDots size={20} weight="fill" />
                 Nhắn tin
@@ -257,7 +257,7 @@ export default function FriendProfileDetail({
                     `/dashboard/member/${fullProfile.userId || fullProfile.id}`,
                   )
                 }
-                className="px-6 py-3 bg-[#2A1D15] hover:bg-[#3A2A20] text-white font-bold rounded-xl border border-[#3A2A20] transition-all flex items-center gap-2"
+                className="px-6 py-3 bg-surface-subtle hover:bg-surface-subtle/80 text-text-main font-bold rounded-xl border-0 transition-all flex items-center gap-2"
                 title="Xem hồ sơ đầy đủ"
               >
                 <User size={20} />
@@ -265,7 +265,7 @@ export default function FriendProfileDetail({
               </button>
               <button
                 onClick={handleUnfriendClick}
-                className="px-4 py-3 bg-[#2A1D15] hover:bg-red-500/20 hover:text-red-500 hover:border-red-500/30 text-white font-bold rounded-xl border border-[#3A2A20] transition-all"
+                className="px-4 py-3 bg-surface-subtle hover:bg-red-500/20 hover:text-red-500 text-text-secondary font-bold rounded-xl border-0 transition-all"
                 title="Hủy kết bạn"
               >
                 <UserMinus size={20} />
@@ -275,14 +275,14 @@ export default function FriendProfileDetail({
             <>
               <button
                 onClick={handleAcceptClick}
-                className="px-8 py-3 bg-primary hover:bg-orange-600 text-[#231810] font-bold rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center gap-2 hover:scale-105"
+                className="px-8 py-3 bg-primary hover:bg-orange-600 text-[#231810] font-bold rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center gap-2 hover:scale-105 border-0"
               >
                 <CheckCircle size={20} weight="fill" />
                 Chấp nhận
               </button>
               <button
                 onClick={handleRejectClick}
-                className="px-8 py-3 bg-[#2A1D15] hover:bg-red-500/20 hover:text-red-500 text-white font-bold rounded-xl border border-[#3A2A20] hover:border-red-500/30 transition-all flex items-center gap-2"
+                className="px-8 py-3 bg-surface-subtle hover:bg-red-500/20 hover:text-red-500 text-text-secondary font-bold rounded-xl border-0 transition-all flex items-center gap-2"
               >
                 <XCircle size={20} weight="fill" />
                 Từ chối
@@ -292,7 +292,7 @@ export default function FriendProfileDetail({
             <>
               <button
                 onClick={handleAddFriendClick}
-                className="px-8 py-3 bg-primary hover:bg-orange-600 text-[#231810] font-bold rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center gap-2 hover:scale-105"
+                className="px-8 py-3 bg-primary hover:bg-orange-600 text-[#231810] font-bold rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center gap-2 hover:scale-105 border-0"
               >
                 <UserPlus size={20} weight="fill" />
                 Kết bạn
@@ -300,7 +300,7 @@ export default function FriendProfileDetail({
               {viewMode === "SUGGESTIONS" && onDismissSuggestion && (
                 <button
                   onClick={handleDismissClick}
-                  className="px-6 py-3 bg-[#2A1D15] hover:bg-neutral-700 text-text-secondary hover:text-white font-bold rounded-xl border border-[#3A2A20] transition-all flex items-center gap-2"
+                  className="px-6 py-3 bg-surface-subtle hover:bg-surface-subtle/80 text-text-secondary hover:text-white font-bold rounded-xl border-0 transition-all flex items-center gap-2"
                   title="Ẩn gợi ý này"
                 >
                   <EyeSlash size={20} />
@@ -321,8 +321,8 @@ export default function FriendProfileDetail({
 
           <div className="mt-6">
             {activeProfileTab === "timeline" && (
-              <div className="text-center py-16 bg-[#2A1D15] rounded-2xl border border-[#3A2A20]">
-                <div className="size-16 rounded-full bg-[#1A120B] border-2 border-[#3A2A20] flex items-center justify-center mx-auto mb-4">
+              <div className="text-center py-16 bg-surface-subtle rounded-2xl border-0">
+                <div className="size-16 rounded-full bg-surface-main border-0 flex items-center justify-center mx-auto mb-4">
                   <LockKey size={32} className="opacity-30 text-primary" />
                 </div>
                 <p className="text-text-secondary text-sm mb-4">

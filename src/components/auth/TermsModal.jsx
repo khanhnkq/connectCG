@@ -5,9 +5,9 @@ const TermsModal = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-surface-main border border-border-main w-full max-w-2xl max-h-[80vh] rounded-2xl shadow-2xl scale-100 animate-in zoom-in-95 duration-200 flex flex-col">
+      <div className="bg-surface-main border-0 w-full max-w-2xl max-h-[80vh] rounded-2xl shadow-2xl scale-100 animate-in zoom-in-95 duration-200 flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border-main">
+        <div className="flex items-center justify-between p-6 border-0 bg-surface-subtle/40">
           <div>
             <h2 className="text-xl font-bold text-text-main">
               Điều khoản sử dụng
@@ -18,7 +18,7 @@ const TermsModal = ({ isOpen, onClose }) => {
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-border-main rounded-full text-text-secondary transition-colors"
+            className="p-2 hover:bg-surface-subtle rounded-full text-text-secondary transition-colors border-0 bg-transparent cursor-pointer"
           >
             <X size={20} />
           </button>
@@ -73,10 +73,10 @@ const TermsModal = ({ isOpen, onClose }) => {
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-border-main flex justify-end">
+        <div className="p-6 border-0 bg-surface-subtle/30 flex justify-end">
           <button
             onClick={onClose}
-            className="px-6 py-2.5 bg-primary hover:bg-primary-hover text-white font-medium rounded-xl transition-colors"
+            className="px-6 py-2.5 bg-primary hover:bg-primary-hover text-white font-medium rounded-xl transition-colors border-0 cursor-pointer"
           >
             Đã hiểu
           </button>

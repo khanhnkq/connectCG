@@ -34,7 +34,7 @@ export default function ChatDropdown({ onClose }) {
 
     return (
         <div className="flex flex-col max-h-[400px]">
-            <div className="p-3 border-b border-border-main flex justify-between items-center sticky top-0 bg-background-main z-10">
+            <div className="p-3 flex justify-between items-center sticky top-0 bg-background-main z-10">
                 <h3 className="font-bold text-lg text-text-main">Tin nhắn</h3>
                 <div className="flex gap-2">
                     <button
@@ -63,10 +63,10 @@ export default function ChatDropdown({ onClose }) {
                                 <img
                                     src={room.avatarUrl || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
                                     alt={room.name}
-                                    className="size-12 rounded-full object-cover border border-border-main"
+                                    className="size-12 rounded-full object-cover"
                                 />
                                 {room.unreadCount > 0 && (
-                                    <span className="absolute top-0 right-0 size-3 bg-red-500 rounded-full border-2 border-background-main shadow-sm"></span>
+                                    <span className="absolute top-0 right-0 size-3 bg-red-500 rounded-full ring-2 ring-background-main shadow-sm"></span>
                                 )}
                             </div>
                             <div className="flex-1 min-w-0">
@@ -97,7 +97,7 @@ export default function ChatDropdown({ onClose }) {
                 )}
             </div>
 
-            <div className="p-2 border-t border-border-main text-center sticky bottom-0 bg-background-main">
+            <div className="p-2 text-center sticky bottom-0 bg-background-main">
                 <button
                     onClick={() => { navigate('/dashboard/chat', { state: { clearSelection: true } }); onClose(); }}
                     className="w-full py-1.5 text-xs font-bold text-primary hover:bg-primary/5 rounded-lg transition-colors"

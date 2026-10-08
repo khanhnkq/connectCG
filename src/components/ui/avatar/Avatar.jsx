@@ -16,12 +16,12 @@ function getInitials(name) {
  * Harmonized gray and orange color palette for initials background
  */
 function getInitialsBg(name) {
-  if (!name) return "bg-surface-subtle text-text-secondary border-border-main";
+  if (!name) return "bg-surface-subtle text-text-secondary";
   const colors = [
-    "bg-surface-subtle text-text-main border-border-main",
-    "bg-primary/10 text-primary border-primary/20",
-    "bg-surface-subtle text-text-secondary border-border-main",
-    "bg-primary/10 text-primary border-primary/20",
+    "bg-surface-subtle text-text-main",
+    "bg-primary/10 text-primary",
+    "bg-surface-subtle text-text-secondary",
+    "bg-primary/10 text-primary",
   ];
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
@@ -31,8 +31,8 @@ function getInitialsBg(name) {
 }
 
 /**
- * Modern Flat Avatar Primitive
- * - Zero drop shadow, zero blur
+ * Modern Flat Avatar Primitive (Border-free)
+ * - Zero drop shadow, zero blur, zero border
  * - Fallback to initials with auto-contrasting background
  * - Online / Offline status badge
  * - Sizes: xs (24px), sm (32px), md (40px), lg (48px), xl (64px), 2xl (96px)
@@ -58,12 +58,12 @@ export function Avatar({
   };
 
   const statusSizeStyles = {
-    xs: "size-2 -bottom-0.5 -right-0.5 border",
-    sm: "size-2.5 bottom-0 right-0 border",
-    md: "size-3 bottom-0 right-0 border-2",
-    lg: "size-3.5 bottom-0.5 right-0.5 border-2",
-    xl: "size-4 bottom-1 right-1 border-2",
-    "2xl": "size-5 bottom-1.5 right-1.5 border-2",
+    xs: "size-2 -bottom-0.5 -right-0.5 ring-1 ring-surface-main",
+    sm: "size-2.5 bottom-0 right-0 ring-1 ring-surface-main",
+    md: "size-3 bottom-0 right-0 ring-2 ring-surface-main",
+    lg: "size-3.5 bottom-0.5 right-0.5 ring-2 ring-surface-main",
+    xl: "size-4 bottom-1 right-1 ring-2 ring-surface-main",
+    "2xl": "size-5 bottom-1.5 right-1.5 ring-2 ring-surface-main",
   };
 
   const statusColorStyles = {
@@ -86,7 +86,7 @@ export function Avatar({
         onClick ? "cursor-pointer hover:opacity-90 transition-opacity" : ""
       } ${className}`}>
       <div
-        className={`${appliedSize} rounded-full overflow-hidden border border-border-main flex items-center justify-center font-bold ${
+        className={`${appliedSize} rounded-full overflow-hidden flex items-center justify-center font-bold ${
           showImage ? "bg-surface-subtle" : initialsStyle
         }`}>
         {showImage ? (
@@ -104,7 +104,7 @@ export function Avatar({
 
       {status && statusColorStyles[status] && (
         <span
-          className={`absolute rounded-full border-surface-main ${appliedStatusSize} ${statusColorStyles[status]}`}
+          className={`absolute rounded-full ${appliedStatusSize} ${statusColorStyles[status]}`}
           aria-label={`Trạng thái: ${status}`}
         />
       )}
@@ -125,7 +125,7 @@ export function AvatarGroup({ children, max = 4, className = "" }) {
         </div>
       ))}
       {remainingCount > 0 && (
-        <div className="size-10 rounded-full bg-surface-subtle border border-border-main ring-2 ring-surface-main flex items-center justify-center text-xs font-bold text-text-secondary select-none">
+        <div className="size-10 rounded-full bg-surface-subtle border-0 ring-2 ring-surface-main flex items-center justify-center text-xs font-bold text-text-secondary select-none">
           +{remainingCount}
         </div>
       )}

@@ -91,7 +91,7 @@ export function ProfileSidebar({ profile, isOwner = false }) {
             {profile.hobbies.map((hobby, index) => (
               <span
                 key={hobby.id || index}
-                className="bg-primary/10 text-primary text-xs font-bold px-3 py-1.5 rounded-full border border-primary/20"
+                className="bg-primary/10 text-primary text-xs font-bold px-3 py-1.5 rounded-full border-0"
               >
                 {hobby.name}
               </span>

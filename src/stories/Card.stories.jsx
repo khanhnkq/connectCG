@@ -40,7 +40,7 @@ export const PostCardLayout = {
     const post = mockPosts.textOnly;
     return (
       <Card className="max-w-xl">
-        <div className="p-4 flex items-center justify-between border-b border-border-main">
+        <div className="p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Avatar src={post.authorAvatar} name={post.authorFullName} size="md" status="online" />
             <div>
@@ -57,12 +57,12 @@ export const PostCardLayout = {
           <p className="text-sm text-text-main leading-relaxed">{post.content}</p>
         </Card.Body>
 
-        <div className="px-6 py-2.5 border-t border-border-main bg-surface-subtle/30 flex items-center justify-between text-xs text-text-muted">
+        <div className="px-6 py-2.5 bg-surface-subtle/30 flex items-center justify-between text-xs text-text-muted">
           <span>{post.reactCount} lượt thích</span>
           <span>{post.commentCount} bình luận · {post.shareCount} lượt chia sẻ</span>
         </div>
 
-        <div className="p-2 border-t border-border-main grid grid-cols-3 gap-1">
+        <div className="p-2 grid grid-cols-3 gap-1">
           <Button variant="ghost" size="sm">
             Thích
           </Button>

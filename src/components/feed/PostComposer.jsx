@@ -32,14 +32,14 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
   const VisIcon = currentVisibility.icon;
 
   return (
-    <div className="bg-surface-main p-5 md:p-6 rounded-2xl border border-border-main mb-4 md:mb-5 relative">
+    <div className="bg-surface-main p-5 md:p-6 rounded-2xl mb-4 md:mb-5 relative border-0">
       {/* Input area with author avatar */}
       <div className="flex gap-3.5 items-start mb-3">
         <Avatar
           src={avatarUrl}
           name={userProfile?.fullName || "User"}
           size="lg"
-          className="hidden md:inline-flex shrink-0 ring-1 ring-border-main"
+          className="hidden md:inline-flex shrink-0"
         />
         <div className="flex-1 pt-1">
           <textarea
@@ -65,7 +65,7 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
             {formik.values.media.map((file, index) => (
               <div
                 key={index}
-                className={`relative rounded-xl overflow-hidden border border-border-main bg-black/5 ${
+                className={`relative rounded-xl overflow-hidden bg-black/5 ${
                   formik.values.media.length === 3 && index === 0 ? "col-span-2 aspect-[2/1]" : "aspect-video"
                 }`}
               >
@@ -89,7 +89,7 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
       )}
 
       {/* Controls & Actions bar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-border-main/50">
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-3">
         <div className="flex items-center gap-1 sm:gap-2">
           <input type="file" hidden ref={imageInputRef} accept="image/*" onChange={handleFileChange} />
           <input type="file" hidden ref={videoInputRef} accept="video/*" onChange={handleFileChange} />
@@ -117,7 +117,7 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
               <button
                 type="button"
                 onClick={() => setShowVisibilityMenu((prev) => !prev)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-surface-subtle text-text-main text-xs font-semibold border border-border-main hover:bg-border-main/40 transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-surface-subtle text-text-main text-xs font-semibold hover:bg-surface-subtle/80 transition-colors cursor-pointer border-0"
               >
                 <VisIcon size={14} />
                 <span>{currentVisibility.label}</span>
@@ -125,7 +125,7 @@ export default function PostComposer({ userAvatar, onPostCreated, groupId }) {
               </button>
 
               {showVisibilityMenu && (
-                <div className="absolute top-full left-0 mt-1 w-36 bg-surface-main border border-border-main rounded-xl z-30 overflow-hidden py-1">
+                <div className="absolute top-full left-0 mt-1 w-36 bg-surface-main rounded-xl z-30 overflow-hidden py-1 border-0 shadow-lg">
                   {Object.entries(VISIBILITY_CONFIG).map(([visKey, cfg]) => {
                     const Icon = cfg.icon;
                     return (

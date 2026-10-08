@@ -5,10 +5,10 @@ export const toastConfig = {
         style: {
             background: "var(--color-surface-main)",
             color: "var(--color-text-main)",
-            border: "1px solid var(--color-border-main)",
-            borderRadius: "12px",
+            border: "none",
+            borderRadius: "16px",
             padding: "12px 16px",
-            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+            boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
             fontSize: "14px",
             fontWeight: "500",
         },
@@ -19,7 +19,7 @@ export const toastConfig = {
                 secondary: "#ffffff",
             },
             style: {
-                borderLeft: "4px solid #10b981",
+                border: "none",
             },
         },
         error: {
@@ -29,12 +29,12 @@ export const toastConfig = {
                 secondary: "#ffffff",
             },
             style: {
-                borderLeft: "4px solid #ef4444",
+                border: "none",
             },
         },
         loading: {
             style: {
-                borderLeft: "4px solid #3b82f6", // Blue 500
+                border: "none",
             },
         },
     },

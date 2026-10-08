@@ -26,7 +26,7 @@ export default function AuthSplitLayout({
   return (
     <div className="min-h-screen flex w-full bg-background-main transition-colors duration-200">
       {/* Cột trái: Ảnh bìa + Brand thông điệp (chỉ hiện trên màn hình lớn) */}
-      <div className="hidden lg:flex w-1/2 relative flex-col justify-end p-12 overflow-hidden border-r border-border-main select-none">
+      <div className="hidden lg:flex w-1/2 relative flex-col justify-end p-12 overflow-hidden border-0 select-none">
         <div
           className="absolute inset-0 z-0 bg-cover bg-center"
           style={{ backgroundImage: `url("${heroImage}")` }}
@@ -56,7 +56,7 @@ export default function AuthSplitLayout({
       {/* Cột phải: Khung biểu mẫu xác thực */}
       <div className="w-full lg:w-1/2 flex flex-col min-h-screen lg:h-screen overflow-y-auto bg-background-main relative">
         {/* Mobile Header */}
-        <div className="w-full p-6 flex justify-between items-center lg:hidden border-b border-border-main">
+        <div className="w-full p-6 flex justify-between items-center lg:hidden border-0">
           <Link to="/" className="flex items-center gap-2">
             <img
               src="/logo.png"

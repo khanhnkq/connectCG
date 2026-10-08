@@ -66,11 +66,11 @@ const UserMenuDropdown = ({ isOpen, onClose, onShowNotifications }) => {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 15, scale: 0.95 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
-          className="absolute right-0 top-full mt-3 w-72 bg-surface-main border border-border-main rounded-2xl overflow-hidden z-50 p-2"
+          className="absolute right-0 top-full mt-3 w-72 bg-surface-main rounded-2xl overflow-hidden z-50 p-2 border-0 shadow-lg"
         >
           {/* Profile Header */}
           <div
-            className="p-3 mb-2 rounded-xl bg-surface-subtle border border-border-main cursor-pointer hover:border-primary/40 transition-colors"
+            className="p-3 mb-2 rounded-xl bg-surface-subtle cursor-pointer hover:bg-surface-subtle/80 transition-colors border-0"
             onClick={() => {
               navigate("/dashboard/my-profile");
               onClose();

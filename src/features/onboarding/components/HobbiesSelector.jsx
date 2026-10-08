@@ -50,16 +50,16 @@ export default function HobbiesSelector({
               type="button"
               disabled={disabled}
               onClick={() => handleToggle(hobby.id)}
-              className={`p-2.5 rounded-xl border text-center flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer select-none h-18 ${
+              className={`p-2.5 rounded-xl border-0 text-center flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer select-none h-18 ${
                 isSelected
-                  ? "border-primary bg-primary/10 text-primary ring-1 ring-primary"
-                  : "border-border-main bg-surface-main hover:bg-surface-subtle text-text-secondary hover:text-text-main"
+                  ? "bg-primary text-white font-bold shadow-sm"
+                  : "bg-surface-subtle hover:bg-surface-subtle/80 text-text-secondary hover:text-text-main"
               } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               <Icon
                 size={22}
                 className={`transition-colors shrink-0 ${
-                  isSelected ? "text-primary" : "text-text-muted"
+                  isSelected ? "text-white" : "text-text-muted"
                 }`}
                 weight={isSelected ? "bold" : "regular"}
               />

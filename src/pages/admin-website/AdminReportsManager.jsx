@@ -31,19 +31,19 @@ const statusMap = {
     label: "Chờ xử lý",
     color: "text-orange-600 dark:text-orange-400",
     bg: "bg-orange-400/10",
-    border: "border-orange-400/20",
+    border: "border-0",
   },
   UNDER_REVIEW: {
     label: "Đang xem xét",
     color: "text-yellow-600 dark:text-yellow-400",
     bg: "bg-yellow-400/10",
-    border: "border-yellow-400/20",
+    border: "border-0",
   },
   RESOLVED: {
     label: "Đã giải quyết",
     color: "text-green-600 dark:text-green-400",
     bg: "bg-green-400/10",
-    border: "border-green-400/20",
+    border: "border-0",
   },
 };
 
@@ -624,11 +624,11 @@ const AdminReportsManagement = () => {
     >
       <div className="p-8 space-y-6 relative min-h-screen">
         {/* HEADER */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 bg-surface-main p-6 rounded-2xl border border-border-main">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 bg-surface-main p-6 rounded-2xl border-0 shadow-sm">
           <div>
             <h2 className="text-2xl font-extrabold text-text-main tracking-tight flex items-center gap-3">
               Báo cáo vi phạm
-              <span className="px-3 py-1 text-xs font-bold rounded-full bg-primary/10 text-primary border border-primary/20">
+              <span className="px-3 py-1 text-xs font-bold rounded-full bg-primary/10 text-primary border-0">
                 {activeCount}{" "}
                 {filterStatus === "RESOLVED" ? "đã xong" : "cần xử lý"}
               </span>
@@ -640,7 +640,7 @@ const AdminReportsManagement = () => {
 
           <div className="flex items-center gap-3">
             {/* STATUS FILTER */}
-            <div className="flex bg-surface-subtle p-1 rounded-xl border border-border-main">
+            <div className="flex bg-surface-subtle p-1 rounded-xl border-0">
               <button
                 type="button"
                 onClick={() => setFilterStatus("PENDING")}
@@ -671,7 +671,7 @@ const AdminReportsManagement = () => {
               onClick={() =>
                 setSortOrder(sortOrder === "desc" ? "asc" : "desc")
               }
-              className="px-4 py-2 rounded-xl bg-surface-subtle border border-border-main text-text-secondary hover:text-text-main transition-colors font-bold text-xs flex items-center gap-2 cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-surface-subtle border-0 text-text-secondary hover:text-text-main transition-colors font-bold text-xs flex items-center gap-2 cursor-pointer"
               title={sortOrder === "desc" ? "Cũ nhất" : "Mới nhất"}
             >
               {sortOrder === "desc" ? (
@@ -685,7 +685,7 @@ const AdminReportsManagement = () => {
         </div>
 
         {/* TABS */}
-        <div className="flex gap-8 px-2 border-b border-border-main">
+        <div className="flex gap-8 px-2 border-0">
           {Object.entries(TABS).map(([key, label]) => (
             <button
               key={key}
@@ -693,7 +693,7 @@ const AdminReportsManagement = () => {
               onClick={() => setActiveTab(key)}
               className={`pb-3 text-xs font-black uppercase tracking-wider transition-colors relative cursor-pointer ${
                 activeTab === key
-                  ? "text-primary border-b-2 border-primary"
+                  ? "text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full"
                   : "text-text-muted hover:text-text-main"
               }`}
             >

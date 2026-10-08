@@ -51,7 +51,7 @@ export default function PostMediaGrid({
   const count = mediaItems.length;
 
   return (
-    <div className="w-full overflow-hidden border-t border-b border-border-main/40">
+    <div className="w-full overflow-hidden">
       {count === 1 && (
         <div className="w-full h-full aspect-[3/2]">
           {renderItem(mediaItems[0], 0, "w-full h-full")}

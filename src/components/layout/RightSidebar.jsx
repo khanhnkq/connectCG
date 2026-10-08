@@ -134,7 +134,7 @@ export default function RightSidebar() {
   };
 
   return (
-    <aside className="w-80 hidden xl:flex flex-col border-l border-border-main bg-background-main p-6 h-[calc(100vh-64px)] sticky top-0 shrink-0 z-30 transition-colors duration-300">
+    <aside className="w-80 hidden xl:flex flex-col bg-background-main p-6 h-[calc(100vh-64px)] sticky top-0 shrink-0 z-30 transition-colors duration-300">
       <div className="mb-8 group">
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -144,7 +144,7 @@ export default function RightSidebar() {
             />
           </div>
           <input
-            className="block w-full pl-12 pr-4 py-3.5 border border-border-main rounded-2xl leading-5 bg-surface-main text-text-main placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary focus:bg-surface-main/90 transition-all sm:text-sm font-medium"
+            className="block w-full pl-12 pr-4 py-3.5 border-0 rounded-2xl leading-5 bg-surface-main text-text-main placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:bg-surface-main transition-all sm:text-sm font-medium"
             placeholder="Tìm kiếm bạn bè..."
             type="text"
             value={searchTerm}
@@ -178,7 +178,7 @@ export default function RightSidebar() {
                   to={`/dashboard/member/${suggestion.userId}`}
                   className="flex items-center gap-3 flex-1">
                   <div
-                    className="size-11 rounded-full bg-cover bg-center border border-transparent group-hover:border-primary transition-all"
+                    className="size-11 rounded-full bg-cover bg-center transition-all"
                     style={{
                       backgroundImage: `url("${
                         suggestion.avatarUrl ||
@@ -196,7 +196,7 @@ export default function RightSidebar() {
                 </Link>
                 <button
                   onClick={() => handleAddFriend(suggestion.userId)}
-                  className="size-9 rounded-full bg-surface-main border border-border-main hover:bg-primary hover:text-white flex items-center justify-center text-primary transition-all shadow-md"
+                  className="size-9 rounded-full bg-surface-main hover:bg-primary hover:text-white flex items-center justify-center text-primary transition-all border-0 shadow-none cursor-pointer"
                   title="Kết bạn">
                   <UserPlus size={20} />
                 </button>
@@ -215,7 +215,7 @@ export default function RightSidebar() {
           <h3 className="text-text-main font-bold text-base tracking-wide">
             Bạn bè
           </h3>
-          <span className="bg-surface-main border border-border-main text-text-secondary text-xs font-bold px-2.5 py-1 rounded-full">
+          <span className="bg-surface-main text-text-secondary text-xs font-bold px-2.5 py-1 rounded-full border-0">
             {friends.length}
           </span>
         </div>
@@ -238,7 +238,7 @@ export default function RightSidebar() {
                       }")`,
                     }}></div>
                   {onlineUserIds.includes(friend.id) && (
-                    <div className="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full border-2 border-background-main"></div>
+                    <div className="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full ring-2 ring-background-main border-0"></div>
                   )}
                 </div>
                 <span className="text-text-main text-sm font-medium group-hover:text-primary transition-colors">

@@ -96,11 +96,9 @@ const CitySelect = ({
           onBlur={handleBlur}
           placeholder="Chọn tỉnh/thành phố..."
           disabled={loading}
-          className={`w-full h-10 bg-background-main border ${
-            error ? "border-red-500" : "border-border-main"
-          } ${
-            isOpen ? "rounded-t-lg border-b-0" : "rounded-lg"
-          } pl-4 pr-10 text-text-main placeholder-text-secondary/40 focus:outline-none focus:border-primary/50 transition-all z-20 relative flex items-center font-medium text-sm`}
+          className={`w-full h-10 bg-surface-subtle border-0 rounded-xl pl-4 pr-10 text-text-main placeholder-text-secondary/40 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-surface-main transition-all z-20 relative flex items-center font-medium text-sm ${
+            error ? "ring-2 ring-danger" : ""
+          }`}
         />
 
         {/* Arrow Icon */}
@@ -113,9 +111,7 @@ const CitySelect = ({
 
         {/* Dropdown Menu */}
         {isOpen && (
-          <div className="absolute z-10 w-full left-0 top-full bg-surface-main border border-t-0 border-border-main rounded-b-lg shadow-xl max-h-60 overflow-y-auto animate-in fade-in zoom-in-95 duration-200 origin-top custom-scrollbar">
-            {/* Separator line to ensure seamless look but visual separation */}
-            <div className="h-[1px] w-full bg-border-main mx-auto opacity-50"></div>
+          <div className="absolute z-10 w-full left-0 top-full mt-1 bg-surface-main border-0 rounded-xl shadow-xl max-h-60 overflow-y-auto animate-in fade-in zoom-in-95 duration-200 origin-top custom-scrollbar">
 
             {loading ? (
               <div className="p-4 text-text-secondary text-sm text-center italic">

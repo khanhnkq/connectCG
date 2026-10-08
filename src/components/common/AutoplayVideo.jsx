@@ -112,7 +112,7 @@ const AutoplayVideo = ({
               : "opacity-0 scale-150"
           }`}
       >
-        <div className="bg-black/40 backdrop-blur-md p-5 rounded-full border border-white/20 shadow-2xl">
+        <div className="bg-black/40 backdrop-blur-md p-5 rounded-full border-0 shadow-2xl">
           {isPlaying ? (
             <Pause size={32} className="text-white fill-white" />
           ) : (
@@ -133,7 +133,7 @@ const AutoplayVideo = ({
         {/* Play/Pause Button */}
         <button
           onClick={togglePlay}
-          className="p-2 bg-black/50 backdrop-blur-md rounded-full border border-white/10 text-white hover:bg-black/70 transition-all flex items-center justify-center"
+          className="p-2 bg-black/50 backdrop-blur-md rounded-full border-0 text-white hover:bg-black/70 transition-all flex items-center justify-center cursor-pointer"
           title={isPlaying ? "Dừng" : "Phát"}
         >
           {isPlaying ? (
@@ -146,7 +146,7 @@ const AutoplayVideo = ({
         {/* Mute Toggle Button */}
         <button
           onClick={toggleMute}
-          className="p-2 bg-black/50 backdrop-blur-md rounded-full border border-white/10 text-white hover:bg-black/70 transition-all flex items-center justify-center"
+          className="p-2 bg-black/50 backdrop-blur-md rounded-full border-0 text-white hover:bg-black/70 transition-all flex items-center justify-center cursor-pointer"
           title={isMuted ? "Bật âm thanh" : "Tắt âm thanh"}
         >
           {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
@@ -155,7 +155,7 @@ const AutoplayVideo = ({
         {/* Expand (Full View) Button */}
         <button
           onClick={handleContainerClick}
-          className="p-2 bg-black/50 backdrop-blur-md rounded-full border border-white/10 text-white hover:bg-black/70 transition-all flex items-center justify-center"
+          className="p-2 bg-black/50 backdrop-blur-md rounded-full border-0 text-white hover:bg-black/70 transition-all flex items-center justify-center cursor-pointer"
           title="Xem toàn màn hình"
         >
           <Maximize2 size={16} />

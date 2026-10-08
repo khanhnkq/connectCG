@@ -20,9 +20,9 @@ export default function StepSuccessCelebration({
           src={avatarPreview}
           name={formData.fullName || "User"}
           size="xl"
-          className="size-24 border-2 border-primary mx-auto"
+          className="size-24 border-0 shadow-lg mx-auto"
         />
-        <div className="absolute -bottom-1 -right-1 size-8 rounded-full bg-success text-white border-2 border-surface-main flex items-center justify-center">
+        <div className="absolute -bottom-1 -right-1 size-8 rounded-full bg-success text-white border-0 shadow-md flex items-center justify-center">
           <CheckCircle size={18} weight="bold" />
         </div>
       </div>

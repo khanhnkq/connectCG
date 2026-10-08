@@ -40,7 +40,7 @@ export default function GroupsManagement() {
     <div className="flex w-full relative items-start transition-colors duration-200">
       <div className="flex-1 w-full bg-background-main min-h-screen">
         {/* Sticky Flat Header */}
-        <header className="sticky top-0 z-30 bg-background-main border-b border-border-main p-3 md:p-4 px-4 md:px-8 flex flex-col md:flex-row justify-between items-center gap-3">
+        <header className="sticky top-0 z-30 bg-background-main border-0 p-3 md:p-4 px-4 md:px-8 flex flex-col md:flex-row justify-between items-center gap-3">
           {/* Tabs */}
           <div className="w-full md:w-auto">
             <GroupsTabs
@@ -89,7 +89,7 @@ export default function GroupsManagement() {
             /* Loading State Skeleton */
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="border border-border-main rounded-2xl bg-surface-main overflow-hidden p-0 space-y-4">
+                <div key={i} className="border-0 rounded-2xl bg-surface-main overflow-hidden p-0 space-y-4 shadow-sm">
                   <Skeleton className="h-44 w-full rounded-none" />
                   <div className="p-5 space-y-3">
                     <Skeleton className="h-5 w-3/4" />
@@ -109,7 +109,7 @@ export default function GroupsManagement() {
               {/* Managed Groups Section */}
               {managedGroups.length > 0 && (
                 <section className="space-y-5">
-                  <div className="flex items-center gap-3 border-b border-border-main pb-3">
+                  <div className="flex items-center gap-3 border-0 pb-3">
                     <ShieldCheck className="text-primary size-6 shrink-0" />
                     <h2 className="text-base font-bold text-text-main uppercase tracking-wider">
                       Nhóm bạn quản lý ({filteredGroups(managedGroups).length})
@@ -132,7 +132,7 @@ export default function GroupsManagement() {
               {/* Joined Groups Section */}
               {joinedGroups.length > 0 && (
                 <section className="space-y-5">
-                  <div className="flex items-center gap-3 border-b border-border-main pb-3">
+                  <div className="flex items-center gap-3 border-0 pb-3">
                     <Users className="text-primary size-6 shrink-0" />
                     <h2 className="text-base font-bold text-text-main uppercase tracking-wider">
                       Nhóm bạn tham gia ({filteredGroups(joinedGroups).length})

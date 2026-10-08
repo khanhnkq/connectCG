@@ -77,12 +77,12 @@ export default function CityCombobox({
           type="button"
           disabled={disabled || loading}
           onClick={() => setIsOpen(!isOpen)}
-          className={`w-full h-10 px-3.5 bg-surface-main text-sm rounded-xl border flex items-center justify-between text-left transition-colors select-none ${
+          className={`w-full h-10 px-3.5 bg-surface-subtle text-sm rounded-xl border-0 flex items-center justify-between text-left transition-colors select-none ${
             error
-              ? "border-danger focus:ring-1 focus:ring-danger"
+              ? "ring-2 ring-danger"
               : isOpen
-              ? "border-primary ring-1 ring-primary"
-              : "border-border-main hover:border-border-strong"
+              ? "ring-2 ring-primary bg-surface-main"
+              : "hover:bg-surface-subtle/80"
           } disabled:bg-surface-subtle disabled:cursor-not-allowed`}
         >
           <span
@@ -103,9 +103,9 @@ export default function CityCombobox({
         </button>
 
         {isOpen && (
-          <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-surface-main border border-border-main rounded-xl p-1.5 shadow-none max-h-60 flex flex-col animate-in fade-in duration-100">
+          <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-surface-main border-0 rounded-xl p-1.5 shadow-lg max-h-60 flex flex-col animate-in fade-in duration-100">
             {/* Search Input trong Dropdown */}
-            <div className="relative p-1 border-b border-border-main mb-1">
+            <div className="relative p-1 mb-1">
               <MagnifyingGlass
                 size={16}
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"
@@ -116,7 +116,7 @@ export default function CityCombobox({
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Tìm tên tỉnh/thành..."
                 autoFocus
-                className="w-full pl-8 pr-3 py-1.5 text-xs bg-surface-subtle text-text-main rounded-lg outline-none placeholder:text-text-muted"
+                className="w-full pl-8 pr-3 py-1.5 text-xs bg-surface-subtle text-text-main rounded-lg outline-none placeholder:text-text-muted border-0"
               />
             </div>
 

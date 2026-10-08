@@ -175,7 +175,7 @@ export function Navbar({
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full h-16 px-4 md:px-6 bg-surface-main border-b border-border-main flex items-center justify-between transition-colors">
+    <header className="sticky top-0 z-50 w-full h-16 px-4 md:px-6 bg-surface-main flex items-center justify-between transition-colors">
       {/* 1. LEFT SECTION: Logo & Branding / Global Search */}
       <div className="flex items-center gap-4 flex-1 min-w-0">
         <Link
@@ -197,7 +197,7 @@ export function Navbar({
         {/* Admin Title or Desktop Search */}
         {variant === "admin" ? (
           title && (
-            <div className="hidden lg:flex items-center pl-4 border-l border-border-main">
+            <div className="hidden lg:flex items-center pl-4">
               <span className="text-sm font-semibold text-text-secondary truncate">
                 {title}
               </span>
@@ -210,7 +210,7 @@ export function Navbar({
             </div>
             <input
               type="text"
-              className="block w-full pl-10 pr-3.5 py-2 text-sm rounded-xl bg-surface-subtle border border-border-main text-text-main placeholder-text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+              className="block w-full pl-10 pr-3.5 py-2 text-sm rounded-xl bg-surface-subtle border-0 text-text-main placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:bg-surface-main transition-all"
               placeholder="Tìm kiếm thành viên, bài viết..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -387,10 +387,10 @@ export function Navbar({
               setShowChatDropdown(false);
             }}
             aria-label="Tài khoản cá nhân"
-            className={`flex items-center gap-1.5 p-1 rounded-xl border transition-colors cursor-pointer ${
+            className={`flex items-center gap-1.5 p-1 rounded-xl transition-colors cursor-pointer ${
               showUserMenu
-                ? "bg-surface-subtle border-primary"
-                : "border-transparent hover:bg-surface-subtle"
+                ? "bg-surface-subtle"
+                : "hover:bg-surface-subtle"
             }`}
           >
             <Avatar

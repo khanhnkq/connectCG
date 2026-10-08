@@ -9,7 +9,7 @@ import { Tabs } from "../../../components/ui/tabs/Tabs";
 export function GroupsTabs({ activeTab, onTabChange, pendingInvitationsCount = 0 }) {
   return (
     <Tabs value={activeTab} onChange={onTabChange}>
-      <Tabs.List className="p-1 rounded-xl bg-surface-subtle border border-border-main">
+      <Tabs.List className="p-1 rounded-xl bg-surface-subtle border-0">
         <Tabs.Trigger value="my" icon={Users}>
           Của tôi
         </Tabs.Trigger>

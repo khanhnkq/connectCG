@@ -13,7 +13,7 @@ export default function TermsModal({ isOpen, onClose }) {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl">
-      <Modal.Header onClose={onClose} className="p-6 border-b border-border-main">
+      <Modal.Header onClose={onClose} className="p-6 border-0 bg-surface-subtle/40">
         <div>
           <h2 className="text-xl font-bold text-text-main">
             Điều khoản sử dụng
@@ -71,7 +71,7 @@ export default function TermsModal({ isOpen, onClose }) {
         </section>
       </Modal.Body>
 
-      <Modal.Footer className="p-4 bg-surface-subtle border-t border-border-main flex justify-end">
+      <Modal.Footer className="p-4 bg-surface-subtle border-0 flex justify-end">
         <Button variant="primary" size="md" onClick={onClose}>
           Đã hiểu
         </Button>

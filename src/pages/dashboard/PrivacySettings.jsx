@@ -26,7 +26,7 @@ import { Card, Badge, Button, Switch, ConfirmDialog } from "../../components/ui"
 function SectionHeader({ icon: Icon, title, description }) {
   return (
     <div className="flex items-center gap-3.5 mb-5">
-      <div className="size-10 rounded-xl bg-surface-subtle border border-border-main flex items-center justify-center shrink-0 text-text-main">
+      <div className="size-10 rounded-xl bg-surface-subtle border-0 flex items-center justify-center shrink-0 text-text-main">
         <Icon size={20} weight="bold" />
       </div>
       <div>
@@ -56,16 +56,16 @@ function SettingToggleItem({
 }) {
   return (
     <div
-      className={`flex items-start sm:items-center justify-between gap-4 p-4 rounded-xl border border-border-main bg-surface-main transition-colors ${
-        disabled ? "opacity-75" : "hover:border-border-strong"
+      className={`flex items-start sm:items-center justify-between gap-4 p-4 rounded-xl border-0 bg-surface-subtle/50 transition-colors ${
+        disabled ? "opacity-75" : "hover:bg-surface-subtle"
       }`}
     >
       <div className="flex items-start sm:items-center gap-3.5 min-w-0">
         <div
-          className={`size-10 rounded-xl border flex items-center justify-center shrink-0 ${
+          className={`size-10 rounded-xl border-0 flex items-center justify-center shrink-0 ${
             enabled && !disabled
-              ? "bg-primary/10 border-primary/20 text-primary"
-              : "bg-surface-subtle border-border-main text-text-muted"
+              ? "bg-primary/10 text-primary"
+              : "bg-surface-main text-text-muted"
           }`}
         >
           <Icon size={20} />
@@ -111,14 +111,14 @@ function SecurityActionItem({
       type="button"
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
-      className={`w-full flex items-center justify-between p-3.5 rounded-xl border border-border-main bg-surface-main transition-colors text-left group ${
+      className={`w-full flex items-center justify-between p-3.5 rounded-xl border-0 bg-surface-subtle/50 transition-colors text-left group ${
         disabled
           ? "opacity-60 cursor-not-allowed"
-          : "hover:border-border-strong hover:bg-surface-subtle/40 cursor-pointer"
+          : "hover:bg-surface-subtle cursor-pointer"
       }`}
     >
       <div className="flex items-center gap-3 min-w-0">
-        <div className="size-9 rounded-lg bg-surface-subtle border border-border-main flex items-center justify-center shrink-0 text-text-muted group-hover:text-text-main transition-colors">
+        <div className="size-9 rounded-lg bg-surface-main border-0 flex items-center justify-center shrink-0 text-text-muted group-hover:text-text-main transition-colors">
           <Icon size={18} />
         </div>
         <div className="min-w-0">
@@ -178,9 +178,9 @@ export default function PrivacySettings() {
     <div className="min-h-screen bg-background-main pb-24">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-8">
         {/* HERO STATUS CARD */}
-        <Card className="p-6 sm:p-8 bg-surface-main border-border-main">
+        <Card className="p-6 sm:p-8 bg-surface-main border-0">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 sm:gap-6">
-            <div className="size-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 text-primary">
+            <div className="size-16 rounded-2xl bg-primary/10 border-0 flex items-center justify-center shrink-0 text-primary">
               <ShieldCheck size={36} weight="bold" />
             </div>
 
@@ -209,7 +209,7 @@ export default function PrivacySettings() {
           {/* MAIN SETTINGS COLUMN (8 cols) */}
           <div className="lg:col-span-8 space-y-8">
             {/* 1. PRIVACY PREFERENCES */}
-            <Card className="p-6 bg-surface-main border-border-main space-y-4">
+            <Card className="p-6 bg-surface-main border-0 space-y-4">
               <SectionHeader
                 icon={Lock}
                 title="Quyền riêng tư cá nhân"
@@ -250,7 +250,7 @@ export default function PrivacySettings() {
             </Card>
 
             {/* 2. AI & AUTOMATION */}
-            <Card className="p-6 bg-surface-main border-border-main space-y-4">
+            <Card className="p-6 bg-surface-main border-0 space-y-4">
               <SectionHeader
                 icon={Lightning}
                 title="Trí tuệ nhân tạo & Kiểm duyệt"
@@ -281,13 +281,13 @@ export default function PrivacySettings() {
             </Card>
 
             {/* 3. ACTIVE SESSIONS & DANGER ZONE */}
-            <Card className="p-6 bg-surface-main border-border-main space-y-4">
+            <Card className="p-6 bg-surface-main border-0 space-y-4">
               <SectionHeader
                 icon={DeviceMobile}
                 title="Quản lý phiên đăng nhập"
                 description="Bảo vệ tài khoản bằng cách chấm dứt các phiên đăng nhập từ xa khi phát hiện bất thường"
               />
-              <div className="p-4 rounded-xl border border-red-500/20 bg-red-500/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="p-4 rounded-xl border-0 bg-red-500/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-1">
                   <h4 className="text-sm font-bold text-text-main">
                     Đăng xuất khỏi tất cả thiết bị
@@ -311,7 +311,7 @@ export default function PrivacySettings() {
           {/* SIDEBAR COLUMN (4 cols) */}
           <div className="lg:col-span-4 space-y-6">
             {/* ACCOUNT SECURITY SHORTCUTS */}
-            <Card className="p-5 bg-surface-main border-border-main space-y-4">
+            <Card className="p-5 bg-surface-main border-0 space-y-4">
               <h3 className="text-xs font-bold uppercase tracking-wider text-text-muted">
                 Bảo mật tài khoản
               </h3>
@@ -338,9 +338,9 @@ export default function PrivacySettings() {
             </Card>
 
             {/* SECURITY TIP CARD */}
-            <Card className="p-5 bg-surface-subtle/50 border-border-main space-y-4">
+            <Card className="p-5 bg-surface-subtle/50 border-0 space-y-4">
               <div className="flex items-center gap-3">
-                <div className="size-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 text-primary">
+                <div className="size-9 rounded-xl bg-primary/10 border-0 flex items-center justify-center shrink-0 text-primary">
                   <WarningCircle size={20} weight="bold" />
                 </div>
                 <h4 className="text-sm font-bold text-text-main">

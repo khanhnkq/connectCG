@@ -18,13 +18,13 @@
   --color-primary-active: #9a3412;
   --color-primary-subtle: rgba(234, 88, 12, 0.08);
 
-  /* Surface & Canvas Tokens (Modern Flat - Clean, Balanced, No Blur) */
+  /* Surface & Canvas Tokens (Modern Flat - Clean, Balanced, Borderless) */
   --color-background: #f8f9fa;
   --color-foreground: #09090b;
   --color-surface: #ffffff;
   --color-surface-subtle: #f1f3f5;
-  --color-border: #e5e7eb;
-  --color-border-strong: #d1d5db;
+  --color-border: transparent;
+  --color-border-strong: transparent;
 
   /* Typography / Text Tokens */
   --color-text-main: #18181b;
@@ -50,13 +50,13 @@
   --color-primary-active: #c2410c;
   --color-primary-subtle: rgba(234, 88, 12, 0.15);
 
-  /* Dark Flat Canvas & Surfaces */
+  /* Dark Flat Canvas & Surfaces (Borderless) */
   --color-background: #121214;
   --color-foreground: #fafafa;
   --color-surface: #1c1c20;
   --color-surface-subtle: #27272c;
-  --color-border: #2e2e35;
-  --color-border-strong: #3f3f46;
+  --color-border: transparent;
+  --color-border-strong: transparent;
 
   /* Dark Typography */
   --color-text-main: #fafafa;

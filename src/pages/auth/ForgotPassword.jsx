@@ -61,7 +61,7 @@ export default function ForgotPassword() {
     >
       {isEmailSent ? (
         <Card className="p-6 text-center space-y-5">
-          <div className="size-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto text-primary">
+          <div className="size-16 rounded-2xl bg-primary/10 border-0 flex items-center justify-center mx-auto text-primary">
             <EnvelopeOpen size={32} />
           </div>
 

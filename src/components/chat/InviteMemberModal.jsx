@@ -14,15 +14,15 @@ const InviteMemberModal = ({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-surface-main w-full max-w-md rounded-3xl border border-border-main shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-        <div className="p-6 border-b border-border-main flex items-center justify-between">
+      <div className="bg-surface-main w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 border-0">
+        <div className="p-6 flex items-center justify-between">
           <h2 className="text-xl font-bold text-text-main">
             Mời bạn bè vào nhóm
           </h2>
           <button
             onClick={onClose}
             disabled={isLoading}
-            className="size-8 rounded-full bg-surface-main text-text-main flex items-center justify-center hover:bg-background-main transition-all border border-border-main disabled:opacity-50 disabled:cursor-not-allowed"
+            className="size-8 rounded-full bg-surface-subtle text-text-main flex items-center justify-center hover:bg-surface-subtle/80 transition-all border-0 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <X size={18} />
           </button>
@@ -45,13 +45,13 @@ const InviteMemberModal = ({
                   <div
                     key={friend.id}
                     onClick={() => !isLoading && onToggleInvitee(friend)}
-                    className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${isSelected
-                        ? "bg-primary/10 border-primary/50"
-                        : "bg-surface-main border-border-main hover:bg-background-main"
+                    className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border-0 ${isSelected
+                        ? "bg-primary/10 text-primary"
+                        : "bg-surface-subtle hover:bg-surface-subtle/80 text-text-main"
                       }`}
                   >
                     <div
-                      className="size-10 rounded-full bg-cover bg-center border border-border-main flex-shrink-0"
+                      className="size-10 rounded-full bg-cover bg-center flex-shrink-0"
                       style={{
                         backgroundImage: `url("${friend.avatarUrl ||
                           "https://cdn-icons-png.flaticon.com/512/149/149071.png"
@@ -64,9 +64,9 @@ const InviteMemberModal = ({
                       </p>
                     </div>
                     <div
-                      className={`size-5 rounded border-2 flex items-center justify-center transition-all ${isSelected
-                          ? "bg-primary border-primary"
-                          : "border-border-main"
+                      className={`size-5 rounded flex items-center justify-center transition-all ${isSelected
+                          ? "bg-primary text-[#231810]"
+                          : "bg-surface-main"
                         }`}
                     >
                       {isSelected && (
@@ -81,7 +81,7 @@ const InviteMemberModal = ({
         </div>
 
         {friends.length > 0 && (
-          <div className="p-6 border-t border-border-main">
+          <div className="p-6">
             <button
               onClick={onInvite}
               disabled={selectedInvitees.length === 0 || isLoading}

@@ -38,7 +38,7 @@ const MediaGallery = ({ roomKey, isOpen, onClose, onMediaClick, minTimestamp = 0
         <div className="fixed inset-0 bg-black/50 z-50 flex justify-end animate-in fade-in duration-200">
             <div className="w-full max-w-md bg-background-main h-full flex flex-col animate-in slide-in-from-right duration-300">
                 {/* Header */}
-                <div className="p-4 border-b border-border-main flex items-center justify-between">
+                <div className="p-4 flex items-center justify-between">
                     <h2 className="text-lg font-bold text-text-main">Thư viện Ảnh & Video</h2>
                     <button
                         onClick={onClose}
@@ -65,7 +65,7 @@ const MediaGallery = ({ roomKey, isOpen, onClose, onMediaClick, minTimestamp = 0
                                 {mediaMessages.map((msg) => (
                                     <div
                                         key={msg.id}
-                                        className="aspect-square relative rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity border border-border-main group"
+                                        className="aspect-square relative rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity group"
                                         onClick={() => onMediaClick && onMediaClick(msg.imageUrl, msg.type)}
                                     >
                                         {msg.type === 'video' ? (

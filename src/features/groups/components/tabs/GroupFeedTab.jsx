@@ -27,8 +27,8 @@ export function GroupFeedTab({
   if (isPrivateLocked) {
     return (
       <div className="max-w-2xl mx-auto py-10">
-        <Card className="p-8 text-center space-y-5 border-border-main bg-surface-main">
-          <div className="size-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center mx-auto">
+        <Card className="p-8 text-center space-y-5 border-0 bg-surface-main">
+          <div className="size-16 rounded-2xl bg-amber-500/10 border-0 text-amber-500 flex items-center justify-center mx-auto">
             <Lock size={32} />
           </div>
           <div className="space-y-2">
@@ -72,10 +72,10 @@ export function GroupFeedTab({
             onPostCreated={onPostCreated}
           />
         ) : (
-          <Card className="p-6 border-border-main bg-surface-main">
+          <Card className="p-6 border-0 bg-surface-main">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="size-10 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
+                <div className="size-10 rounded-xl bg-primary/10 border-0 text-primary flex items-center justify-center shrink-0">
                   <ChatsCircle size={22} />
                 </div>
                 <div>
@@ -107,8 +107,8 @@ export function GroupFeedTab({
               />
             ))
           ) : (
-            <Card className="p-12 text-center border-border-main bg-surface-main">
-              <div className="size-14 rounded-2xl bg-surface-subtle border border-border-main flex items-center justify-center text-text-muted mx-auto mb-3">
+            <Card className="p-12 text-center border-0 bg-surface-main">
+              <div className="size-14 rounded-2xl bg-surface-subtle border-0 flex items-center justify-center text-text-muted mx-auto mb-3">
                 <Article size={28} />
               </div>
               <h4 className="font-bold text-text-main text-sm">
@@ -124,7 +124,7 @@ export function GroupFeedTab({
 
       {/* Side Info Column */}
       <div className="hidden lg:flex flex-col gap-6">
-        <Card className="p-6 border-border-main bg-surface-main sticky top-20">
+        <Card className="p-6 border-0 bg-surface-main sticky top-20">
           <h3 className="text-base font-bold text-text-main mb-3">
             Giới thiệu về nhóm
           </h3>
@@ -132,7 +132,7 @@ export function GroupFeedTab({
             {group.description || "Chưa có mô tả cho nhóm này."}
           </p>
 
-          <div className="space-y-3 pt-3 border-t border-border-main">
+          <div className="space-y-3 pt-3">
             <div className="flex items-center gap-3 text-xs text-text-secondary">
               <Globe size={16} className="text-primary shrink-0" />
               <span>

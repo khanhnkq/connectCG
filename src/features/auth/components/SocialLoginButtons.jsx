@@ -11,7 +11,7 @@ export default function SocialLoginButtons() {
     <div className="grid grid-cols-2 gap-3 w-full">
       <a
         href={appConfig.oauthFacebookUrl}
-        className="flex items-center justify-center gap-2.5 h-11 px-4 rounded-xl border border-border-main bg-surface-main hover:bg-surface-subtle active:bg-border-main/50 transition-colors text-sm font-semibold text-text-main select-none"
+        className="flex items-center justify-center gap-2.5 h-11 px-4 rounded-xl border-0 bg-surface-subtle hover:bg-surface-subtle/80 active:bg-surface-subtle/60 transition-colors text-sm font-semibold text-text-main select-none"
       >
         <svg
           aria-hidden="true"
@@ -28,7 +28,7 @@ export default function SocialLoginButtons() {
 
       <a
         href={appConfig.oauthGoogleUrl}
-        className="flex items-center justify-center gap-2.5 h-11 px-4 rounded-xl border border-border-main bg-surface-main hover:bg-surface-subtle active:bg-border-main/50 transition-colors text-sm font-semibold text-text-main select-none"
+        className="flex items-center justify-center gap-2.5 h-11 px-4 rounded-xl border-0 bg-surface-subtle hover:bg-surface-subtle/80 active:bg-surface-subtle/60 transition-colors text-sm font-semibold text-text-main select-none"
       >
         <svg
           aria-hidden="true"

@@ -48,13 +48,13 @@ export default function ShareModal({ isOpen, onClose, postId }) {
     {
       name: "Sao chép liên kết",
       icon: <LinkIcon size={18} />,
-      color: "bg-surface-subtle text-text-main border border-border-main",
+      color: "bg-surface-subtle text-text-main",
       action: handleCopyLink,
     },
     {
       name: "Facebook",
       icon: <Facebook size={18} weight="fill" />,
-      color: "bg-blue-500/10 text-blue-600 border border-blue-500/20",
+      color: "bg-blue-500/10 text-blue-600",
       action: () =>
         window.open(
           `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
@@ -66,7 +66,7 @@ export default function ShareModal({ isOpen, onClose, postId }) {
     {
       name: "Messenger",
       icon: <MessageCircle size={18} weight="fill" />,
-      color: "bg-sky-500/10 text-sky-600 border border-sky-500/20",
+      color: "bg-sky-500/10 text-sky-600",
       action: () =>
         window.open(
           `fb-messenger://share/?link=${encodeURIComponent(shareUrl)}`,
@@ -87,7 +87,7 @@ export default function ShareModal({ isOpen, onClose, postId }) {
             placeholder="Hãy nói gì đó về bài viết này..."
             disabled={isSharing}
             rows={3}
-            className="w-full p-3 bg-surface-subtle rounded-xl border border-border-main focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none text-sm text-text-main transition-colors disabled:opacity-50"
+            className="w-full p-3 bg-surface-subtle rounded-xl border-0 focus:ring-2 focus:ring-primary focus:bg-surface-main outline-none resize-none text-sm text-text-main transition-all disabled:opacity-50"
           />
           <div className="flex justify-end mt-2">
             <Button
@@ -104,11 +104,11 @@ export default function ShareModal({ isOpen, onClose, postId }) {
         </div>
 
         <div className="relative flex items-center py-1">
-          <div className="grow border-t border-border-main"></div>
+          <div className="grow h-px bg-surface-subtle"></div>
           <span className="shrink-0 mx-3 text-text-muted text-xs font-medium">
             Hoặc chia sẻ qua
           </span>
-          <div className="grow border-t border-border-main"></div>
+          <div className="grow h-px bg-surface-subtle"></div>
         </div>
 
         <div className="grid grid-cols-1 gap-2">
@@ -118,7 +118,7 @@ export default function ShareModal({ isOpen, onClose, postId }) {
               type="button"
               onClick={option.action}
               disabled={isSharing}
-              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-surface-subtle transition-colors group border border-transparent hover:border-border-main cursor-pointer select-none text-left"
+              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-surface-subtle transition-colors group cursor-pointer select-none text-left"
             >
               <div
                 className={`size-8 rounded-lg flex items-center justify-center shrink-0 ${option.color}`}

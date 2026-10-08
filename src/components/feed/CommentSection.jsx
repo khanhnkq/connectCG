@@ -139,11 +139,11 @@ export default function CommentSection({
   };
 
   return (
-    <div className="px-4 py-3 border-t border-border-main">
+    <div className="px-4 py-3">
       {/* Input comment mới */}
       <div className="flex gap-3 mb-6">
         <div
-          className="w-8 h-8 rounded-full bg-cover bg-center flex-shrink-0 shadow-sm border border-border-main"
+          className="w-8 h-8 rounded-full bg-cover bg-center flex-shrink-0 shadow-none border-0"
           style={{
             backgroundImage: `url("${
               user?.currentAvatarUrl ||
@@ -169,7 +169,7 @@ export default function CommentSection({
           Chưa có bình luận nào. Hãy là người đầu tiên!
         </p>
       ) : (
-        <div className="max-h-70 overflow-y-auto space-y-1 pr-1 scrollbar-thin scrollbar-thumb-border-main scrollbar-track-transparent">
+        <div className="max-h-70 overflow-y-auto space-y-1 pr-1 scrollbar-thin scrollbar-thumb-surface-subtle scrollbar-track-transparent">
           {comments.map((comment) => (
             <CommentItem
               key={comment.id}

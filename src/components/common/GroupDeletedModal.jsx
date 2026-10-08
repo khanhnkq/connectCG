@@ -29,26 +29,23 @@ const GroupDeletedModal = () => {
     let title = "Thông báo quan trọng";
     let icon = <Info className="text-blue-500 size-8" />;
     let iconBg = "bg-blue-500/10";
-    let borderColor = "border-blue-500/30";
     let btnColor = "bg-blue-500 hover:bg-blue-600";
 
     if (isViolation) {
         title = "Cảnh báo vi phạm";
         icon = <AlertTriangle className="text-red-500 size-8" />;
         iconBg = "bg-red-500/10";
-        borderColor = "border-red-500/30";
         btnColor = "bg-red-500 hover:bg-red-600";
     } else if (isDisbanded) {
         title = "Nhóm đã giải tán";
         icon = <Info className="text-orange-500 size-8" />;
         iconBg = "bg-orange-500/10";
-        borderColor = "border-orange-500/30";
         btnColor = "bg-orange-500 hover:bg-orange-600";
     }
 
     return (
         <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className={`bg-surface-main w-full max-w-md rounded-2xl border ${borderColor} shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200`}>
+            <div className="bg-surface-main w-full max-w-md rounded-2xl border-0 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
                 <div className="p-6 flex flex-col items-center text-center">
                     <div className={`size-16 rounded-full ${iconBg} flex items-center justify-center mb-4`}>
                         {icon}

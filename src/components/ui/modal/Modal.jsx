@@ -63,7 +63,7 @@ export function Modal({
       }}
     >
       <div
-        className={`w-full ${appliedSize} bg-surface-main border border-border-main rounded-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col ${className}`}
+        className={`w-full ${appliedSize} bg-surface-main rounded-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col ${className}`}
       >
         {children}
       </div>
@@ -81,7 +81,7 @@ Modal.Header = function ModalHeader({
 }) {
   return (
     <div
-      className={`px-6 py-4 border-b border-border-main flex items-center justify-between gap-4 shrink-0 bg-surface-main ${className}`}
+      className={`px-6 py-4 flex items-center justify-between gap-4 shrink-0 bg-surface-main ${className}`}
     >
       <div>
         {title && (
@@ -118,7 +118,7 @@ Modal.Body = function ModalBody({ children, className = "" }) {
 Modal.Footer = function ModalFooter({ children, className = "" }) {
   return (
     <div
-      className={`px-6 py-3.5 border-t border-border-main bg-surface-subtle/50 flex items-center justify-end gap-3 shrink-0 ${className}`}
+      className={`px-6 py-3.5 bg-surface-subtle/50 flex items-center justify-end gap-3 shrink-0 ${className}`}
     >
       {children}
     </div>

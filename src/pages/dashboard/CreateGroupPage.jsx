@@ -126,7 +126,7 @@ export default function CreateGroupPage() {
             <Form className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
               {/* Left Column: Group Details */}
               <div className="lg:col-span-7">
-                <Card className="p-6 md:p-8 rounded-2xl border border-border-main bg-surface-main space-y-6">
+                <Card className="p-6 md:p-8 rounded-2xl border-0 bg-surface-main space-y-6">
                   {/* Group Name */}
                   <Input
                     id="group-name-input"
@@ -147,10 +147,10 @@ export default function CreateGroupPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {/* Public Option */}
                       <label
-                        className={`p-4 rounded-xl border cursor-pointer select-none transition-colors flex flex-col gap-1.5 ${
+                        className={`p-4 rounded-xl border-0 cursor-pointer select-none transition-colors flex flex-col gap-1.5 ${
                           values.privacy === "public"
-                            ? "border-primary bg-surface-subtle"
-                            : "border-border-main bg-surface-main hover:border-border-strong"
+                            ? "bg-surface-subtle ring-1 ring-primary/40"
+                            : "bg-surface-subtle/50 hover:bg-surface-subtle"
                         }`}
                       >
                         <input
@@ -168,14 +168,14 @@ export default function CreateGroupPage() {
                             <span>Công khai</span>
                           </div>
                           <div
-                            className={`size-4 rounded-full border-2 flex items-center justify-center ${
+                            className={`size-4 rounded-full flex items-center justify-center ${
                               values.privacy === "public"
-                                ? "border-primary"
-                                : "border-border-main"
+                                ? "bg-primary text-white"
+                                : "bg-surface-main"
                             }`}
                           >
                             {values.privacy === "public" && (
-                              <div className="size-2 rounded-full bg-primary" />
+                              <div className="size-2 rounded-full bg-white" />
                             )}
                           </div>
                         </div>
@@ -186,10 +186,10 @@ export default function CreateGroupPage() {
 
                       {/* Private Option */}
                       <label
-                        className={`p-4 rounded-xl border cursor-pointer select-none transition-colors flex flex-col gap-1.5 ${
+                        className={`p-4 rounded-xl border-0 cursor-pointer select-none transition-colors flex flex-col gap-1.5 ${
                           values.privacy === "private"
-                            ? "border-primary bg-surface-subtle"
-                            : "border-border-main bg-surface-main hover:border-border-strong"
+                            ? "bg-surface-subtle ring-1 ring-primary/40"
+                            : "bg-surface-subtle/50 hover:bg-surface-subtle"
                         }`}
                       >
                         <input
@@ -207,14 +207,14 @@ export default function CreateGroupPage() {
                             <span>Riêng tư</span>
                           </div>
                           <div
-                            className={`size-4 rounded-full border-2 flex items-center justify-center ${
+                            className={`size-4 rounded-full flex items-center justify-center ${
                               values.privacy === "private"
-                                ? "border-primary"
-                                : "border-border-main"
+                                ? "bg-primary text-white"
+                                : "bg-surface-main"
                             }`}
                           >
                             {values.privacy === "private" && (
-                              <div className="size-2 rounded-full bg-primary" />
+                              <div className="size-2 rounded-full bg-white" />
                             )}
                           </div>
                         </div>
@@ -243,7 +243,7 @@ export default function CreateGroupPage() {
 
               {/* Right Column: Cover Image & Actions */}
               <div className="lg:col-span-5 space-y-6">
-                <Card className="p-6 md:p-8 rounded-2xl border border-border-main bg-surface-main space-y-5">
+                <Card className="p-6 md:p-8 rounded-2xl border-0 bg-surface-main space-y-5">
                   <div className="space-y-1.5">
                     <label className="block text-xs font-bold text-text-main select-none">
                       Ảnh bìa nhóm *
@@ -256,11 +256,9 @@ export default function CreateGroupPage() {
                   {/* Dropzone */}
                   <div
                     onClick={() => !isSubmitting && fileInputRef.current?.click()}
-                    className={`relative w-full aspect-[16/9] rounded-xl border-2 border-dashed transition-colors cursor-pointer overflow-hidden flex flex-col items-center justify-center bg-surface-subtle select-none ${
-                      touched.cover_image && errors.cover_image
-                        ? "border-danger"
-                        : "border-border-main hover:border-primary"
-                    } ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
+                    className={`relative w-full aspect-[16/9] rounded-xl transition-colors cursor-pointer overflow-hidden flex flex-col items-center justify-center bg-surface-subtle select-none hover:bg-surface-subtle/80 border-0 ${
+                      isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
                   >
                     {previewUrl ? (
                       <>
@@ -278,7 +276,7 @@ export default function CreateGroupPage() {
                       </>
                     ) : (
                       <div className="flex flex-col items-center text-center p-4 text-text-muted gap-2">
-                        <div className="size-12 rounded-xl bg-surface-main border border-border-main flex items-center justify-center text-text-muted">
+                        <div className="size-12 rounded-xl bg-surface-main border-0 flex items-center justify-center text-text-muted shadow-sm">
                           <Image size={24} />
                         </div>
                         <span className="text-xs font-bold text-text-main">
@@ -304,7 +302,7 @@ export default function CreateGroupPage() {
                   )}
 
                   {/* Notice Box */}
-                  <div className="p-3.5 rounded-xl bg-surface-subtle border border-border-main flex items-start gap-2.5">
+                  <div className="p-3.5 rounded-xl bg-surface-subtle border-0 flex items-start gap-2.5">
                     <ShieldCheck className="text-primary size-5 mt-0.5 shrink-0" />
                     <p className="text-xs text-text-secondary leading-relaxed">
                       Bạn sẽ trở thành <strong>Quản trị viên</strong> của nhóm này. Vui lòng đảm bảo nội dung phù hợp với tiêu chuẩn cộng đồng.

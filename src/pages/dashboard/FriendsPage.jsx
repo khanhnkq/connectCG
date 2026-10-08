@@ -300,7 +300,7 @@ export default function FriendsPage() {
       <div
         className={`${
           activeItem ? "flex" : "hidden"
-        } xl:flex flex-1 flex-col bg-background-secondary relative border-l border-border-main`}
+        } xl:flex flex-1 flex-col bg-background-secondary relative border-0`}
       >
         <FriendProfileDetail
           activeItem={activeItem}

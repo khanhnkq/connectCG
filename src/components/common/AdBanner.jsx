@@ -41,7 +41,7 @@ const AdBanner = ({
       {/* Content */}
       <div className="absolute inset-0 p-5 flex flex-col justify-end items-start text-white">
         {badge && (
-          <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/10">
+          <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-md px-2 py-0.5 rounded-md border-0 shadow-sm">
             <span className="text-[10px] font-black uppercase tracking-widest text-white/90">
               {badge}
             </span>

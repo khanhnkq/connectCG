@@ -41,7 +41,7 @@ const ChatSettings = ({
 
   if (!activeRoom) {
     return (
-      <aside className="hidden xl:flex w-80 flex-col border-l border-border-main bg-background-main overflow-y-auto shrink-0 z-20">
+      <aside className="hidden xl:flex w-80 flex-col bg-background-main overflow-y-auto shrink-0 z-20">
         <div className="flex-1 flex flex-col items-center justify-center text-text-secondary h-full p-8 text-center gap-3">
           <Info size={32} className="opacity-20" />
           <p className="text-xs italic">
@@ -67,7 +67,7 @@ const ChatSettings = ({
   return (
     <aside
       className={`${isOpen ? "flex" : "hidden"
-        } xl:flex fixed xl:static inset-y-0 right-0 w-80 lg:w-96 xl:w-80 flex-col border-l border-border-main bg-background-main overflow-y-auto shrink-0 z-30 transition-all duration-300 shadow-2xl xl:shadow-none animate-in slide-in-from-right duration-300`}
+        } xl:flex fixed xl:static inset-y-0 right-0 w-80 lg:w-96 xl:w-80 flex-col bg-background-main overflow-y-auto shrink-0 z-30 transition-all duration-300 shadow-2xl xl:shadow-none animate-in slide-in-from-right duration-300`}
     >
       {/* Mobile Close Button */}
       <div className="xl:hidden absolute top-4 right-4 z-10">
@@ -79,7 +79,7 @@ const ChatSettings = ({
           onClick={onClose}
         />
       </div>
-      <div className="p-8 flex flex-col items-center border-b border-border-main">
+      <div className="p-8 flex flex-col items-center">
         <div className="relative group/avatar mb-4">
           <Avatar
             src={activeRoom?.avatarUrl}
@@ -90,7 +90,7 @@ const ChatSettings = ({
             <>
               <button
                 onClick={() => chatAvatarInputRef.current?.click()}
-                className="absolute bottom-1 right-0 size-7 bg-primary rounded-full border-2 border-background-main text-white flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-all shadow-md hover:scale-110 cursor-pointer"
+                className="absolute bottom-1 right-0 size-7 bg-primary rounded-full ring-2 ring-background-main text-white flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-all shadow-md hover:scale-110 cursor-pointer"
                 aria-label="Đổi ảnh đại diện nhóm"
               >
                 <Camera size={14} />
@@ -111,7 +111,7 @@ const ChatSettings = ({
             <input
               value={tempName}
               onChange={(e) => setTempName(e.target.value)}
-              className="bg-surface-main border border-border-main text-text-main text-sm rounded-lg px-2 py-1 flex-1 focus:outline-none focus:ring-1 focus:ring-primary"
+              className="bg-surface-subtle border-0 text-text-main text-sm rounded-lg px-2 py-1 flex-1 focus:outline-none focus:ring-2 focus:ring-primary"
               autoFocus
               onKeyDown={(e) => e.key === "Enter" && handleRename()}
             />
@@ -162,7 +162,7 @@ const ChatSettings = ({
               }
               className="flex flex-col items-center gap-1 group cursor-pointer"
             >
-              <div className="size-10 rounded-full bg-surface-main group-hover:bg-primary group-hover:text-white flex items-center justify-center text-text-main transition-all border border-border-main">
+              <div className="size-10 rounded-full bg-surface-main group-hover:bg-primary group-hover:text-white flex items-center justify-center text-text-main transition-all">
                 <User size={20} />
               </div>
               <span className="text-[10px] font-bold text-text-secondary group-hover:text-primary uppercase tracking-wider">
@@ -177,7 +177,7 @@ const ChatSettings = ({
                 onClick={() => setShowLeaveConfirm(true)}
                 className="flex flex-col items-center gap-1 group cursor-pointer"
               >
-                <div className="size-10 rounded-full bg-surface-main group-hover:bg-red-500/20 group-hover:text-red-500 flex items-center justify-center text-text-main transition-all border border-border-main">
+                <div className="size-10 rounded-full bg-surface-main group-hover:bg-red-500/20 group-hover:text-red-500 flex items-center justify-center text-text-main transition-all">
                   <X size={20} />
                 </div>
                 <span className="text-[10px] font-bold text-text-secondary group-hover:text-red-500 uppercase tracking-wider">
@@ -190,7 +190,7 @@ const ChatSettings = ({
                   onClick={() => setShowDeleteConfirm(true)}
                   className="flex flex-col items-center gap-1 group cursor-pointer"
                 >
-                  <div className="size-10 rounded-full bg-surface-main group-hover:bg-red-600/20 group-hover:text-red-600 flex items-center justify-center text-text-main transition-all border border-border-main">
+                  <div className="size-10 rounded-full bg-surface-main group-hover:bg-red-600/20 group-hover:text-red-600 flex items-center justify-center text-text-main transition-all">
                     <Trash2 size={20} />
                   </div>
                   <span className="text-[10px] font-bold text-text-secondary group-hover:text-red-600 uppercase tracking-wider">
@@ -284,7 +284,7 @@ const ChatSettings = ({
               {previewImages.slice(0, 6).map((msg) => (
                 <div
                   key={msg.id}
-                  className={`aspect-square relative rounded-xl cursor-pointer hover:opacity-80 transition-opacity border border-border-main ${msg.type === 'video' ? 'bg-black/10' : 'bg-cover bg-center'}`}
+                  className={`aspect-square relative rounded-xl cursor-pointer hover:opacity-80 transition-opacity ${msg.type === 'video' ? 'bg-black/10' : 'bg-cover bg-center'}`}
                   style={msg.type === 'video' ? {} : { backgroundImage: `url("${msg.imageUrl}")` }}
                   onClick={() => onOpenLightbox && onOpenLightbox(msg.imageUrl, msg.type)}
                 >
@@ -310,14 +310,14 @@ const ChatSettings = ({
         </div>
       </div>
 
-      <div className="p-5 border-t border-border-main mt-auto">
+      <div className="p-5 mt-auto">
         <h3 className="text-text-main text-sm font-bold uppercase tracking-wide mb-3">
           Bảo mật & Hỗ trợ
         </h3>
         <div className="flex flex-col gap-2">
           <button
             onClick={() => setShowClearConfirm(true)}
-            className="w-full flex items-center justify-between p-3 rounded-xl bg-background-main hover:bg-surface-main border border-border-main group transition-colors text-left cursor-pointer"
+            className="w-full flex items-center justify-between p-3 rounded-xl bg-surface-subtle hover:bg-surface-subtle/80 border-0 group transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center gap-3 text-text-secondary group-hover:text-text-main">
               <Trash2 size={20} />
@@ -327,7 +327,7 @@ const ChatSettings = ({
 
           <button
             onClick={() => setShowReportUser(true)}
-            className="w-full flex items-center justify-between p-3 rounded-xl bg-surface-main hover:bg-background-main border border-border-main group transition-colors text-left cursor-pointer"
+            className="w-full flex items-center justify-between p-3 rounded-xl bg-surface-subtle hover:bg-surface-subtle/80 border-0 group transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center gap-3 text-text-secondary group-hover:text-text-main">
               <Flag size={20} />

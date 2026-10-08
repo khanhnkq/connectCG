@@ -14,7 +14,7 @@ export default function PostFooterAction({
 }) {
   return (
     <div className="px-3 py-1">
-      <div className="flex items-center justify-between border-t border-border-main/50 pt-1">
+      <div className="flex items-center justify-between pt-1">
         <ReactionButton
           currentReaction={currentReaction}
           onReact={onReact}

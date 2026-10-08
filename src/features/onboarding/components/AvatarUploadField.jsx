@@ -47,10 +47,10 @@ export default function AvatarUploadField({
             onChange={handleFileChange}
           />
           <div
-            className={`size-28 sm:size-32 rounded-full bg-surface-main border-2 border-dashed flex flex-col items-center justify-center transition-all overflow-hidden select-none ${
+            className={`size-28 sm:size-32 rounded-full border-0 flex flex-col items-center justify-center transition-all overflow-hidden select-none ${
               error
-                ? "border-danger bg-danger/5"
-                : "border-border-main group-hover:border-primary group-hover:bg-surface-subtle"
+                ? "bg-danger/10"
+                : "bg-surface-subtle hover:bg-surface-subtle/80"
             }`}
           >
             {avatarPreview ? (
@@ -68,7 +68,7 @@ export default function AvatarUploadField({
           </div>
 
           {/* Edit Badge Button */}
-          <div className="absolute bottom-0.5 right-0.5 size-8 bg-primary rounded-full text-white border-2 border-background-main flex items-center justify-center transition-transform group-hover:scale-110">
+          <div className="absolute bottom-0.5 right-0.5 size-8 bg-primary rounded-full text-white border-0 flex items-center justify-center transition-transform group-hover:scale-110 shadow-sm">
             <Pencil size={15} weight="bold" />
           </div>
         </label>

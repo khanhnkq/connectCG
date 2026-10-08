@@ -18,7 +18,7 @@ const MemberFilterSidebar = ({
     <aside
       className={`w-full lg:w-[280px] flex-shrink-0 space-y-6 ${className}`}
     >
-      <div className="bg-surface-main rounded-2xl border border-border-main p-5 shadow-sm sticky top-20">
+      <div className="bg-surface-main rounded-2xl border-0 p-5 shadow-sm sticky top-20">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-bold text-text-main flex items-center gap-2">
             <Filter size={18} className="text-primary" />
@@ -42,7 +42,7 @@ const MemberFilterSidebar = ({
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary h-4 w-4" />
               <input
-                className="w-full h-10 bg-background-main border border-border-main rounded-lg pl-9 pr-3 text-sm text-text-main placeholder-text-secondary/50 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
+                className="w-full h-10 bg-background-main border-0 rounded-lg pl-9 pr-3 text-sm text-text-main placeholder-text-secondary/50 focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all"
                 placeholder="Tên"
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
@@ -72,7 +72,7 @@ const MemberFilterSidebar = ({
             <select
               value={maritalStatus}
               onChange={(e) => setMaritalStatus(e.target.value)}
-              className="w-full h-10 bg-background-main border border-border-main rounded-lg px-3 text-sm text-text-main focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 cursor-pointer"
+              className="w-full h-10 bg-background-main border-0 rounded-lg px-3 text-sm text-text-main focus:outline-none focus:ring-1 focus:ring-primary/40 cursor-pointer"
             >
               <option value="">Tất cả</option>
               <option value="SINGLE">Độc thân</option>
@@ -90,7 +90,7 @@ const MemberFilterSidebar = ({
             <select
               value={lookingFor}
               onChange={(e) => setLookingFor(e.target.value)}
-              className="w-full h-10 bg-background-main border border-border-main rounded-lg px-3 text-sm text-text-main focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 cursor-pointer"
+              className="w-full h-10 bg-background-main border-0 rounded-lg px-3 text-sm text-text-main focus:outline-none focus:ring-1 focus:ring-primary/40 cursor-pointer"
             >
               <option value="">Tất cả</option>
               <option value="love">Tìm tình yêu</option>

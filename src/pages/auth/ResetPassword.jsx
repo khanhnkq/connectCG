@@ -38,7 +38,7 @@ export default function ResetPassword() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background-main p-6">
         <Card className="max-w-md w-full p-8 text-center space-y-5">
-          <div className="size-16 rounded-2xl bg-danger/10 border border-danger/20 flex items-center justify-center mx-auto text-danger">
+          <div className="size-16 rounded-2xl bg-danger/10 border-0 flex items-center justify-center mx-auto text-danger">
             <WarningCircle size={32} />
           </div>
           <div>
@@ -94,7 +94,7 @@ export default function ResetPassword() {
     >
       {isSubmitted ? (
         <Card className="p-6 text-center space-y-5">
-          <div className="size-16 rounded-2xl bg-success/10 border border-success/20 flex items-center justify-center mx-auto text-success">
+          <div className="size-16 rounded-2xl bg-success/10 border-0 flex items-center justify-center mx-auto text-success">
             <CheckCircle size={32} />
           </div>
 

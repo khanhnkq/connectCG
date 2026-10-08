@@ -100,7 +100,7 @@ export default function PostUpdate({ post, onUpdate, onCancel }) {
             <div className="relative">
               <button
                 onClick={() => setShowVisMenu(!showVisMenu)}
-                className="flex items-center gap-1 text-[10px] sm:text-xs bg-surface-main px-2 py-0.5 rounded-full border border-border-main text-text-secondary hover:text-primary transition-colors hover:border-primary/30"
+                className="flex items-center gap-1 text-[10px] sm:text-xs bg-surface-subtle px-2.5 py-1 rounded-full border-0 text-text-secondary hover:text-primary transition-colors"
               >
                 {visibility === "PUBLIC" && <Globe size={10} />}
                 {visibility === "FRIENDS" && <Users size={10} />}
@@ -110,7 +110,7 @@ export default function PostUpdate({ post, onUpdate, onCancel }) {
               </button>
 
               {showVisMenu && (
-                <div className="absolute left-0 top-full mt-1 w-32 bg-surface-main border border-border-main shadow-xl rounded-lg z-50 overflow-hidden py-1">
+                <div className="absolute left-0 top-full mt-1 w-32 bg-surface-main shadow-xl rounded-lg z-50 overflow-hidden py-1">
                   {["PUBLIC", "FRIENDS", "PRIVATE"].map((mode) => (
                     <button
                       key={mode}
@@ -150,7 +150,7 @@ export default function PostUpdate({ post, onUpdate, onCancel }) {
           {existingMedia.map((item, idx) => (
             <div
               key={`old-${idx}`}
-              className="relative aspect-square rounded-xl overflow-hidden group border border-border-main"
+              className="relative aspect-square rounded-xl overflow-hidden group"
             >
               <img
                 src={item.url || item}
@@ -169,7 +169,7 @@ export default function PostUpdate({ post, onUpdate, onCancel }) {
           {newFiles.map((file, idx) => (
             <div
               key={`new-${idx}`}
-              className="relative aspect-square rounded-xl overflow-hidden group border-2 border-primary/50"
+              className="relative aspect-square rounded-xl overflow-hidden group ring-2 ring-primary/50"
             >
               <img
                 src={URL.createObjectURL(file)}
@@ -188,7 +188,7 @@ export default function PostUpdate({ post, onUpdate, onCancel }) {
           {/* Quick Add Placeholder (optional, if we want to add more) */}
           <div
             onClick={() => fileInputRef.current?.click()}
-            className="aspect-square rounded-xl border-2 border-dashed border-border-main flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors group text-text-secondary hover:text-primary"
+            className="aspect-square rounded-xl bg-surface-subtle flex flex-col items-center justify-center cursor-pointer hover:bg-primary/10 transition-colors group text-text-secondary hover:text-primary"
           >
             <ImageIcon size={20} />
             <span className="text-[10px] font-medium mt-1">Thêm</span>
@@ -206,7 +206,7 @@ export default function PostUpdate({ post, onUpdate, onCancel }) {
         onChange={handleSelectNewFiles}
       />
 
-      <div className="flex justify-between items-center mt-2 pt-2 border-t border-border-main/40">
+      <div className="flex justify-between items-center mt-2 pt-2">
         {/* Left: Add Media Button */}
         <button
           onClick={() => fileInputRef.current?.click()}

@@ -68,9 +68,9 @@ export default function HobbySelectionModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-surface-main border border-border-main rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200">
+      <div className="bg-surface-main rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 border-0">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border-main">
+        <div className="flex items-center justify-between p-6">
           <h2 className="text-xl font-bold text-text-main">
             Chỉnh sửa sở thích
           </h2>
@@ -83,7 +83,7 @@ export default function HobbySelectionModal({
         </div>
 
         {/* Search */}
-        <div className="p-4 border-b border-border-main bg-background-main/50">
+        <div className="p-4 bg-surface-subtle">
           <div className="relative">
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary"
@@ -94,7 +94,7 @@ export default function HobbySelectionModal({
               placeholder="Tìm kiếm sở thích..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-background-main border border-border-main rounded-xl pl-10 pr-4 py-3 text-text-main placeholder:text-text-muted focus:outline-none focus:border-primary transition-colors"
+              className="w-full bg-surface-main border-0 rounded-xl pl-10 pr-4 py-3 text-text-main placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary transition-all"
             />
           </div>
         </div>
@@ -113,10 +113,10 @@ export default function HobbySelectionModal({
                   <button
                     key={hobby.id}
                     onClick={() => toggleHobby(hobby.id)}
-                    className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all ${
+                    className={`flex flex-col items-center gap-2 p-4 rounded-xl border-0 transition-all ${
                       isSelected
-                        ? "bg-primary/10 border-primary text-primary"
-                        : "bg-background-main border-border-main text-text-secondary hover:bg-surface-main hover:border-primary/50"
+                        ? "bg-primary/10 text-primary"
+                        : "bg-surface-subtle text-text-secondary hover:bg-surface-subtle/80"
                     }`}
                   >
                     {getIconComponent(hobby.icon, {
@@ -141,7 +141,7 @@ export default function HobbySelectionModal({
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-border-main flex justify-between items-center bg-surface-main rounded-b-2xl">
+        <div className="p-6 flex justify-between items-center bg-surface-main rounded-b-2xl">
           <span className="text-text-secondary font-medium">
             Đã chọn:{" "}
             <span className="text-primary font-bold">{selectedIds.length}</span>

@@ -135,11 +135,11 @@ const NotificationList = ({
   if (!notifications || notifications.length === 0) {
     return (
       <div className="w-full h-full bg-surface-main flex flex-col">
-        <div className="p-4 border-b border-border-main font-bold text-base text-text-main">
+        <div className="p-4 font-bold text-base text-text-main bg-surface-subtle/40">
           Thông báo
         </div>
         <div className="p-8 text-center">
-          <div className="size-16 rounded-full bg-background-main border-2 border-border-main flex items-center justify-center mx-auto mb-3">
+          <div className="size-16 rounded-full bg-surface-subtle border-0 flex items-center justify-center mx-auto mb-3">
             <BellSlash size={30} className="text-text-secondary/30" />
           </div>
           <p className="text-text-secondary text-sm">Không có thông báo nào</p>
@@ -153,7 +153,7 @@ const NotificationList = ({
   return (
     <div className="w-full bg-surface-main flex flex-col h-full">
       {/* Header */}
-      <div className="p-2.5 border-b border-border-main flex items-center justify-between bg-gradient-to-r from-surface-main to-background-main">
+      <div className="p-2.5 flex items-center justify-between bg-surface-subtle/50">
         <div>
           <h3 className="font-bold text-[13px] text-text-main">Thông báo</h3>
           {unreadCount > 0 && (
@@ -165,7 +165,7 @@ const NotificationList = ({
         {unreadCount > 0 && (
           <button
             onClick={handleMarkAllAsRead}
-            className="flex items-center gap-1 px-2 py-1 bg-primary/10 hover:bg-primary text-primary hover:text-text-main rounded-lg transition-all text-[10px] font-bold"
+            className="flex items-center gap-1 px-2 py-1 bg-primary/10 hover:bg-primary text-primary hover:text-text-main rounded-lg transition-all text-[10px] font-bold border-0 cursor-pointer"
             title="Đánh dấu tất cả đã đọc"
           >
             <CheckCheck size={12} />
@@ -179,7 +179,7 @@ const NotificationList = ({
         {notifications.map((notification) => (
           <div
             key={notification.id}
-            className={`flex items-start gap-2 p-2.5 border-b border-border-main cursor-pointer hover:bg-background-main transition-all group ${
+            className={`flex items-start gap-2 p-2.5 cursor-pointer hover:bg-surface-subtle transition-all group ${
               !notification.isRead ? "bg-primary/5" : ""
             }`}
             onClick={() => handleClick(notification)}
@@ -191,7 +191,7 @@ const NotificationList = ({
                 "https://cdn-icons-png.flaticon.com/512/149/149071.png"
               }
               alt="Avatar"
-              className="w-8 h-8 rounded-full object-cover flex-shrink-0 ring-1 ring-border-main"
+              className="w-8 h-8 rounded-full object-cover flex-shrink-0 border-0"
             />
 
             {/* Content */}

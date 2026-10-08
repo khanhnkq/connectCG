@@ -115,10 +115,10 @@ const MainFeedManager = () => {
     >
       <div className="p-6 md:p-8 space-y-6">
         {/* Header & Tab Selector */}
-        <Card className="p-6 bg-surface-main border-border-main">
+        <Card className="p-6 bg-surface-main border-0 shadow-sm">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex items-center gap-3">
-              <div className="size-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+              <div className="size-11 rounded-xl bg-primary/10 border-0 flex items-center justify-center text-primary shrink-0">
                 <Shield size={24} weight="bold" />
               </div>
               <div>
@@ -136,7 +136,7 @@ const MainFeedManager = () => {
             </div>
 
             {/* Pill Tab Switcher */}
-            <div className="flex bg-surface-subtle p-1 rounded-xl border border-border-main shrink-0">
+            <div className="flex bg-surface-subtle p-1 rounded-xl border-0 shrink-0">
               <button
                 type="button"
                 onClick={() => setActiveTab("pending")}
@@ -166,10 +166,10 @@ const MainFeedManager = () => {
         </Card>
 
         {/* Content Table */}
-        <Card className="overflow-hidden border-border-main">
+        <Card className="overflow-hidden border-0 shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left">
-              <thead className="bg-surface-subtle text-[11px] uppercase font-bold text-text-secondary tracking-wider border-b border-border-main">
+              <thead className="bg-surface-subtle text-[11px] uppercase font-bold text-text-secondary tracking-wider border-0">
                 <tr>
                   <th className="px-5 py-3.5">Người đăng</th>
                   <th className="px-5 py-3.5">Nội dung bài viết</th>
@@ -180,7 +180,7 @@ const MainFeedManager = () => {
                   <th className="px-5 py-3.5 text-right">Thao tác</th>
                 </tr>
               </thead>
-              <tbody className="text-sm divide-y divide-border-main">
+              <tbody className="text-sm divide-y divide-transparent">
                 {loading ? (
                   Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i}>
@@ -305,7 +305,7 @@ const MainFeedManager = () => {
           </div>
 
           {/* Flat Pagination Footer */}
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 bg-surface-subtle/30 px-5 py-3 border-t border-border-main">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 bg-surface-subtle/30 px-5 py-3 border-0">
             <div className="text-text-muted text-xs font-medium">
               Hiển thị <span className="text-text-main font-bold">{posts.length}</span>{" "}
               trên <span className="text-text-main font-bold">{totalElements}</span> bài viết
@@ -319,7 +319,7 @@ const MainFeedManager = () => {
                 disabled={currentPage === 0 || loading}
                 onClick={() => fetchPosts(Math.max(0, currentPage - 1))}
               />
-              <span className="text-xs font-bold text-text-main px-3 py-1 bg-surface-main rounded-xl border border-border-main">
+              <span className="text-xs font-bold text-text-main px-3 py-1 bg-surface-main rounded-xl border-0 shadow-sm">
                 {currentPage + 1} / {totalPages || 1}
               </span>
               <IconButton

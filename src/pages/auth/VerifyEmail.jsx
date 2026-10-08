@@ -63,7 +63,7 @@ export default function VerifyEmail() {
 
         {status === "success" && (
           <div className="flex flex-col items-center gap-4">
-            <div className="size-16 rounded-2xl bg-success/10 border border-success/20 flex items-center justify-center text-success">
+            <div className="size-16 rounded-2xl bg-success/10 border-0 flex items-center justify-center text-success">
               <CheckCircle size={32} />
             </div>
             <h2 className="text-xl font-bold text-text-main">
@@ -85,7 +85,7 @@ export default function VerifyEmail() {
 
         {status === "error" && (
           <div className="flex flex-col items-center gap-4">
-            <div className="size-16 rounded-2xl bg-danger/10 border border-danger/20 flex items-center justify-center text-danger">
+            <div className="size-16 rounded-2xl bg-danger/10 border-0 flex items-center justify-center text-danger">
               <WarningCircle size={32} />
             </div>
             <h2 className="text-xl font-bold text-text-main">

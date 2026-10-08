@@ -153,12 +153,12 @@ export function Sidebar({
 
   return (
     <aside
-      className={`h-full flex flex-col shrink-0 bg-surface-main border-r border-border-main select-none transition-[width] duration-200 ease-in-out ${
+      className={`h-full flex flex-col shrink-0 bg-surface-main select-none transition-[width] duration-200 ease-in-out ${
         isCollapsed ? "w-20" : "w-64"
       } ${className}`}
     >
       {/* 1. TOP HEADER & COLLAPSE TOGGLE */}
-      <div className="h-12 px-3 border-b border-border-main flex items-center justify-between shrink-0">
+      <div className="h-12 px-3 flex items-center justify-between shrink-0">
         {!isCollapsed && (
           <span className="text-[11px] font-bold uppercase tracking-wider text-text-muted px-2">
             {variant === "admin" ? "Bảng điều khiển" : "Menu chính"}
@@ -184,7 +184,7 @@ export function Sidebar({
           return (
             <React.Fragment key={item.path}>
               {item.isDividerBefore && (
-                <div className="my-2 border-t border-border-main" />
+                <div className="my-2 h-px bg-surface-subtle" />
               )}
               <Link
                 to={item.path}
@@ -215,7 +215,7 @@ export function Sidebar({
 
         {/* 3. USER GROUPS SECTION (User mode only) */}
         {variant === "user" && !isCollapsed && (
-          <div className="mt-4 pt-4 border-t border-border-main space-y-3">
+          <div className="mt-4 pt-3 space-y-3">
             {/* Managed Groups */}
             <div>
               <button
@@ -302,7 +302,7 @@ export function Sidebar({
       </div>
 
       {/* 4. BOTTOM USER FOOTER */}
-      <div className="p-2 border-t border-border-main shrink-0 bg-surface-subtle/40">
+      <div className="p-2 shrink-0 bg-surface-subtle/40">
         {isCollapsed ? (
           <div className="flex justify-center">
             <IconButton
@@ -314,7 +314,7 @@ export function Sidebar({
             />
           </div>
         ) : (
-          <div className="flex items-center justify-between gap-2 p-1.5 rounded-xl bg-surface-main border border-border-main">
+          <div className="flex items-center justify-between gap-2 p-1.5 rounded-xl bg-surface-main">
             <Link
               to="/dashboard/my-profile"
               className="flex items-center gap-2.5 min-w-0 flex-1 hover:opacity-80 transition-opacity"

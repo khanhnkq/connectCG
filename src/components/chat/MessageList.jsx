@@ -75,11 +75,11 @@ const MessageList = React.memo(({ messages, currentUser, activeRoom, messagesEnd
                     <Fragment key={msg.id || index}>
                         {isNewDay && (
                             <div className="flex items-center justify-center my-6">
-                                <div className="h-px bg-border-main flex-1 opacity-20" />
-                                <span className="px-4 text-[10px] font-black uppercase tracking-[0.2em] text-text-muted bg-surface-main/30 py-1 rounded-full border border-border-main/20">
+                                <div className="h-px bg-surface-subtle flex-1" />
+                                <span className="px-4 text-[10px] font-black uppercase tracking-[0.2em] text-text-muted bg-surface-subtle py-1 rounded-full border-0">
                                     {formatDaySeparator(msg.timestamp || 0)}
                                 </span>
-                                <div className="h-px bg-border-main flex-1 opacity-20" />
+                                <div className="h-px bg-surface-subtle flex-1" />
                             </div>
                         )}
                         <div className="flex flex-col w-full">
@@ -210,7 +210,7 @@ const MessageList = React.memo(({ messages, currentUser, activeRoom, messagesEnd
                                             {readReceiptsMap[msg.id || index].map(member => (
                                                 <div
                                                     key={member.id}
-                                                    className="size-4 rounded-full border border-background-main bg-cover bg-center shadow-sm ring-1 ring-primary/10 animate-in zoom-in duration-300"
+                                                    className="size-4 rounded-full bg-cover bg-center shadow-sm ring-1 ring-background-main animate-in zoom-in duration-300"
                                                     title={`${member.fullName} đã xem`}
                                                     style={{ backgroundImage: `url("${member.avatarUrl || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}")` }}
                                                 />

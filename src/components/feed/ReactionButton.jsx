@@ -158,7 +158,7 @@ const ReactionButton = ({ currentReaction, onReact }) => {
             transition={{ duration: 0.2 }}
             className="absolute left-[-10px] sm:left-1/2 sm:-translate-x-1/2 bottom-full z-50 mb-2"
           >
-            <div className="shadow-2xl rounded-full bg-white p-1 border border-border-main/10">
+            <div className="shadow-2xl rounded-full bg-surface-main p-1 border-0">
               <FacebookSelector
                 onSelect={(key) => {
                   // Key trả về thường là 'like', 'love'... -> convert to UPPERCASE

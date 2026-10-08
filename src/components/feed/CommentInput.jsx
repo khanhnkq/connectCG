@@ -66,7 +66,7 @@ export default function CommentInput({
               <img
                 src={previewUrl}
                 alt="preview"
-                className="w-full h-full object-cover rounded-lg border border-border-main"
+                className="w-full h-full object-cover rounded-lg"
               />
               <button
                 type="button"
@@ -88,7 +88,7 @@ export default function CommentInput({
                 autoComplete="off"
                 as="textarea"
                 rows={1}
-                className="w-full px-4 py-2 text-sm rounded-lg bg-background-main border border-border-main focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all pr-20 resize-none min-h-[38px] leading-relaxed"
+                className="w-full px-4 py-2 text-sm rounded-lg bg-surface-subtle border-0 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-surface-main transition-all pr-20 resize-none min-h-[38px] leading-relaxed"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();

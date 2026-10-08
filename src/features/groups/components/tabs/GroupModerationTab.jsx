@@ -27,17 +27,17 @@ export function GroupModerationTab({
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Sub-tabs header */}
-      <div className="flex gap-2 border-b border-border-main pb-2 overflow-x-auto">
+      <div className="flex gap-2 p-1 bg-surface-subtle rounded-xl overflow-x-auto">
         {tabs.map((tab) => {
           const isActive = modTab === tab.key;
           return (
             <button
               key={tab.key}
               onClick={() => onSelectModTab(tab.key)}
-              className={`px-4 py-2 text-sm font-bold rounded-xl transition-colors whitespace-nowrap cursor-pointer ${
+              className={`px-4 py-2 text-sm font-bold rounded-lg transition-colors whitespace-nowrap cursor-pointer border-0 ${
                 isActive
-                  ? "bg-primary/10 text-primary border border-primary/20"
-                  : "text-text-secondary hover:text-text-main hover:bg-surface-subtle"
+                  ? "bg-surface-main text-primary shadow-sm"
+                  : "text-text-secondary hover:text-text-main hover:bg-surface-main/50"
               }`}
             >
               {tab.label}
@@ -50,7 +50,7 @@ export function GroupModerationTab({
       {modTab === "Bài viết" && (
         <div className="space-y-4">
           {pendingPosts.length === 0 ? (
-            <Card className="p-12 text-center border-border-main bg-surface-main">
+            <Card className="p-12 text-center border-0 bg-surface-main">
               <Clock size={32} className="text-text-muted mx-auto mb-2" />
               <p className="text-sm font-medium text-text-secondary">
                 Không có bài viết nào đang chờ duyệt.
@@ -60,16 +60,16 @@ export function GroupModerationTab({
             pendingPosts.map((post) => (
               <Card
                 key={post.id}
-                className="p-5 border-border-main bg-surface-main space-y-4"
+                className="p-5 border-0 bg-surface-main space-y-4"
               >
                 {/* Author & Actions header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border-main">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3">
                   <div className="flex items-center gap-3">
                     <Avatar
                       src={post.authorAvatar}
                       name={post.authorFullName || post.authorName}
                       size="md"
-                      className="border border-border-main"
+                      className="border-0"
                     />
                     <div>
                       <h4 className="font-bold text-text-main text-sm">
@@ -128,7 +128,7 @@ export function GroupModerationTab({
                         key={idx}
                         src={img}
                         alt="Đính kèm"
-                        className="w-full aspect-video object-cover rounded-xl border border-border-main"
+                        className="w-full aspect-video object-cover rounded-xl border-0"
                       />
                     ))}
                   </div>
@@ -143,7 +143,7 @@ export function GroupModerationTab({
       {modTab === "Yêu cầu" && (
         <div className="space-y-4">
           {memberRequests.length === 0 ? (
-            <Card className="p-12 text-center border-border-main bg-surface-main">
+            <Card className="p-12 text-center border-0 bg-surface-main">
               <ShieldCheck size={32} className="text-text-muted mx-auto mb-2" />
               <p className="text-sm font-medium text-text-secondary">
                 Không có yêu cầu gia nhập nào.
@@ -153,14 +153,14 @@ export function GroupModerationTab({
             memberRequests.map((request) => (
               <Card
                 key={request.userId}
-                className="p-5 border-border-main bg-surface-main flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                className="p-5 border-0 bg-surface-main flex flex-col sm:flex-row sm:items-center justify-between gap-4"
               >
                 <div className="flex items-center gap-3.5">
                   <Avatar
                     src={request.avatarUrl}
                     name={request.fullName}
                     size="lg"
-                    className="border border-border-main"
+                    className="border-0"
                   />
                   <div>
                     <h4 className="font-bold text-text-main text-base">
@@ -201,7 +201,7 @@ export function GroupModerationTab({
       {modTab === "Bị cấm" && (
         <div className="space-y-4">
           {bannedMembers.length === 0 ? (
-            <Card className="p-12 text-center border-border-main bg-surface-main">
+            <Card className="p-12 text-center border-0 bg-surface-main">
               <UserMinus size={32} className="text-text-muted mx-auto mb-2" />
               <p className="text-sm font-medium text-text-secondary">
                 Không có thành viên nào bị cấm.
@@ -211,14 +211,14 @@ export function GroupModerationTab({
             bannedMembers.map((member) => (
               <Card
                 key={member.userId}
-                className="p-5 border-border-main bg-surface-main flex items-center justify-between gap-4"
+                className="p-5 border-0 bg-surface-main flex items-center justify-between gap-4"
               >
                 <div className="flex items-center gap-3.5">
                   <Avatar
                     src={member.avatarUrl}
                     name={member.fullName}
                     size="lg"
-                    className="border border-border-main opacity-60 grayscale"
+                    className="border-0 opacity-60 grayscale"
                   />
                   <div>
                     <h4 className="font-bold text-text-main text-base">

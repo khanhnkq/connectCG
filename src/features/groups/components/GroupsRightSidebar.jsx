@@ -43,7 +43,7 @@ export function GroupsRightSidebar({
   };
 
   return (
-    <aside className="w-80 hidden xl:flex flex-col border-l border-border-main bg-background-main p-6 h-[calc(100vh-64px)] sticky top-0 shrink-0 z-40 transition-colors select-none">
+    <aside className="w-80 hidden xl:flex flex-col bg-background-main p-6 h-[calc(100vh-64px)] sticky top-0 shrink-0 z-40 transition-colors select-none">
       {/* Search Widget */}
       <div className="mb-6">
         <Input
@@ -61,12 +61,12 @@ export function GroupsRightSidebar({
         <h3 className="text-text-main font-bold text-xs uppercase tracking-wider mb-3">
           Thống kê
         </h3>
-        <Card className="rounded-2xl p-4 border border-border-main bg-surface-main space-y-3">
+        <Card className="rounded-2xl p-4 border-0 bg-surface-main space-y-3 shadow-sm">
           <div className="flex items-center justify-between text-xs">
             <span className="text-text-secondary font-medium">Đang hiển thị</span>
             <span className="text-text-main font-bold">{displayedGroupsLength} nhóm</span>
           </div>
-          <div className="h-px bg-border-main/50" />
+          <div className="h-px bg-surface-subtle" />
           <div className="flex items-center justify-between text-xs">
             <span className="text-text-secondary font-medium">Chế độ xem</span>
             <Badge variant="primary" size="sm" className="rounded-md font-bold">
@@ -78,7 +78,7 @@ export function GroupsRightSidebar({
 
       {/* CTA Box */}
       <div className="mt-auto">
-        <Card className="p-4 rounded-2xl bg-surface-main border border-border-main space-y-3">
+        <Card className="p-4 rounded-2xl bg-surface-main border-0 space-y-3 shadow-sm">
           <div>
             <h4 className="font-bold text-sm text-text-main">Tạo cộng đồng mới</h4>
             <p className="text-xs text-text-secondary mt-1 leading-relaxed">

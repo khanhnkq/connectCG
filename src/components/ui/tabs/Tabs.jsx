@@ -27,7 +27,7 @@ Tabs.List = function TabsList({ children, className = "" }) {
   return (
     <div
       role="tablist"
-      className={`inline-flex items-center gap-1.5 p-1 bg-surface-subtle border border-border-main rounded-xl select-none overflow-x-auto ${className}`}
+      className={`inline-flex items-center gap-1.5 p-1 bg-surface-subtle border-0 rounded-xl select-none overflow-x-auto ${className}`}
     >
       {children}
     </div>
@@ -57,8 +57,8 @@ Tabs.Trigger = function TabsTrigger({
       onClick={() => onChange?.(value)}
       className={`inline-flex items-center justify-center gap-2 px-3.5 py-1.5 text-xs font-bold rounded-lg transition-colors cursor-pointer select-none whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed ${
         isActive
-          ? "bg-surface-main text-text-main border border-border-main"
-          : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 border border-transparent"
+          ? "bg-surface-main text-text-main border-0 shadow-none"
+          : "text-text-secondary hover:text-text-main hover:bg-surface-main/50 border-0"
       } ${className}`}
     >
       {Icon && <Icon className="size-3.5 shrink-0" />}

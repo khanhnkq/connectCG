@@ -30,7 +30,7 @@ export function GroupHeader({
     "https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=1000";
 
   return (
-    <div className="relative w-full bg-surface-main border-b border-border-main">
+    <div className="relative w-full bg-surface-main">
       {/* Cover Banner */}
       <div className="relative w-full h-56 md:h-72 lg:h-80 overflow-hidden bg-surface-subtle">
         <img
@@ -49,7 +49,7 @@ export function GroupHeader({
             size="md"
             aria-label="Quay lại"
             onClick={onNavigateBack}
-            className="bg-surface-main/90 hover:bg-surface-main text-text-main border-border-main"
+            className="bg-surface-main/90 hover:bg-surface-main text-text-main border-0"
           />
         </div>
       </div>
@@ -108,7 +108,7 @@ export function GroupHeader({
               <Button variant="primary" onClick={onAcceptInvite}>
                 Chấp nhận
               </Button>
-              <Button variant="secondary" onClick={onDeclineInvite} className="hover:border-danger hover:text-danger">
+              <Button variant="secondary" onClick={onDeclineInvite} className="hover:bg-danger/10 hover:text-danger">
                 Từ chối
               </Button>
             </>
@@ -124,7 +124,7 @@ export function GroupHeader({
             size="md"
             aria-label="Báo cáo nhóm"
             onClick={onReportClick}
-            className="text-amber-500 hover:text-amber-600 hover:bg-amber-500/10 border-border-main"
+            className="text-amber-500 hover:text-amber-600 hover:bg-amber-500/10 border-0"
           />
         </div>
       </div>

@@ -215,10 +215,10 @@ const AdminMembersManager = () => {
     >
       <div className="p-6 md:p-8 space-y-6">
         {/* Search & Filter Header */}
-        <Card className="p-6 bg-surface-main border-border-main">
+        <Card className="p-6 bg-surface-main border-0 shadow-sm">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
             <div className="flex items-center gap-3">
-              <div className="size-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+              <div className="size-11 rounded-xl bg-primary/10 border-0 flex items-center justify-center text-primary shrink-0">
                 <UsersThree size={24} weight="bold" />
               </div>
               <div>
@@ -240,7 +240,7 @@ const AdminMembersManager = () => {
                     setRoleFilter(e.target.value);
                     setPagination((prev) => ({ ...prev, currentPage: 0 }));
                   }}
-                  className="w-full bg-surface-subtle rounded-xl py-2.5 px-4 text-xs text-text-main focus:outline-none focus:border-border-strong appearance-none cursor-pointer font-semibold border border-border-main transition-colors"
+                  className="w-full bg-surface-subtle rounded-xl py-2.5 px-4 text-xs text-text-main focus:outline-none focus:ring-1 focus:ring-primary/40 appearance-none cursor-pointer font-semibold border-0 transition-colors"
                 >
                   <option value="">Tất cả vai trò</option>
                   <option value="USER">Người dùng (USER)</option>
@@ -259,7 +259,7 @@ const AdminMembersManager = () => {
                     setSearchTerm(e.target.value);
                     setPagination((prev) => ({ ...prev, currentPage: 0 }));
                   }}
-                  className="w-full bg-surface-subtle rounded-xl py-2.5 pl-10 pr-4 text-xs text-text-main focus:outline-none focus:border-border-strong font-medium border border-border-main transition-colors"
+                  className="w-full bg-surface-subtle rounded-xl py-2.5 pl-10 pr-4 text-xs text-text-main focus:outline-none focus:ring-1 focus:ring-primary/40 font-medium border-0 transition-colors"
                 />
               </div>
             </div>
@@ -267,10 +267,10 @@ const AdminMembersManager = () => {
         </Card>
 
         {/* Flat Users Table */}
-        <Card className="overflow-hidden border-border-main">
+        <Card className="overflow-hidden border-0 shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left">
-              <thead className="bg-surface-subtle text-[11px] uppercase font-bold text-text-secondary tracking-wider border-b border-border-main">
+              <thead className="bg-surface-subtle text-[11px] uppercase font-bold text-text-secondary tracking-wider border-0">
                 <tr>
                   <th className="px-5 py-3.5 w-16">STT</th>
                   <th className="px-5 py-3.5">Thông tin thành viên</th>
@@ -279,7 +279,7 @@ const AdminMembersManager = () => {
                   <th className="px-5 py-3.5 text-right">Thao tác</th>
                 </tr>
               </thead>
-              <tbody className="text-sm divide-y divide-border-main">
+              <tbody className="text-sm divide-y divide-transparent">
                 {loading ? (
                   Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i}>
@@ -429,7 +429,7 @@ const AdminMembersManager = () => {
           </div>
 
           {/* Flat Pagination Footer */}
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 bg-surface-subtle/30 px-5 py-3 border-t border-border-main">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 bg-surface-subtle/30 px-5 py-3 border-0">
             <div className="text-text-muted text-xs font-medium">
               Trang{" "}
               <span className="text-text-main font-bold">
@@ -455,7 +455,7 @@ const AdminMembersManager = () => {
                   }))
                 }
               />
-              <span className="text-xs font-bold text-text-main px-3 py-1 bg-surface-main rounded-xl border border-border-main">
+              <span className="text-xs font-bold text-text-main px-3 py-1 bg-surface-main rounded-xl border-0 shadow-sm">
                 {pagination.currentPage + 1}
               </span>
               <IconButton

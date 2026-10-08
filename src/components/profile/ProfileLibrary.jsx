@@ -63,7 +63,7 @@ const ProfileLibrary = ({ profile, isOwner }) => {
   };
 
   return (
-    <div className="bg-surface-main rounded-2xl border border-border-main p-6 shadow-sm">
+    <div className="bg-surface-main rounded-2xl border-0 p-6 shadow-sm">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <h3 className="text-text-main font-bold text-xl flex items-center gap-3">
@@ -71,7 +71,7 @@ const ProfileLibrary = ({ profile, isOwner }) => {
         </h3>
 
         {/* Filter Tabs */}
-        <div className="flex bg-background-main rounded-xl p-1 gap-1 border border-border-main">
+        <div className="flex bg-surface-subtle rounded-xl p-1 gap-1 border-0">
           {filterTabs.map((tab) => (
             <button
               key={tab.key}
@@ -105,7 +105,7 @@ const ProfileLibrary = ({ profile, isOwner }) => {
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.3 }}
                   key={media.id || index}
-                  className={`group relative cursor-pointer rounded-2xl overflow-hidden border border-border-main/50 shadow-sm hover:shadow-lg transition-all duration-300 ${getSpanClasses(
+                  className={`group relative cursor-pointer rounded-2xl overflow-hidden border-0 shadow-sm hover:shadow-lg transition-all duration-300 ${getSpanClasses(
                     index,
                   )}`}
                   onClick={() => handleMediaClick(index)}
@@ -121,7 +121,7 @@ const ProfileLibrary = ({ profile, isOwner }) => {
                         />
                         <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors" />
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <div className="bg-white/20 backdrop-blur-md p-3 rounded-full border border-white/30 group-hover:scale-110 transition-transform">
+                          <div className="bg-white/20 backdrop-blur-md p-3 rounded-full border-0 group-hover:scale-110 transition-transform">
                             <Play className="text-white fill-white" size={24} />
                           </div>
                         </div>
@@ -138,7 +138,7 @@ const ProfileLibrary = ({ profile, isOwner }) => {
 
                   {/* Hover overlay with Glassmorphism */}
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
-                    <div className="bg-white/10 p-3 rounded-full backdrop-blur-md border border-white/20 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                    <div className="bg-white/10 p-3 rounded-full backdrop-blur-md border-0 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
                       <ZoomIn className="text-white" size={24} />
                     </div>
                   </div>
@@ -152,7 +152,7 @@ const ProfileLibrary = ({ profile, isOwner }) => {
             <div className="flex justify-center mt-8">
               <button
                 onClick={handleLoadMore}
-                className="flex items-center gap-2 px-6 py-3 bg-surface-main hover:bg-background-main border border-border-main hover:border-primary/50 text-text-main font-bold rounded-xl transition-all shadow-sm group"
+                className="flex items-center gap-2 px-6 py-3 bg-surface-subtle hover:bg-surface-subtle/80 border-0 text-text-main font-bold rounded-xl transition-all shadow-sm group"
               >
                 <span>Xem thêm</span>
                 <ChevronDown
@@ -164,7 +164,7 @@ const ProfileLibrary = ({ profile, isOwner }) => {
           )}
         </>
       ) : (
-        <div className="text-center py-20 flex flex-col items-center justify-center bg-background-main/50 rounded-2xl border border-dashed border-border-main">
+        <div className="text-center py-20 flex flex-col items-center justify-center bg-surface-subtle rounded-2xl border-0">
           <p className="text-text-secondary font-medium">
             {activeFilter === "all"
               ? isOwner

@@ -32,7 +32,7 @@ export default function PostCard({
   });
 
   return (
-    <article className={`bg-surface-main rounded-2xl border border-border-main transition-colors duration-150 mb-4 ${type === "dashboard" ? "border-border-strong" : ""}`}>
+    <article className="bg-surface-main rounded-2xl transition-colors duration-150 mb-4 overflow-hidden border-0">
       {data.isPinned && (
         <div className="px-6 pt-3 flex items-center gap-2 text-primary font-bold text-xs select-none">
           <PushPin size={14} weight="fill" className="rotate-45" />

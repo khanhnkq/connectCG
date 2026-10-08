@@ -27,7 +27,7 @@ export default function TransferOwnershipModal({
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-surface-main border border-border-main rounded-3xl p-8 max-w-md w-full shadow-2xl animate-in fade-in zoom-in duration-200">
+      <div className="bg-surface-main border-0 rounded-3xl p-8 max-w-md w-full shadow-2xl animate-in fade-in zoom-in duration-200">
         <div className="size-16 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500 mx-auto mb-6">
           <ArrowLeftRight size={32} />
         </div>
@@ -51,7 +51,7 @@ export default function TransferOwnershipModal({
             placeholder="Tìm kiếm thành viên..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-background-main border border-border-main rounded-2xl py-3 pl-12 pr-4 text-text-main text-sm focus:outline-none focus:border-primary/50 transition-all"
+            className="w-full bg-background-main border-0 rounded-2xl py-3 pl-12 pr-4 text-text-main text-sm focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
           />
         </div>
 
@@ -67,10 +67,10 @@ export default function TransferOwnershipModal({
               <div
                 key={member.userId}
                 onClick={() => setSelectedMember(member)}
-                className={`p-4 rounded-xl cursor-pointer transition-all border ${
+                className={`p-4 rounded-xl cursor-pointer transition-all border-0 ${
                   selectedMember?.userId === member.userId
-                    ? "bg-primary/10 border-primary/50"
-                    : "hover:bg-background-main border-transparent"
+                    ? "bg-primary/10"
+                    : "hover:bg-background-main"
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -88,14 +88,14 @@ export default function TransferOwnershipModal({
                     </p>
                   </div>
                   <div
-                    className={`size-5 rounded-full border-2 flex items-center justify-center ${
+                    className={`size-5 rounded-full flex items-center justify-center ${
                       selectedMember?.userId === member.userId
-                        ? "bg-primary border-primary"
-                        : "border-text-secondary"
+                        ? "bg-primary text-[#231810]"
+                        : "bg-surface-subtle"
                     }`}
                   >
                     {selectedMember?.userId === member.userId && (
-                      <Check size={14} className="text-text-main font-bold" />
+                      <Check size={14} className="font-bold" />
                     )}
                   </div>
                 </div>
@@ -104,7 +104,7 @@ export default function TransferOwnershipModal({
           )}
         </div>
 
-        <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-4 mb-6">
+        <div className="bg-orange-500/10 border-0 rounded-xl p-4 mb-6">
           <p className="text-orange-400 text-xs flex items-start gap-2">
             <Info size={14} className="mt-0.5" />
             <span>

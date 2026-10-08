@@ -31,14 +31,14 @@ export function Switch({
         }
       }}
       className={`
-        relative inline-flex shrink-0 items-center rounded-full border transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-primary/20
+        relative inline-flex shrink-0 items-center rounded-full transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-primary/20
         ${isSm ? "h-5 w-9 p-0.5" : "h-6 w-11 p-0.5"}
         ${
           disabled
-            ? "cursor-not-allowed opacity-50 bg-surface-subtle border-border-main"
+            ? "cursor-not-allowed opacity-50 bg-surface-subtle"
             : checked
-            ? "cursor-pointer bg-primary border-primary"
-            : "cursor-pointer bg-surface-subtle border-border-strong hover:border-text-muted"
+            ? "cursor-pointer bg-primary"
+            : "cursor-pointer bg-surface-subtle hover:bg-surface-subtle/80"
         }
         ${className}
       `}

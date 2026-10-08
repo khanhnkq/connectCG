@@ -69,7 +69,7 @@ export default function LandingPage() {
   return (
     <div className="bg-background-main text-text-main font-sans antialiased w-full overflow-x-hidden transition-colors duration-200">
       {/* 1. Header Navigation */}
-      <nav className="fixed top-0 inset-x-0 z-50 bg-background-main border-b border-border-main">
+      <nav className="fixed top-0 inset-x-0 z-50 bg-background-main border-0 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-18 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5 group">
             <img
@@ -110,7 +110,7 @@ export default function LandingPage() {
       </nav>
 
       {/* 2. Hero Section */}
-      <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 border-b border-border-main bg-background-main overflow-hidden">
+      <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 border-0 bg-background-main overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 w-full grid lg:grid-cols-2 gap-12 items-center">
           <div className="flex flex-col items-start space-y-6">
             <Badge variant="subtle" size="md">
@@ -142,17 +142,17 @@ export default function LandingPage() {
             </div>
 
             {/* Social Proof */}
-            <div className="pt-6 border-t border-border-main flex items-center gap-4 w-full">
+            <div className="pt-6 border-0 flex items-center gap-4 w-full">
               <div className="flex -space-x-2.5">
                 {COMMUNITY_TEASERS.slice(0, 3).map((item, idx) => (
                   <img
                     key={idx}
                     src={item.image}
                     alt={item.name}
-                    className="size-10 rounded-full border-2 border-background-main object-cover"
+                    className="size-10 rounded-full border-0 ring-2 ring-background-main object-cover"
                   />
                 ))}
-                <div className="size-10 rounded-full border-2 border-background-main bg-surface-subtle flex items-center justify-center text-[11px] font-bold text-text-main">
+                <div className="size-10 rounded-full border-0 ring-2 ring-background-main bg-surface-subtle flex items-center justify-center text-[11px] font-bold text-text-main">
                   +10k
                 </div>
               </div>
@@ -198,7 +198,7 @@ export default function LandingPage() {
       </section>
 
       {/* 3. Features Section */}
-      <section id="features" className="py-20 bg-background-main border-b border-border-main">
+      <section id="features" className="py-20 bg-background-main border-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
             <Badge variant="subtle" size="md">
@@ -236,8 +236,8 @@ export default function LandingPage() {
             ].map((feature, index) => {
               const Icon = feature.icon;
               return (
-                <Card key={index} className="p-6 sm:p-8 space-y-4 hover:border-primary transition-colors">
-                  <div className="size-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+                <Card key={index} className="p-6 sm:p-8 space-y-4 border-0 hover:bg-surface-subtle transition-colors shadow-sm">
+                  <div className="size-12 rounded-xl bg-primary/10 border-0 flex items-center justify-center text-primary">
                     <Icon size={24} weight="bold" />
                   </div>
                   <h3 className="text-lg font-bold text-text-main">
@@ -254,7 +254,7 @@ export default function LandingPage() {
       </section>
 
       {/* 4. Community Preview Section */}
-      <section id="community" className="py-20 bg-background-main border-b border-border-main">
+      <section id="community" className="py-20 bg-background-main border-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
             <div>
@@ -275,11 +275,11 @@ export default function LandingPage() {
           {/* Cards Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 relative">
             {COMMUNITY_TEASERS.map((member, index) => (
-              <Card key={index} className="p-3 text-center space-y-2.5">
+              <Card key={index} className="p-3 text-center space-y-2.5 border-0 shadow-sm">
                 <img
                   src={member.image}
                   alt={member.name}
-                  className="size-16 rounded-full mx-auto object-cover border border-border-main"
+                  className="size-16 rounded-full mx-auto object-cover border-0 shadow-md"
                 />
                 <div>
                   <h4 className="text-xs font-bold text-text-main truncate">
@@ -297,8 +297,8 @@ export default function LandingPage() {
           </div>
 
           {/* CTA Box */}
-          <Card className="mt-8 p-8 text-center max-w-xl mx-auto space-y-4 border-primary/30">
-            <div className="size-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mx-auto">
+          <Card className="mt-8 p-8 text-center max-w-xl mx-auto space-y-4 border-0 shadow-sm">
+            <div className="size-12 rounded-full bg-primary/10 border-0 flex items-center justify-center text-primary mx-auto">
               <Lock size={22} weight="bold" />
             </div>
             <div>
@@ -322,7 +322,7 @@ export default function LandingPage() {
       </section>
 
       {/* 5. Footer */}
-      <footer className="bg-surface-main py-12 text-text-secondary border-t border-border-main">
+      <footer className="bg-surface-main py-12 text-text-secondary border-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-10">
             <div className="col-span-2 sm:col-span-1 space-y-3">
@@ -343,21 +343,21 @@ export default function LandingPage() {
                 <a
                   href="#"
                   aria-label="Website"
-                  className="size-8 rounded-lg border border-border-main flex items-center justify-center hover:text-primary hover:border-primary transition-colors"
+                  className="size-8 rounded-lg bg-surface-subtle border-0 flex items-center justify-center hover:text-primary transition-colors"
                 >
                   <Globe size={16} />
                 </a>
                 <a
                   href="#"
                   aria-label="Email"
-                  className="size-8 rounded-lg border border-border-main flex items-center justify-center hover:text-primary hover:border-primary transition-colors"
+                  className="size-8 rounded-lg bg-surface-subtle border-0 flex items-center justify-center hover:text-primary transition-colors"
                 >
                   <Envelope size={16} />
                 </a>
                 <a
                   href="#"
                   aria-label="Chat"
-                  className="size-8 rounded-lg border border-border-main flex items-center justify-center hover:text-primary hover:border-primary transition-colors"
+                  className="size-8 rounded-lg bg-surface-subtle border-0 flex items-center justify-center hover:text-primary transition-colors"
                 >
                   <ChatCircle size={16} />
                 </a>
@@ -434,7 +434,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="pt-6 border-t border-border-main flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-text-muted">
+          <div className="pt-6 border-0 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-text-muted">
             <p>© 2026 Connect Social Inc. Bảo lưu mọi quyền.</p>
             <div className="flex gap-4">
               <span>Tiếng Việt</span>

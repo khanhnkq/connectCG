@@ -168,14 +168,14 @@ export function MediaCropFlow({
       </div>
 
       {/* Media Type Selector */}
-      <div className="flex border-b border-border-main gap-2">
+      <div className="flex gap-2 p-1 bg-surface-subtle rounded-xl">
         <button
           type="button"
           onClick={() => handleSwitchTab("avatar")}
-          className={`pb-2.5 px-3 text-xs font-bold border-b-2 transition-colors ${
+          className={`py-2 px-4 text-xs font-bold rounded-lg transition-all ${
             isAvatar
-              ? "border-primary text-primary"
-              : "border-transparent text-text-secondary hover:text-text-main"
+              ? "bg-surface-main text-primary shadow-sm"
+              : "text-text-secondary hover:text-text-main"
           }`}
         >
           Ảnh đại diện (1:1)
@@ -183,10 +183,10 @@ export function MediaCropFlow({
         <button
           type="button"
           onClick={() => handleSwitchTab("cover")}
-          className={`pb-2.5 px-3 text-xs font-bold border-b-2 transition-colors ${
+          className={`py-2 px-4 text-xs font-bold rounded-lg transition-all ${
             !isAvatar
-              ? "border-primary text-primary"
-              : "border-transparent text-text-secondary hover:text-text-main"
+              ? "bg-surface-main text-primary shadow-sm"
+              : "text-text-secondary hover:text-text-main"
           }`}
         >
           Ảnh bìa (16:9 / Rộng)
@@ -204,17 +204,17 @@ export function MediaCropFlow({
       {/* Editor & Preview Area */}
       {imagePreviewUrl ? (
         <div className="space-y-4">
-          <div className="flex justify-center p-4 bg-surface-subtle border border-border-main rounded-2xl overflow-hidden">
+          <div className="flex justify-center p-4 bg-surface-subtle rounded-2xl overflow-hidden border-0">
             <canvas
               ref={canvasRef}
-              className={`border border-border-main bg-black/5 ${
+              className={`bg-black/5 ${
                 isAvatar ? "rounded-full aspect-square max-w-[240px]" : "rounded-xl w-full max-h-[220px]"
               }`}
             />
           </div>
 
           {/* Controls: Zoom slider & Rotate button */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center bg-surface-main p-3.5 border border-border-main rounded-2xl">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center bg-surface-subtle p-3.5 rounded-2xl border-0">
             <div className="space-y-1">
               <div className="flex justify-between text-xs text-text-secondary font-medium">
                 <span>Phóng to</span>
@@ -253,13 +253,13 @@ export function MediaCropFlow({
         </div>
       ) : (
         /* Empty / Current Image Preview Box */
-        <div className="p-6 border-2 border-dashed border-border-main rounded-2xl text-center space-y-4 bg-surface-main">
+        <div className="p-6 rounded-2xl text-center space-y-4 bg-surface-subtle border-0">
           {currentUrl ? (
             <div className="flex flex-col items-center gap-3">
               <img
                 src={currentUrl}
                 alt={isAvatar ? "Avatar hiện tại" : "Cover hiện tại"}
-                className={`border border-border-main object-cover ${
+                className={`object-cover ${
                   isAvatar
                     ? "size-28 rounded-full"
                     : "w-full max-w-md h-32 rounded-xl"
@@ -268,7 +268,7 @@ export function MediaCropFlow({
               <span className="text-xs text-text-secondary">Ảnh hiện đang được sử dụng</span>
             </div>
           ) : (
-            <div className="size-16 rounded-2xl bg-surface-subtle border border-border-main flex items-center justify-center text-text-muted mx-auto">
+            <div className="size-16 rounded-2xl bg-surface-main flex items-center justify-center text-text-muted mx-auto border-0">
               <ImageIcon size={28} />
             </div>
           )}

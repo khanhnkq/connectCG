@@ -19,7 +19,7 @@ export default function DashboardLayout() {
     <div className="bg-background-main text-text-main font-display overflow-hidden h-screen flex flex-col w-full animate-in fade-in duration-500">
       <UserNavbar onMenuClick={() => setIsMobileMenuOpen(true)} />
       {!isConnected && (
-        <div className="bg-amber-500/10 border-b border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs py-1 px-4 text-center flex items-center justify-center gap-2 font-medium z-40">
+        <div className="bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs py-1.5 px-4 text-center flex items-center justify-center gap-2 font-medium z-40">
           <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
           <span>Mất kết nối máy chủ thời gian thực. Đang kết nối lại...</span>
         </div>

@@ -70,15 +70,15 @@ export const Button = forwardRef(
 
     const variantStyles = {
       primary:
-        "bg-primary text-white hover:bg-primary-hover active:bg-primary-active border border-primary",
+        "bg-primary text-white hover:bg-primary-hover active:bg-primary-active border-0",
       secondary:
-        "bg-surface-subtle text-text-main hover:bg-border-main/60 active:bg-border-main border border-border-main",
+        "bg-surface-subtle text-text-main hover:bg-surface-subtle/80 active:bg-surface-subtle/60 border-0",
       outline:
-        "bg-transparent text-text-main hover:bg-surface-subtle active:bg-border-main/50 border border-border-main",
+        "bg-surface-subtle/60 text-text-main hover:bg-surface-subtle active:bg-surface-subtle/80 border-0",
       ghost:
-        "bg-transparent text-text-secondary hover:text-text-main hover:bg-surface-subtle active:bg-border-main/40 border border-transparent",
+        "bg-transparent text-text-secondary hover:text-text-main hover:bg-surface-subtle active:bg-surface-subtle/60 border-0",
       danger:
-        "bg-danger text-white hover:bg-red-600 active:bg-red-700 border border-danger",
+        "bg-danger text-white hover:bg-red-600 active:bg-red-700 border-0",
     };
 
     const appliedVariant = variantStyles[variant] || variantStyles.primary;

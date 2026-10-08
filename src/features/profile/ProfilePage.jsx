@@ -157,7 +157,7 @@ export function ProfilePage({ mode = "auto", userId = null }) {
               )}
 
               {loadingPosts ? (
-                <div className="flex justify-center p-8 bg-surface-main rounded-2xl border border-border-main">
+                <div className="flex justify-center p-8 bg-surface-main rounded-2xl border-0">
                   <div className="size-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                 </div>
               ) : posts.length > 0 ? (
@@ -170,7 +170,7 @@ export function ProfilePage({ mode = "auto", userId = null }) {
                   />
                 ))
               ) : (
-                <div className="flex flex-col items-center justify-center gap-3 text-center py-16 bg-surface-main rounded-2xl border border-border-main">
+                <div className="flex flex-col items-center justify-center gap-3 text-center py-16 bg-surface-main rounded-2xl border-0">
                   <UserMinus className="size-12 text-text-muted/40" />
                   <p className="text-text-secondary italic text-sm">
                     {isOwner

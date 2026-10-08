@@ -7,7 +7,7 @@ const ChatHeader = ({ activeRoom, onBack, onShowSettings, onInviteMember, onShow
   if (!activeRoom) return null;
 
   return (
-    <div className="h-20 border-b border-border-main flex items-center justify-between px-4 md:px-6 bg-background-main/95 backdrop-blur-md sticky top-0 z-30 transition-colors duration-300">
+    <div className="h-20 flex items-center justify-between px-4 md:px-6 bg-background-main/95 backdrop-blur-md sticky top-0 z-30 transition-colors duration-300">
       <div className="flex items-center gap-2 md:gap-4">
         <IconButton
           icon={ArrowLeft}

@@ -25,14 +25,14 @@ const MessageInput = ({
     };
 
     return (
-        <div className="p-4 px-6 bg-background-main border-t border-border-main">
+        <div className="p-4 px-6 bg-background-main">
             {/* Media Preview */}
             {selectedImage && (
                 <div className="mb-3 relative inline-block">
                     {selectedImage.type?.startsWith('video/') ? (
                         <video
                             src={URL.createObjectURL(selectedImage)}
-                            className="h-24 w-24 object-cover rounded-xl border border-primary"
+                            className="h-24 w-24 object-cover rounded-xl ring-2 ring-primary"
                             autoPlay
                             muted
                             loop
@@ -41,7 +41,7 @@ const MessageInput = ({
                         <img
                             src={URL.createObjectURL(selectedImage)}
                             alt="Preview"
-                            className="h-24 w-24 object-cover rounded-xl border border-primary"
+                            className="h-24 w-24 object-cover rounded-xl ring-2 ring-primary"
                         />
                     )}
                     <IconButton
@@ -75,7 +75,7 @@ const MessageInput = ({
                     />
 
                     {showEmojiPicker && (
-                        <div className="absolute bottom-full left-0 mb-4 p-3 bg-surface-main border border-border-main rounded-2xl shadow-2xl grid grid-cols-6 gap-2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200 w-64 backdrop-blur-xl">
+                        <div className="absolute bottom-full left-0 mb-4 p-3 bg-surface-main rounded-2xl shadow-2xl grid grid-cols-6 gap-2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200 w-64 backdrop-blur-xl">
                             {emojis.map((emoji) => (
                                 <button
                                     key={emoji}
@@ -110,7 +110,7 @@ const MessageInput = ({
                     className="hidden"
                 />
 
-                <div className="flex-1 bg-surface-main border border-border-main rounded-xl flex items-center px-4 py-1.5 focus-within:ring-1 focus-within:ring-primary focus-within:border-primary transition-all">
+                <div className="flex-1 bg-surface-subtle border-0 rounded-xl flex items-center px-4 py-1.5 focus-within:ring-2 focus-within:ring-primary focus-within:bg-surface-main transition-all">
                     <input
                         value={inputText}
                         onChange={(e) => setInputText(e.target.value)}

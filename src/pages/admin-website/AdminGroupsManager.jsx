@@ -25,7 +25,7 @@ import {
  */
 function GroupCardSkeleton() {
   return (
-    <Card className="overflow-hidden flex flex-col h-full border-border-main">
+    <Card className="overflow-hidden flex flex-col h-full border-0 shadow-sm">
       <Skeleton className="h-44 w-full rounded-none" />
       <div className="p-5 space-y-4 flex flex-col flex-1">
         <div className="space-y-2">
@@ -37,7 +37,7 @@ function GroupCardSkeleton() {
           <Skeleton className="h-14 w-full rounded-xl" />
           <Skeleton className="h-14 w-full rounded-xl" />
         </div>
-        <div className="pt-4 border-t border-border-main flex justify-end gap-2 mt-auto">
+        <div className="pt-4 border-0 flex justify-end gap-2 mt-auto">
           <Skeleton className="h-8 w-20 rounded-xl" />
           <Skeleton className="size-8 rounded-xl" />
         </div>
@@ -124,10 +124,10 @@ const AdminGroupsManager = () => {
     >
       <div className="p-6 md:p-8 space-y-6">
         {/* Header & Filter Card */}
-        <Card className="p-6 bg-surface-main border-border-main">
+        <Card className="p-6 bg-surface-main border-0 shadow-sm">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
             <div className="flex items-center gap-3">
-              <div className="size-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+              <div className="size-11 rounded-xl bg-primary/10 border-0 flex items-center justify-center text-primary shrink-0">
                 <Users size={24} weight="bold" />
               </div>
               <div>
@@ -146,7 +146,7 @@ const AdminGroupsManager = () => {
                 <select
                   value={privacyFilter}
                   onChange={(e) => setPrivacyFilter(e.target.value)}
-                  className="w-full bg-surface-subtle rounded-xl py-2.5 px-4 text-xs text-text-main focus:outline-none focus:border-border-strong appearance-none cursor-pointer font-semibold border border-border-main transition-colors"
+                  className="w-full bg-surface-subtle rounded-xl py-2.5 px-4 text-xs text-text-main focus:outline-none focus:ring-1 focus:ring-primary/40 appearance-none cursor-pointer font-semibold border-0 transition-colors"
                 >
                   <option value="">Tất cả quyền riêng tư</option>
                   <option value="public">Công khai (Public)</option>
@@ -162,7 +162,7 @@ const AdminGroupsManager = () => {
                   placeholder="Tìm kiếm nhóm theo tên, mô tả..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-surface-subtle rounded-xl py-2.5 pl-10 pr-4 text-xs text-text-main focus:outline-none focus:border-border-strong font-medium border border-border-main transition-colors"
+                  className="w-full bg-surface-subtle rounded-xl py-2.5 pl-10 pr-4 text-xs text-text-main focus:outline-none focus:ring-1 focus:ring-primary/40 font-medium border-0 transition-colors"
                 />
               </div>
             </div>
@@ -191,7 +191,7 @@ const AdminGroupsManager = () => {
             filteredGroups.map((group, index) => (
               <Card
                 key={group.id}
-                className="overflow-hidden flex flex-col h-full border-border-main hover:border-border-strong transition-colors"
+                className="overflow-hidden flex flex-col h-full border-0 hover:bg-surface-subtle/50 transition-colors shadow-sm"
               >
                 {/* Cover Image */}
                 <div className="h-44 relative overflow-hidden bg-surface-subtle">
@@ -255,7 +255,7 @@ const AdminGroupsManager = () => {
 
                   {/* Info Cards */}
                   <div className="grid grid-cols-2 gap-3 pt-1">
-                    <div className="bg-surface-subtle p-3 rounded-xl border border-border-main">
+                    <div className="bg-surface-subtle p-3 rounded-xl border-0">
                       <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider mb-1">
                         Ngày tạo
                       </p>
@@ -265,7 +265,7 @@ const AdminGroupsManager = () => {
                           : "N/A"}
                       </p>
                     </div>
-                    <div className="bg-surface-subtle p-3 rounded-xl border border-border-main">
+                    <div className="bg-surface-subtle p-3 rounded-xl border-0">
                       <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider mb-1">
                         Ảnh bìa ID
                       </p>
@@ -276,7 +276,7 @@ const AdminGroupsManager = () => {
                   </div>
 
                   {/* Footer Actions */}
-                  <div className="pt-4 border-t border-border-main flex justify-end items-center gap-2 mt-auto">
+                  <div className="pt-4 border-0 flex justify-end items-center gap-2 mt-auto">
                     <Button
                       variant="secondary"
                       size="sm"

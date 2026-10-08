@@ -5,19 +5,19 @@ export default function FriendListItem({ item, isActive, onClick, viewMode }) {
     return (
         <div
             onClick={onClick}
-            className={`p-4 rounded-xl cursor-pointer relative group flex gap-3 items-center transition-all duration-200 ${isActive
-                ? 'bg-primary/10 border-2 border-primary shadow-lg shadow-primary/10'
-                : 'bg-surface-main/50 hover:bg-surface-main border-2 border-transparent hover:border-border-main'
+            className={`p-4 rounded-xl cursor-pointer relative group flex gap-3 items-center transition-all duration-200 border-0 ${isActive
+                ? 'bg-primary/10 shadow-lg shadow-primary/10'
+                : 'bg-surface-main/50 hover:bg-surface-main'
                 }`}
         >
             {/* Avatar */}
             <div className="relative shrink-0">
                 <div
-                    className="size-14 rounded-xl bg-cover bg-center border-2 border-border-main group-hover:border-primary/50 transition-all"
+                    className="size-14 rounded-xl bg-cover bg-center transition-all"
                     style={{ backgroundImage: `url("${item.avatarUrl || item.image || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}")` }}
                 ></div>
                 {item.isOnline && (
-                    <div className="absolute -bottom-1 -right- size-4 bg-green-500 rounded-full border-2 border-surface-main shadow-lg"></div>
+                    <div className="absolute -bottom-1 -right-1 size-4 bg-green-500 rounded-full ring-2 ring-surface-main shadow-lg"></div>
                 )}
             </div>
 

@@ -26,9 +26,9 @@ export function ProfileTabs({ activeTab, onChange, friendsCount = 0 }) {
   };
 
   return (
-    <div className="w-full border-b border-border-main pb-3">
+    <div className="w-full pb-3">
       <Tabs value={normalizedValue} onChange={handleTabChange}>
-        <Tabs.List className="w-full sm:w-auto flex items-center justify-start gap-1 p-1 bg-surface-subtle border border-border-main rounded-xl">
+        <Tabs.List className="w-full sm:w-auto flex items-center justify-start gap-1 p-1 bg-surface-subtle border-0 rounded-xl">
           <Tabs.Trigger
             value="timeline"
             icon={SquaresFour}

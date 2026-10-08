@@ -38,7 +38,7 @@ const ConfirmModal = ({
   // Use createPortal to render modal outside of parent containers (e.g. Dropdowns with transforms)
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="bg-surface-main w-full max-w-md rounded-3xl border border-border-main shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+      <div className="bg-surface-main w-full max-w-md rounded-3xl border-0 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
         <div className="p-8 text-center space-y-6">
           <div
             className={`size-20 rounded-full mx-auto flex items-center justify-center ${theme.iconBg}`}
@@ -57,7 +57,7 @@ const ConfirmModal = ({
           <div className="grid grid-cols-2 gap-4 pt-2">
             <button
               onClick={onClose}
-              className="py-3.5 rounded-xl border border-border-main text-text-secondary font-bold hover:bg-background-main hover:text-text-main transition-all"
+              className="py-3.5 rounded-xl border-0 bg-surface-subtle text-text-secondary font-bold hover:bg-surface-subtle/80 hover:text-text-main transition-all cursor-pointer"
             >
               {cancelText}
             </button>

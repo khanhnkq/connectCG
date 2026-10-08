@@ -54,20 +54,20 @@ export default function FriendSuggestionItem({
         <>
             <div
                 onClick={onClick}
-                className={`p-4 rounded-xl cursor-pointer relative group flex flex-col gap-3 transition-all duration-200 ${isActive
-                    ? 'bg-primary/10 border-2 border-primary shadow-lg shadow-primary/10'
-                    : 'bg-surface-main/50 hover:bg-surface-main border-2 border-transparent hover:border-border-main'
+                className={`p-4 rounded-xl cursor-pointer relative group flex flex-col gap-3 transition-all duration-200 border-0 ${isActive
+                    ? 'bg-primary/10 shadow-lg shadow-primary/10'
+                    : 'bg-surface-main/50 hover:bg-surface-main'
                     }`}
             >
                 {/* Header */}
                 <div className="flex gap-3 items-center">
                     <div className="relative shrink-0">
                         <div
-                            className="size-14 rounded-xl bg-cover bg-center border-2 border-border-main group-hover:border-primary/50 transition-all"
+                            className="size-14 rounded-xl bg-cover bg-center transition-all"
                             style={{ backgroundImage: `url("${suggestion.avatarUrl || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}")` }}
                         ></div>
                         {/* Badge */}
-                        <div className="absolute -bottom-1 -right-1 size-6 bg-primary rounded-full flex items-center justify-center border-2 border-surface-main shadow-lg">
+                        <div className="absolute -bottom-1 -right-1 size-6 bg-primary rounded-full flex items-center justify-center ring-2 ring-surface-main shadow-lg">
                             <Sparkle size={12} weight="fill" className="text-white" />
                         </div>
                     </div>
@@ -93,7 +93,7 @@ export default function FriendSuggestionItem({
                     <button
                         onClick={handleAddFriend}
                         disabled={isProcessing}
-                        className="flex-1 py-2 px-3 bg-primary hover:bg-orange-600 text-white text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+                        className="flex-1 py-2 px-3 bg-primary hover:bg-orange-600 text-white text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md border-0"
                     >
                         {isProcessing === 'adding' ? (
                             <>
@@ -110,7 +110,7 @@ export default function FriendSuggestionItem({
                     <button
                         onClick={handleDismiss}
                         disabled={isProcessing}
-                        className="flex-1 py-2 px-3 bg-background-main hover:bg-neutral-700 text-text-secondary hover:text-white text-sm font-bold rounded-lg transition-all border border-border-main hover:border-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+                        className="flex-1 py-2 px-3 bg-surface-subtle hover:bg-surface-subtle/80 text-text-secondary hover:text-white text-sm font-bold rounded-lg transition-all border-0 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
                     >
                         {isProcessing === 'dismissing' ? (
                             <>

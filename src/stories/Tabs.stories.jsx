@@ -30,22 +30,22 @@ export const GroupTabs = {
           </Tabs.List>
 
           <Tabs.Panel value="feed">
-            <div className="p-4 bg-surface-main border border-border-main rounded-xl text-sm text-text-secondary">
+            <div className="p-4 bg-surface-main border-0 shadow-sm rounded-xl text-sm text-text-secondary">
               Nội dung bảng tin của nhóm hiển thị tại đây.
             </div>
           </Tabs.Panel>
           <Tabs.Panel value="members">
-            <div className="p-4 bg-surface-main border border-border-main rounded-xl text-sm text-text-secondary">
+            <div className="p-4 bg-surface-main border-0 shadow-sm rounded-xl text-sm text-text-secondary">
               Danh sách 142 thành viên hiển thị tại đây.
             </div>
           </Tabs.Panel>
           <Tabs.Panel value="photos">
-            <div className="p-4 bg-surface-main border border-border-main rounded-xl text-sm text-text-secondary">
+            <div className="p-4 bg-surface-main border-0 shadow-sm rounded-xl text-sm text-text-secondary">
               Kho ảnh và video của nhóm.
             </div>
           </Tabs.Panel>
           <Tabs.Panel value="mod">
-            <div className="p-4 bg-surface-main border border-border-main rounded-xl text-sm text-text-secondary">
+            <div className="p-4 bg-surface-main border-0 shadow-sm rounded-xl text-sm text-text-secondary">
               Hàng đợi kiểm duyệt bài viết (3 bài đang chờ).
             </div>
           </Tabs.Panel>

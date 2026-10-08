@@ -21,10 +21,10 @@ export default function PageLoadingFallback({
         fullScreen ? "min-h-screen w-full" : "h-64 w-full"
       }`}
     >
-      <div className="flex flex-col items-center gap-3 p-6 rounded-2xl border border-border-main bg-surface-main">
+      <div className="flex flex-col items-center gap-3 p-6 rounded-2xl border-0 bg-surface-main shadow-sm">
         {/* Crisp Flat Spinner */}
         <div
-          className="size-8 rounded-full border-2 border-border-strong border-t-primary animate-spin"
+          className="size-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin"
           aria-hidden="true"
         />
         <p className="text-xs font-semibold tracking-wide text-text-secondary">

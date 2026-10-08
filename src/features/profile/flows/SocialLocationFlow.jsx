@@ -57,19 +57,19 @@ export function SocialLocationFlow({ profile, onSave, isLoading = false }) {
               <div
                 key={opt.value}
                 onClick={() => !isLoading && setLookingFor(opt.value)}
-                className={`p-3.5 rounded-2xl border cursor-pointer transition-all ${
+                className={`p-3.5 rounded-2xl border-0 cursor-pointer transition-all ${
                   isSelected
-                    ? "border-primary bg-primary/5"
-                    : "border-border-main bg-surface-main hover:bg-surface-subtle"
+                    ? "bg-primary/10"
+                    : "bg-surface-subtle hover:bg-surface-subtle/80"
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-text-main">{opt.label}</span>
                   <div
-                    className={`size-4 rounded-full border flex items-center justify-center ${
+                    className={`size-4 rounded-full flex items-center justify-center ${
                       isSelected
-                        ? "border-primary bg-primary"
-                        : "border-border-strong bg-surface-main"
+                        ? "bg-primary"
+                        : "bg-surface-main"
                     }`}
                   >
                     {isSelected && <div className="size-1.5 rounded-full bg-white" />}

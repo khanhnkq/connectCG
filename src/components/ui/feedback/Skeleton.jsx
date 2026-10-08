@@ -20,15 +20,15 @@ export function Skeleton({ className = "", rounded = "xl", ...props }) {
 
   return (
     <div
-      className={`animate-pulse bg-surface-subtle border border-border-main/50 ${appliedRounded} ${className}`}
+      className={`animate-pulse bg-surface-subtle ${appliedRounded} ${className}`}
       {...props}
     />
   );
 }
 
 /**
- * Modern Flat EmptyState Primitive
- * Zero shadow, zero blur, friendly guidance
+ * Modern Flat EmptyState Primitive (Border-free)
+ * Zero shadow, zero blur, zero border, friendly guidance
  */
 export function EmptyState({
   icon: Icon,
@@ -41,10 +41,10 @@ export function EmptyState({
 }) {
   return (
     <div
-      className={`w-full py-12 px-6 bg-surface-main border border-border-main rounded-2xl text-center flex flex-col items-center justify-center gap-4 ${className}`}
+      className={`w-full py-12 px-6 bg-surface-main rounded-2xl text-center flex flex-col items-center justify-center gap-4 ${className}`}
     >
       {Icon && (
-        <div className="size-14 rounded-2xl bg-surface-subtle border border-border-main flex items-center justify-center text-text-muted">
+        <div className="size-14 rounded-2xl bg-surface-subtle flex items-center justify-center text-text-muted">
           <Icon className="size-7" />
         </div>
       )}

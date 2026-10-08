@@ -24,7 +24,7 @@ export function DeleteGroupModal({
       cancelText="Hủy bỏ"
       isLoading={isLoading}
     >
-      <div className="p-3 rounded-xl bg-surface-subtle border border-border-main text-xs text-danger font-semibold">
+      <div className="p-3 rounded-xl bg-surface-subtle border-0 text-xs text-danger font-semibold">
         Tất cả dữ liệu, bài viết và danh sách thành viên trong nhóm sẽ bị xóa vĩnh viễn.
       </div>
     </ConfirmDialog>

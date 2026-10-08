@@ -10,14 +10,14 @@ export default function ProfileNavbar({ activeTab, setActiveTab, friendsCount })
     ];
 
     return (
-        <div className="flex gap-1 overflow-x-auto pb-1 border-t border-[#493222] pt-2 scrollbar-hide">
+        <div className="flex gap-1 overflow-x-auto pb-1 pt-2 scrollbar-hide">
             {tabs.map((tab) => (
                 <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`px-6 py-3 font-bold transition-all whitespace-nowrap ${activeTab === tab.id
-                            ? 'text-primary border-b-2 border-primary'
-                            : 'text-text-secondary hover:text-white hover:bg-[#493222]/50 rounded-t-lg'
+                    className={`px-5 py-2.5 font-bold transition-all whitespace-nowrap rounded-xl ${activeTab === tab.id
+                            ? 'bg-surface-subtle text-primary'
+                            : 'text-text-secondary hover:text-text-main hover:bg-surface-subtle/50'
                         }`}
                 >
                     {tab.label}

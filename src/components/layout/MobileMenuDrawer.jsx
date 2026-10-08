@@ -95,10 +95,10 @@ export default function MobileMenuDrawer({ isOpen, onClose }) {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="fixed inset-y-0 right-0 w-[80%] max-w-sm bg-surface-main z-[70] shadow-2xl overflow-y-auto md:hidden border-l border-border-main"
+            className="fixed inset-y-0 right-0 w-[80%] max-w-sm bg-surface-main z-[70] shadow-2xl overflow-y-auto md:hidden border-0"
           >
             {/* Header */}
-            <div className="p-4 border-b border-border-main flex items-center justify-between sticky top-0 bg-surface-main/95 backdrop-blur z-10">
+            <div className="p-4 flex items-center justify-between sticky top-0 bg-surface-main/95 backdrop-blur z-10">
               <h2 className="text-xl font-bold text-text-main">Menu</h2>
               <button
                 onClick={onClose}
@@ -113,14 +113,14 @@ export default function MobileMenuDrawer({ isOpen, onClose }) {
               <Link
                 to={`/dashboard/member/${user?.id}`}
                 onClick={onClose}
-                className="flex items-center gap-3 p-3 rounded-xl bg-background-main border border-border-main shadow-sm active:scale-95 transition-transform"
+                className="flex items-center gap-3 p-3 rounded-xl bg-background-main border-0 shadow-sm active:scale-95 transition-transform"
               >
                 <img
                   src={
                     userProfile?.currentAvatarUrl ||
                     "https://cdn-icons-png.flaticon.com/512/149/149071.png"
                   }
-                  className="w-12 h-12 rounded-full object-cover border border-border-main"
+                  className="w-12 h-12 rounded-full object-cover border-0"
                   alt="Profile"
                 />
                 <div className="flex-1 min-w-0">
@@ -142,7 +142,7 @@ export default function MobileMenuDrawer({ isOpen, onClose }) {
                 </Link>
               )}
 
-              <hr className="border-border-main" />
+              <hr className="border-0 h-px bg-surface-subtle" />
 
               {/* Managed Groups */}
               {managedGroups.length > 0 && (
@@ -183,7 +183,7 @@ export default function MobileMenuDrawer({ isOpen, onClose }) {
                                   group.image ||
                                   "https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=1000"
                                 }
-                                className="w-8 h-8 rounded-lg object-cover border border-border-main"
+                                className="w-8 h-8 rounded-lg object-cover border-0"
                                 alt={group.name}
                               />
                               <span className="text-sm font-medium text-text-main group-hover:text-primary truncate">
@@ -237,7 +237,7 @@ export default function MobileMenuDrawer({ isOpen, onClose }) {
                                   group.image ||
                                   "https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=1000"
                                 }
-                                className="w-8 h-8 rounded-lg object-cover border border-border-main"
+                                className="w-8 h-8 rounded-lg object-cover border-0"
                                 alt={group.name}
                               />
                               <span className="text-sm font-medium text-text-main group-hover:text-primary truncate">
@@ -252,15 +252,15 @@ export default function MobileMenuDrawer({ isOpen, onClose }) {
                 </div>
               )}
 
-              <hr className="border-border-main" />
+              <hr className="border-0 h-px bg-surface-subtle" />
 
               {/* Settings & Create Actions */}
               <div className="space-y-2">
                 <button
                   onClick={handleToggleTheme}
-                  className="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-background-main border border-transparent hover:border-border-main transition-all"
+                  className="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-background-main border-0 transition-all"
                 >
-                  <div className="p-2 rounded-full bg-surface-main border border-border-main">
+                  <div className="p-2 rounded-full bg-surface-main border-0">
                     {isDarkMode ? (
                       <Moon size={20} className="text-blue-400" />
                     ) : (
@@ -274,9 +274,9 @@ export default function MobileMenuDrawer({ isOpen, onClose }) {
 
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-red-500/5 hover:text-red-600 border border-transparent hover:border-red-200 transition-all text-text-secondary"
+                  className="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-red-500/5 hover:text-red-600 border-0 transition-all text-text-secondary"
                 >
-                  <div className="p-2 rounded-full bg-surface-main border border-border-main">
+                  <div className="p-2 rounded-full bg-surface-main border-0">
                     <LogOut size={20} />
                   </div>
                   <span className="font-medium">Đăng xuất</span>
@@ -284,7 +284,7 @@ export default function MobileMenuDrawer({ isOpen, onClose }) {
               </div>
 
               {/* Mobile Ads */}
-              <div className="flex flex-col gap-4 pt-4 border-t border-border-main">
+              <div className="flex flex-col gap-4 pt-4">
                 {AD_BANNERS.map((ad, index) => (
                   <AdBanner
                     key={index}

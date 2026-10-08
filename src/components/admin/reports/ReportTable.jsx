@@ -26,9 +26,9 @@ const ReportTable = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="bg-surface-main rounded-2xl overflow-hidden border border-border-main p-6 space-y-4">
+      <div className="bg-surface-main rounded-2xl overflow-hidden border-0 shadow-sm p-6 space-y-4">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="flex items-center justify-between gap-4 py-2 border-b border-border-main/50 last:border-0">
+          <div key={i} className="flex items-center justify-between gap-4 py-2">
             <Skeleton className="h-6 w-36" />
             <Skeleton className="h-6 w-28" />
             <Skeleton className="h-6 w-44" />
@@ -53,10 +53,10 @@ const ReportTable = ({
   const { currentPage, totalPages } = pagination;
 
   return (
-    <div className="bg-surface-main rounded-2xl overflow-hidden border border-border-main">
+    <div className="bg-surface-main rounded-2xl overflow-hidden border-0 shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full text-left">
-          <thead className="bg-surface-subtle text-[11px] uppercase font-bold text-text-secondary tracking-wider border-b border-border-main">
+          <thead className="bg-surface-subtle text-[11px] uppercase font-bold text-text-secondary tracking-wider border-0">
             <tr>
               <th className="px-6 py-3.5">Mục tiêu</th>
               <th className="px-6 py-3.5">Người báo cáo</th>
@@ -66,7 +66,7 @@ const ReportTable = ({
               <th className="px-6 py-3.5 text-right">Hành động</th>
             </tr>
           </thead>
-          <tbody className="text-sm divide-y divide-border-main">
+          <tbody className="text-sm">
             {reports.map((r) => {
               const isItemDeleted = isDeletedFunc(r);
 
@@ -184,7 +184,7 @@ const ReportTable = ({
 
         {/* PAGINATION CONTROLS */}
         {totalPages > 0 && (
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 bg-surface-subtle/30 px-5 py-3 border-t border-border-main">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 bg-surface-subtle/30 px-5 py-3 border-0">
             <div className="text-text-muted text-xs font-medium">
               Hiển thị trang{" "}
               <span className="text-text-main font-bold">
@@ -201,7 +201,7 @@ const ReportTable = ({
                 disabled={currentPage === 0}
                 onClick={() => fetchReports(currentPage - 1)}
               />
-              <span className="text-xs font-bold text-text-main px-3 py-1 bg-surface-main rounded-xl border border-border-main">
+              <span className="text-xs font-bold text-text-main px-3 py-1 bg-surface-main rounded-xl border-0 shadow-sm">
                 {currentPage + 1}
               </span>
               <IconButton

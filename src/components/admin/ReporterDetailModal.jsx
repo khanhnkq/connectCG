@@ -47,7 +47,7 @@ const ReporterDetailModal = ({ userId, onClose }) => {
       ) : user ? (
         <div className="overflow-hidden">
           {/* Header / Cover */}
-          <div className="relative h-28 w-full bg-surface-subtle border-b border-border-main">
+          <div className="relative h-28 w-full bg-surface-subtle border-0">
             <div
               className="absolute inset-0 bg-cover bg-center"
               style={{
@@ -63,7 +63,7 @@ const ReporterDetailModal = ({ userId, onClose }) => {
           {/* Profile Info - Centered */}
           <div className="px-6 pb-6 -mt-12 relative flex flex-col items-center">
             {/* Avatar */}
-            <div className="size-24 rounded-2xl bg-surface-main p-1 border border-border-main overflow-hidden">
+            <div className="size-24 rounded-2xl bg-surface-main p-1 border-0 shadow-md overflow-hidden">
               <img
                 src={
                   user.currentAvatarUrl ||
@@ -90,13 +90,13 @@ const ReporterDetailModal = ({ userId, onClose }) => {
             </div>
 
             {/* Stats Pill */}
-            <div className="mt-3 bg-surface-subtle rounded-full px-4 py-1.5 flex items-center gap-2 text-xs font-bold text-text-secondary border border-border-main">
+            <div className="mt-3 bg-surface-subtle rounded-full px-4 py-1.5 flex items-center gap-2 text-xs font-bold text-text-secondary border-0">
               <User size={14} className="text-primary" />
               <span>{user.friendsCount || 0} bạn bè</span>
             </div>
 
             {/* Info Details Box */}
-            <div className="w-full bg-surface-subtle/50 rounded-xl mt-6 px-5 py-4 border border-border-main">
+            <div className="w-full bg-surface-subtle/50 rounded-xl mt-6 px-5 py-4 border-0">
               <div className="flex items-center gap-2 mb-4">
                 <User size={16} className="text-primary" />
                 <h4 className="text-text-main font-bold text-sm">
@@ -172,7 +172,7 @@ const ReporterDetailModal = ({ userId, onClose }) => {
 };
 
 const InfoRow = ({ label, value }) => (
-  <div className="flex justify-between items-center text-xs border-b border-border-main/50 last:border-0 pb-2.5 last:pb-0">
+  <div className="flex justify-between items-center text-xs pb-2.5 last:pb-0">
     <span className="text-text-muted font-medium">{label}</span>
     <span className="text-text-main font-semibold">{value}</span>
   </div>

@@ -12,10 +12,10 @@ const InfoItem = ({ icon: Icon, label, value, delay }) => {
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay }}
-      className="group relative flex items-center justify-between p-4 rounded-2xl bg-surface-main/40 hover:bg-primary/5 border border-border-main/50 hover:border-primary/20 transition-all duration-300"
+      className="group relative flex items-center justify-between p-4 rounded-2xl bg-surface-subtle hover:bg-surface-subtle/80 border-0 transition-all duration-300"
     >
       <div className="flex items-center gap-4">
-        <div className="size-10 rounded-xl bg-background-main border border-border-main flex items-center justify-center group-hover:scale-110 group-hover:bg-primary/10 transition-all duration-300">
+        <div className="size-10 rounded-xl bg-surface-main flex items-center justify-center group-hover:scale-110 group-hover:bg-primary/10 transition-all duration-300 border-0">
           <Icon
             className="text-text-secondary group-hover:text-primary transition-colors"
             size={20}
@@ -25,7 +25,7 @@ const InfoItem = ({ icon: Icon, label, value, delay }) => {
           {label}
         </span>
       </div>
-      <span className="text-text-main font-bold text-sm bg-background-main/50 px-3 py-1.5 rounded-lg border border-border-main/30 shadow-sm group-hover:border-primary/10 transition-all">
+      <span className="text-text-main font-bold text-sm bg-surface-main px-3 py-1.5 rounded-lg border-0 shadow-sm transition-all">
         {value}
       </span>
     </motion.div>
@@ -95,7 +95,7 @@ const ProfileAbout = ({ profile, isOwner }) => {
       <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 size-64 bg-primary/5 blur-[100px] rounded-full pointer-events-none" />
       <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 size-64 bg-orange-500/5 blur-[100px] rounded-full pointer-events-none" />
 
-      <div className="bg-surface-main/80 backdrop-blur-xl rounded-3xl border border-border-main p-6 md:p-8 shadow-xl relative z-10">
+      <div className="bg-surface-main/80 backdrop-blur-xl rounded-3xl border-0 p-6 md:p-8 shadow-xl relative z-10">
         <div className="flex justify-between items-center mb-10">
           <div className="flex flex-col gap-1">
             <h3 className="text-text-main font-black text-2xl flex items-center gap-3 tracking-tight">

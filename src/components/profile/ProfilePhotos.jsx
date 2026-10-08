@@ -3,7 +3,7 @@ import { MagnifyingGlassPlus as ZoomIn, Trash as Trash2 } from "@phosphor-icons/
 
 const ProfilePhotos = ({ profile, isOwner }) => {
   return (
-    <div className="bg-surface-main rounded-2xl border border-border-main p-6 shadow-sm">
+    <div className="bg-surface-main rounded-2xl border-0 p-6 shadow-sm">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-text-main font-bold text-xl flex items-center gap-2">
           {isOwner ? "Ảnh của bạn" : "Bộ sưu tập ảnh"}

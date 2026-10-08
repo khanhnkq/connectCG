@@ -22,10 +22,10 @@ export default function PostHeader({
   const isOwner = currentUserId && currentUserId === author?.id;
 
   return (
-    <div className="p-5 md:p-6 flex justify-between items-start border-b border-border-main/40 mb-3">
+    <div className="p-5 md:p-6 flex justify-between items-start mb-1">
       <div className="flex gap-3.5 items-center">
         <Link to={`/dashboard/member/${author?.id}`} className="shrink-0">
-          <Avatar src={author?.avatar} name={author?.name} size="md" className="ring-1 ring-border-main hover:ring-primary transition-all" />
+          <Avatar src={author?.avatar} name={author?.name} size="md" className="hover:ring-2 hover:ring-primary transition-all" />
         </Link>
         <div className="flex flex-col justify-center min-w-0">
           <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 min-w-0">
@@ -41,7 +41,7 @@ export default function PostHeader({
               </div>
             )}
             {author?.isSystem && (
-              <span className="bg-primary/10 text-primary text-[10px] font-black px-1.5 py-0.5 rounded-full border border-primary/20 tracking-tight uppercase flex items-center gap-0.5">
+              <span className="bg-primary/10 text-primary text-[10px] font-black px-1.5 py-0.5 rounded-full tracking-tight uppercase flex items-center gap-0.5 border-0">
                 <CheckCircle size={10} weight="fill" /> Chính thức
               </span>
             )}
@@ -51,7 +51,7 @@ export default function PostHeader({
             <span>•</span>
             {visibility === "FRIENDS" ? <Users size={13} /> : visibility === "PRIVATE" ? <Lock size={13} /> : <Globe size={13} />}
             {aiStatus && aiStatus !== "SAFE" && aiStatus !== "NOT_CHECKED" && (
-              <span className="ml-1.5 px-2 py-0.5 bg-amber-500/10 text-amber-600 rounded-full text-[10px] font-bold border border-amber-500/20 flex items-center gap-1">
+              <span className="ml-1.5 px-2 py-0.5 bg-amber-500/10 text-amber-600 rounded-full text-[10px] font-bold flex items-center gap-1 border-0">
                 <Warning size={10} /> Đánh dấu bởi AI
               </span>
             )}
@@ -62,7 +62,7 @@ export default function PostHeader({
       <div className="relative" ref={menuRef}>
         <IconButton icon={DotsThree} size="sm" variant="ghost" onClick={() => setShowMenu((prev) => !prev)} aria-label="Tác vụ bài viết" />
         {showMenu && (
-          <div className="absolute right-0 top-full mt-1 w-48 bg-surface-main rounded-xl border border-border-main z-20 overflow-hidden py-1">
+          <div className="absolute right-0 top-full mt-1 w-48 bg-surface-main rounded-xl z-20 overflow-hidden py-1 border-0 shadow-lg">
             {isOwner && (
               <>
                 <button type="button" onClick={() => { onEdit?.(); setShowMenu(false); }} className="w-full text-left px-4 py-2.5 text-sm text-text-main hover:bg-surface-subtle flex items-center gap-2.5 transition-colors cursor-pointer">

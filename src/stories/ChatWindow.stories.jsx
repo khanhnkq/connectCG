@@ -9,7 +9,7 @@ export default {
   decorators: [
     (Story) => (
       <MockAppProviders>
-        <div className="w-full max-w-4xl h-[650px] border border-border-main rounded-2xl overflow-hidden bg-background-main flex">
+        <div className="w-full max-w-4xl h-[650px] border-0 shadow-xl rounded-2xl overflow-hidden bg-background-main flex">
           <Story />
         </div>
       </MockAppProviders>

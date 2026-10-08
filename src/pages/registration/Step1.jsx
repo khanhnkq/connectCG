@@ -85,7 +85,7 @@ export default function Step1() {
 
       {isRegisterSuccess ? (
         <Card className="p-6 text-center space-y-5">
-          <div className="size-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto text-primary">
+          <div className="size-16 rounded-2xl bg-primary/10 border-0 flex items-center justify-center mx-auto text-primary">
             <Envelope size={32} />
           </div>
 
@@ -207,7 +207,7 @@ export default function Step1() {
                       onChange={(e) =>
                         setFieldValue("acceptTerms", e.target.checked)
                       }
-                      className="mt-0.5 size-4 rounded text-primary focus:ring-primary border-border-main accent-primary cursor-pointer"
+                      className="mt-0.5 size-4 rounded text-primary focus:ring-primary border-0 bg-surface-subtle accent-primary cursor-pointer"
                       disabled={isSubmitting}
                     />
                     <span className="text-xs text-text-secondary leading-relaxed">
@@ -246,7 +246,7 @@ export default function Step1() {
           {/* Phân tách */}
           <div className="relative my-5">
             <div aria-hidden="true" className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border-main" />
+              <div className="w-full h-px bg-surface-subtle" />
             </div>
             <div className="relative flex justify-center text-xs">
               <span className="bg-background-main px-3 text-text-muted font-medium">

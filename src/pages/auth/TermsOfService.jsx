@@ -8,7 +8,7 @@ export default function TermsOfService() {
     <div className="min-h-screen bg-background-main text-text-main py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto space-y-8">
         {/* Top Header */}
-        <div className="flex justify-between items-center pb-6 border-b border-border-main">
+        <div className="flex justify-between items-center pb-6 border-0">
           <Link
             to="/registration/step-1"
             className="inline-flex items-center gap-2 text-sm font-semibold text-text-muted hover:text-primary transition-colors"
@@ -39,7 +39,7 @@ export default function TermsOfService() {
         </div>
 
         {/* Content Card */}
-        <Card className="p-6 sm:p-8 space-y-6">
+        <Card className="p-6 sm:p-8 space-y-6 border-0 shadow-sm">
           <section className="space-y-2">
             <h2 className="text-base sm:text-lg font-bold text-primary">
               1. Chấp nhận điều khoản
@@ -51,7 +51,7 @@ export default function TermsOfService() {
             </p>
           </section>
 
-          <div className="border-t border-border-main" />
+          <div className="h-px bg-surface-subtle" />
 
           <section className="space-y-2">
             <h2 className="text-base sm:text-lg font-bold text-primary">
@@ -64,7 +64,7 @@ export default function TermsOfService() {
             </p>
           </section>
 
-          <div className="border-t border-border-main" />
+          <div className="h-px bg-surface-subtle" />
 
           <section className="space-y-2">
             <h2 className="text-base sm:text-lg font-bold text-primary">
@@ -77,7 +77,7 @@ export default function TermsOfService() {
             </p>
           </section>
 
-          <div className="border-t border-border-main" />
+          <div className="h-px bg-surface-subtle" />
 
           <section className="space-y-2">
             <h2 className="text-base sm:text-lg font-bold text-primary">
@@ -92,7 +92,7 @@ export default function TermsOfService() {
         </Card>
 
         {/* Footer */}
-        <footer className="pt-6 border-t border-border-main text-center text-text-muted text-xs">
+        <footer className="pt-6 border-0 text-center text-text-muted text-xs">
           <p>© 2026 Connect Social Team. Bảo lưu mọi quyền.</p>
         </footer>
       </div>

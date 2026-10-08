@@ -21,8 +21,8 @@ const NewChatModal = ({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-surface-main w-full max-w-md rounded-2xl border border-border-main shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-        <div className="p-5 border-b border-border-main flex items-center justify-between">
+      <div className="bg-surface-main w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 border-0">
+        <div className="p-5 flex items-center justify-between">
           <h2 className="text-lg font-bold text-text-main">Tin nhắn mới</h2>
           <IconButton
             icon={X}
@@ -50,10 +50,10 @@ const NewChatModal = ({
                 <div
                   key={friend.id}
                   onClick={() => onToggleMember(friend)}
-                  className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer group ${
+                  className={`flex items-center gap-3 p-3 rounded-xl transition-all cursor-pointer group ${
                     selectedMembers.some((m) => m.id === friend.id)
-                      ? "bg-primary/10 border-primary/50 shadow-sm"
-                      : "bg-surface-main border-border-main hover:bg-background-main hover:border-primary/30"
+                      ? "bg-primary/10 shadow-sm"
+                      : "bg-surface-subtle hover:bg-surface-subtle/80"
                   }`}
                 >
                   <div className="relative shrink-0">
@@ -63,7 +63,7 @@ const NewChatModal = ({
                       size="md"
                     />
                     {selectedMembers.some((m) => m.id === friend.id) && (
-                      <div className="absolute -top-1 -right-1 size-4.5 bg-primary rounded-full flex items-center justify-center border-2 border-surface-main animate-in zoom-in text-white">
+                      <div className="absolute -top-1 -right-1 size-4.5 bg-primary rounded-full flex items-center justify-center ring-2 ring-surface-main animate-in zoom-in text-white">
                         <X size={10} weight="bold" />
                       </div>
                     )}
@@ -100,12 +100,12 @@ const NewChatModal = ({
           </div>
 
           {selectedMembers.length > 0 && (
-            <div className="mt-5 pt-4 border-t border-border-main space-y-4 animate-in slide-in-from-bottom-2 duration-200">
+            <div className="mt-5 pt-4 space-y-4 animate-in slide-in-from-bottom-2 duration-200">
               <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto p-1">
                 {selectedMembers.map((m) => (
                   <div
                     key={m.id}
-                    className="flex items-center gap-2 bg-background-main pl-1 pr-2 py-1 rounded-full border border-primary/20"
+                    className="flex items-center gap-2 bg-surface-subtle pl-1 pr-2 py-1 rounded-full border-0"
                   >
                     <Avatar
                       src={m.avatarUrl}

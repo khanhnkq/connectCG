@@ -164,7 +164,7 @@ export default function Login() {
       {/* Phân tách */}
       <div className="relative my-6">
         <div aria-hidden="true" className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border-main" />
+          <div className="w-full h-px bg-surface-subtle" />
         </div>
         <div className="relative flex justify-center text-xs">
           <span className="bg-background-main px-3 text-text-muted font-medium">

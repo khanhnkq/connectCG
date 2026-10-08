@@ -55,8 +55,8 @@ export default function InviteMemberModal({ isOpen, onClose, onInvite, existingM
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="bg-surface-main border border-border-main rounded-[2rem] w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        <div className="p-6 border-b border-border-main">
+      <div className="bg-surface-main border-0 rounded-[2rem] w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="p-6 border-0">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-bold text-text-main">Mời bạn bè</h3>
             <button
@@ -76,7 +76,7 @@ export default function InviteMemberModal({ isOpen, onClose, onInvite, existingM
               placeholder="Tìm kiếm bạn bè theo tên..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-background-main border border-border-main rounded-xl py-3 pl-12 pr-4 text-text-main focus:outline-none focus:border-primary/50 transition-all"
+              className="w-full bg-background-main border-0 rounded-xl py-3 pl-12 pr-4 text-text-main focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
             />
           </div>
         </div>
@@ -95,9 +95,9 @@ export default function InviteMemberModal({ isOpen, onClose, onInvite, existingM
               <div
                 key={friend.id}
                 onClick={() => toggleSelection(friend.id)}
-                className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all border ${selectedFriends.includes(friend.id)
-                  ? "bg-primary/10 border-primary/50"
-                  : "hover:bg-background-main border-transparent"
+                className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all border-0 ${selectedFriends.includes(friend.id)
+                  ? "bg-primary/10"
+                  : "hover:bg-background-main"
                   }`}
               >
                 <div className="flex items-center gap-3">
@@ -121,13 +121,13 @@ export default function InviteMemberModal({ isOpen, onClose, onInvite, existingM
                   </div>
                 </div>
                 <div
-                  className={`size-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedFriends.includes(friend.id)
-                    ? "bg-primary border-primary"
-                    : "border-text-secondary"
+                  className={`size-6 rounded-full flex items-center justify-center transition-all ${selectedFriends.includes(friend.id)
+                    ? "bg-primary text-[#231810]"
+                    : "bg-surface-subtle"
                     }`}
                 >
                   {selectedFriends.includes(friend.id) && (
-                    <Check size={14} className="text-text-main font-bold" />
+                    <Check size={14} className="font-bold" />
                   )}
                 </div>
               </div>
@@ -135,7 +135,7 @@ export default function InviteMemberModal({ isOpen, onClose, onInvite, existingM
           )}
         </div>
 
-        <div className="p-6 border-t border-border-main bg-surface-main">
+        <div className="p-6 border-0 bg-surface-main">
           <button
             onClick={handleInvite}
             disabled={selectedFriends.length === 0}

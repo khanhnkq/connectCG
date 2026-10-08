@@ -17,7 +17,7 @@ export default {
   decorators: [
     (Story) => (
       <MockAppProviders initialEntries={["/dashboard/feed"]}>
-        <div className="w-full min-h-[160px] bg-background-main border border-dashed border-border-main rounded-2xl overflow-hidden">
+        <div className="w-full min-h-[160px] bg-background-main border-0 shadow-lg rounded-2xl overflow-hidden">
           <Story />
         </div>
       </MockAppProviders>

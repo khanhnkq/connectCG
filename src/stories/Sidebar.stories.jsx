@@ -17,7 +17,7 @@ export default {
   decorators: [
     (Story) => (
       <MockAppProviders initialEntries={["/dashboard/feed"]}>
-        <div className="h-[640px] flex bg-background-main border border-dashed border-border-main rounded-2xl overflow-hidden p-2">
+        <div className="h-[640px] flex bg-background-main border-0 shadow-lg rounded-2xl overflow-hidden p-2">
           <Story />
           <div className="flex-1 p-6 text-text-muted flex items-center justify-center text-sm font-medium">
             Khu vực nội dung trang chính (Main Content Area)

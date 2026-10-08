@@ -54,20 +54,20 @@ export default function FriendRequestItem({
         <>
             <div
                 onClick={onClick}
-                className={`p-4 rounded-xl cursor-pointer relative group flex flex-col gap-3 transition-all duration-200 ${isActive
-                    ? 'bg-primary/10 border-2 border-primary shadow-lg shadow-primary/10'
-                    : 'bg-surface-main/50 hover:bg-surface-main border-2 border-transparent hover:border-border-main'
+                className={`p-4 rounded-xl cursor-pointer relative group flex flex-col gap-3 transition-all duration-200 border-0 ${isActive
+                    ? 'bg-primary/10 shadow-lg shadow-primary/10'
+                    : 'bg-surface-main/50 hover:bg-surface-main'
                     }`}
             >
                 {/* Header */}
                 <div className="flex gap-3 items-center">
                     <div className="relative shrink-0">
                         <div
-                            className="size-14 rounded-xl bg-cover bg-center border-2 border-border-main group-hover:border-primary/50 transition-all"
+                            className="size-14 rounded-xl bg-cover bg-center transition-all"
                             style={{ backgroundImage: `url("${request.senderAvatarUrl || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}")` }}
                         ></div>
                         {/* Badge */}
-                        <div className="absolute -bottom-1 -right-1 size-6 bg-primary rounded-full flex items-center justify-center border-2 border-surface-main shadow-lg">
+                        <div className="absolute -bottom-1 -right-1 size-6 bg-primary rounded-full flex items-center justify-center ring-2 ring-surface-main shadow-lg">
                             <UserPlus size={12} weight="bold" className="text-white" />
                         </div>
                     </div>
@@ -89,7 +89,7 @@ export default function FriendRequestItem({
                     <button
                         onClick={handleAccept}
                         disabled={isProcessing}
-                        className="flex-1 py-2 px-3 bg-primary hover:bg-orange-600 text-white text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+                        className="flex-1 py-2 px-3 bg-primary hover:bg-orange-600 text-white text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md border-0"
                     >
                         {isProcessing === 'accepting' ? (
                             <>
@@ -106,7 +106,7 @@ export default function FriendRequestItem({
                     <button
                         onClick={handleReject}
                         disabled={isProcessing}
-                        className="flex-1 py-2 px-3 bg-background-main hover:bg-red-500/20 hover:text-red-500 text-text-secondary text-sm font-bold rounded-lg transition-all border border-border-main hover:border-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+                        className="flex-1 py-2 px-3 bg-surface-subtle hover:bg-red-500/20 hover:text-red-500 text-text-secondary text-sm font-bold rounded-lg transition-all border-0 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
                     >
                         {isProcessing === 'rejecting' ? (
                             <>

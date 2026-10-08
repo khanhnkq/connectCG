@@ -22,9 +22,9 @@ const ChatSidebar = React.memo(({
     return (
         <div
             className={`${activeRoom ? "hidden md:flex" : "flex"
-                } w-full md:w-80 lg:w-96 flex-col border-r border-border-main bg-background-main z-10 shrink-0 transition-colors duration-300`}
+                } w-full md:w-80 lg:w-96 flex-col bg-background-main z-10 shrink-0 transition-colors duration-300`}
         >
-            <div className="p-5 border-b border-border-main flex justify-between items-center bg-background-main/95 backdrop-blur-md sticky top-0 z-10">
+            <div className="p-5 flex justify-between items-center bg-background-main/95 backdrop-blur-md sticky top-0 z-10">
                 <h2 className="text-xl font-extrabold text-text-main tracking-tight">
                     Tin nhắn
                 </h2>
@@ -95,8 +95,8 @@ const ChatSidebar = React.memo(({
                             key={conv.id}
                             onClick={() => onSelectRoom(conv)}
                             className={`p-3 rounded-xl cursor-pointer relative group flex gap-3 items-center transition-all ${activeRoom?.id === conv.id
-                                ? "bg-surface-main border border-primary/20 shadow-sm"
-                                : "hover:bg-surface-main/30 border border-transparent"
+                                ? "bg-surface-main shadow-sm"
+                                : "hover:bg-surface-main/30"
                                 }`}
                         >
                             <div className="relative shrink-0">

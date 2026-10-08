@@ -39,9 +39,7 @@ export const GroupCard = ({
 
   return (
     <Card
-      className={`rounded-2xl border bg-surface-main overflow-hidden flex flex-col group h-full transition-colors ${
-        isAdmin ? "border-primary" : "border-border-main hover:border-primary"
-      }`}
+      className="rounded-2xl border-0 bg-surface-main overflow-hidden flex flex-col group h-full transition-all shadow-sm hover:shadow-md"
     >
       {/* Banner / Cover */}
       <div className="relative h-44 overflow-hidden select-none bg-surface-subtle">
@@ -127,7 +125,7 @@ export const GroupCard = ({
           {group.description || "Chưa có mô tả cho nhóm này."}
         </p>
 
-        <div className="mt-auto flex items-center gap-2.5 relative z-10 pt-2 border-t border-border-main/50">
+        <div className="mt-auto flex items-center gap-2.5 relative z-10 pt-2">
           {activeTab === "invites" ? (
             <>
               <Button
@@ -139,9 +137,9 @@ export const GroupCard = ({
                 Chấp nhận
               </Button>
               <Button
-                variant="outline"
+                variant="secondary"
                 size="md"
-                className="flex-1 rounded-xl text-danger hover:bg-danger hover:text-white border-border-main"
+                className="flex-1 rounded-xl text-danger hover:bg-danger hover:text-white border-0"
                 onClick={() => onDecline?.(group.id)}
               >
                 Từ chối
@@ -149,9 +147,9 @@ export const GroupCard = ({
             </>
           ) : group.currentUserStatus === "REQUESTED" ? (
             <Button
-              variant="outline"
+              variant="secondary"
               size="md"
-              className="flex-1 rounded-xl text-primary border-primary"
+              className="flex-1 rounded-xl text-primary border-0"
               onClick={() => onCancelRequest?.(group.id)}
             >
               Hủy yêu cầu
@@ -187,11 +185,11 @@ export const GroupCard = ({
 
           {isAdmin && (
             <Button
-              variant="outline"
+              variant="secondary"
               size="md"
               icon={Gear}
               aria-label="Cài đặt nhóm"
-              className="rounded-xl shrink-0"
+              className="rounded-xl shrink-0 border-0"
               onClick={() => onNavigate?.(`/dashboard/groups/edit/${group.id}`)}
             />
           )}

@@ -274,12 +274,12 @@ export default function AdvancedMemberSearch() {
 
             {/* Mobile Filter Toggle (Optional - can be improved with a drawer later) */}
             <div className="lg:hidden w-full mb-4">
-              <details className="group bg-surface-main rounded-xl border border-border-main p-4">
+              <details className="group bg-surface-main rounded-xl border-0 p-4 shadow-sm">
                 <summary className="font-bold text-text-main list-none cursor-pointer flex justify-between items-center">
                   <span>Bộ lọc tìm kiếm</span>
                   <ChevronDown className="group-open:rotate-180 transition-transform" />
                 </summary>
-                <div className="mt-4 pt-4 border-t border-border-main">
+                <div className="mt-4 pt-4 border-0">
                   <MemberFilterSidebar
                     keyword={keyword}
                     setKeyword={setKeyword}
@@ -318,7 +318,7 @@ export default function AdvancedMemberSearch() {
                   <Loader2 className="animate-spin text-primary h-8 w-8" />
                 </div>
               ) : members.length === 0 ? (
-                <div className="bg-surface-main rounded-2xl border border-border-main p-12 text-center">
+                <div className="bg-surface-main rounded-2xl border-0 p-12 text-center shadow-sm">
                   <div className="mx-auto w-16 h-16 bg-background-main rounded-full flex items-center justify-center mb-4">
                     <Search className="text-text-secondary h-8 w-8" />
                   </div>
@@ -340,7 +340,7 @@ export default function AdvancedMemberSearch() {
                   {members.map((member) => (
                     <article
                       key={member.userId}
-                      className="flex items-center gap-4 p-4 bg-surface-main rounded-xl border border-border-main hover:border-border-main/80 transition-all shadow-sm">
+                      className="flex items-center gap-4 p-4 bg-surface-main rounded-xl border-0 hover:bg-surface-subtle transition-all shadow-sm">
                       {/* Avatar */}
                       <Link
                         to={`/dashboard/member/${member.userId}`}
@@ -351,10 +351,10 @@ export default function AdvancedMemberSearch() {
                             "https://cdn-icons-png.flaticon.com/512/149/149071.png"
                           }
                           alt={member.fullName}
-                          className="w-20 h-20 rounded-full object-cover border border-border-main"
+                          className="w-20 h-20 rounded-full object-cover border-0"
                         />
                         {member.isFriend && (
-                          <div className="absolute bottom-0 right-0 bg-green-500 rounded-full p-1 border-2 border-surface-main">
+                          <div className="absolute bottom-0 right-0 bg-green-500 rounded-full p-1 border-0">
                             <Check
                               size={10}
                               className="text-white"
@@ -391,7 +391,7 @@ export default function AdvancedMemberSearch() {
                         {/* Always show Message button */}
                         <button
                           onClick={() => handleStartChat(member.userId)}
-                          className="px-4 py-2 rounded-lg bg-border-main hover:bg-border-main/80 text-text-main font-semibold text-sm transition-colors flex items-center gap-2">
+                          className="px-4 py-2 rounded-lg bg-surface-subtle hover:bg-surface-subtle/80 text-text-main font-semibold text-sm transition-colors flex items-center gap-2 border-0">
                           <ChatCircleDots size={18} />
                           Nhắn tin
                         </button>
@@ -424,7 +424,7 @@ export default function AdvancedMemberSearch() {
                                   )
                                 }
                                 disabled={sendingRequests[member.userId]}
-                                className="px-4 py-2 rounded-lg bg-background-main text-text-main font-semibold text-sm hover:bg-border-main/50 transition-colors border border-border-main">
+                                className="px-4 py-2 rounded-lg bg-surface-subtle text-text-main font-semibold text-sm hover:bg-surface-subtle/80 transition-colors border-0">
                                 Xóa
                               </button>
                             </div>
@@ -434,7 +434,7 @@ export default function AdvancedMemberSearch() {
                                 confirmCancelRequest(member.userId)
                               }
                               disabled={sendingRequests[member.userId]}
-                              className="px-4 py-2 rounded-lg bg-border-main text-text-main font-semibold text-sm hover:bg-border-main/80 transition-colors">
+                              className="px-4 py-2 rounded-lg bg-surface-subtle text-text-main font-semibold text-sm hover:bg-surface-subtle/80 transition-colors border-0">
                               {sendingRequests[member.userId]
                                 ? "Đang xử lý..."
                                 : "Hủy lời mời"}
@@ -464,7 +464,7 @@ export default function AdvancedMemberSearch() {
                   <button
                     onClick={handleLoadMore}
                     disabled={loading}
-                    className="px-8 py-3 rounded-full bg-surface-main hover:bg-background-main text-text-main font-bold border border-border-main transition-all shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                    className="px-8 py-3 rounded-full bg-surface-main hover:bg-surface-subtle text-text-main font-bold border-0 transition-all shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
                     {loading && <Loader2 className="animate-spin h-4 w-4" />}
                     {loading ? "Đang tải..." : "Xem thêm kết quả"}
                   </button>

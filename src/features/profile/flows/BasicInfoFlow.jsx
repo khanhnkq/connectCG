@@ -93,10 +93,10 @@ export function BasicInfoFlow({ profile, onSave, isLoading = false }) {
                   type="button"
                   disabled={isLoading}
                   onClick={() => formik.setFieldValue("gender", g.value)}
-                  className={`py-2 text-xs font-semibold rounded-xl border transition-colors ${
+                  className={`py-2 text-xs font-semibold rounded-xl border-0 transition-colors ${
                     isSelected
-                      ? "border-primary bg-primary text-white"
-                      : "border-border-main bg-surface-main text-text-main hover:bg-surface-subtle"
+                      ? "bg-primary text-white"
+                      : "bg-surface-subtle text-text-main hover:bg-surface-subtle/80"
                   }`}
                 >
                   {g.label}
@@ -122,10 +122,10 @@ export function BasicInfoFlow({ profile, onSave, isLoading = false }) {
                 type="button"
                 disabled={isLoading}
                 onClick={() => formik.setFieldValue("maritalStatus", opt.value)}
-                className={`py-2 px-3 text-xs font-semibold rounded-xl border transition-colors ${
+                className={`py-2 px-3 text-xs font-semibold rounded-xl border-0 transition-colors ${
                   isSelected
-                    ? "border-primary bg-primary text-white"
-                    : "border-border-main bg-surface-main text-text-main hover:bg-surface-subtle"
+                    ? "bg-primary text-white"
+                    : "bg-surface-subtle text-text-main hover:bg-surface-subtle/80"
                 }`}
               >
                 {opt.label}

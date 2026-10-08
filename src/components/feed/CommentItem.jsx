@@ -45,7 +45,7 @@ export default function CommentItem({ comment, onReply, onDelete, depth = 0 }) {
       <div className="flex gap-2">
         {/* Avatar */}
         <div
-          className="w-8 h-8 rounded-full bg-cover bg-center flex-shrink-0 border border-border-main"
+          className="w-8 h-8 rounded-full bg-cover bg-center flex-shrink-0"
           style={{ backgroundImage: `url("${comment.authorAvatar}")` }}
         />
 
@@ -60,7 +60,7 @@ export default function CommentItem({ comment, onReply, onDelete, depth = 0 }) {
               {comment.content}
             </p>
             {comment.imageUrl && (
-              <div className="mt-2 rounded-lg overflow-hidden border border-border-main max-w-[250px]">
+              <div className="mt-2 rounded-lg overflow-hidden max-w-[250px]">
                 <img
                   src={comment.imageUrl}
                   alt="comment attachment"
@@ -107,7 +107,7 @@ export default function CommentItem({ comment, onReply, onDelete, depth = 0 }) {
           {isReplying && (
             <div className="mt-2 flex gap-2 items-center">
               <div
-                className="w-6 h-6 rounded-full bg-cover bg-center flex-shrink-0 border border-border-main"
+                className="w-6 h-6 rounded-full bg-cover bg-center flex-shrink-0"
                 style={{
                   backgroundImage: `url("${
                     user?.currentAvatarUrl ||

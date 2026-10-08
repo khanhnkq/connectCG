@@ -78,7 +78,7 @@ const GroupInspectorModal = ({
       ) : (
         <div
           className={`bg-surface-main w-full ${hasReports ? "max-w-[75rem]" : "max-w-5xl"
-            } h-[85vh] rounded-2xl border border-border-main overflow-hidden flex animate-in zoom-in-95 duration-200`}
+            } h-[85vh] rounded-2xl border-0 shadow-2xl overflow-hidden flex animate-in zoom-in-95 duration-200`}
         >
           {/* MAIN CONTENT AREA */}
           <div className="flex-1 flex flex-col min-w-0">
@@ -97,7 +97,7 @@ const GroupInspectorModal = ({
               {!hasReports && (
                 <button
                   onClick={onClose}
-                  className="absolute top-6 right-6 size-10 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-all border border-white/20 z-10"
+                  className="absolute top-6 right-6 size-10 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-all border-0 z-10"
                 >
                   <X size={20} />
                 </button>
@@ -110,9 +110,9 @@ const GroupInspectorModal = ({
                       {inspectorData.group?.name}
                     </h2>
                     <span
-                      className={`px-3 py-1 text-xs font-black uppercase rounded-lg border ${inspectorData.group?.privacy === "PUBLIC"
-                          ? "bg-green-500/20 text-green-400 border-green-500/20"
-                          : "bg-orange-500/20 text-orange-400 border-orange-500/20"
+                      className={`px-3 py-1 text-xs font-black uppercase rounded-lg border-0 ${inspectorData.group?.privacy === "PUBLIC"
+                          ? "bg-green-500/20 text-green-400"
+                          : "bg-orange-500/20 text-orange-400"
                         }`}
                     >
                       {inspectorData.group?.privacy === "PUBLIC"
@@ -129,7 +129,7 @@ const GroupInspectorModal = ({
 
             {/* Tabs & Content */}
             <div className="flex-1 flex flex-col overflow-hidden">
-              <div className="px-8 border-b border-border/50 flex gap-6 shrink-0">
+              <div className="px-8 border-0 flex gap-2 shrink-0 bg-surface-subtle/30 py-2">
                 {[
                   { id: "overview", label: "Tổng quan" },
                   { id: "members", label: "Thành viên" },
@@ -143,9 +143,9 @@ const GroupInspectorModal = ({
                         activeTab: tab.id,
                       }))
                     }
-                    className={`py-4 text-sm font-bold uppercase tracking-wider border-b-2 transition-all ${inspectorData.activeTab === tab.id
-                        ? "text-primary border-primary"
-                        : "text-text-muted border-transparent hover:text-text-main"
+                    className={`px-4 py-2 text-sm font-bold uppercase tracking-wider rounded-xl transition-all border-0 ${inspectorData.activeTab === tab.id
+                        ? "bg-surface-main text-primary shadow-sm"
+                        : "text-text-muted hover:text-text-main hover:bg-surface-main/50"
                       }`}
                   >
                     {tab.label}
@@ -159,12 +159,12 @@ const GroupInspectorModal = ({
                     className={`grid grid-cols-1 ${hasReports ? "" : "md:grid-cols-2"
                       } gap-6`}
                   >
-                    <div className="bg-surface-main p-6 rounded-3xl space-y-4 shadow-sm">
+                    <div className="bg-surface-main p-6 rounded-3xl space-y-4 shadow-sm border-0">
                       <h3 className="text-xl font-bold text-text-main">
                         Thông tin chung
                       </h3>
                       <div className="space-y-4">
-                        <div className="flex justify-between py-3 border-b border-border-main/50">
+                        <div className="flex justify-between py-3">
                           <span className="text-text-secondary font-medium text-sm">
                             Chủ sở hữu
                           </span>
@@ -176,7 +176,7 @@ const GroupInspectorModal = ({
                               "Không rõ"}
                           </span>
                         </div>
-                        <div className="flex justify-between py-3 border-b border-border-main/50">
+                        <div className="flex justify-between py-3">
                           <span className="text-text-secondary font-medium text-sm">
                             Ngày tạo
                           </span>
@@ -188,7 +188,7 @@ const GroupInspectorModal = ({
                               : "N/A"}
                           </span>
                         </div>
-                        <div className="flex justify-between py-3 border-b border-border-main/50">
+                        <div className="flex justify-between py-3">
                           <span className="text-text-secondary font-medium text-sm">
                             Số lượng thành viên
                           </span>
@@ -196,7 +196,7 @@ const GroupInspectorModal = ({
                             {inspectorData.members.length}
                           </span>
                         </div>
-                        <div className="flex justify-between py-3 border-b border-border-main/50">
+                        <div className="flex justify-between py-3">
                           <span className="text-text-secondary font-medium text-sm">
                             Số lượng bài viết
                           </span>
@@ -208,7 +208,7 @@ const GroupInspectorModal = ({
                     </div>
 
                     {!hasReports && (
-                      <div className="bg-surface-main p-6 rounded-3xl space-y-4 flex flex-col items-center justify-center text-center shadow-sm">
+                      <div className="bg-surface-main p-6 rounded-3xl space-y-4 flex flex-col items-center justify-center text-center shadow-sm border-0">
                         <div className="size-20 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
                           <ShieldCheck size={40} />
                         </div>
@@ -223,7 +223,7 @@ const GroupInspectorModal = ({
                             onClick={() =>
                               onAction && onAction(inspectorData.group)
                             }
-                            className="flex-1 py-3 bg-red-500/10 text-red-500 font-bold rounded-xl border border-red-500/20 hover:bg-red-500 hover:text-white transition-all"
+                            className="flex-1 py-3 bg-red-500/10 text-red-500 font-bold rounded-xl border-0 hover:bg-red-500 hover:text-white transition-all cursor-pointer"
                           >
                             {actionLabel}
                           </button>
@@ -238,11 +238,11 @@ const GroupInspectorModal = ({
                     {inspectorData.members.map((member) => (
                       <div
                         key={member.userId}
-                        className="bg-surface-main p-4 rounded-2xl flex items-center gap-3 shadow-sm"
+                        className="bg-surface-main p-4 rounded-2xl flex items-center gap-3 shadow-sm border-0"
                       >
                         <img
                           src={member.avatarUrl}
-                          className="size-10 rounded-full bg-surface border border-border"
+                          className="size-10 rounded-full bg-surface border-0"
                           alt=""
                         />
                         <div className="overflow-hidden">
@@ -250,9 +250,9 @@ const GroupInspectorModal = ({
                             {member.fullName}
                           </p>
                           <span
-                            className={`text-xs font-black uppercase px-2 py-1 rounded ${member.role === "ADMIN"
+                            className={`text-xs font-black uppercase px-2 py-1 rounded border-0 ${member.role === "ADMIN"
                                 ? "bg-orange-500/20 text-orange-400"
-                                : "bg-background-main text-text-secondary border border-border-main"
+                                : "bg-background-main text-text-secondary"
                               }`}
                           >
                             {member.role === "ADMIN"
@@ -275,13 +275,13 @@ const GroupInspectorModal = ({
                     {inspectorData.posts.map((post) => (
                       <div
                         key={post.id}
-                        className="bg-surface-main p-5 rounded-2xl shadow-sm border border-border-main/40 hover:shadow-md transition-all space-y-4"
+                        className="bg-surface-main p-5 rounded-2xl shadow-sm border-0 hover:shadow-md transition-all space-y-4"
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex items-center gap-3">
                             <img
                               src={post.authorAvatar}
-                              className="size-10 rounded-full"
+                              className="size-10 rounded-full border-0"
                               alt=""
                             />
                             <div>
@@ -294,9 +294,9 @@ const GroupInspectorModal = ({
                             </div>
                           </div>
                           <span
-                            className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${post.status === "APPROVED"
-                                ? "bg-green-500/10 text-green-600 border border-green-500/20"
-                                : "bg-yellow-500/10 text-yellow-600 border border-yellow-500/20"
+                            className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border-0 ${post.status === "APPROVED"
+                                ? "bg-green-500/10 text-green-600"
+                                : "bg-yellow-500/10 text-yellow-600"
                               }`}
                           >
                             {post.status === "APPROVED"
@@ -364,23 +364,23 @@ const GroupInspectorModal = ({
 
           {/* SIDEBAR (Only rendered if reports exist) */}
           {hasReports && (
-            <div className="w-[450px] bg-background border-l border-border/50 flex flex-col shrink-0">
+            <div className="w-[450px] bg-background border-0 flex flex-col shrink-0">
               {/* Sidebar Header */}
-              <div className="p-5 border-b border-border/50 flex items-center justify-between">
+              <div className="p-5 border-0 flex items-center justify-between bg-surface/50">
                 <h3 className="text-xs font-black uppercase tracking-widest text-text-main flex items-center gap-2">
                   <ShieldCheck size={16} className="text-primary" />
                   Chi tiết báo cáo ({reports.length})
                 </h3>
                 <button
                   onClick={onClose}
-                  className="text-text-muted hover:text-text-main transition-colors"
+                  className="text-text-muted hover:text-text-main transition-colors border-0 bg-transparent cursor-pointer"
                 >
                   <X size={14} />
                 </button>
               </div>
 
               {/* History Block */}
-              <div className="p-4 bg-orange-500/5 mx-4 mt-4 mb-0 rounded-md border border-orange-500/10">
+              <div className="p-4 bg-orange-500/5 mx-4 mt-4 mb-0 rounded-md border-0">
                 <h4 className="text-[10px] font-black uppercase text-orange-400 tracking-wider mb-2 flex items-center gap-2">
                   <History size={14} />
                   Lịch sử bị báo cáo ({violationHistory.length})
@@ -390,7 +390,7 @@ const GroupInspectorModal = ({
                     {violationHistory.map((h, i) => (
                       <div
                         key={i}
-                        className="text-[10px] text-text-muted border-l-2 border-orange-500/20 pl-2"
+                        className="text-[10px] text-text-muted border-0 pl-1"
                       >
                         <span className="text-text-main font-bold block truncate">
                           {h.reason}
@@ -430,7 +430,7 @@ const GroupInspectorModal = ({
                   return (
                     <div
                       key={idx}
-                      className="bg-surface p-4 rounded-lg border border-border/50 flex gap-3 hover:bg-surface/80 transition-colors"
+                      className="bg-surface p-4 rounded-lg border-0 flex gap-3 hover:bg-surface/80 transition-colors"
                     >
                       <div
                         className="shrink-0 relative group cursor-pointer"
@@ -444,11 +444,11 @@ const GroupInspectorModal = ({
                           {reporterInfo?.avatar ? (
                             <img
                               src={reporterInfo.avatar}
-                              className="size-8 rounded-full object-cover border border-border shadow-sm group-hover:border-primary/50 transition-colors"
+                              className="size-8 rounded-full object-cover border-0 shadow-sm"
                               alt=""
                             />
                           ) : (
-                            <div className="size-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs shrink-0 border border-border">
+                            <div className="size-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs shrink-0 border-0">
                               {(
                                 reporterInfo?.name ||
                                 report.reporterUsername ||
@@ -462,7 +462,7 @@ const GroupInspectorModal = ({
                           {/* Spam Warning Badge */}
                           {isMediumRisk && (
                             <div
-                              className={`absolute -top-1.5 -right-1.5 size-5 rounded-full flex items-center justify-center border-2 border-[#1e120f] ${isHighRisk ? "bg-red-500" : "bg-orange-500"
+                              className={`absolute -top-1.5 -right-1.5 size-5 rounded-full flex items-center justify-center border-0 ${isHighRisk ? "bg-red-500" : "bg-orange-500"
                                 }`}
                               title={`Đã gửi ${reporterStats} báo cáo`}
                             >
@@ -488,9 +488,9 @@ const GroupInspectorModal = ({
                             </p>
                             {reporterStats > 1 && (
                               <span
-                                className={`text-[9px] px-1.5 py-0.5 rounded border ${isHighRisk
-                                    ? "bg-red-500/10 text-red-500 border-red-500/20"
-                                    : "bg-background text-text-muted border-border"
+                                className={`text-[9px] px-1.5 py-0.5 rounded border-0 ${isHighRisk
+                                    ? "bg-red-500/10 text-red-500"
+                                    : "bg-surface-subtle text-text-muted"
                                   }`}
                               >
                                 {reporterStats} báo cáo
@@ -503,13 +503,13 @@ const GroupInspectorModal = ({
                         </div>
 
                         <div className="mt-1.5 flex flex-wrap gap-2 items-center">
-                          <span className="text-[11px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
+                          <span className="text-[11px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded border-0">
                             {mainReason}
                           </span>
                         </div>
 
                         {detailReason && (
-                          <p className="text-xs text-text-muted mt-1.5 leading-relaxed bg-background p-2 rounded-lg italic">
+                          <p className="text-xs text-text-muted mt-1.5 leading-relaxed bg-surface-subtle p-2 rounded-lg italic">
                             "{detailReason}"
                           </p>
                         )}
@@ -520,14 +520,14 @@ const GroupInspectorModal = ({
               </div>
 
               {/* Sidebar Footer Actions or Resolution Info */}
-              <div className="p-5 border-t border-border/50 bg-surface/50 space-y-3">
+              <div className="p-5 border-0 bg-surface/50 space-y-3">
                 {isResolved ? (
                   <div className="space-y-4">
                     <div className="space-y-1">
                       <p className="text-[10px] text-text-muted uppercase tracking-widest font-bold">
                         Biện pháp
                       </p>
-                      <p className="text-sm font-bold text-green-400 bg-green-400/10 px-3 py-2 rounded-lg border border-green-400/20">
+                      <p className="text-sm font-bold text-green-400 bg-green-400/10 px-3 py-2 rounded-lg border-0">
                         Đã xử lý / Giữ nguyên
                       </p>
                     </div>
@@ -554,7 +554,7 @@ const GroupInspectorModal = ({
                     <div className="flex gap-2">
                       <button
                         onClick={onIgnore}
-                        className="flex-1 py-3 bg-surface hover:bg-surface/80 text-text-main/80 font-bold rounded-xl transition-all border border-border text-xs"
+                        className="flex-1 py-3 bg-surface hover:bg-surface/80 text-text-main/80 font-bold rounded-xl transition-all border-0 text-xs cursor-pointer"
                       >
                         Bỏ qua (Đã xử lý)
                       </button>
@@ -562,7 +562,7 @@ const GroupInspectorModal = ({
                         onClick={() =>
                           onAction && onAction(inspectorData.group)
                         }
-                        className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all text-xs"
+                        className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all text-xs border-0 cursor-pointer"
                       >
                         <Trash2 size={16} />
                         {actionLabel}
